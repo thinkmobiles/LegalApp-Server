@@ -1,0 +1,13 @@
+{
+  "name": "LegalAppServer",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.0.5",
+    "pg": "3.6.3",
+    "knex": "0.6.20",
+    "bluebird": "2.9.6",
+    "when": "*",
+    "bookshelf": "0.7.9"
+  }
+}
