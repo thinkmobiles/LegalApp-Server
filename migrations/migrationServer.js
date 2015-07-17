@@ -3,7 +3,7 @@ var express = require('express');
 var http = require('http');
 
 //TODO change NODE_ENV for production server
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = 'development';
 
 //development only
 
