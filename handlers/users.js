@@ -9,6 +9,7 @@ var crypto = require('crypto');
 var badRequests = require('../helpers/badRequests');
 var ProfilesHandler = require('../helpers/randomPass');
 var tokenGenerator = require('../helpers/randomPass');
+var mailer = require('../helpers/mailer');
 
 var ProfilesHandler = require('../handlers/profiles');
 
@@ -100,6 +101,7 @@ var UsersHandler = function (PostGre) {
 
                 UserModel
                     .forge(criteria)
+                    .fetch()
                     .exec(function (err, userModel) {
                         if (err) {
                             return cb(err);
@@ -111,7 +113,7 @@ var UsersHandler = function (PostGre) {
                     });
             },
 
-            //save the user:
+            //create a new user:
             function (cb) {
                 confirmToken = tokenGenerator.generate();
                 userData = {
@@ -145,11 +147,18 @@ var UsersHandler = function (PostGre) {
             }
 
         ], function (err, userModel) {
-            
+            var mailerOptions;
+
             if (err) {
                 return next(err);
             }
             
+            mailerOptions = {
+                email: email,
+                confirmToken: confirmToken
+            }
+            mailer.onSendConfirm(mailerOptions);
+
             res.status(201).send({success: 'success signUp', user: userModel});
         });
 
