@@ -13,7 +13,6 @@ define([
 
         App.sessionData = new Backbone.Model({
             authorized  : false,
-            admin       : false,
             user        : null
         });
 

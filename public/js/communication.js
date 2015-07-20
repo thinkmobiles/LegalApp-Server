@@ -6,7 +6,7 @@ define(function () {
 
     var checkLogin = function (callback) {
         $.ajax({
-            url    : "/admin/currentAdmin",
+            url    : "/isAuth",
             type   : "GET",
 
             success: function (data) {

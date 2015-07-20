@@ -11,6 +11,7 @@ define([
 
     View = Backbone.View.extend({
 
+        id : 'addUserForm',
 
         events: {
 
