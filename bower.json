@@ -1,0 +1,24 @@
+{
+  "name": "LegalApp-Server",
+  "version": "0.0.0",
+  "homepage": "https://github.com/thinkmobiles/LegalApp-Server",
+  "authors": [
+    "AndreyFizer <GIThub31235677>"
+  ],
+  "description": "LegalApp-Bower",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": "~1.2.1",
+    "jquery": "~2.1.4",
+    "jqueryui": "~1.11.4",
+    "text": "~2.0.14",
+    "requirejs": "~2.1.18"
+  }
+}
