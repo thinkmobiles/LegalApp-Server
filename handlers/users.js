@@ -198,6 +198,61 @@ var UsersHandler = function (PostGre) {
             });
     
     };
+
+    this.confirmEmail = function (req, res, next) {
+        var confirmToken = req.params.confirmToken;
+        
+        async.waterfall([
+        
+            //try to find the user by confirmToken:
+            function (cb) { 
+                var criteria = {
+                    confirm_token: confirmToken
+                };
+
+                UserModel
+                    .forge(criteria)
+                    .fetch()
+                    .exec(function (err, userModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                    
+                        if (!userModel || !userModel.id) {
+                            return cb(badRequests.NotFound());
+                        }
+                            
+                        cb(null, userModel);
+                    });
+            },
+
+            //set the confirm_token = null:
+            function (userModel, cb) {
+                var saveData = {
+                    confirm_token: null
+                };
+                
+                userModel
+                    .save(saveData, { patch: true })
+                    .exec(function (err, updatedUser) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, updatedUser);
+                    });
+            }
+
+        ], function (err, userModel) {
+            if (err) {
+                return self.renderError(err, req, res, next);
+            }
+            res.redirect(process.env.HOST + '/successConfirm');
+        });
+    };
+
+    this.renderError = function (err, req, res, next) {
+        res.render('errorTemplate', { error: err });
+    };
 };
 
 module.exports = UsersHandler;
