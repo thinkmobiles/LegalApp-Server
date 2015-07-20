@@ -1,11 +1,14 @@
-module.exports = function () {
+'use strict';
+
+var BadRequestModule = function () {
     var DEFAULT_ERROR_NAME = 'Error';
     var DEFAULT_ERROR_MESSAGE = 'error';
     var DEFAULT_ERROR_STATUS = 400;
 
     var NOT_ENAUGH_PARAMS = "Not enough incoming parameters.";
-    var INVALID_EMAIL = "Invalid email address.";
+    var INVALID_EMAIL = "Incorrect email address.";
     var EMAIL_IN_USE = 'Email in use. Please input another email address.';
+    var DEVICE_IN_USE = 'deviceId in use. Please input another deviceId';
     var NO_UPDATE_PARAMS = 'There are no params for update.';
 
     function Errors(options) {
@@ -94,7 +97,7 @@ module.exports = function () {
         return new Errors(errOptions);
     }
 
-    function NoUpdateParams(options) {
+    function DeviceIdInUse(options) {
         var errOptions;
 
         if (options) {
@@ -104,10 +107,29 @@ module.exports = function () {
         }
 
         if (!errOptions.name) {
-            errOptions.name = 'NoUpdateParams';
+            errOptions.name = 'DoubledDeviceId';
         }
         if (!errOptions.message) {
-            errOptions.message = NO_UPDATE_PARAMS;
+            errOptions.message = DEVICE_IN_USE;
+        }
+
+        return new Errors(errOptions);
+    }
+
+    function DeviceAlreadySubscribed(options) {
+        var errOptions;
+
+        if (options) {
+            errOptions = options;
+        } else {
+            errOptions = {};
+        }
+
+        if (!errOptions.name) {
+            errOptions.name = 'DeviceAlreadySubscribed';
+        }
+        if (!errOptions.message) {
+            errOptions.message = 'Device already is subscribed.';
         }
 
         return new Errors(errOptions);
@@ -203,7 +225,7 @@ module.exports = function () {
             errOptions.name = 'UnconfirmedEmail';
         }
         if (!errOptions.message) {
-            errOptions.message = 'You need to verify your account using the link in the email we sent you.';
+            errOptions.message = 'Please confirm your account';
         }
         if (!errOptions.status) {
             errOptions.status = 400;
@@ -272,7 +294,7 @@ module.exports = function () {
         return new Errors(errOptions);
     }
 
-    function VoteTimeOutError(options) {
+    function CaptchaError(options) {
         var errOptions;
 
         if (options) {
@@ -282,76 +304,19 @@ module.exports = function () {
         }
 
         if (!errOptions.name) {
-            errOptions.name = 'VoteTimeOutError';
-        }
-        if (!errOptions.message) {
-            errOptions.message = 'Passed the vote time';
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function InvalidType(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'InvalidType';
-        }
-        if (!errOptions.message) {
-            errOptions.message = "Invalid type of variable";
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function BannError(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'BannedAccount';
-        }
-        if (!errOptions.message) {
-            errOptions.message = "You banned";
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function ImageLimitError(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'ImageLimitAchived';
-        }
-        if (!errOptions.message) {
-            errOptions.message = 'You can\'t add more images';
+            errOptions.name = 'CaptchaError';
         }
         if (!errOptions.status) {
             errOptions.status = 400;
         }
+        if (!errOptions.message) {
+            errOptions.message = 'The reCAPTCHA wasn\'t entered correctly. Go back and try it again.';
+        }
 
         return new Errors(errOptions);
     }
 
-    function PreviouslyFlagged (options) {
+    function NoActiveDevices(options) {
         var errOptions;
 
         if (options) {
@@ -361,13 +326,35 @@ module.exports = function () {
         }
 
         if (!errOptions.name) {
-            errOptions.name = 'PreviouslyFlagged';
-        }
-        if (!errOptions.message) {
-            errOptions.message = 'You can\'t make this operation twice with the same object';
+            errOptions.name = 'NoActiveDevices';
         }
         if (!errOptions.status) {
             errOptions.status = 400;
+        }
+        if (!errOptions.message) {
+            errOptions.message = 'The are no active devices';
+        }
+
+        return new Errors(errOptions);
+    }
+
+    function PaymentRequired(options) {
+        var errOptions;
+
+        if (options) {
+            errOptions = options;
+        } else {
+            errOptions = {};
+        }
+
+        if (!errOptions.name) {
+            errOptions.name = 'PaymentRequired';
+        }
+        if (!errOptions.status) {
+            errOptions.status = 402;
+        }
+        if (!errOptions.message) {
+            errOptions.message = 'Payment Required';
         }
 
         return new Errors(errOptions);
@@ -377,18 +364,19 @@ module.exports = function () {
         NotEnParams: NotEnParams,
         InvalidEmail: InvalidEmail,
         EmailInUse: EmailInUse,
-        NoUpdateParams: NoUpdateParams,
+        DeviceAlreadySubscribed: DeviceAlreadySubscribed,
+        DeviceIdInUse: DeviceIdInUse,
         InvalidValue: InvalidValue,
         NotFound: NotFound,
         UnconfirmedEmail: UnconfirmedEmail,
         SignInError: SignInError,
         AccessError: AccessError,
-        VoteTimeOutError: VoteTimeOutError,
-        InvalidType: InvalidType,
-        BannError: BannError,
-        ImageLimitError: ImageLimitError,
+        CaptchaError:CaptchaError,
         BlockedAccount: BlockedAccount,
-        PreviouslyFlagged: PreviouslyFlagged,
-        UnknownDeviceOS: UnknownDeviceOS
+        UnknownDeviceOS: UnknownDeviceOS,
+        NoActiveDevices: NoActiveDevices,
+        PaymentRequired: PaymentRequired,
     }
 };
+
+module.exports = new BadRequestModule();

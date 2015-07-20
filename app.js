@@ -124,7 +124,7 @@ var allowCrossDomain = function (req, res, next) {
 app.use(allowCrossDomain);
 app.use(router);
 
-require('./routers/index')(app, express);
+require('./routes/index')(app, express);
 
 httpServer.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
@@ -133,4 +133,8 @@ httpServer.listen(app.get('port'), function () {
     console.log("DATABASE: " + process.env.DATABASE);
 });
 
-module.exports = app;
+module.exports = {
+    app: app, 
+    PostGre: PostGre,
+    knex: knex
+}

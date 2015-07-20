@@ -7,6 +7,7 @@ var Models = function ( PostGre ) {
         hasTimestamps: true
     });
 
-    //this.User =  require('./users')( PostGre, Model );
+    this.User =  require('./user')( PostGre, Model );
+    this.Profile =  require('./profile')( PostGre, Model );
 };
 module.exports = Models;

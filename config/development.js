@@ -1,15 +1,15 @@
 ﻿process.env.HOST = 'http://134.249.164.53:8850/';
 process.env.PORT = '8850';
 
-process.env.RDS_HOSTNAME = '134.249.164.53';
+process.env.RDS_HOSTNAME = '192.168.88.250';
 process.env.RDS_USERNAME = 'postgres';
 process.env.RDS_PASSWORD = 'postgres';
 process.env.RDS_PORT = 5432;
 process.env.DATABASE = 'legal_app_dev';
 
 process.env.mailerService = 'SendGrid';
-process.env.mailerUserName = '';
-process.env.mailerPassword = '';
+process.env.mailerUserName = 'istvan.nazarovits';
+process.env.mailerPassword = 'sendGridpassw365';
 
 process.env.REDIS_HOST = '134.249.164.53';
 process.env.REDIS_PORT = '6379';
