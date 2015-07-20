@@ -29,9 +29,10 @@ define([
                 type : "POST",
 
                 success: function () {
+                    $('#topMenu').hide();
+                    $('#leftMenu').hide();
                     App.sessionData.set({
                         authorized : false,
-                        admin      : false,
                         user       : null
                     });
                     App.router.navigate("login", {trigger: true});
