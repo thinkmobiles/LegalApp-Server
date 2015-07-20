@@ -17,7 +17,8 @@ var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var profilesHandler = new ProfilesHandler(PostGre);
-    
+    var self = this;
+
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
         shaSum.update(pass);
@@ -176,7 +177,7 @@ var UsersHandler = function (PostGre) {
 
         criteria = {
             email: email,
-            password: getEncryptedPass(passoword)
+            password: getEncryptedPass(password)
         };
 
         UserModel
