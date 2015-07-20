@@ -20,7 +20,7 @@ module.exports = function (app) {
     app.post('/signUp', users.signUp);
     app.post('/signIn', users.signIn);
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
-    //app.post('/signOut', users.signOut);
+    app.post('/signOut', session.kill);
     //app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
 
     app.get('/error', function (req, res, next) {
