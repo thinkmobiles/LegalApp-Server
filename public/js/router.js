@@ -14,11 +14,11 @@ define([
         view       : null,
 
         routes: {
-            "login"                 :  "login",
-            "signup"                :  "signup",
-            "users"                 :  "users",
-            "termsAndConditions"    :  "termsAndConditions",
-            "*any"                  :  "any"
+            "login"                :  "login",
+            "signup"               :  "signup",
+            "users"                :  "users",
+            "termsAndConditions"   :  "termsAndConditions",
+            "*any"                 :  "any"
         },
 
         initialize: function () {
