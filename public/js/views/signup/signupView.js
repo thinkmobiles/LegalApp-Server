@@ -20,9 +20,6 @@ define([
 
         events: {
             "click #signupButton"     : "signUp"
-            //"focusin .form-control" : "clearField",
-            //"click #captcha"        : "clearField",
-            //"click .customCheckbox" : "clearField"
         },
 
         setDefaultData: function () {
@@ -61,6 +58,7 @@ define([
                 firstName     : this.$el.find("#signupFName").val().trim(),
                 lastName      : this.$el.find("#signupLName").val().trim(),
                 password      : this.$el.find("#signupPass").val().trim(),
+                company       : this.$el.find("#signupCompany").val().trim(),
                 iAcceptConditions: this.$el.find("#iAgree").prop('checked')
             };
 
@@ -110,10 +108,11 @@ define([
                 url  : "/signUp",
                 type : "POST",
                 data : {
-                    email     : stateModelUpdate.email,
-                    pass      : stateModelUpdate.password,
-                    firstName : stateModelUpdate.firstName,
-                    lastName  : stateModelUpdate.lastName
+                    email         : stateModelUpdate.email,
+                    password      : stateModelUpdate.password,
+                    first_name    : stateModelUpdate.firstName,
+                    last_name     : stateModelUpdate.lastName,
+                    company       : stateModelUpdate.company
                 },
                 success: function () {
                     self.stateModel.set({
@@ -121,6 +120,7 @@ define([
                         email         : '',
                         firstName     : '',
                         lastName      : '',
+                        company       : '',
                         iAcceptConditions: false
                     });
 
