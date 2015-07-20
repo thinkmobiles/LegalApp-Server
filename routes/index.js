@@ -19,6 +19,7 @@ module.exports = function (app) {
     app.get('/isAuthAdmin', session.isAuthenticatedSuperAdmin);
     app.post('/signUp', users.signUp);
     app.post('/signIn', users.signIn);
+    app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     //app.post('/signOut', users.signOut);
     //app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
 
