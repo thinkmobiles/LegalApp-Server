@@ -90,22 +90,36 @@ var UsersHandler = function (PostGre) {
             return next(badRequests.InvalidEmail());
         }
         
-        confirmToken = tokenGenerator.generate();
-        userData = {
-            email: email,
-            password: getEncryptedPass(password),
-            confirm_token: confirmToken
-        };
-
         async.waterfall([
             
             //check unique email:
             function (cb) {
-                cb(); //TODO: ...
+                var criteria = {
+                    email: email
+                }
+
+                UserModel
+                    .forge(criteria)
+                    .exec(function (err, userModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        if (userModel && userModel.id) {
+                            return cb(badRequests.EmailInUse());
+                        }
+                        cb(); //all right:
+                    });
             },
 
             //save the user:
             function (cb) {
+                confirmToken = tokenGenerator.generate();
+                userData = {
+                    email: email,
+                    password: getEncryptedPass(password),
+                    confirm_token: confirmToken
+                };
+
                 saveUser(userData, function (err, userModel) {
                     if (err) {
                         return cb(err);
@@ -148,7 +162,7 @@ var UsersHandler = function (PostGre) {
         var criteria;
 
         if (!email || !password) {
-            return next(badRequests.NotEnParams({reqParams: ['email', 'password']));
+            return next(badRequests.NotEnParams({ reqParams: ['email', 'password'] }));
         }
 
         criteria = {
