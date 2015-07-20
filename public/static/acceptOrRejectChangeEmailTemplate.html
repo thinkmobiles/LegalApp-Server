@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Change Email</title>
+</head>
+<body>
+
+    <h1>Change Email</h1>
+
+    {% if type==='accept' %}
+
+        <p>Your request was accepted!</p>
+        <p>To complete the change email, please verify your e-mail account by following the link that we just sent to your e-mail address: <span style="font-weight: bold">{{ change_email }}</span></p>
+
+    {% elif type==='reject' %}
+
+        <p>Your request was rejected!</p>
+
+    {% else %}
+
+        <p>Verification completed</p>
+        <p>Your e-mail address has been verified. You can now log-in into the application on your phone.</p>
+
+    {% endif %}
+
+</body>
+</html>
