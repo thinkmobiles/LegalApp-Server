@@ -99,6 +99,11 @@ var UsersHandler = function (PostGre) {
 
         async.waterfall([
             
+            //check unique email:
+            function (cb) {
+                cb(); //TODO: ...
+            },
+
             //save the user:
             function (cb) {
                 saveUser(userData, function (err, userModel) {
