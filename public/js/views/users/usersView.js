@@ -19,13 +19,6 @@ define([
         },
 
         initialize: function () {
-            this.currentUsersList = [
-                {name : 'name1', role : 'role1'},
-                {name : 'name2', role : 'role2'},
-                {name : 'name3', role : 'role3'}
-            ];
-
-
 
             this.render()
         },
@@ -35,9 +28,9 @@ define([
                 this.tableView.undelegateEvents()
             }
 
-            this.tableView = new UsrListView({usrList : this.currentUsersList});
+            this.tableView = new UsrListView();
 
-            this.$el.find('table').append(this.tableView.el);
+            //this.$el.find('usersTable').append(this.tableView.el);
         },
 
         afterRender : function(){
