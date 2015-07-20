@@ -4,19 +4,20 @@ var MESSAGES = require('../constants/messages');
 var express = require('express');
 var router = express.Router();
 var SessionHandler = require('../handlers/sessions');
-//var UserHandler = require('../handlers/users');
+var UserHandler = require('../handlers/users');
 
 module.exports = function (app) {
+    var logWriter = require('../helpers/logWriter')();
     var postGre = app.get('PostGre');
     var session = new SessionHandler(postGre);
-    //var users = new UserHandler(postGre);
+    var users = new UserHandler(postGre);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
     });
     app.get('/isAuth', session.isAuthenticatedUser);
     app.get('/isAuthAdmin', session.isAuthenticatedSuperAdmin);
-    //app.post('/signUp', users.signUp);
+    app.post('/signUp', users.signUp);
     //app.post('/signIn', users.signIn);
     //app.post('/signOut', users.signOut);
     //app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);

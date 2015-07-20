@@ -8,8 +8,8 @@ process.env.RDS_PORT = 5432;
 process.env.DATABASE = 'legal_app_dev';
 
 process.env.mailerService = 'SendGrid';
-process.env.mailerUserName = '';
-process.env.mailerPassword = '';
+process.env.mailerUserName = 'istvan.nazarovits';
+process.env.mailerPassword = 'sendGridpassw365';
 
 process.env.REDIS_HOST = '134.249.164.53';
 process.env.REDIS_PORT = '6379';

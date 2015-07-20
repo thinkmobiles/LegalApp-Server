@@ -18,10 +18,8 @@ if (process.env.NODE_ENV === 'production') {
     require('../config/development');
 }
 
-
 var Knex = require('knex');
 var pg = require('pg');
-var Promise = require('bluebird');
 
 Knex.knex = Knex.initialize({
     client: 'pg',
@@ -36,8 +34,7 @@ Knex.knex = Knex.initialize({
 });
 
 var knex = Knex.knex;
-var schema = require('./schema')(knex, Promise);
-var bookshelf = require('bookshelf')(knex);
+var schema = require('./schema')(knex);
 
 var app = express();
 var server = http.createServer(app);
@@ -69,8 +66,12 @@ app.get('/', function (req, res) {
 });
 
 app.get('/databases/create', function (req, res) {
-    schema.create();
-    res.send('<b>Crate Take Success</b>');
+    schema.create(function (err) {
+        if (err) {
+            return res.status(500).send({error: err});
+        }
+        res.send('<b>Crate Take Success</b>');
+    });
 });
 
 app.get('/databases/drop', function (req, res) {

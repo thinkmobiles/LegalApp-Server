@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "express": "3.0.5",
-    "pg": "3.6.3",
-    "knex": "0.6.20",
+    "async": "^1.4.0",
     "bluebird": "2.9.6",
-    "when": "*",
-    "bookshelf": "0.7.9"
+    "bookshelf": "0.7.9",
+    "express": "3.0.5",
+    "knex": "0.6.20",
+    "pg": "3.6.3",
+    "when": "*"
   }
 }
