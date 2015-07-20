@@ -176,7 +176,7 @@ var UsersHandler = function (PostGre) {
 
         criteria = {
             email: email,
-            password: getEncryptedPass(passoword)
+            password: getEncryptedPass(password)
         };
 
         UserModel
