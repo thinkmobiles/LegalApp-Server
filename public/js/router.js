@@ -14,11 +14,12 @@ define([
         view       : null,
 
         routes: {
-            "login"                :  "login",
-            "signup"               :  "signup",
-            "users"                :  "users",
-            "termsAndConditions"   :  "termsAndConditions",
-            "*any"                 :  "any"
+            "login"                 :  "login",
+            "signup"                :  "signup",
+            "users"                 :  "users",
+            "termsAndConditions"    :  "termsAndConditions",
+            "confirmEmail(/:token)" :  "confirmEmail",
+            "*any"                  :  "any"
         },
 
         initialize: function () {
@@ -72,6 +73,10 @@ define([
 
         termsAndConditions: function () {
             this.loadWrapperView('termsAndConditions');
+        },
+
+        confirmEmail: function (token) {
+            this.loadWrapperView('confirmEmail',{token : token});
         },
 
         users: function () {
