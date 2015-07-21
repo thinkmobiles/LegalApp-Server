@@ -40,16 +40,18 @@ define([
 
         loadWrapperView: function (name, params) {
             var self = this;
-            var i;
+            var i, arrLength;
 
             if (!App.sessionData.get('authorized')) {
-                for (i=0; i<this.needAuthorize.length; i+=1){
+                arrLength = this.needAuthorize.length;
+                for (i=0; i<arrLength; i+=1){
                     if (name === this.needAuthorize[i]){
                         return Backbone.history.navigate("login", {trigger: true});
                     }
                 }
             } else {
-                for (i=0; i<this.redirectWhenAuthorize.length; i+=1){
+                arrLength = this.redirectWhenAuthorize.length;
+                for (i=0; i<arrLength; i+=1){
                     if (name === this.redirectWhenAuthorize[i]){
                         return Backbone.history.navigate("users", {trigger: true});
                     }
