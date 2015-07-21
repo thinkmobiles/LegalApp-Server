@@ -124,7 +124,7 @@ define([
                         iAcceptConditions: false
                     });
 
-                    //App.router.navigate("confirm", {trigger: true});
+                    App.router.navigate("confirmEmail", {trigger: true});
                 },
                 error: function (err) {
                     //App.error(err);

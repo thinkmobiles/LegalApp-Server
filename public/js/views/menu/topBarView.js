@@ -53,7 +53,7 @@ define([
                 username   : user
             };
 
-            this.$el.html(_.template(TopTemplate, data));
+            this.$el.html(_.template(TopTemplate)(data));
             $('#leftMenu').html(_.template(LeftTemplate));
             return this;
         }
