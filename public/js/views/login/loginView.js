@@ -70,49 +70,39 @@ define([
                 this.stateModel.set(stateModelUpdate);
                 return this;
             }
-            //$.ajax({
-            //    url     : "/signIn",
-            //    type    : "POST",
-            //    dataType: 'json',
-            //    data:{
-            //        email     : stateModelUpdate.email,
-            //        pass      : stateModelUpdate.password,
-            //        rememberMe: stateModelUpdate.rememberMe
-            //    },
-            //    success: function (response) {
-            //        App.sessionData.set({
-            //            authorized : true,
-            //            admin      : false,
-            //            user       : response.user
-            //        });
-            //        App.router.navigate("main", {trigger: true});
-            //        self.stateModel.set({
-            //            password  : '',
-            //            errors    : false,
-            //            messages  : false,
-            //            email     : ''
-            //        });
-            //    },
-            //    error: function (err) {
-            //        App.sessionData.set({
-            //            authorized : false,
-            //            admin      : false,
-            //            user       : null
-            //        });
-            //
-            //        self.stateModel.set({
-            //            errors     : [err.responseJSON.error],
-            //            password   : null
-            //        });
-            //    }
-            //});
+            $.ajax({
+                url     : "/signIn",
+                type    : "POST",
+                dataType: 'json',
+                data:{
+                    email     : stateModelUpdate.email,
+                    password  : stateModelUpdate.password
+                },
+                success: function (response) {
+                    $('#topMenu').show();
+                    $('#leftMenu').show();
+                    App.sessionData.set({
+                        authorized : true
+                    });
+                    App.router.navigate("users", {trigger: true});
+                    self.stateModel.set({
+                        password  : '',
+                        errors    : false,
+                        messages  : false,
+                        email     : ''
+                    });
+                },
+                error: function (err) {
+                    App.sessionData.set({
+                        authorized : false
+                    });
 
-            //=====================================
-            $('#topMenu').show();
-            $('#leftMenu').show();
-            App.router.navigate("users", {trigger: true});
-            //=====================================
-
+                    self.stateModel.set({
+                        errors     : [err.responseJSON.error],
+                        password   : null
+                    });
+                }
+            });
 
             return this;
         },
