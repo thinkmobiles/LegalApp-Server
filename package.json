@@ -17,6 +17,7 @@
     "ejs": "2.2.4",
     "express": "4.8.4",
     "express-session": "1.7.5",
+    "factory-girl": "^1.6.0",
     "knex": "0.6.20",
     "lodash": "3.6.0",
     "method-override": "2.3.1",

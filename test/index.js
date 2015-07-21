@@ -9,130 +9,49 @@ var server;
 var app;
 var PostGre;
 var knex;
+var defaults;
 
 process.env.NODE_ENV = 'test';
 
 server = require('../app.js');
 app = server.app;
 PostGre = server.PostGre;
-knex = server.knex;
-
+knex = PostGre.knex;
 schemas = schemasModule(knex);
+defaults = require('./defaults')(PostGre);
 
-console.log('>>> initDB ...');
-
-function createTable(tableName, createFieldsFunc) {
-    console.log('create table "%s"', tableName);
+describe('Database initialization', function () {
     
-    //knex.schema
-    //            .hasTable(tableName)
-    //            .then(function (exists) {
-    //                console.log('>>> exists', exists);
-    //                if (exists) {
-    //                    return callback();
-    //                }
-    //            })
-    //            .catch(callback);
+    console.log('>>> initDB ...');
 
-    return function (callback) {
-        console.log('>>> callback');
-        console.log(knex.schema
-                .hasTable(tableName));
-        
-
-        knex.schema
-                .hasTable(tableName)
-                .then(function (exists) {
-                    console.log('>>> exists', exists);
-                    if (exists) {
-                        return callback();
-                    }
-                    knex.schema
-                        .createTable(tableName, createFieldsFunc)
-                        .then(function (result) {
-                            console.log(tableName + ' Table is Created!');
-                            callback(null, result);
-                        })
-                        .catch(callback);
-                })
-                .catch(callback);
-    };
-}
-
-function createTables(callback) {
-    console.log('>>> try to create tables ...');
-
-    async.series([
-        createTable(TABLES.USERS, function (table) {
-            table.increments().primary();
-            table.string('email').unique();
-            table.string('password');
-            table.string('confirm_token');
-            table.string('forgot_token');
-            table.timestamps();
-        })
-    ], function (err, results) {
-        if (err) {
-            console.error(err);
-            return callback(err);
-        }
-        console.log('created');
-        callback();
-    });
-}
-
-async.series([
-    
-    //drop tables:
-    function (cb) {
+    it('Drop the tables', function (done) {
         schemas.drop(function (err) {
             if (err) {
-                return cb(err);
+                return done(err);
             }
-            console.log('success');
-            cb();
+            done();
         });
-        
-    },
+    });
 
-    //create tables:
-    function (cb) {
-        
-        cb();
+    it('Create tables', function (done) {
         schemas.create(function (err) {
             if (err) {
-                return cb(err);
+                return done(err);
             }
-            console.log('success');
-            cb();
+            done();
         });
-        
-        //createTables(function (err) {
-        //    if (err) {
-        //        return cb(err);
-        //    }
-        //    console.log('success');
-        //    cb();
-        //});
+    });
 
-    },
+    it('Create default data', function (done) {
+        defaults.create();
+        done(); //TODO: ...
+    });
 
-        ////create default data:
-        //function (cb) {
-        //    cb(); //TODO: ...
-        //}
-], function (err, result) {
-    if (err) {
-        return console.log(err);
-    }
-    console.log(' ------------------------------- ');
-    console.log('>>> run tests: ...');
-    console.log(' ------------------------------- ');
-    // --------- run tests ------------
 
-    //require('./testHandlers/testSession');
+});
 
-    //require('./testHandlers/users');
+describe('Include test handlers', function () {
 
-    // --------------------------------
+    //require();
+
 });

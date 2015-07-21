@@ -1,51 +1,25 @@
 'use strict';
 
-//var Promise = require('bluebird');
 var async = require('async');
 
 module.exports = function (knex) {
     var TABLES = require('../constants/tables');
-    //var when = require('when');
     var crypto = require('crypto');
     
     function create(callback) {
-        console.log('>>> try to create tables ...');
 
-        //Promise.all([
-        //    createTable(TABLES.PROFILES, function (row) {
-        //        row.increments().primary();
-        //        row.integer('user_id').notNullable().unique();
-        //        row.string('first_name');
-        //        row.string('last_name');
-        //        row.string('company');
-        //        row.string('phone');
-        //        row.timestamps();
-        //    }, function (err) {
-        //        console.log('created');
-                    
-        //    })
-        //]);
         async.parallel([
         
-            //function (cb) {
-            //    createTable(TABLES.PROFILES, function (row) {
-            //        row.increments().primary();
-            //        row.integer('user_id').notNullable().unique();
-            //        row.string('first_name');
-            //        row.string('last_name');
-            //        row.string('company');
-            //        row.string('phone');
-            //        row.timestamps();
-            //    }, function (err) {
-            //        console.log('created');
-            //        if (err) { 
-            //            return cb(err);
-            //        }
-            //        cb();
-            //    });
-            //},
-
-            function (cb) {
+                createTable(TABLES.PROFILES, function (row) {
+                    row.increments().primary();
+                    row.integer('user_id').notNullable().unique();
+                    row.string('first_name');
+                    row.string('last_name');
+                    row.string('company');
+                    row.string('phone');
+                    row.timestamps();
+                }), 
+                
                 createTable(TABLES.USERS, function (row) {
                     row.increments().primary();
                     row.string('email').unique();
@@ -54,13 +28,8 @@ module.exports = function (knex) {
                     row.string('forgot_token');
                     //row.integer('role').notNullable().default(0); //0 - customer, 1 - superAdmin
                     row.timestamps();
-                }, function (err) {
-                    if (err) { 
-                        return cb(err);
-                    }
-                    cb();
-                });
-            }
+                })
+
 
         ], function (err, results) {
             if (err) {
@@ -75,52 +44,31 @@ module.exports = function (knex) {
         });
     }
     
-    function createTable(tableName, crateFieldsFunc, callback) {
-        console.log('>>> create table "%s"', tableName);
-        //console.log(knex.schema.hasTable(tableName));
-
-        //knex.schema
-        //    .hasTable(tableName)
-        //    .exec(function (err) {
-        //        console.log('>>> exec');
-        //        callback();
-        //    });
-
-            //.then(function (exists) {
-            //    console.log('>>> exists', exists);
-            //    callback();
-            //}).catch(function (err) {
-            //    console.error(err);
-            //    callback(err);
-            //});
+    function createTable(tableName, crateFieldsFunc) {
+        console.log('CREATE TABLE "%s"', tableName);
         
-
-        knex.schema.hasTable(tableName)
-            .then(function (exists) {
-                console.log('>>> exists', exists);
-            
-                if (!exists) {
-                    knex.schema.createTable(tableName, crateFieldsFunc)
-                            .then(function () {
-                        console.log(tableName + ' Table is Created!');
-                        if (callback && typeof callback == 'function') {
-                            callback();
-                        }
-                    })
-                            .otherwise(function (err) {
-                        console.log(tableName + ' Table Error: ' + err);
-                        if (callback && typeof callback == 'function') {
-                            callback(err);
-                        }
-                    })
-                } else {
-                    if (callback && typeof callback == 'function') {
-                        callback();
+        return function (cb) {
+            knex.schema.hasTable(tableName)
+                .then(function (exists) {
+                    if (exists) {
+                        console.log('  >>> exists', exists);
+                        return cb();
                     }
-                }
-            }).catch(function (err) {
-                console.error(err);
-            });
+                     
+                    knex.schema.createTable(tableName, crateFieldsFunc)
+                        .then(function () {
+                            console.log('  >>> "%s" table is created', tableName);
+                            cb();
+                        })
+                        .catch(function (err) {
+                            console.error(tableName + ' Table Error: ' + err);
+                            cb(err);
+                        });
+                    
+                }).catch(function (err) {
+                    cb(err);
+                });
+        }
     }
     
     function createDefaultAdmin() {
@@ -144,22 +92,23 @@ module.exports = function (knex) {
     
     function dropTable(tableName) {
         return function (cb) {
-            console.log("DROP TABLE '%s'", tableName);
+            console.log('DROP TABLE IF EXISTS "%s"', tableName);
             knex.schema
                 .dropTableIfExists(tableName)
                 .then(function (result) {
-                    console.log('table "%s" is removed success', tableName);
+                    console.log('  >>> table "%s" is removed', tableName);
                     cb(null, result);
                 })
-                .catch(cb);
+                .catch(function (err) {
+                    cb(err);
+                });
         }
     }
 
     function drop(callback) {
-        console.log('>>> try to drop tables ...');
 
         return async.series([
-            //dropTable(TABLES.PROFILES),
+            dropTable(TABLES.PROFILES),
             dropTable(TABLES.USERS)
         ], function (err) {
             if (err) {

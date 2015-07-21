@@ -1,3 +1,4 @@
+var MESSAGES = require('../constants/messages');
 var USER_ROLES = require('../constants/userRoles');
 var SESSION_SUPER_ADMIN = 'superAdmin';
 var SESSION_USER = 'user';
@@ -7,29 +8,11 @@ var Session = function (postGre) {
 
     this.register = function (req, res, userModel, options) {
         var status = (options && options.status) ? options.status : 200;
-        var firstLogin = (options && options.firstLogin) ? options.firstLogin : false;
-        var role;
-
-        if (userModel.get('role') === USER_ROLES.SUPER_ADMIN) {
-            role = SESSION_SUPER_ADMIN;
-            req.session.lastLogin = new Date();
-        } else {
-            role = SESSION_USER;
-        }
-
+        
         req.session.loggedIn = true;
         req.session.userId = userModel.id;
-        req.session.userRole = role;
-
-        if (process.env.NODE_ENV === 'test') {
-            res.status(status).send({
-                success: "Login successful",
-                user: userModel
-            });
-        } else {
-            res.status(status).send({success: "Login successful", userId: userModel.id, firstLogin: firstLogin});
-        }
-
+        
+        res.status(status).send({ success: MESSAGES.SUCCESS_SIGN_IN, userId: userModel.id });
     };
 
     this.kill = function (req, res, next) {
