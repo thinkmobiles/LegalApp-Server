@@ -78,9 +78,10 @@ define([
                     email     : stateModelUpdate.email,
                     password  : stateModelUpdate.password
                 },
-                success: function () {
+                success: function (res) {
                     $('#topMenu').show();
                     $('#leftMenu').show();
+                    console.log(res);
                     App.sessionData.set({
                         authorized : true,
                         user       : "good name"
