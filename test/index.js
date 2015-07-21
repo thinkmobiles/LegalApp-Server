@@ -43,8 +43,8 @@ describe('Database initialization', function () {
     });
 
     it('Create default data', function (done) {
-        defaults.create();
-        done(); //TODO: ...
+        defaults.create(done);
+        //done(); //TODO: ...
     });
 
 
