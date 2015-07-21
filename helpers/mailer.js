@@ -13,7 +13,7 @@ var MailerModule = function () {
         
         templateOptions = {
             email: options.email,
-            url: process.env.HOST + '/confirmEmail/' + options.confirmToken
+            url: process.env.HOST + '/#confirmEmail/' + options.confirmToken
         };
         console.log('templateOptions', templateOptions);
         mailOptions = {
