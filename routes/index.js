@@ -21,7 +21,7 @@ module.exports = function (app) {
     app.post('/signIn', users.signIn);
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
-    //app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
+    app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error

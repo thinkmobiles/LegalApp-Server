@@ -6,16 +6,19 @@ var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
 
 var async = require('async');
 var crypto = require('crypto');
+
 var badRequests = require('../helpers/badRequests');
 var ProfilesHandler = require('../helpers/randomPass');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 
+var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
 
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
+    var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
     var self = this;
 
@@ -195,7 +198,7 @@ var UsersHandler = function (PostGre) {
                     return next(badRequests.UnconfirmedEmail());
                 }
 
-                res.status(200).send({success: MESSAGES.SUCCESS_SIGN_IN});
+                session.register(req, res, userModel);
             });
     
     };
@@ -249,6 +252,27 @@ var UsersHandler = function (PostGre) {
             }
             res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
         });
+    };
+    
+    this.getCurrentUser = function (req, res, next) {
+        var userId = req.session.userId;
+        var criteria = {
+            id: userId
+        };
+
+        UserModel
+            .forge(criteria)
+            .fetch({
+                require: true,
+                withRelated: 'profile'
+            })
+            .then(function (userModel) {
+                res.status(200).send(userModel);
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
     };
 
     this.renderError = function (err, req, res, next) {
