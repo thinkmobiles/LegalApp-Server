@@ -1,5 +1,7 @@
 ﻿'use strict';
 
+var TABLES = require('../constants/tables');
+
 var async = require('async');
 var crypto = require('crypto');
 var PASSWORD = '123456';
@@ -13,23 +15,47 @@ module.exports = function (db) {
 
     var defaultData = {};
     
-    defaultData.users = [
-        {
-            confirm_token: '123'
-        }
-    ];
+    var users = [{
+        email: 'user1@mail.com'
+    }, {
+        email: 'user2@mail.com'
+        }, {
+        email: 'unconfirmed@mail.com',
+        confirm_token: 'unconfirmed_user'
+    }];
  
     function create(callback) {
         async.waterfall([
             
             //create users:
             function (cb) {
-                factory.buildMany('users', 10, function (err, users) {
-                    console.log('>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<');
-                    console.log(err);
+                factory.createMany(TABLES.USERS, users, 5, function (err, users) {
+                    defaultData.users = users;
                     cb(err, users);
-                    console.log(user);
                 });
+            },
+
+            //create profiles:
+            function (users, cb) {
+                async.eachSeries(users, 
+                    function (userModel, eachCb) {
+                        var profile = {
+                            user_id: userModel.id
+                        };
+                    
+                        factory.create(TABLES.PROFILES, profile, function (err, profileModel) {
+                            if (err) {
+                                return eachCb(err);
+                            }
+                            userModel.set('profile', profileModel);
+                            eachCb();
+                        });
+                    }, function (err) {
+                        if (err) { 
+                            return cb(err)
+                        }
+                        cb();
+                    });
             }
 
         ], function (err) {

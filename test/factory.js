@@ -16,14 +16,17 @@ module.exports = function (db) {
     var Collections = db.Collections;
     var User = Models.User;
     var Profile = Models.Profile;
-    var emailCounter = 1;
-    
+    var emailCounter = 0;
+    var firstNameCounter = 0;
+    var lastNameCounter = 0;
+
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
         shaSum.update(pass);
         return shaSum.digest('hex');
     };
     
+    //users:
     factory.define(TABLES.USERS, User, {
         
         // define attributes using properties and functions:
@@ -31,6 +34,19 @@ module.exports = function (db) {
         email: function () {
             emailCounter++;
             return 'user_' + emailCounter + '_@test.com';
+        }
+    });
+    
+    //profiles:
+    factory.define(TABLES.PROFILES, Profile, {
+        user_id: factory.assoc(TABLES.USERS, 'id'),
+        first_name: function () {
+            firstNameCounter++;
+            return 'first_name_' + firstNameCounter;
+        },
+        last_name: function () {
+            lastNameCounter++;
+            return 'last_name_' + lastNameCounter;
         }
     });
     

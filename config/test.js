@@ -1,4 +1,4 @@
-process.env.HOST = 'http://134.249.164.53:8851/';
+process.env.HOST = 'http://localhost:8851';
 process.env.PORT = '8851';
 
 process.env.RDS_HOSTNAME = '192.168.88.250';

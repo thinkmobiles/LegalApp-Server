@@ -21,37 +21,23 @@ schemas = schemasModule(knex);
 defaults = require('./defaults')(PostGre);
 
 describe('Database initialization', function () {
+    this.timeout(5000);
     
-    console.log('>>> initDB ...');
-
     it('Drop the tables', function (done) {
-        schemas.drop(function (err) {
-            if (err) {
-                return done(err);
-            }
-            done();
-        });
+        schemas.drop(done);
     });
 
     it('Create tables', function (done) {
-        schemas.create(function (err) {
-            if (err) {
-                return done(err);
-            }
-            done();
-        });
+        schemas.create(done);
     });
 
     it('Create default data', function (done) {
-        defaults.create(done);
-        //done(); //TODO: ...
+       defaults.create(done);
     });
-
-
 });
 
-describe('Include test handlers', function () {
+describe('Test handlers', function () {
 
-    //require();
+    require('./testHandlers/testUsers')(PostGre);
 
 });

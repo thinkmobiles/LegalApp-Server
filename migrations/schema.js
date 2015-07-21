@@ -51,13 +51,13 @@ module.exports = function (knex) {
             knex.schema.hasTable(tableName)
                 .then(function (exists) {
                     if (exists) {
-                        console.log('  >>> exists', exists);
+                        //console.log('  >>> exists', exists);
                         return cb();
                     }
                      
                     knex.schema.createTable(tableName, crateFieldsFunc)
                         .then(function () {
-                            console.log('  >>> "%s" table is created', tableName);
+                            //console.log('  >>> "%s" table is created', tableName);
                             cb();
                         })
                         .catch(function (err) {
@@ -92,11 +92,11 @@ module.exports = function (knex) {
     
     function dropTable(tableName) {
         return function (cb) {
-            console.log('DROP TABLE IF EXISTS "%s"', tableName);
+            //console.log('DROP TABLE IF EXISTS "%s"', tableName);
             knex.schema
                 .dropTableIfExists(tableName)
                 .then(function (result) {
-                    console.log('  >>> table "%s" is removed', tableName);
+                    //console.log('  >>> table "%s" is removed', tableName);
                     cb(null, result);
                 })
                 .catch(function (err) {
