@@ -20,12 +20,13 @@ module.exports = function (db) {
     ];
  
     function create(callback) {
-        
         async.waterfall([
             
             //create users:
             function (cb) {
-                factory.buildMany('users', defaultData.users, function (err, users) {
+                factory.buildMany('users', 10, function (err, users) {
+                    console.log('>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<');
+                    console.log(err);
                     cb(err, users);
                     console.log(user);
                 });

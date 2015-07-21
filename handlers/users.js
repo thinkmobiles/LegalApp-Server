@@ -185,7 +185,9 @@ var UsersHandler = function (PostGre) {
 
         UserModel
             .forge(criteria)
-            .fetch()
+            .fetch({
+                withRelated: ['profile']
+            })
             .exec(function (err, userModel) {
                 if (err) {
                     return next(err);
