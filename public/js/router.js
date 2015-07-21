@@ -9,29 +9,31 @@ define([
     var appRouter;
     appRouter = Backbone.Router.extend({
 
-        wrapperView: null,
-        topBarView : null,
-        view       : null,
+        wrapperView : null,
+        topBarView  : null,
+        view        : null,
 
         routes: {
             "login"                 :  "login",
             "signup"                :  "signup",
             "users"                 :  "users",
+            "userProfile"           :  "userProfile",
             "termsAndConditions"    :  "termsAndConditions",
             "confirmEmail(/:token)" :  "confirmEmail",
             "*any"                  :  "any"
         },
 
         needAuthorize: [
-            "users"
+            "users",
+            "userProfile"
         ],
 
         redirectWhenAuthorize: [
-            'login',
-            'signup',
-            'forgotPassword',
-            'resetPassword',
-            'confirmEmail'
+            "login",
+            "signup",
+            "forgotPassword",
+            "resetPassword",
+            "confirmEmail"
         ],
 
         initialize: function () {
@@ -58,11 +60,11 @@ define([
                 }
             }
 
-            require(['views/' + name + '/' + name + 'View'], function (View) {
-                if (!self[name + 'View']) {
-                    self[name + 'View'] = new View();
+            require(['views/'+name+'/'+name+'View'], function (View) {
+                if (!self[name+'View']) {
+                    self[name+'View'] = new View();
                 }
-                self.changeWrapperView(self[name + 'View'], params);
+                self.changeWrapperView(self[name+'View'], params);
             });
         },
 
@@ -98,6 +100,10 @@ define([
 
         signup: function () {
             this.loadWrapperView('signup');
+        },
+
+        userProfile: function () {
+            this.loadWrapperView('userProfile');
         },
 
         termsAndConditions: function () {
