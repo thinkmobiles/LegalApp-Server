@@ -160,7 +160,7 @@ var UsersHandler = function (PostGre) {
             }
             mailer.onSendConfirm(mailerOptions);
 
-            res.status(201).send({success: 'success signUp', user: userModel});
+            res.status(201).send({ success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE });
         });
 
     };
@@ -195,7 +195,7 @@ var UsersHandler = function (PostGre) {
                     return next(badRequests.UnconfirmedEmail());
                 }
 
-                res.status(200).send({success: 'success signIn', user: userModel});
+                res.status(200).send({success: MESSAGES.SUCCESS_SIGN_IN});
             });
     
     };
@@ -245,9 +245,9 @@ var UsersHandler = function (PostGre) {
 
         ], function (err, userModel) {
             if (err) {
-                return self.renderError(err, req, res, next);
+                return next(err);
             }
-            res.redirect(process.env.HOST + '/successConfirm');
+            res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
         });
     };
 
