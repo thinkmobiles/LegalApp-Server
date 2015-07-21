@@ -84,7 +84,7 @@ define([
                     console.log(res);
                     App.sessionData.set({
                         authorized : true,
-                        user       : "good name"
+                        user       : res.user.profile.first_name+" "+res.user.profile.last_name
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
