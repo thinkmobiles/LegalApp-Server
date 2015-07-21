@@ -1,8 +1,12 @@
 ﻿'use strict';
 
 var factory = require('factory-girl');
+//var BookshelfAdapter = require('factory-girl-bookshelf').BookshelfAdapter;
+
 var crypto = require('crypto');
 var PASSWORD = '123456';
+
+//factory.setAdapter(BookshelfAdapter); // use the Bookshelf adapter
 
 module.exports = function (PostGre) {
     var Models = PostGre.Models;
@@ -38,8 +42,6 @@ module.exports = function (PostGre) {
     //    //}
     //});
     
-    console.log('user', User);
-
     factory.define('users', User);
     
     function create() {
@@ -47,8 +49,8 @@ module.exports = function (PostGre) {
         //    console.log(user.attributes); // => {state: 'active', email: 'user1@demo.com', async: 'foo'}
         //});
 
-        return factory.create('users', {email: 'test@mail.com'}, function (err, user) {
-            console.log(user); // => {state: 'active', email: 'user1@demo.com', async: 'foo'}
+        return factory.build('users', {email: 'test@mail.com'}, function (err, user) {
+            console.log(user); 
         });
 
     };

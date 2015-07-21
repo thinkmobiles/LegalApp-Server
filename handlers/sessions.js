@@ -12,7 +12,7 @@ var Session = function (postGre) {
         req.session.loggedIn = true;
         req.session.userId = userModel.id;
         
-        res.status(status).send({ success: MESSAGES.SUCCESS_SIGN_IN, userId: userModel.id });
+        res.status(status).send({ success: MESSAGES.SUCCESS_SIGN_IN, user: userModel });
     };
 
     this.kill = function (req, res, next) {
