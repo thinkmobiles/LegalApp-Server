@@ -42,19 +42,19 @@ define([
             var self = this;
             var i;
 
-            if (!App.sessionData.get('authorized')) {
-                for (i=0; i<this.needAuthorize.length; i+=1){
-                    if (name === this.needAuthorize[i]){
-                        return Backbone.history.navigate("login", {trigger: true});
-                    }
-                }
-            } else {
-                for (i=0; i<this.redirectWhenAuthorize.length; i+=1){
-                    if (name === this.needAuthorize[i]){
-                        return Backbone.history.navigate("users", {trigger: true});
-                    }
-                }
-            }
+            //if (!App.sessionData.get('authorized')) {
+            //    for (i=0; i<this.needAuthorize.length; i+=1){
+            //        if (name === this.needAuthorize[i]){
+            //            return Backbone.history.navigate("login", {trigger: true});
+            //        }
+            //    }
+            //} else {
+            //    for (i=0; i<this.redirectWhenAuthorize.length; i+=1){
+            //        if (name === this.needAuthorize[i]){
+            //            return Backbone.history.navigate("users", {trigger: true});
+            //        }
+            //    }
+            //}
 
             require(['views/' + name + '/' + name + 'View'], function (View) {
                 if (!self[name + 'View']) {
