@@ -38,8 +38,8 @@ define([
                 success: function () {
                     thisEl.find('#confirm').text('Your account has been activated!');
                 },
-                error: function (err) {
-                    App.error(err);
+                error: function () {
+                    //App.error(err);
                     thisEl.find('#confirm').text('Wrong activation code!');
                 }
             });

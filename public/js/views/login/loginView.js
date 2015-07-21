@@ -78,11 +78,12 @@ define([
                     email     : stateModelUpdate.email,
                     password  : stateModelUpdate.password
                 },
-                success: function (response) {
+                success: function () {
                     $('#topMenu').show();
                     $('#leftMenu').show();
                     App.sessionData.set({
-                        authorized : true
+                        authorized : true,
+                        user       : "good name"
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
@@ -94,7 +95,8 @@ define([
                 },
                 error: function (err) {
                     App.sessionData.set({
-                        authorized : false
+                        authorized : false,
+                        user       : null
                     });
 
                     self.stateModel.set({
@@ -108,7 +110,7 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(LoginTemplate, this.stateModel.toJSON()));
+            this.$el.html(_.template(LoginTemplate)(this.stateModel.toJSON()));
             return this;
         }
 

@@ -16,12 +16,18 @@ define([],function () {
         }
 
         if (!err) {
-            App.sessionData.set('authorized',true);
+            App.sessionData.set({
+                authorized : true,
+                user       : data.profile.first_name+' '+data.profile.last_name
+            });
             $('#topMenu').show();
             $('#leftMenu').show();
             return Backbone.history.navigate(url, {trigger: true});
         } else {
-            App.sessionData.set('authorized',false);
+            App.sessionData.set({
+                authorized : false,
+                user       : null
+            });
             $('#topMenu').hide();
             $('#leftMenu').hide();
             return Backbone.history.navigate(url, {trigger: true});
