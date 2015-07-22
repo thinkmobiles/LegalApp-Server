@@ -65,9 +65,18 @@ module.exports = function (db) {
             callback();
         });
     };
+    
+    function getData(table) {
+        if (table && defaultData[table]) {
+            return defaultData[table];
+        } else {
+            return defaultData;
+        }
+    }
 
     return {
         create: create,
-        data: defaultData
+        getData: getData,
+        password: PASSWORD
     }
 };

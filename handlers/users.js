@@ -74,10 +74,6 @@ var UsersHandler = function (PostGre) {
         }
     };
     
-    function validateUser(data, callback) {
-        
-    }
-    
     function updateUserById(userId, options, callback) {
         var firstName = options.first_name;
         var lastName = options.last_name;
@@ -153,17 +149,28 @@ var UsersHandler = function (PostGre) {
             }
         });
     };
+    
+    function createCompany(userId, options, callback) {
+        var name = options.company;
+        
+        async.waterfall([
+        
+            //create a new company:
+        
+        ]);
+    };
 
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
         var password = options.password;
+        var company = options.company;
         var confirmToken;
         var userData;
         
         //validate options:
-        if (!email || !password) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'first_name', 'last_name'] }));
+        if (!email || !password || !company) {
+            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'company'] }));
         }
         
         //email validation:
@@ -224,7 +231,8 @@ var UsersHandler = function (PostGre) {
                     userModel.set('profile', profileModel);
                     cb(null, userModel);
                 });
-            }
+            },
+
 
         ], function (err, userModel) {
             var mailerOptions;

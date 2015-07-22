@@ -9,6 +9,14 @@ module.exports = function (PostGre, ParentModel) {
 
         profile: function () {
             return this.hasOne(PostGre.Models.Profile);
+        },
+
+        company: function () { 
+            
+        },
+
+        userCompany: function () {
+        
         }
     });
 
