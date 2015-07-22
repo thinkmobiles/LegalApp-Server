@@ -351,6 +351,44 @@ var UsersHandler = function (PostGre) {
         });
     };
 
+    this.forgotPassword = function (req, res, next) {
+        var params = req.body;
+
+        if (!params || !params.email) {
+            return next(badRequests.NotEnParams({reqParams: 'email'}));
+        }
+
+        if (!EMAIL_REGEXP.test(params.email)) {
+            return next(badRequests.InvalidEmail());
+        }
+
+        UserModel
+            .forge({
+                email: params.email
+            })
+            .fetch()
+            .then(function (userModel) {
+                if (userModel && userModel.id) {
+
+                    userModel
+                        .set({
+                            'forgot_token': tokenGenerator.generate()
+                        })
+                        .save()
+                        .then(function (user){
+                            mailer.onForgotPassword(user.toJSON());
+                            res.status(200).send({success: "success"});
+                        })
+                        .catch(next);
+
+                } else {
+                    res.status(200).send({success: "success"});
+                }
+            })
+            .catch(next);
+
+    };
+
     this.renderError = function (err, req, res, next) {
         res.render('errorTemplate', { error: err });
     };
