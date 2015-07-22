@@ -112,7 +112,7 @@ var MailerModule = function () {
         });
     }
 
-    function onForgotPassword(options, callback) {
+    this.onForgotPassword = function(options, callback) {
             var templateOptions;
             var mailOptions;
 

@@ -368,15 +368,18 @@ var UsersHandler = function (PostGre) {
             })
             .fetch()
             .then(function (userModel) {
+                var saveData = {
+                    forgot_token: tokenGenerator.generate()
+                };
+
                 if (userModel && userModel.id) {
 
                     userModel
-                        .set({
-                            'forgot_token': tokenGenerator.generate()
-                        })
-                        .save()
+                        .save(saveData, {patch : true})
                         .then(function (user){
-                            mailer.onForgotPassword(user.toJSON());
+                            var userJSON = user.attributes;
+
+                            mailer.onForgotPassword(userJSON);
                             res.status(200).send({success: "success"});
                         })
                         .catch(next);
@@ -386,7 +389,6 @@ var UsersHandler = function (PostGre) {
                 }
             })
             .catch(next);
-
     };
 
     this.renderError = function (err, req, res, next) {
