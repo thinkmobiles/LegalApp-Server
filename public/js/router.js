@@ -3,8 +3,9 @@
  */
 
 define([
-    'views/menu/topBarView'
-], function (TopMenuView) {
+    'views/menu/topBarView',
+    'constants/redirect'
+], function (TopMenuView , REDIRECT) {
 
     var appRouter;
     appRouter = Backbone.Router.extend({
@@ -24,39 +25,22 @@ define([
             "*any"                  :  "any"
         },
 
-        needAuthorize: [
-            "users",
-            "userProfile"
-        ],
-
-        redirectWhenAuthorize: [
-            "login",
-            "signup",
-            "forgotPassword",
-            "confirmEmail"
-        ],
-
         initialize: function () {
                 new TopMenuView();
         },
 
-        loadWrapperView: function (name, params) {
+        loadWrapperView: function (name, params, redirect) {
             var self = this;
-            var i, arrLength;
 
-            if (!App.sessionData.get('authorized')) {
-                arrLength = this.needAuthorize.length;
-                for (i=0; i<arrLength; i+=1){
-                    if (name === this.needAuthorize[i]){
-                        return Backbone.history.navigate("login", {trigger: true});
-                    }
+            if (redirect === REDIRECT.whenAuthorized) {
+                if (!App.sessionData.get('authorized')){
+                    return Backbone.history.navigate("login", {trigger: true});
                 }
-            } else {
-                arrLength = this.redirectWhenAuthorize.length;
-                for (i=0; i<arrLength; i+=1){
-                    if (name === this.redirectWhenAuthorize[i]){
-                        return Backbone.history.navigate("users", {trigger: true});
-                    }
+            }
+
+            if (redirect === REDIRECT.whenNOTAuthorized) {
+                if (App.sessionData.get('authorized')){
+                    return Backbone.history.navigate("users", {trigger: true});
                 }
             }
 
@@ -95,31 +79,31 @@ define([
         },
 
         login: function () {
-            this.loadWrapperView('login');
+            this.loadWrapperView('login', null, REDIRECT.whenNOTAuthorized);
         },
 
         signup: function () {
-            this.loadWrapperView('signup');
+            this.loadWrapperView('signup', null, REDIRECT.whenNOTAuthorized);
         },
 
         userProfile: function () {
-            this.loadWrapperView('userProfile');
+            this.loadWrapperView('userProfile', null, REDIRECT.whenAuthorized);
         },
 
         termsAndConditions: function () {
-            this.loadWrapperView('termsAndConditions');
+            this.loadWrapperView('termsAndConditions', null, null);
         },
 
         confirmEmail: function (token) {
-            this.loadWrapperView('confirmEmail',{token : token});
+            this.loadWrapperView('confirmEmail',{token : token}, REDIRECT.whenNOTAuthorized);
         },
 
         forgotPassword: function () {
-            this.loadWrapperView('forgotPassword');
+            this.loadWrapperView('forgotPassword', null, REDIRECT.whenNOTAuthorized);
         },
 
         users: function () {
-            this.loadWrapperView('users');
+            this.loadWrapperView('users', null, REDIRECT.whenAuthorized);
         }
 
 
