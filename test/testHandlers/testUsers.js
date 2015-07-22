@@ -152,7 +152,36 @@ module.exports = function (db, defaults) {
         });
 
         //TODO ... test success signUp by valid data, test exists email
-    
+        
+        it('User cant signUp with valid data', function (done) {
+            var ticks = new Date().valueOf();
+            var data = {
+                email: 'mail_' + ticks + '@mail.com',
+                password: 'xxx',
+                company: 'myCompany'
+            };
+            
+            agent
+                .post(url)
+                .send(data)
+                .end(function (err, res) {
+                var body;
+                if (err) {
+                        return cb(err);
+                    }
+                
+                    body = res.body;
+                
+                    expect(res.status).to.equals(201);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('success');
+                    expect(body.success).to.include(MESSAGES.SUCCESS_REGISTRATION_MESSAGE);
+                
+                    done();
+                });
+
+        });
+
     });
 
     describe('POST /signIn', function () {

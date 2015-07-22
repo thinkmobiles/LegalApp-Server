@@ -8,18 +8,19 @@ var async = require('async');
 var crypto = require('crypto');
 
 var badRequests = require('../helpers/badRequests');
-var ProfilesHandler = require('../helpers/randomPass');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 
 var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
+var CompaniesHandler = require('../handlers/companies');
 
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
+    var companiesHandler = new CompaniesHandler(PostGre);
     var self = this;
 
     function getEncryptedPass(pass) {
@@ -150,16 +151,6 @@ var UsersHandler = function (PostGre) {
         });
     };
     
-    function createCompany(userId, options, callback) {
-        var name = options.company;
-        
-        async.waterfall([
-        
-            //create a new company:
-        
-        ]);
-    };
-
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
@@ -233,6 +224,22 @@ var UsersHandler = function (PostGre) {
                 });
             },
 
+            //create a new company with ower:
+            function (userModel, cb) {
+                var companyOptions = {
+                    userId: userModel.id,
+                    name: company
+                };
+                //cb(null, userModel);
+
+                companiesHandler.createCompanyWithOwner(companyOptions, function (err, company) {
+                    if (err) { 
+                        //return console.error(err);
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            } 
 
         ], function (err, userModel) {
             var mailerOptions;

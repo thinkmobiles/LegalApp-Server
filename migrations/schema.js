@@ -133,7 +133,10 @@ module.exports = function (knex) {
     function drop(callback) {
 
         return async.series([
+            dropTable(TABLES.COMPANIES),
+            dropTable(TABLES.IMAGES),
             dropTable(TABLES.PROFILES),
+            dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS)
         ], function (err) {
             if (err) {
