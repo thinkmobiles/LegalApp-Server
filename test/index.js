@@ -34,10 +34,15 @@ describe('Database initialization', function () {
     it('Create default data', function (done) {
        defaults.create(done);
     });
+
+    it('Test handlers', function () {
+        require('./testHandlers/testUsers')(PostGre, defaults);
+    });
+
 });
 
 describe('Test handlers', function () {
 
-    require('./testHandlers/testUsers')(PostGre);
+    //require('./testHandlers/testUsers')(PostGre, defaults);
 
 });

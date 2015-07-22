@@ -8,18 +8,19 @@ var async = require('async');
 var crypto = require('crypto');
 
 var badRequests = require('../helpers/badRequests');
-var ProfilesHandler = require('../helpers/randomPass');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 
 var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
+var CompaniesHandler = require('../handlers/companies');
 
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
+    var companiesHandler = new CompaniesHandler(PostGre);
     var self = this;
 
     function getEncryptedPass(pass) {
@@ -74,20 +75,93 @@ var UsersHandler = function (PostGre) {
         }
     };
     
-    function validateUser(data, callback) {
+    function updateUserById(userId, options, callback) {
+        var firstName = options.first_name;
+        var lastName = options.last_name;
+        var phone = options.phone;
+        var company = options.company;
+        var profileData = {};
         
-    }
+        async.waterfall([
 
+            //check incoming params and prepare the saveData:
+            function (cb) {
+                
+                if (firstName) {
+                    profileData.first_name = firstName;
+                }
+                if (lastName) {
+                    profileData.last_name = lastName;
+                }
+                if (phone !== undefined) {
+                    profileData.phone = phone;
+                }
+                if (company !== undefined) {
+                    profileData.company = company;
+                }
+                
+                if (Object.keys(profileData).length === 0) {
+                    return cb(badRequests.NotEnParams({ message: 'There are no params for update' }));
+                }
+                
+                cb();
+            },
+
+            //find the user:
+            function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile']
+                };
+                
+                UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            },
+
+            //save the profile:
+            function (userModel, cb) {
+                var profileModel = userModel.related('profile');
+                
+                profileModel
+                    .save(profileData, { patch: true })
+                    .exec(function (err, profileModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            }
+        ], function (err, userModel) {
+            if (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            } else {
+                if (callback && (typeof callback === 'function')) {
+                    callback(null, userModel);
+                }
+            }
+        });
+    };
+    
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
         var password = options.password;
+        var company = options.company;
         var confirmToken;
         var userData;
         
         //validate options:
-        if (!email || !password) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'first_name', 'last_name'] }));
+        if (!email || !password || !company) {
+            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'company'] }));
         }
         
         //email validation:
@@ -148,7 +222,24 @@ var UsersHandler = function (PostGre) {
                     userModel.set('profile', profileModel);
                     cb(null, userModel);
                 });
-            }
+            },
+
+            //create a new company with ower:
+            function (userModel, cb) {
+                var companyOptions = {
+                    userId: userModel.id,
+                    name: company
+                };
+                //cb(null, userModel);
+
+                companiesHandler.createCompanyWithOwner(companyOptions, function (err, company) {
+                    if (err) { 
+                        //return console.error(err);
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            } 
 
         ], function (err, userModel) {
             var mailerOptions;
@@ -280,74 +371,12 @@ var UsersHandler = function (PostGre) {
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
         var options = req.body;
-        var firstName = options.first_name;
-        var lastName = options.last_name;
-        var phone = options.phone;
-        var company = options.company;
-        var profileData = {};
-
-        async.waterfall([
-
-            //check incoming params and prepare the saveData:
-            function (cb) {
-                
-                if (firstName) {
-                    profileData.first_name = firstName;
-                }
-                if (lastName) {
-                    profileData.last_name = lastName;
-                }
-                if (phone !== undefined) {
-                    profileData.phone = phone;
-                }
-                if (company !== undefined) {
-                    profileData.company = company;
-                }
-
-                if (Object.keys(profileData).length === 0) {
-                    return cb(badRequests.NotEnParams({message: 'There are no params for update'}));
-                }
-
-                cb(); 
-            },
-
-            //find the user:
-            function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile']
-                };
-
-                UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, userModel);
-                });
-            },
-
-            //save the profile:
-            function (userModel, cb) {
-                var profileModel = userModel.related('profile');
-                
-                profileModel
-                    .save(profileData, { patch: true })
-                    .exec(function (err, profileModel) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, userModel);
-                    });
-            }
-
-        ], function (err, userModel) {
-            if (err) { 
+        
+        updateUserById(userId, options, function (err, userModel) {
+            if (err) {
                 return next(err);
             }
-            res.status(200).send({success: 'success updated', user: userModel});
+            res.status(200).send({ success: 'success updated', user: userModel });
         });
     };
 

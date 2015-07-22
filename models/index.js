@@ -16,7 +16,10 @@ var Models = function ( PostGre ) {
         }
     });
 
+    this.Company =  require('./company')( PostGre, Model );
+    this.Image =  require('./images')( PostGre, Model );
     this.User =  require('./user')( PostGre, Model );
+    this.UserCompanies =  require('./userCompanies')( PostGre, Model );
     this.Profile =  require('./profile')( PostGre, Model );
 };
 module.exports = Models;

@@ -42,7 +42,7 @@ var Bookshelf = require('bookshelf');
 var pg = require('pg');
 
 var knex = require('knex')({
-    debug: true,
+    //debug: true,
     client: 'pg',
     connection: {
         host: process.env.RDS_HOSTNAME,

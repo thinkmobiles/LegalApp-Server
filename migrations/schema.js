@@ -1,5 +1,6 @@
 'use strict';
 
+var PERMISSOINS = require('../constants/permissions');
 var async = require('async');
 
 module.exports = function (knex) {
@@ -9,26 +10,50 @@ module.exports = function (knex) {
     function create(callback) {
 
         async.parallel([
-        
-                createTable(TABLES.PROFILES, function (row) {
-                    row.increments().primary();
-                    row.integer('user_id').notNullable().unique();
-                    row.string('first_name');
-                    row.string('last_name');
-                    row.string('company');
-                    row.string('phone');
-                    row.timestamps();
-                }), 
                 
-                createTable(TABLES.USERS, function (row) {
-                    row.increments().primary();
-                    row.string('email').unique();
-                    row.string('password');
-                    row.string('confirm_token');
-                    row.string('forgot_token');
-                    //row.integer('role').notNullable().default(0); //0 - customer, 1 - superAdmin
-                    row.timestamps();
-                })
+            createTable(TABLES.COMPANIES, function (row) {
+                row.increments().primary();
+                row.integer('owner_id').notNullable().index();
+                row.string('name');
+                row.timestamps();
+            }), 
+
+            createTable(TABLES.IMAGES, function (row) {
+                row.increments().primary();
+                row.integer('imageable_id').notNullable();
+                row.string('imageable_type');
+                row.string('name');
+                row.string('key');
+                row.timestamps();
+            }), 
+
+            createTable(TABLES.PROFILES, function (row) {
+                row.increments().primary();
+                row.integer('user_id').notNullable().unique();
+                row.string('first_name');
+                row.string('last_name');
+                row.string('company');
+                row.string('phone');
+                row.timestamps();
+            }), 
+
+            createTable(TABLES.USER_COMPANIES, function (row) {
+                row.increments().primary();
+                row.integer('user_id').notNullable().index();
+                row.integer('company_id').notNullable().index();
+                row.integer('permissions').notNullable().defaultTo(PERMISSOINS.USER);
+                row.timestamps();
+            }), 
+                
+            createTable(TABLES.USERS, function (row) {
+                row.increments().primary();
+                row.string('email').unique();
+                row.string('password');
+                row.string('confirm_token');
+                row.string('forgot_token');
+                //row.integer('role').notNullable().defaultTo(0); //0 - customer, 1 - superAdmin
+                row.timestamps();
+            })
 
 
         ], function (err, results) {
@@ -108,7 +133,10 @@ module.exports = function (knex) {
     function drop(callback) {
 
         return async.series([
+            dropTable(TABLES.COMPANIES),
+            dropTable(TABLES.IMAGES),
             dropTable(TABLES.PROFILES),
+            dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS)
         ], function (err) {
             if (err) {
