@@ -42,7 +42,7 @@ var Bookshelf = require('bookshelf');
 var pg = require('pg');
 
 var knex = require('knex')({
-    //debug: true,
+    debug: true,
     client: 'pg',
     connection: {
         host: process.env.RDS_HOSTNAME,
@@ -94,6 +94,12 @@ app.use(session({
         maxAge: 1000 * 3600 * 24 * 365 * 5
     }
 }));
+//app.use(function (req, res, next) {
+//    if (!req.session) {
+//        return next(new Error('oh no')) // handle error
+//    }
+//    next() // otherwise continue
+//})
 //</editor-fold>
 
 //<editor-fold desc="Deleting temporary files from NodeJS using fs">
@@ -131,10 +137,10 @@ httpServer.listen(app.get('port'), function () {
     console.log("HOST: " + process.env.HOST);
     console.log("RDS_HOSTNAME: " + process.env.RDS_HOSTNAME);
     console.log("DATABASE: " + process.env.DATABASE);
+    console.log("REDIS_HOST: " + process.env.REDIS_HOST);
 });
 
 module.exports = {
     app: app, 
-    PostGre: PostGre,
-    knex: knex
+    PostGre: PostGre
 }

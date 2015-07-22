@@ -276,6 +276,80 @@ var UsersHandler = function (PostGre) {
             })
             .catch(next);
     };
+    
+    this.changeProfile = function (req, res, next) {
+        var userId = req.session.userId;
+        var options = req.body;
+        var firstName = options.first_name;
+        var lastName = options.last_name;
+        var phone = options.phone;
+        var company = options.company;
+        var profileData = {};
+
+        async.waterfall([
+
+            //check incoming params and prepare the saveData:
+            function (cb) {
+                
+                if (firstName) {
+                    profileData.first_name = firstName;
+                }
+                if (lastName) {
+                    profileData.last_name = lastName;
+                }
+                if (phone !== undefined) {
+                    profileData.phone = phone;
+                }
+                if (company !== undefined) {
+                    profileData.company = company;
+                }
+
+                if (Object.keys(profileData).length === 0) {
+                    return cb(badRequests.NotEnParams({message: 'There are no params for update'}));
+                }
+
+                cb(); 
+            },
+
+            //find the user:
+            function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile']
+                };
+
+                UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            },
+
+            //save the profile:
+            function (userModel, cb) {
+                var profileModel = userModel.related('profile');
+                
+                profileModel
+                    .save(profileData, { patch: true })
+                    .exec(function (err, profileModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, userModel);
+                    });
+            }
+
+        ], function (err, userModel) {
+            if (err) { 
+                return next(err);
+            }
+            res.status(200).send({success: 'success updated', user: userModel});
+        });
+    };
 
     this.forgotPassword = function (req, res, next) {
         var params = req.body;
