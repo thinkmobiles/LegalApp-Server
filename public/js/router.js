@@ -18,6 +18,7 @@ define([
             "signup"                :  "signup",
             "users"                 :  "users",
             "userProfile"           :  "userProfile",
+            "forgotPassword"        :  "forgotPassword",
             "termsAndConditions"    :  "termsAndConditions",
             "confirmEmail(/:token)" :  "confirmEmail",
             "*any"                  :  "any"
@@ -32,7 +33,6 @@ define([
             "login",
             "signup",
             "forgotPassword",
-            "resetPassword",
             "confirmEmail"
         ],
 
@@ -112,6 +112,10 @@ define([
 
         confirmEmail: function (token) {
             this.loadWrapperView('confirmEmail',{token : token});
+        },
+
+        forgotPassword: function () {
+            this.loadWrapperView('forgotPassword');
         },
 
         users: function () {

@@ -111,6 +111,26 @@ var MailerModule = function () {
             }
         });
     }
+
+    function onForgotPassword(options, callback) {
+            var templateOptions;
+            var mailOptions;
+
+            templateOptions = {
+                url: process.env.HOST + '/#resetPassword/' + options.forgot_token
+            };
+
+            mailOptions = {
+                from: FROM,
+                to: options.email,
+                subject: 'Forgot password',
+                generateTextFromHTML: true,
+                html: _.template(fs.readFileSync('public/templates/mailer/forgotPassword.html', "utf8"))(templateOptions)
+            };
+
+            deliver(mailOptions,callback);
+
+    }
    
 };
 

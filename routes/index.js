@@ -22,7 +22,7 @@ module.exports = function (app) {
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
     app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
-
+    app.post('/forgotPassword', users.forgotPassword);
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error
     });
