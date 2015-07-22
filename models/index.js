@@ -5,8 +5,14 @@ var Models = function ( PostGre ) {
     PostGre.plugin('visibility'); //https://github.com/tgriesser/bookshelf/wiki/Plugin:-Visibility
     var Model = PostGre.Model.extend({
         hasTimestamps: true,
-        getTableName: function () {
-            return this.tableName.replace(/s$/, '');
+        //getTableName: function () {
+        //    return this.tableName.replace(/s$/, '');
+        //}
+    }, {
+        find: function (forgeOptions, fetchOptions) {
+            return this
+                .forge(forgeOptions)
+                .fetch(fetchOptions);
         }
     });
 

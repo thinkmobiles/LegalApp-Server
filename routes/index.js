@@ -22,7 +22,7 @@ module.exports = function (app) {
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
     app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
-
+    app.put('/profile', session.authenticatedUser, users.changeProfile);
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error
     });
@@ -62,7 +62,7 @@ module.exports = function (app) {
                 console.warn(err.message);
             } else {
                 console.error(err.message);
-                console.error(err.stack);
+                if (process.env.NODE_ENV !== 'test') console.error(err.stack);
                 logWriter.log('', err.message + '\n' + err.stack);
             }
             res.status(status).send({ error: err.message, stack: err.stack });
