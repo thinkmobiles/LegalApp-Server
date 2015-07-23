@@ -12,7 +12,7 @@ define([
     View = Backbone.View.extend({
 
         events: {
-
+            "click #savePass" : "changePassword"
         },
 
         initialize: function () {
@@ -34,7 +34,7 @@ define([
             // =====================END
 
                 $.ajax({
-                    url: "/changePassword/" + token,
+                    url: "/changePassword/"+token,
                     type: "POST",
                     data: {
                         password : password
