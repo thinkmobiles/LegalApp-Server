@@ -475,6 +475,7 @@ var UsersHandler = function (PostGre) {
         var company;
         var userData;
         var userPassword;
+        var invitedUserId;
 
         //validate options:
         if (!email) {
@@ -523,6 +524,7 @@ var UsersHandler = function (PostGre) {
                     if (err) {
                         return cb(err);
                     }
+                    invitedUserId = userModel.id;
                     cb(null, userModel);
                 });
             },
@@ -552,7 +554,7 @@ var UsersHandler = function (PostGre) {
                     userId   : userId,
                     companyId: companyId
                 };
-                CompaniesHandler.insertIntoUserCompanies(companyData, function(err, resultModel){
+                companiesHandler.insertIntoUserCompanies(companyData, function(err, resultModel){
                     if (err){
                         return cb(err);
                     }
@@ -564,6 +566,9 @@ var UsersHandler = function (PostGre) {
             var mailerOptions;
 
             if (err) {
+                if (invitedUserId) {
+                    removeUser(invitedUserId);
+                }
                 return next(err);
             }
 
