@@ -12,7 +12,7 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         company: function () { 
-            
+            return this.hasOne(PostGre.Models.Company, 'owner_id');
         },
 
         userCompany: function () {

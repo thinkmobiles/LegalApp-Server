@@ -281,6 +281,9 @@ var UsersHandler = function (PostGre) {
                 withRelated: ['profile']
             })
             .exec(function (err, userModel) {
+                var profile;
+                var sessionOptions;
+
                 if (err) {
                     return next(err);
                 }
@@ -291,8 +294,12 @@ var UsersHandler = function (PostGre) {
                 if (userModel && userModel.get('confirm_token')) {
                     return next(badRequests.UnconfirmedEmail());
                 }
-
-                session.register(req, res, userModel);
+            
+                profile = userModel.related('profile');
+                sessionOptions = {
+                    permissions: profile.get('permissions')
+                };
+                session.register(req, res, userModel, sessionOptions);
             });
     
     };
@@ -358,7 +365,7 @@ var UsersHandler = function (PostGre) {
             .forge(criteria)
             .fetch({
                 require: true,
-                withRelated: 'profile'
+                withRelated: ['profile', 'company']
             })
             .then(function (userModel) {
                 res.status(200).send(userModel);
