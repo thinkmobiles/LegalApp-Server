@@ -3,6 +3,7 @@
 var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
+var PERMISSOINS = require('../constants/permissions');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -175,11 +176,10 @@ var UsersHandler = function (PostGre) {
             function (cb) {
                 var criteria = {
                     email: email
-                }
+                };
 
                 UserModel
-                    .forge(criteria)
-                    .fetch()
+                    .find(criteria)
                     .exec(function (err, userModel) {
                         if (err) {
                             return cb(err);
@@ -214,6 +214,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
                 
                 profileData.user_id = userId;
+                profileData.permissions = PERMISSOINS.OWNER;
                 profilesHandler.saveProfile(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
