@@ -45,25 +45,6 @@ define([
             });
         },
 
-        //showPofile : function(){
-        //    var data;
-        //    $.ajax({
-        //        url    : "/currentUser",
-        //        type   : "GET",
-        //
-        //        success: function (response) {
-        //            data={
-        //                firstName : response.user.profile.first_name,
-        //                lastName  : response.user.profile.last_name
-        //            };
-        //
-        //        },
-        //        error  : function () {
-        //            alert('error'); // todo -error-
-        //        }
-        //    });
-        //},
-
         render: function () {
             var authorized = App.sessionData.get('authorized');
             var user = App.sessionData.get('user');

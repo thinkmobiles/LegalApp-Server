@@ -473,7 +473,7 @@ var UsersHandler = function (PostGre) {
     this.inviteUser = function (req, res, next) {
         var options = req.body;
         var email = options.email;
-        var company = options.company;
+        var company;
         var userData;
         var userPassword;
 

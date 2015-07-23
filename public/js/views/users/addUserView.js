@@ -30,15 +30,13 @@ define([
             var phone = thisEL.find('#addPhone').val().trim();
             var email = thisEL.find('#addEmail').val().trim();
             var permissions = thisEL.find("[selected = 'selected']").data('id');
-            var company;
 
             var inviteData = {
-                first_name : firstName,
-                last_name  : lastName,
-                phone      : phone,
-                email      : email,
-                permissions: permissions,
-                company    : company
+                first_name  : firstName,
+                last_name   : lastName,
+                phone       : phone,
+                email       : email,
+                permissions : permissions
             };
 
             this.userModel = new UserModel();
