@@ -517,7 +517,7 @@ var UsersHandler = function (PostGre) {
                 userPassword = tokenGenerator.generate(6);
                 userData = {
                     email: email,
-                    password: userPassword
+                    password: getEncryptedPass(userPassword)
                 };
 
                 saveUser(userData, function (err, userModel) {

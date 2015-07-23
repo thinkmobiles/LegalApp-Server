@@ -146,7 +146,7 @@ var MailerModule = function () {
             to: options.email,
             subject: 'Invite to Legal-App',
             generateTextFromHTML: true,
-            html: _.template(fs.readFileSync('public/templates/mailer/forgotPassword.html', "utf8"))(templateOptions)
+            html: _.template(fs.readFileSync('public/templates/mailer/inviteUser.html', "utf8"))(templateOptions)
         };
 
         deliver(mailOptions,callback);
