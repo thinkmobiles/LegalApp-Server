@@ -25,6 +25,7 @@ module.exports = function (app) {
     app.put('/profile', session.authenticatedUser, users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
+    app.post('/user', users.inviteUser);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error

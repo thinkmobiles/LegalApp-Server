@@ -2,9 +2,13 @@
  * Created by andrey on 19.07.15.
  */
 
-define(['validation'], function (validation) {
+define([], function () {
     var UserModel = Backbone.Model.extend({
-        //idAttribute: "_id",
+        id: "id",
+
+        url : function(){
+            return "/user"
+        },
 
         initialize: function () {
             this.on('invalid', function (model, errors) {
@@ -13,17 +17,6 @@ define(['validation'], function (validation) {
                     alert(msg);
                 }
             });
-        },
-
-        //validate: function (attrs) {
-        //    var errors = [];
-        //
-        //    if (errors.length > 0)
-        //        return errors;
-        //},
-
-        defaults: {
-
         }
     });
     return UserModel;

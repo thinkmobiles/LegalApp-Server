@@ -477,9 +477,9 @@ var UsersHandler = function (PostGre) {
             return next(badRequests.InvalidEmail());
         }
 
-        if (!session.isSuperAdmin(req)){
-            return next(badRequests.AccessError())
-        }
+        //if (!session.isSuperAdmin(req)){
+        //    return next(badRequests.AccessError())
+        //}
 
         async.waterfall([
 
