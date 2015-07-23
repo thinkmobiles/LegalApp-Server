@@ -131,6 +131,27 @@ var MailerModule = function () {
             deliver(mailOptions,callback);
 
     }
+
+    this.onUserInvite = function(options, callback) {
+        var templateOptions;
+        var mailOptions;
+
+        templateOptions = {
+            url: process.env.HOST + '/#login',
+            user_pass: options.userPassword
+        };
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,
+            subject: 'Invite to Legal-App',
+            generateTextFromHTML: true,
+            html: _.template(fs.readFileSync('public/templates/mailer/forgotPassword.html', "utf8"))(templateOptions)
+        };
+
+        deliver(mailOptions,callback);
+
+    }
    
 };
 

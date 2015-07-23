@@ -21,9 +21,9 @@ var ProfileHandler = function (PostGre) {
         if (params && params.phone) {
             saveData.phone = params.phone;
         }
-        if (params && params.company) {
-            saveData.company = params.company;
-        }
+        //if (params && params.company) {
+        //    saveData.company = params.company;
+        //}
         
         return saveData;
     };

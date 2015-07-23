@@ -460,6 +460,104 @@ var UsersHandler = function (PostGre) {
             .catch(next);
     };
 
+    this.inviteUser = function (req, res, next) {
+        var options = req.body;
+        var email = options.email;
+        var company = options.company;
+        var userData;
+        var userPassword;
+
+        //validate options:
+        if (!email) {
+            return next(badRequests.NotEnParams({ reqParams: ['email'] }));
+        }
+
+        //email validation:
+        if (!EMAIL_REGEXP.test(email)) {
+            return next(badRequests.InvalidEmail());
+        }
+
+        if (!session.isSuperAdmin(req)){
+            return next(badRequests.AccessError())
+        }
+
+        async.waterfall([
+
+            //check unique email:
+            function (cb) {
+                var criteria = {
+                    email: email
+                };
+
+                UserModel
+                    .find(criteria)
+                    .exec(function (err, userModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        if (userModel && userModel.id) {
+                            return cb(badRequests.EmailInUse());
+                        }
+                        cb(); //all right:
+                    });
+            },
+
+            //invite a new user:
+            function (cb) {
+                userPassword = tokenGenerator.generate(6);
+                userData = {
+                    email: email,
+                    password: userPassword
+                };
+
+                saveUser(userData, function (err, userModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            },
+
+            //save the profile:
+            function (userModel, cb) {
+                var userId = userModel.id;
+                var profileData = profilesHandler.prepareSaveData(options);
+
+                profileData.user_id = userId;
+                profileData.permissions = options.permissions;
+                profilesHandler.saveProfile(profileData, function (err, profileModel) {
+                    if (err) {
+                        removeUser(userModel);
+                        return cb(err);
+                    }
+                    userModel.set('profile', profileModel);
+                    cb(null, userModel);
+                });
+            }
+
+            //add current user to company
+            //function (userModel, cb) {
+            //
+            //}
+
+        ], function (err, userModel) {
+            var mailerOptions;
+
+            if (err) {
+                return next(err);
+            }
+
+            mailerOptions = {
+                email: email,
+                userPassword: userPassword
+            };
+            mailer.onUserInvite(mailerOptions);
+
+            res.status(201).send({ success: MESSAGES.SUCCESS_INVITE_MESSAGE });
+        });
+
+    };
+
     this.renderError = function (err, req, res, next) {
         res.render('errorTemplate', { error: err });
     };
