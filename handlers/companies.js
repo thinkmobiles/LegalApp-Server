@@ -42,8 +42,7 @@ var CompaniesHandler = function (PostGre) {
             function (companyModel, cb) {
                 var createData = {
                     company_id: companyModel.id,
-                    user_id: userId,
-                    permissions: PERMISSIONS.OWNER
+                    user_id: userId
                 };
 
                 UserCompanies
