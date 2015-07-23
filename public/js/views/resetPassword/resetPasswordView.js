@@ -21,23 +21,37 @@ define([
 
         setParams: function (params) {
             this.token=params.token;
+            this.render()
         },
 
         changePassword: function(){
             var token  = this.token;
-            var thisEl = this.$el;
+            var password = this.$el.find('#newPass').val().trim();
+            var confirmPassword = this.$el.find('#confirmPass').val().trim();
 
-            $.ajax({
-                url  : "/resetPassword/" + token,
-                type : "GET",
-                success: function () {
-                    /*thisEl.find('#confirm').text('Your account has been activated!');*/
-                },
-                error: function () {
-                    //App.error(err);
-                    /*thisEl.find('#confirm').text('Wrong activation code!');*/
-                }
-            });
+            // ============ todo please
+            if (password === confirmPassword) {
+            // =====================END
+
+                $.ajax({
+                    url: "/changePassword/" + token,
+                    type: "POST",
+                    data: {
+                        password : password
+                    }
+                    ,
+                    success: function () {
+                        alert('Password was changed successfully');
+
+                        Backbone.history.navigate("login", {trigger: true});
+                    },
+                    error: function () {
+                        alert('Password error');
+                    }
+                });
+            } else {
+                alert('CONFIRM ERROR'); //todo
+            }
         },
 
         render: function () {

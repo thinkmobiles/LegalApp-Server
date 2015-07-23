@@ -428,6 +428,38 @@ var UsersHandler = function (PostGre) {
             .catch(next);
     };
 
+    this.changePassword = function (req, res, next) {
+        var params = req.body;
+        var forgotToken = req.params.forgotToken;
+
+        if (!params.password) {
+            return next(badRequests.NotEnParams({reqParams: 'password'}));
+        }
+
+        UserModel
+            .forge({
+                forgot_token: forgotToken
+            })
+            .fetch({require : true})
+            .then(function (userModel) {
+                var saveOptions = {
+                    password: getEncryptedPass(params.password),
+                    forgot_token: null
+                };
+
+                userModel
+                    .save(saveOptions, {patch: true})
+                    .then(function () {
+                        res.status(200).send({success: "Password was changed successfully"});
+                    })
+                    .catch(next);
+            })
+            .catch(UserModel.NotFoundError,function(err){
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
     this.renderError = function (err, req, res, next) {
         res.render('errorTemplate', { error: err });
     };
