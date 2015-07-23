@@ -8,9 +8,13 @@ var Session = function (postGre) {
 
     this.register = function (req, res, userModel, options) {
         var status = (options && options.status) ? options.status : 200;
-        
+
         if (options && (options.permissions !== undefined)) {
             req.session.permissions = options.permissions;
+        }
+
+        if (options && (options.companyId !== undefined)) {
+            req.session.companyId = options.companyId;
         }
 
         req.session.loggedIn = true;

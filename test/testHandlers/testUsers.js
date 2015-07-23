@@ -434,7 +434,7 @@ module.exports = function (db, defaults) {
                             if (err) {
                                 return cb();
                             }
-                            expect(res.status).to.equals(200);
+                           expect(res.status).to.equals(200);
                             cb();
                         });
                 },
@@ -445,18 +445,18 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
 
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('first_name');
+
                         expect(profile.first_name).to.equals(data.first_name);
 
                         cb();
@@ -470,7 +470,7 @@ module.exports = function (db, defaults) {
             var data = {
                 last_name: 'new Last Name'
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -492,20 +492,20 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('last_name');
                         expect(profile.last_name).to.equals(data.last_name);
-                        
+
                         cb();
                     });
 
@@ -517,7 +517,7 @@ module.exports = function (db, defaults) {
             var data = {
                 company: 'new company'
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -535,24 +535,24 @@ module.exports = function (db, defaults) {
 
                 //check the database:
                 function (cb) {
-                    var userId = users[0].id;
+                   var userId = users[0].id;
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('company');
                         expect(profile.company).to.equals(data.company);
-                        
+
                         cb();
                     });
 
@@ -564,7 +564,7 @@ module.exports = function (db, defaults) {
             var data = {
                 phone: '123456789'
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -586,20 +586,20 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('phone');
                         expect(profile.phone).to.equals(data.phone);
-                        
+
                         cb();
                     });
 
@@ -614,7 +614,7 @@ module.exports = function (db, defaults) {
                 company: 'a new company',
                 phone: '123456789'
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -629,23 +629,22 @@ module.exports = function (db, defaults) {
                         cb();
                     });
                 },
-
                 //check the database:
                 function (cb) {
                     var userId = users[0].id;
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('first_name');
                         expect(profile).to.be.have.property('last_name');
@@ -655,7 +654,7 @@ module.exports = function (db, defaults) {
                         expect(profile.last_name).to.equals(data.last_name);
                         expect(profile.company).to.equals(data.company);
                         expect(profile.phone).to.equals(data.phone);
-                        
+
                         cb();
                     });
 
@@ -664,4 +663,57 @@ module.exports = function (db, defaults) {
         });
 
     });
-}
+
+    describe('GET /users', function () {
+        var url = '/users';
+
+        it('Collaborators', function (done) {
+            var userId = users[0].id;
+            var criteria = {
+                id: userId
+            };
+
+            var queryOptions = {
+                userId: userId,
+                companyId: 1
+            };
+            var fetchOptions = {
+                withRelated: ['profile', 'company']
+            };
+
+            UserModel
+                .findCollaborators(queryOptions, fetchOptions)
+                .exec(function (err, userModels) {
+                    var user;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    console.log(userModels.models);
+
+                    expect(userModels.models).to.have.property('length');
+                    expect(userModels.models).to.have.length(3);
+
+                    done();
+                });
+        });
+
+        it('User can get the list of collaborators', function (done) {
+            userAgent1
+                .get(url)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+                    expect(res.body).to.be.instanceof(Array);
+                    expect(res.body).to.have.length(3);
+
+                    done();
+                });
+        });
+
+    });
+};
