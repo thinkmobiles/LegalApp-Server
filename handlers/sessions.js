@@ -2,6 +2,7 @@ var MESSAGES = require('../constants/messages');
 var USER_ROLES = require('../constants/userRoles');
 var SESSION_SUPER_ADMIN = 'superAdmin';
 var SESSION_USER = 'user';
+var PERMISSIONS = require('../constants/permissions');
 
 var Session = function (postGre) {
     "use strict";
@@ -24,15 +25,10 @@ var Session = function (postGre) {
     };
 
     this.kill = function (req, res, next) {
-        var userId;
-        var options = req.body;
-
         if (req.session && req.session.userId) {
             req.session.destroy();
         }
-
         res.status(200).send({success: "Logout successful"});
-
     };
 
     this.authenticatedUser = function (req, res, next) {
@@ -55,7 +51,7 @@ var Session = function (postGre) {
         }
     };
 
-    this.authenticatedSuperAdmin = function (req, res, next) {
+    /*this.authenticatedSuperAdmin = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn && req.session.userRole === SESSION_SUPER_ADMIN) {
             next();
         } else {
@@ -63,20 +59,18 @@ var Session = function (postGre) {
             err.status = 403;
             next(err);
         }
-    };
+    };*/
 
-    this.isAuthenticatedSuperAdmin = function (req, res, next) {
-        if (req.session && req.session.userId && req.session.loggedIn && req.session.userRole === SESSION_SUPER_ADMIN) {
-            res.status(200).send();
+    this.isAdmin = function (req) {
+        if (req.session && req.session.userId && req.session.loggedIn && (req.session.permissions === PERMISSIONS.OWNER) && (req.session.permissions === PERMISSIONS.ADMIN)) {
+            return true;
         } else {
-            var err = new Error('Forbidden');
-            err.status = 403;
-            next(err);
+            return false;
         }
     };
 
-    this.isSuperAdmin = function (req) {
-        if (req.session && req.session.userId && req.session.loggedIn && req.session.userRole === SESSION_SUPER_ADMIN) {
+    this.isEditor = function (req) {
+        if (req.session && req.session.userId && req.session.loggedIn && req.session.permissions === PERMISSIONS.EDITOR) {
             return true;
         } else {
             return false;
