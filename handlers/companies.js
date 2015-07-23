@@ -41,14 +41,11 @@ var CompaniesHandler = function (PostGre) {
             //insert into user_companies:
             function (companyModel, cb) {
                 var createData = {
-                    company_id: companyModel.id,
-                    user_id: userId
+                    companyId: companyModel.id,
+                    userId: userId
                 };
 
-                UserCompanies
-                    .forge(createData)
-                    .save()
-                        .exec(function (err, model) {
+                self.insertIntoUserCompanies(createData, function (err, model) {
                         if (err) {
                             return cb(err);
                         }
@@ -68,6 +65,31 @@ var CompaniesHandler = function (PostGre) {
             }
         });
     };
+
+    this.insertIntoUserCompanies = function (options, callback) {
+        var companyId = options.companyId;
+        var userId = options.userId;
+        var createData = {
+            company_id: companyId,
+            user_id: userId
+        };
+
+        UserCompanies
+            .forge(createData)
+            .save()
+            .exec(function (err, model) {
+                if (err) {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(err);
+                    }
+                } else {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(null, model);
+                    }
+                }
+            });
+    };
+
 };
 
 module.exports = CompaniesHandler;
