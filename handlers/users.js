@@ -486,9 +486,9 @@ var UsersHandler = function (PostGre) {
             return next(badRequests.InvalidEmail());
         }
 
-        //if (!session.isSuperAdmin(req)){
-        //    return next(badRequests.AccessError())
-        //}
+        if (!session.isAdmin(req)){
+            return next(badRequests.AccessError())
+        }
 
         async.waterfall([
 
@@ -542,12 +542,23 @@ var UsersHandler = function (PostGre) {
                     userModel.set('profile', profileModel);
                     cb(null, userModel);
                 });
-            }
+            },
 
             //add current user to company
-            //function (userModel, cb) {
-            //
-            //}
+            function (userModel, cb) {
+                var userId = userModel.id;
+                var companyId = req.session.companyId;
+                var companyData = {
+                    userId   : userId,
+                    companyId: companyId
+                };
+                CompaniesHandler.insertIntoUserCompanies(companyData, function(err, resultModel){
+                    if (err){
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                })
+            }
 
         ], function (err, userModel) {
             var mailerOptions;
