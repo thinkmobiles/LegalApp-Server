@@ -278,15 +278,18 @@ var UsersHandler = function (PostGre) {
         UserModel
             .forge(criteria)
             .fetch({
-                withRelated: ['profile']
+                withRelated: ['profile', 'company']
             })
             .exec(function (err, userModel) {
                 var profile;
+                var company;
+                var companyId;
                 var sessionOptions;
 
                 if (err) {
                     return next(err);
                 }
+
                 if (!userModel || !userModel.id) { 
                     return next(badRequests.SignInError());
                 }
@@ -294,10 +297,17 @@ var UsersHandler = function (PostGre) {
                 if (userModel && userModel.get('confirm_token')) {
                     return next(badRequests.UnconfirmedEmail());
                 }
-            
+
                 profile = userModel.related('profile');
+                company = userModel.related('company');
+
+                if (company && company.models.length && company.models[0].id) {
+                    companyId = company.models[0].id;
+                }
+
                 sessionOptions = {
-                    permissions: profile.get('permissions')
+                    permissions: profile.get('permissions'),
+                    companyId: companyId
                 };
                 session.register(req, res, userModel, sessionOptions);
             });
@@ -556,6 +566,28 @@ var UsersHandler = function (PostGre) {
             res.status(201).send({ success: MESSAGES.SUCCESS_INVITE_MESSAGE });
         });
 
+    };
+
+    this.getUsers = function (req, res, next) {
+        var options = req.query;
+        var userId = req.session.userId;
+        var companyId = req.session.companyId;
+        var queryOptions = { //TODO: query options page, count, orderBy ...
+            userId: userId,
+            companyId: companyId
+        };
+        var fetchOptions = {
+            withRelated: ['profile']
+        };
+
+        UserModel
+            .findCollaborators(queryOptions, fetchOptions)
+            .exec(function (err, result) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(result.models);
+            });
     };
 
     this.renderError = function (err, req, res, next) {

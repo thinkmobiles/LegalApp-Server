@@ -12,7 +12,8 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         company: function () { 
-            return this.hasOne(PostGre.Models.Company, 'owner_id');
+            return this.belongsToMany(PostGre.Models.Company, 'owner_id')
+                .through(PostGre.Models.UserCompanies, 'user_id', 'company_id');
         },
         
         //collaborators: function () {
