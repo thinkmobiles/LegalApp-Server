@@ -4,6 +4,8 @@ var SESSION_SUPER_ADMIN = 'superAdmin';
 var SESSION_USER = 'user';
 var PERMISSIONS = require('../constants/permissions');
 
+var badRequests = require('../helpers/badRequests');
+
 var Session = function (postGre) {
     "use strict";
 
@@ -60,6 +62,14 @@ var Session = function (postGre) {
             next(err);
         }
     };*/
+
+    this.authenticatedAdmin = function (req, res, next) {
+        if (req.session && req.session.userId && req.session.loggedIn && (req.session.permissions === PERMISSIONS.OWNER) && (req.session.permissions === PERMISSIONS.ADMIN)) {
+            next();
+        } else {
+            next(badRequests.AccessError());
+        }
+    };
 
     this.isAdmin = function (req) {
         if (req.session && req.session.userId && req.session.loggedIn && (req.session.permissions === PERMISSIONS.OWNER) && (req.session.permissions === PERMISSIONS.ADMIN)) {

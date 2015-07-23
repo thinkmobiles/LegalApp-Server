@@ -10,7 +10,7 @@ module.exports = function (app) {
     var users = new UserHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.get('/', users.getUsers);
-
+    router.get('/', session.authenticatedUser, users.getUsers);
+    router.put('/:id', session.authenticatedAdmin, users.updateUser);
     return router;
 };

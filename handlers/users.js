@@ -311,7 +311,6 @@ var UsersHandler = function (PostGre) {
                 };
                 session.register(req, res, userModel, sessionOptions);
             });
-    
     };
 
     this.confirmEmail = function (req, res, next) {
@@ -588,6 +587,18 @@ var UsersHandler = function (PostGre) {
                 }
                 res.status(200).send(result.models);
             });
+    };
+
+    this.updateUser = function (req, res, next) {
+        var userId = req.params.id;
+        var options = req.body;
+
+        updateUserById(userId, options, function (err, userModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({ success: 'success updated', user: userModel });
+        });
     };
 
     this.renderError = function (err, req, res, next) {
