@@ -1,6 +1,7 @@
 ﻿'use strict';
 
 var TABLES = require('../constants/tables');
+var PERMISSOINS = require('../constants/permissions');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -16,14 +17,44 @@ module.exports = function (db) {
     var defaultData = {};
     
     var users = [{
-        email: 'user1@mail.com'
-    }, {
-        email: 'user2@mail.com'
+            email: 'user1@mail.com'
         }, {
-        email: 'unconfirmed@mail.com',
-        confirm_token: 'unconfirmed_user'
-    }];
- 
+            email: 'user2@mail.com'
+            }, {
+            email: 'unconfirmed@mail.com',
+            confirm_token: 'unconfirmed_user'
+        }];
+    
+    var profiles = [{
+            first_name: 'user',
+            last_name: '1',
+            permissions: PERMISSOINS.OWNER
+        }, {
+            first_name: 'user',
+            last_name: '2',
+            permissions: PERMISSOINS.OWNER
+        }, {
+            first_name: 'unconfirmed',
+            last_name: 'user'
+        }];
+
+    var userCompanies = [{
+            user_id: 1,
+            company_id: 1
+        }, {
+            user_id: 2,
+            company_id: 2
+        }, {
+            user_id: 3,
+            company_id: 1
+        }, {
+            user_id: 4,
+            company_id: 1
+        }, {
+            user_id: 5,
+            company_id: 1
+        }];
+
     function create(callback) {
         async.waterfall([
             
@@ -36,26 +67,39 @@ module.exports = function (db) {
             },
 
             //create profiles:
-            function (users, cb) {
-                async.eachSeries(users, 
-                    function (userModel, eachCb) {
-                        var profile = {
-                            user_id: userModel.id
-                        };
-                    
-                        factory.create(TABLES.PROFILES, profile, function (err, profileModel) {
-                            if (err) {
-                                return eachCb(err);
-                            }
-                            userModel.set('profile', profileModel);
-                            eachCb();
-                        });
-                    }, function (err) {
-                        if (err) { 
-                            return cb(err)
-                        }
-                        cb();
+            function (userModels, cb) {
+                var count = userModels.length;
+
+                factory.createMany(TABLES.PROFILES, profiles, count, function (err, profiles) {
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    userModels.map(function (userModel, index) {
+                        var profileModel = profiles[index];
+                        userModel.set('profile', profileModel);
                     });
+                    
+                    cb();
+                });
+            },
+
+            //companies:
+            function (cb) {
+                factory.createMany(TABLES.COMPANIES, 2, function (err, companies) {
+                    if (err) return cb(err);
+                    defaultData.companies = companies;
+                    cb();
+                });
+            },
+
+            //user_companies:
+            function (cb) {
+                factory.createMany(TABLES.USER_COMPANIES, userCompanies, function (err, companies) {
+                    if (err) return cb(err);
+                    defaultData.userCompanies = userCompanies;
+                    cb();
+                });
             }
 
         ], function (err) {

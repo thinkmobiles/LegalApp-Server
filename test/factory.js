@@ -1,6 +1,7 @@
 ﻿'use strict';
 
 var TABLES = require('../constants/tables');
+var PERMISSOINS = require('../constants/permissions');
 
 var factoryGirl = require('factory-girl');
 var BookshelfAdapter = require('factory-girl-bookshelf')();
@@ -14,11 +15,16 @@ var PASSWORD = '123456';
 module.exports = function (db) {
     var Models = db.Models;
     var Collections = db.Collections;
+    var Company = Models.Company;
+    var UserCompanies = Models.UserCompanies;
     var User = Models.User;
     var Profile = Models.Profile;
+    var profilesCount = 0;
     var emailCounter = 0;
     var firstNameCounter = 0;
     var lastNameCounter = 0;
+    var companyCounter = 0;
+    var userCompanyCounter = 0;
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
@@ -26,6 +32,37 @@ module.exports = function (db) {
         return shaSum.digest('hex');
     };
     
+    //companies:
+    factory.define(TABLES.COMPANIES, Company, {
+        name: function () {
+            companyCounter++;
+            return 'company_' + companyCounter;
+        }, 
+        owner_id: companyCounter
+    });
+
+    //profiles:
+    factory.define(TABLES.PROFILES, Profile, {
+        //permissions: PERMISSOINS.OWNER,
+        user_id: function () {
+            profilesCount++;
+            return profilesCount;
+        },
+        first_name: function () {
+            firstNameCounter++;
+            return 'first_name_' + firstNameCounter;
+        },
+        last_name: function () {
+            lastNameCounter++;
+            return 'last_name_' + lastNameCounter;
+        }
+    });
+    
+    //user_companies:
+    factory.define(TABLES.USER_COMPANIES, UserCompanies, {
+        
+    });
+
     //users:
     factory.define(TABLES.USERS, User, {
         
@@ -34,19 +71,6 @@ module.exports = function (db) {
         email: function () {
             emailCounter++;
             return 'user_' + emailCounter + '_@test.com';
-        }
-    });
-    
-    //profiles:
-    factory.define(TABLES.PROFILES, Profile, {
-        user_id: factory.assoc(TABLES.USERS, 'id'),
-        first_name: function () {
-            firstNameCounter++;
-            return 'first_name_' + firstNameCounter;
-        },
-        last_name: function () {
-            lastNameCounter++;
-            return 'last_name_' + lastNameCounter;
         }
     });
     
