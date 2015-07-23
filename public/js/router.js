@@ -78,7 +78,8 @@ define([
         },
 
         any: function () {
-            this.loadWrapperView('users');
+            //this.loadWrapperView('users');
+            Backbone.history.navigate("users", {trigger: true});
         },
 
         login: function () {
