@@ -703,17 +703,43 @@ module.exports = function (db, defaults) {
             userAgent1
                 .get(url)
                 .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(res.status).to.equals(200);
+                expect(res.body).to.be.instanceof(Array);
+                expect(res.body).to.have.length(3);
+
+                done();
+            });
+        });
+
+    });
+
+    describe('GET /users/:id', function () {
+        var url = '/users';
+
+        it('Admin can get the user by id', function (done) {
+            var userId = 3;
+            var getUrl = url + '/' + userId;
+
+            userAgent1
+                .get(getUrl)
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
                     expect(res.status).to.equals(200);
-                    expect(res.body).to.be.instanceof(Array);
-                    expect(res.body).to.have.length(3);
+                    expect(res.body).to.be.instanceof(Object);
+                    expect(res.body).to.have.property('id');
+                    expect(res.body).to.have.property('profile');
+                    expect(res.body.id).to.equals(userId);
 
                     done();
                 });
         });
-
     });
+
 };

@@ -605,6 +605,28 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    this.getUser = function(req, res, next) {
+        //TODO: check companyId
+        var userId = req.params.id;
+        var criteria = {
+            id: userId
+        };
+        var fetchOptions = {
+            required: true,
+            withRelated: ['profile']
+        };
+
+        UserModel
+            .find(criteria, fetchOptions)
+            .then(function (userModel) {
+                res.status(200).send(userModel);
+            })
+            .catch(UserModel.NotFoundError, function () {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
     this.updateUser = function (req, res, next) {
         var userId = req.params.id;
         var options = req.body;
