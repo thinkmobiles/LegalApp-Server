@@ -4,10 +4,11 @@
 
 define([
     'text!templates/users/usersTemplate.html',
+    'collections/usersCollection',
     'views/users/addUserView',
     'views/users/usersListView'
 
-], function (UsersTemplate , AddUserView , UsrListView) {
+], function (UsersTemplate, UsersCollection , AddUserView , UsrListView) {
 
     var View;
 
@@ -19,23 +20,31 @@ define([
         },
 
         initialize: function () {
+            this.render();
 
-            this.render()
+            this.usersCollection = new UsersCollection();
+
+            this.listenTo(this.usersCollection, 'sync', this.renderUsersList());
+
+
+
         },
 
         renderUsersList : function(){
+
             if (this.tableView){
                 this.tableView.undelegateEvents()
             }
 
-            this.tableView = new UsrListView();
+            var usersColl = this.usersCollection.toJSON();
+            this.tableView = new UsrListView({coll : usersColl});
 
             //this.$el.find('usersTable').append(this.tableView.el);
         },
 
-        afterRender : function(){
-            this.renderUsersList();
-        },
+        //afterRender : function(){
+        //    this.renderUsersList();
+        //},
 
         showAddTemplate : function(){
 

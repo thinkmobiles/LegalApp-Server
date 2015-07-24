@@ -18,19 +18,15 @@ define([
 
         },
 
-        initialize: function () {
-            this.currentUsersList = new Backbone.Collection();
-            this.currentUsersList.add({name : 'name1', role : 'role1'});
-            this.currentUsersList.add({name : 'name2', role : 'role2'});
-            this.currentUsersList.add({name : 'name3', role : 'role3'});
+        initialize: function (options) {
+            this.currentUsersList = options.coll;
 
             this.render()
         },
 
         render: function () {
 
-            var usrList = this.currentUsersList.toJSON();
-            $("#listTable").html(_.template(UsrListTemp)({usrList : usrList}));
+            $("#listTable").html(_.template(UsrListTemp)(this.currentUsersList));
 
             return this;
         }

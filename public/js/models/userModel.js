@@ -4,7 +4,6 @@
 
 define([], function () {
     var UserModel = Backbone.Model.extend({
-        id: "id",
 
         url : function(){
             return "/user"
