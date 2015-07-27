@@ -3,9 +3,10 @@
 var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
-var PERMISSOINS = require('../constants/permissions');
+var PERMISSIONS = require('../constants/permissions');
 
 var async = require('async');
+var _ = require('lodash');
 var crypto = require('crypto');
 
 var badRequests = require('../helpers/badRequests');
@@ -15,6 +16,7 @@ var mailer = require('../helpers/mailer');
 var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
 var CompaniesHandler = require('../handlers/companies');
+var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -71,10 +73,6 @@ var UsersHandler = function (PostGre) {
 
     function updateUserById(userId, options, callback) {
         var profile = options.profile;
-        var firstName;
-        var lastName;
-        var phone;
-        var permissions;
         var profileData = {};
 
         if (options.profile) {
@@ -86,15 +84,17 @@ var UsersHandler = function (PostGre) {
             if (profile.last_name) {
                 profileData.last_name = profile.last_name;
             }
-            if (profile.phone) {
+            if (profile.phone !== undefined) {
                 profileData.phone = profile.phone;
             }
-            if (profile.permissions) {
-                if (Object.keys(PERMISSOINS).indexOf(profile.permissions) === -1) {
+            if (profile.permissions !== undefined) {
+
+                console.log('VALID_PERMISSIONS');
+                console.log(VALID_PERMISSIONS);
+                console.log(VALID_PERMISSIONS.indexOf(profile.permissions));
+
+                if ( VALID_PERMISSIONS.indexOf(profile.permissions) === -1) {
                     return callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
-                }
-                if (!session.isAdmin(req)) {
-                    return callback(badRequests.AccessError());
                 }
 
                 profileData.permissions = profile.permissions;
@@ -106,26 +106,6 @@ var UsersHandler = function (PostGre) {
         }
 
         async.waterfall([
-
-            //check incoming params and prepare the saveData:
-            function (cb) {
-
-                if (firstName) {
-                    profileData.first_name = firstName;
-                }
-                if (lastName) {
-                    profileData.last_name = lastName;
-                }
-                if (phone !== undefined) {
-                    profileData.phone = phone;
-                }
-                if (profile.permissions) {
-                    permissions = profile.permissions;
-                }
-
-
-                cb();
-            },
 
             //find the user:
             function (cb) {
@@ -158,6 +138,8 @@ var UsersHandler = function (PostGre) {
                         cb(null, userModel);
                     });
             }
+
+
         ], function (err, userModel) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {
@@ -233,7 +215,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
-                profileData.permissions = PERMISSOINS.OWNER;
+                profileData.permissions = PERMISSIONS.OWNER;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);

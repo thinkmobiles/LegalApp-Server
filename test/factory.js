@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 var TABLES = require('../constants/tables');
-var PERMISSOINS = require('../constants/permissions');
+var PERMISSIONS = require('../constants/permissions');
 
 var factoryGirl = require('factory-girl');
 var BookshelfAdapter = require('factory-girl-bookshelf')();
@@ -43,7 +43,7 @@ module.exports = function (db) {
 
     //profiles:
     factory.define(TABLES.PROFILES, Profile, {
-        //permissions: PERMISSOINS.OWNER,
+        //permissions: PERMISSIONS.OWNER,
         user_id: function () {
             profilesCount++;
             return profilesCount;

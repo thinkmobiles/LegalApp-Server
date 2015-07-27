@@ -1,6 +1,6 @@
 'use strict';
 
-var PERMISSOINS = require('../constants/permissions');
+var PERMISSIONS = require('../constants/permissions');
 var async = require('async');
 
 module.exports = function (knex) {
@@ -40,7 +40,7 @@ module.exports = function (knex) {
                 row.string('first_name');
                 row.string('last_name');
                 row.string('company');
-                row.integer('permissions').notNullable().defaultTo(PERMISSOINS.USER);
+                row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.string('phone');
                 row.timestamps();
             }), 
