@@ -81,31 +81,28 @@ var UsersHandler = function (PostGre) {
             profile = options.profile;
 
             if (profile.first_name) {
-                firstName = profile.first_name;
+                profileData.first_name = profile.first_name;
             }
             if (profile.last_name) {
-                lastName = profile.last_name;
+                profileData.last_name = profile.last_name;
             }
             if (profile.phone) {
-                phone = profile.phone;
+                profileData.phone = profile.phone;
             }
             if (profile.permissions) {
-                permissions = profile.permissions;
-
-                if (Object.keys(PERMISSOINS).indexOf(permissions) === -1) {
-                    if (callback && (typeof callback === 'function')) {
-                        callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
-                    }
-                    return;
+                if (Object.keys(PERMISSOINS).indexOf(profile.permissions) === -1) {
+                    return callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
                 }
-
                 if (!session.isAdmin(req)) {
-                    if (callback && (typeof callback === 'function')) {
-                        callback(badRequests.AccessError());
-                    }
-                    return;
+                    return callback(badRequests.AccessError());
                 }
+
+                profileData.permissions = profile.permissions;
             }
+        }
+
+        if (Object.keys(profileData).length === 0) {
+            return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
         }
 
         async.waterfall([
@@ -122,17 +119,10 @@ var UsersHandler = function (PostGre) {
                 if (phone !== undefined) {
                     profileData.phone = phone;
                 }
-                if (company !== undefined) {
-                    profileData.company = company;
-                }
-
                 if (profile.permissions) {
                     permissions = profile.permissions;
                 }
 
-                if (Object.keys(profileData).length === 0) {
-                    return cb(badRequests.NotEnParams({message: 'There are no params for update'}));
-                }
 
                 cb();
             },

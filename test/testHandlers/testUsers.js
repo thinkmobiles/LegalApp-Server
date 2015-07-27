@@ -435,7 +435,9 @@ module.exports = function (db, defaults) {
 
         it('User can update the first_name', function (done) {
             var data = {
-                first_name: 'new First Name'
+                profile: {
+                    first_name: 'new First Name'
+                }
             };
 
             async.waterfall([
@@ -471,7 +473,7 @@ module.exports = function (db, defaults) {
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('first_name');
 
-                        expect(profile.first_name).to.equals(data.first_name);
+                        expect(profile.first_name).to.equals(data.profile.first_name);
 
                         cb();
                     });
@@ -482,7 +484,9 @@ module.exports = function (db, defaults) {
 
         it('User can update the last_name', function (done) {
             var data = {
-                last_name: 'new Last Name'
+                profile: {
+                    last_name: 'new Last Name'
+                }
             };
 
             async.waterfall([
@@ -518,54 +522,7 @@ module.exports = function (db, defaults) {
 
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('last_name');
-                        expect(profile.last_name).to.equals(data.last_name);
-
-                        cb();
-                    });
-
-                }
-            ], done);
-        });
-
-        it('User can update the company', function (done) {
-            var data = {
-                company: 'new company'
-            };
-
-            async.waterfall([
-                //make request:
-                function (cb) {
-                    userAgent1
-                        .put(url)
-                        .send(data)
-                        .end(function (err, res) {
-                            if (err) {
-                                return cb();
-                            }
-                            expect(res.status).to.equals(200);
-                            cb();
-                        });
-                },
-
-                //check the database:
-                function (cb) {
-                    var userId = users[0].id;
-                    var criteria = {
-                        user_id: userId
-                    };
-
-                    ProfileModel.find(criteria).exec(function (err, profileModel) {
-                        var profile;
-
-                        if (err) {
-                            return cb(err);
-                        }
-
-                        profile = profileModel.toJSON();
-
-                        expect(profile).to.be.instanceof(Object);
-                        expect(profile).to.be.have.property('company');
-                        expect(profile.company).to.equals(data.company);
+                        expect(profile.last_name).to.equals(data.profile.last_name);
 
                         cb();
                     });
@@ -576,7 +533,9 @@ module.exports = function (db, defaults) {
 
         it('User can update the phone', function (done) {
             var data = {
-                phone: '123456789'
+                profile: {
+                    phone: '123456789'
+                }
             };
 
             async.waterfall([
@@ -612,7 +571,7 @@ module.exports = function (db, defaults) {
 
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('phone');
-                        expect(profile.phone).to.equals(data.phone);
+                        expect(profile.phone).to.equals(data.profile.phone);
 
                         cb();
                     });
@@ -623,10 +582,11 @@ module.exports = function (db, defaults) {
 
         it('User can update the profile with valid data', function (done) {
             var data = {
-                first_name: 'new first name 2',
-                last_name: 'new last name 2',
-                company: 'a new company',
-                phone: '123456789'
+                profile: {
+                    first_name: 'new first name 2',
+                    last_name: 'new last name 2',
+                    phone: '123456789'
+                }
             };
 
             async.waterfall([
@@ -664,10 +624,9 @@ module.exports = function (db, defaults) {
                         expect(profile).to.be.have.property('last_name');
                         expect(profile).to.be.have.property('company');
                         expect(profile).to.be.have.property('phone');
-                        expect(profile.first_name).to.equals(data.first_name);
-                        expect(profile.last_name).to.equals(data.last_name);
-                        expect(profile.company).to.equals(data.company);
-                        expect(profile.phone).to.equals(data.phone);
+                        expect(profile.first_name).to.equals(data.profile.first_name);
+                        expect(profile.last_name).to.equals(data.profile.last_name);
+                        expect(profile.phone).to.equals(data.profile.phone);
 
                         cb();
                     });
