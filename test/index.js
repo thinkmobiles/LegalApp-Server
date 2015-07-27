@@ -22,7 +22,7 @@ defaults = require('./defaults')(PostGre);
 
 describe('Database initialization', function () {
     this.timeout(5000);
-    
+
     it('Drop the tables', function (done) {
         schemas.drop(done);
     });

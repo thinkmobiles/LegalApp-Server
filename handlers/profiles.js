@@ -21,19 +21,11 @@ var ProfileHandler = function (PostGre) {
         if (params && params.phone) {
             saveData.phone = params.phone;
         }
-        if (params && params.company) {
-            saveData.company = params.company;
-        }
+        //if (params && params.company) {
+        //    saveData.company = params.company;
+        //}
         
         return saveData;
-    };
-    
-    this.saveProfile = function (data, callback) {
-        if (data && data.id) {
-            ProfileModel.forge({ id: data.id }).save(data, { patch: true }).exec(callback);
-        } else {
-            ProfileModel.forge().save(data).exec(callback);
-        }
     };
     
     this.removeProfile = function (userId, callback) {

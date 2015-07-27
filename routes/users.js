@@ -1,13 +1,19 @@
+'use strict';
+
 var express = require('express');
 var router = express.Router();
-//var UserHandler = require('../handlers/users');
+var UserHandler = require('../handlers/users');
 var SessionHandler = require('../handlers/sessions');
 
 module.exports = function (app) {
-    'use strict';
-    var postGre = app.get('PostGre');
-    //var users = new UserHandler(postGre);
-    var session = new SessionHandler(postGre);
+    var PostGre = app.get('PostGre');
+    var users = new UserHandler(PostGre);
+    var session = new SessionHandler(PostGre);
+
+    router.get('/', session.authenticatedUser, users.getUsers);
+    router.post('/', session.authenticatedAdmin, users.inviteUser);
+    router.get('/:id', session.authenticatedUser, users.getUser);
+    router.put('/:id', session.authenticatedAdmin, users.updateUser);
 
     return router;
 };

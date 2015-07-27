@@ -1,7 +1,11 @@
-<% usrList.forEach(function(user){ %>
-    <tr>
-        <td><%= user.name%></td>
-        <td><%= user.role%></td>
+<% usrLst.forEach(function(user){%>
+    <tr class="userRow" data-id="<%= user.id%>">
+        <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+        <td>
+            <%if (user.profile.permissions == 3){%>Viewer<%}%>
+            <%if (user.profile.permissions == 2){%>Editor<%}%>
+            <%if (user.profile.permissions == 1){%>Admin<%}%>
+        </td>
         <td></td>
     </tr>
-<%})%>
+<% }) %>

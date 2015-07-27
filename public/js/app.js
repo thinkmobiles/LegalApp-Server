@@ -13,7 +13,8 @@ define([
 
         App.sessionData = new Backbone.Model({
             authorized  : false,
-            user        : null
+            user        : null,
+            role        : null
         });
 
         appRouter = new Router();

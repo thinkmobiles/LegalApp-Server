@@ -3,23 +3,28 @@
 var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
+var PERMISSIONS = require('../constants/permissions');
 
 var async = require('async');
+var _ = require('lodash');
 var crypto = require('crypto');
 
 var badRequests = require('../helpers/badRequests');
-var ProfilesHandler = require('../helpers/randomPass');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 
 var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
+var CompaniesHandler = require('../handlers/companies');
+var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
+    var ProfileModel = Models.Profile;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
+    var companiesHandler = new CompaniesHandler(PostGre);
     var self = this;
 
     function getEncryptedPass(pass) {
@@ -27,15 +32,7 @@ var UsersHandler = function (PostGre) {
         shaSum.update(pass);
         return shaSum.digest('hex');
     };
-    
-    function saveUser(data, callback) {
-        if (data && data.id) {
-            return UserModel.forge({ id: data.id }).save(data, { patch: true }).exec(callback);
-        } else {
-            return UserModel.forge().save(data).exec(callback);
-        }
-    };
-    
+
     function removeUser(options, callback) {
         var userId;
         var userModel;
@@ -43,16 +40,16 @@ var UsersHandler = function (PostGre) {
         if (options && (typeof options === 'number')) {
             userId = options;
         }
-        
+
         if (options && (options instanceof UserModel)) {
             userModel = options;
         }
-        
+
         if (!userId && !userModel) {
             //todo: invalid incoming params
             return console.error(badRequests.NotEnParams());
         }
-        
+
         if (userModel) {
             userModel.destroy().exec(callback);
         } else {
@@ -66,45 +63,49 @@ var UsersHandler = function (PostGre) {
                         if (callback && (typeof callback === 'function')) {
                             callback(err);
                         }
-                    
+
                     } else {
                         userModel.destroy().exec(callback);
                     }
                 });
         }
     };
-    
-    function updateUserById(userId, options, callback) {
-        var firstName = options.first_name;
-        var lastName = options.last_name;
-        var phone = options.phone;
-        var company = options.company;
-        var profileData = {};
-        
-        async.waterfall([
 
-            //check incoming params and prepare the saveData:
-            function (cb) {
-                
-                if (firstName) {
-                    profileData.first_name = firstName;
+    function updateUserById(userId, options, callback) {
+        var profile = options.profile;
+        var profileData = {};
+
+        if (options.profile) {
+            profile = options.profile;
+
+            if (profile.first_name) {
+                profileData.first_name = profile.first_name;
+            }
+            if (profile.last_name) {
+                profileData.last_name = profile.last_name;
+            }
+            if (profile.phone !== undefined) {
+                profileData.phone = profile.phone;
+            }
+            if (profile.permissions !== undefined) {
+
+                console.log('VALID_PERMISSIONS');
+                console.log(VALID_PERMISSIONS);
+                console.log(VALID_PERMISSIONS.indexOf(profile.permissions));
+
+                if ( VALID_PERMISSIONS.indexOf(profile.permissions) === -1) {
+                    return callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
                 }
-                if (lastName) {
-                    profileData.last_name = lastName;
-                }
-                if (phone !== undefined) {
-                    profileData.phone = phone;
-                }
-                if (company !== undefined) {
-                    profileData.company = company;
-                }
-                
-                if (Object.keys(profileData).length === 0) {
-                    return cb(badRequests.NotEnParams({ message: 'There are no params for update' }));
-                }
-                
-                cb();
-            },
+
+                profileData.permissions = profile.permissions;
+            }
+        }
+
+        if (Object.keys(profileData).length === 0) {
+            return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
+        }
+
+        async.waterfall([
 
             //find the user:
             function (cb) {
@@ -115,7 +116,7 @@ var UsersHandler = function (PostGre) {
                     required: true,
                     withRelated: ['profile']
                 };
-                
+
                 UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
                     if (err) {
                         return cb(err);
@@ -127,16 +128,18 @@ var UsersHandler = function (PostGre) {
             //save the profile:
             function (userModel, cb) {
                 var profileModel = userModel.related('profile');
-                
+
                 profileModel
-                    .save(profileData, { patch: true })
+                    .save(profileData, {patch: true})
                     .exec(function (err, profileModel) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, userModel);
-                });
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, userModel);
+                    });
             }
+
+
         ], function (err, userModel) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {
@@ -149,16 +152,6 @@ var UsersHandler = function (PostGre) {
             }
         });
     };
-    
-    function createCompany(userId, options, callback) {
-        var name = options.company;
-        
-        async.waterfall([
-        
-            //create a new company:
-        
-        ]);
-    };
 
     this.signUp = function (req, res, next) {
         var options = req.body;
@@ -167,28 +160,27 @@ var UsersHandler = function (PostGre) {
         var company = options.company;
         var confirmToken;
         var userData;
-        
+
         //validate options:
         if (!email || !password || !company) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'company'] }));
+            return next(badRequests.NotEnParams({reqParams: ['email', 'password', 'company']}));
         }
-        
+
         //email validation:
         if (!EMAIL_REGEXP.test(email)) {
             return next(badRequests.InvalidEmail());
         }
-        
+
         async.waterfall([
-            
+
             //check unique email:
             function (cb) {
                 var criteria = {
                     email: email
-                }
+                };
 
                 UserModel
-                    .forge(criteria)
-                    .fetch()
+                    .find(criteria)
                     .exec(function (err, userModel) {
                         if (err) {
                             return cb(err);
@@ -209,21 +201,22 @@ var UsersHandler = function (PostGre) {
                     confirm_token: confirmToken
                 };
 
-                saveUser(userData, function (err, userModel) {
+                UserModel.upsert(userData, function (err, userModel) {
                     if (err) {
                         return cb(err);
                     }
                     cb(null, userModel);
                 });
             },
-            
+
             //save the profile:
             function (userModel, cb) {
                 var userId = userModel.id;
                 var profileData = profilesHandler.prepareSaveData(options);
-                
+
                 profileData.user_id = userId;
-                profilesHandler.saveProfile(profileData, function (err, profileModel) {
+                profileData.permissions = PERMISSIONS.OWNER;
+                ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
                         return cb(err);
@@ -233,6 +226,22 @@ var UsersHandler = function (PostGre) {
                 });
             },
 
+            //create a new company with ower:
+            function (userModel, cb) {
+                var companyOptions = {
+                    userId: userModel.id,
+                    name: company
+                };
+                //cb(null, userModel);
+
+                companiesHandler.createCompanyWithOwner(companyOptions, function (err, company) {
+                    if (err) {
+                        //return console.error(err);
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                });
+            }
 
         ], function (err, userModel) {
             var mailerOptions;
@@ -240,14 +249,14 @@ var UsersHandler = function (PostGre) {
             if (err) {
                 return next(err);
             }
-            
+
             mailerOptions = {
                 email: email,
                 confirmToken: confirmToken
-            }
+            };
             mailer.onSendConfirm(mailerOptions);
 
-            res.status(201).send({ success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE });
+            res.status(201).send({success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE});
         });
 
     };
@@ -257,26 +266,33 @@ var UsersHandler = function (PostGre) {
         var email = options.email;
         var password = options.password;
         var criteria;
+        var fetchOptions;
 
         if (!email || !password) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password'] }));
+            return next(badRequests.NotEnParams({reqParams: ['email', 'password']}));
         }
 
         criteria = {
             email: email,
             password: getEncryptedPass(password)
         };
+        fetchOptions = {
+            withRelated: ['profile', 'company']
+        };
 
         UserModel
-            .forge(criteria)
-            .fetch({
-                withRelated: ['profile']
-            })
+            .find(criteria, fetchOptions)
             .exec(function (err, userModel) {
+                var profile;
+                var company;
+                var companyId;
+                var sessionOptions;
+
                 if (err) {
                     return next(err);
                 }
-                if (!userModel || !userModel.id) { 
+
+                if (!userModel || !userModel.id) {
                     return next(badRequests.SignInError());
                 }
 
@@ -284,18 +300,28 @@ var UsersHandler = function (PostGre) {
                     return next(badRequests.UnconfirmedEmail());
                 }
 
-                session.register(req, res, userModel);
+                profile = userModel.related('profile');
+                company = userModel.related('company');
+
+                if (company && company.models.length && company.models[0].id) {
+                    companyId = company.models[0].id;
+                }
+
+                sessionOptions = {
+                    permissions: profile.get('permissions'),
+                    companyId: companyId
+                };
+                session.register(req, res, userModel, sessionOptions);
             });
-    
     };
 
     this.confirmEmail = function (req, res, next) {
         var confirmToken = req.params.confirmToken;
-        
+
         async.waterfall([
-        
+
             //try to find the user by confirmToken:
-            function (cb) { 
+            function (cb) {
                 var criteria = {
                     confirm_token: confirmToken
                 };
@@ -307,11 +333,11 @@ var UsersHandler = function (PostGre) {
                         if (err) {
                             return cb(err);
                         }
-                    
+
                         if (!userModel || !userModel.id) {
                             return cb(badRequests.NotFound());
                         }
-                            
+
                         cb(null, userModel);
                     });
             },
@@ -321,9 +347,9 @@ var UsersHandler = function (PostGre) {
                 var saveData = {
                     confirm_token: null
                 };
-                
+
                 userModel
-                    .save(saveData, { patch: true })
+                    .save(saveData, {patch: true})
                     .exec(function (err, updatedUser) {
                         if (err) {
                             return cb(err);
@@ -339,19 +365,19 @@ var UsersHandler = function (PostGre) {
             res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
         });
     };
-    
+
     this.getCurrentUser = function (req, res, next) {
         var userId = req.session.userId;
         var criteria = {
             id: userId
         };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
 
         UserModel
-            .forge(criteria)
-            .fetch({
-                require: true,
-                withRelated: 'profile'
-            })
+            .find(criteria, fetchOptions)
             .then(function (userModel) {
                 res.status(200).send(userModel);
             })
@@ -360,16 +386,16 @@ var UsersHandler = function (PostGre) {
             })
             .catch(next);
     };
-    
+
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
         var options = req.body;
-        
+
         updateUserById(userId, options, function (err, userModel) {
             if (err) {
                 return next(err);
             }
-            res.status(200).send({ success: 'success updated', user: userModel });
+            res.status(200).send({success: 'success updated', user: userModel});
         });
     };
 
@@ -390,15 +416,18 @@ var UsersHandler = function (PostGre) {
             })
             .fetch()
             .then(function (userModel) {
+                var saveData = {
+                    forgot_token: tokenGenerator.generate()
+                };
+
                 if (userModel && userModel.id) {
 
                     userModel
-                        .set({
-                            'forgot_token': tokenGenerator.generate()
-                        })
-                        .save()
-                        .then(function (user){
-                            mailer.onForgotPassword(user.toJSON());
+                        .save(saveData, {patch: true})
+                        .then(function (user) {
+                            var userJSON = user.attributes;
+
+                            mailer.onForgotPassword(userJSON);
                             res.status(200).send({success: "success"});
                         })
                         .catch(next);
@@ -408,11 +437,212 @@ var UsersHandler = function (PostGre) {
                 }
             })
             .catch(next);
+    };
+
+    this.changePassword = function (req, res, next) {
+        var params = req.body;
+        var forgotToken = req.params.forgotToken;
+
+        if (!params.password) {
+            return next(badRequests.NotEnParams({reqParams: 'password'}));
+        }
+
+        UserModel
+            .forge({
+                forgot_token: forgotToken
+            })
+            .fetch({require: true})
+            .then(function (userModel) {
+                var saveOptions = {
+                    password: getEncryptedPass(params.password),
+                    forgot_token: null
+                };
+
+                userModel
+                    .save(saveOptions, {patch: true})
+                    .then(function () {
+                        res.status(200).send({success: "Password was changed successfully"});
+                    })
+                    .catch(next);
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
+    this.inviteUser = function (req, res, next) {
+        var options = req.body;
+        var email = options.email;
+        var company;
+        var userData;
+        var userPassword;
+        var invitedUserId;
+
+        //validate options:
+        if (!email) {
+            return next(badRequests.NotEnParams({reqParams: ['email']}));
+        }
+
+        //email validation:
+        if (!EMAIL_REGEXP.test(email)) {
+            return next(badRequests.InvalidEmail());
+        }
+
+        if (!session.isAdmin(req)) {
+            return next(badRequests.AccessError())
+        }
+
+        async.waterfall([
+
+            //check unique email:
+            function (cb) {
+                var criteria = {
+                    email: email
+                };
+
+                UserModel
+                    .find(criteria)
+                    .exec(function (err, userModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        if (userModel && userModel.id) {
+                            return cb(badRequests.EmailInUse());
+                        }
+                        cb(); //all right:
+                    });
+            },
+
+            //invite a new user:
+            function (cb) {
+                userPassword = tokenGenerator.generate(6);
+                userData = {
+                    email: email,
+                    password: getEncryptedPass(userPassword)
+                };
+
+                UserModel.upsert(userData, function (err, userModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    invitedUserId = userModel.id;
+                    cb(null, userModel);
+                });
+            },
+
+            //save the profile:
+            function (userModel, cb) {
+                var userId = userModel.id;
+                var profileData = profilesHandler.prepareSaveData(options);
+
+                profileData.user_id = userId;
+                profileData.permissions = options.permissions;
+                ProfileModel.upsert(profileData, function (err, profileModel) {
+                    if (err) {
+                        removeUser(userModel);
+                        return cb(err);
+                    }
+                    userModel.set('profile', profileModel);
+                    cb(null, userModel);
+                });
+            },
+
+            //add current user to company
+            function (userModel, cb) {
+                var userId = userModel.id;
+                var companyId = req.session.companyId;
+                var companyData = {
+                    userId: userId,
+                    companyId: companyId
+                };
+                companiesHandler.insertIntoUserCompanies(companyData, function (err, resultModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel);
+                })
+            }
+
+        ], function (err, userModel) {
+            var mailerOptions;
+
+            if (err) {
+                if (invitedUserId) {
+                    removeUser(invitedUserId);
+                }
+                return next(err);
+            }
+
+            mailerOptions = {
+                email: email,
+                userPassword: userPassword
+            };
+            mailer.onUserInvite(mailerOptions);
+
+            res.status(201).send({success: MESSAGES.SUCCESS_INVITE_MESSAGE});
+        });
 
     };
 
+    this.getUsers = function (req, res, next) {
+        var options = req.query;
+        var userId = req.session.userId;
+        var companyId = req.session.companyId;
+        var queryOptions = { //TODO: query options page, count, orderBy ...
+            companyId: companyId
+        };
+        var fetchOptions = {
+            withRelated: ['profile']
+        };
+
+        UserModel
+            .findCollaborators(queryOptions, fetchOptions)
+            .exec(function (err, result) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(result.models);
+            });
+    };
+
+    this.getUser = function (req, res, next) {
+        var userId = req.params.id;
+        var companyId = req.session.companyId;
+        var queryOptions = {
+            userId: userId,
+            companyId: companyId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile']
+        };
+
+        UserModel
+            .findCollaborator(queryOptions, fetchOptions)
+            .then(function (userModel) {
+                res.status(200).send(userModel);
+            })
+            .catch(UserModel.NotFoundError, function () {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
+    this.updateUser = function (req, res, next) {
+        var userId = req.params.id;
+        var options = req.body;
+
+        updateUserById(userId, options, function (err, userModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'success updated', user: userModel});
+        });
+    };
+
     this.renderError = function (err, req, res, next) {
-        res.render('errorTemplate', { error: err });
+        res.render('errorTemplate', {error: err});
     };
 };
 

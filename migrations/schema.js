@@ -1,6 +1,6 @@
 'use strict';
 
-var PERMISSOINS = require('../constants/permissions');
+var PERMISSIONS = require('../constants/permissions');
 var async = require('async');
 
 module.exports = function (knex) {
@@ -27,12 +27,20 @@ module.exports = function (knex) {
                 row.timestamps();
             }), 
 
+            createTable(TABLES.INVITES, function (row) {
+                row.increments().primary();
+                row.integer('inivtee_id').notNullable().index();
+                row.string('invited_id').notNullable().index();
+                row.timestamps();
+            }), 
+
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
                 row.string('first_name');
                 row.string('last_name');
                 row.string('company');
+                row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.string('phone');
                 row.timestamps();
             }), 
@@ -41,7 +49,6 @@ module.exports = function (knex) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().index();
                 row.integer('company_id').notNullable().index();
-                row.integer('permissions').notNullable().defaultTo(PERMISSOINS.USER);
                 row.timestamps();
             }), 
                 
@@ -51,7 +58,6 @@ module.exports = function (knex) {
                 row.string('password');
                 row.string('confirm_token');
                 row.string('forgot_token');
-                //row.integer('role').notNullable().defaultTo(0); //0 - customer, 1 - superAdmin
                 row.timestamps();
             }),
 
@@ -147,7 +153,11 @@ module.exports = function (knex) {
     function drop(callback) {
 
         return async.series([
+            dropTable(TABLES.COMPANIES),
+            dropTable(TABLES.IMAGES),
+            dropTable(TABLES.INVITES),
             dropTable(TABLES.PROFILES),
+            dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS)
         ], function (err) {
             if (err) {

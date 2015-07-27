@@ -13,6 +13,15 @@ var Models = function ( PostGre ) {
             return this
                 .forge(forgeOptions)
                 .fetch(fetchOptions);
+        },
+        upsert: function (data, callback) {
+            if (data && data.id) {
+                //update:
+                return this.forge({id: data.id}).save(data, {patch: true}).exec(callback);
+            } else {
+                //insert:
+                return this.forge().save(data).exec(callback);
+            }
         }
     });
 

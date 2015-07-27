@@ -18,7 +18,8 @@ define([],function () {
         if (!err) {
             App.sessionData.set({
                 authorized : true,
-                user       : data.profile.first_name+' '+data.profile.last_name
+                user       : data.profile.first_name+' '+data.profile.last_name,
+                role       : data.profile.permissions
             });
             $('#topMenu').show();
             $('#leftMenu').show();

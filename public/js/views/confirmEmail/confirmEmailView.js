@@ -14,7 +14,7 @@ define([
         id : 'addUserForm',
 
         events: {
-
+            "click #confirmButton" : "goToLogin"
         },
 
         initialize: function () {
@@ -28,6 +28,10 @@ define([
             }
         },
 
+        goToLogin: function(){
+            Backbone.history.navigate('login', {trigger : true});
+        },
+
         checkLogin: function(){
             var token  = this.token;
             var thisEl = this.$el;
@@ -36,11 +40,12 @@ define([
                 url  : "/confirmEmail/" + token,
                 type : "GET",
                 success: function () {
-                    thisEl.find('#confirm').text('Your account has been activated!');
+                    thisEl.find('#confirmText').text('Your account has been activated!');
+                    thisEl.find('#confirmButton').text('go to login');
                 },
                 error: function () {
                     //App.error(err);
-                    thisEl.find('#confirm').text('Wrong activation code!');
+                    thisEl.find('#confirmText').text('Wrong activation code!');
                 }
             });
         },

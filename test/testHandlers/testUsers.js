@@ -2,7 +2,7 @@
 
 var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
-var async = require('async');
+var PERMISSIONS = require('../../constants/permissions');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -18,11 +18,11 @@ module.exports = function (db, defaults) {
     var ProfileModel = Models.Profile;
 
     var host = process.env.HOST;
-    
+
     var agent = request.agent(host);
     var userAgent1 = request.agent(host);
     var userAgent2 = request.agent(host);
-    
+
     var users = defaults.getData('users');
     var user1 = {
         email: users[0].attributes.email,
@@ -33,14 +33,6 @@ module.exports = function (db, defaults) {
         password: defaults.password
     };
 
-    describe('Test Users', function () {
-    
-        it('test 1', function (done) {
-            done();
-        });    
-
-    });
-
     describe('Test session', function () {
         var url = '/signIn';
 
@@ -50,23 +42,46 @@ module.exports = function (db, defaults) {
                 .send(user1)
                 .end(function (err, res) {
                     var body;
-                
+
                     if (err) {
                         return done(err);
                     }
-                
+
                     expect(res.status).to.equals(200);
-                
+
                     body = res.body;
-                
+
                     expect(body).to.be.instanceOf(Object);
                     expect(body).to.have.property('success');
-                
+
                     done();
                 });
-       });
+        });
+
+        it('User2 can loggin', function (done) {
+            userAgent2
+                .post(url)
+                .send(user2)
+                .end(function (err, res) {
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('success');
+
+                    done();
+                });
+        });
+
     });
-    
+
     describe('POST /signUp', function () {
         var url = '/signUp';
 
@@ -81,10 +96,10 @@ module.exports = function (db, defaults) {
                 .send(data)
                 .end(function (err, res) {
                     var body;
-                    if (err) { 
-                        return cb(err);
+                    if (err) {
+                        return done(err);
                     }
-                
+
                     body = res.body;
 
                     expect(res.status).to.equals(400);
@@ -103,23 +118,23 @@ module.exports = function (db, defaults) {
                 email: 'mail_' + ticks + '@mail.com',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
                     var body;
                     if (err) {
-                        return cb(err);
+                        return done(err);
                     }
-                
+
                     body = res.body;
-                
+
                     expect(res.status).to.equals(400);
                     expect(body).to.be.instanceof(Object);
                     expect(body).to.have.property('error');
                     expect(body.error).to.include(notEnParamsMessage);
-                
+
                     done();
                 });
         });
@@ -130,59 +145,142 @@ module.exports = function (db, defaults) {
                 email: 'mail_' + ticks + '@mail.com',
                 password: 'xxx'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
                     var body;
                     if (err) {
-                        return cb(err);
+                        return done(err);
                     }
-                
+
                     body = res.body;
-                
+
                     expect(res.status).to.equals(400);
                     expect(body).to.be.instanceof(Object);
                     expect(body).to.have.property('error');
                     expect(body.error).to.include(notEnParamsMessage);
-                
+
                     done();
                 });
         });
 
-        //TODO ... test success signUp by valid data, test exists email
-    
-    });
-
-    describe('POST /signIn', function () {
-        var url = '/signIn';
-        
-        it('Can\'t signIn without email', function (done) {
+        it('User cant signUp with invalid email', function (done) {
+            var ticks = new Date().valueOf();
             var data = {
-                email: user1.password
+                email: 'foo',
+                password: 'xxx',
+                company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(400);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Not enough incoming parameters.');
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Incorrect');
+
+                    done();
+                });
+        });
+
+        it('User cant signUp with exists email', function (done) {
+            var ticks = new Date().valueOf();
+            var data = {
+                email: user1.email,
+                password: 'xxx',
+                company: 'myCompany'
+            };
+
+            agent
+                .post(url)
+                .send(data)
+                .end(function (err, res) {
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('in use');
+
+                    done();
+                });
+        });
+
+        it('User cant signUp with valid data', function (done) {
+            var ticks = new Date().valueOf();
+            var data = {
+                email: 'mail_' + ticks + '@mail.com',
+                password: 'xxx',
+                company: 'myCompany'
+            };
+
+            agent
+                .post(url)
+                .send(data)
+                .end(function (err, res) {
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(201);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('success');
+                    expect(body.success).to.include(MESSAGES.SUCCESS_REGISTRATION_MESSAGE);
+
+                    done();
+                });
+
+        });
+
+    });
+
+    describe('POST /signIn', function () {
+        var url = '/signIn';
+
+        it('Can\'t signIn without email', function (done) {
+            var data = {
+                email: user1.password
+            };
+
+            agent
+                .post(url)
+                .send(data)
+                .end(function (err, res) {
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(400);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Not enough incoming parameters.');
+
+                    done();
+                });
         });
 
         it('Can\'t signIn without password', function (done) {
@@ -195,11 +293,11 @@ module.exports = function (db, defaults) {
                 .send(data)
                 .end(function (err, res) {
                     var body;
-                
+
                     if (err) {
                         return done(err);
                     }
-                
+
                     expect(res.status).to.equals(400);
 
                     body = res.body;
@@ -207,7 +305,7 @@ module.exports = function (db, defaults) {
                     expect(body).to.be.instanceOf(Object);
                     expect(body).to.have.property('error');
                     expect(body.error).to.include('Not enough incoming parameters.');
-                
+
                     done();
                 });
         });
@@ -217,27 +315,27 @@ module.exports = function (db, defaults) {
                 email: 'unconfirmed@mail.com',
                 password: '123456'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(400);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Please confirm your account');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(400);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Please confirm your account');
+
+                    done();
+                });
         });
 
         it('Can signIn with valid email password', function (done) {
@@ -246,30 +344,101 @@ module.exports = function (db, defaults) {
                 .send(user1)
                 .end(function (err, res) {
                     var body;
-                
+
                     if (err) {
                         return done(err);
                     }
-                
+
                     expect(res.status).to.equals(200);
-                
+
                     body = res.body;
-                
+
                     expect(body).to.be.instanceOf(Object);
                     expect(body).to.have.property('success');
-                
+
                     done();
                 });
         });
 
     });
-    
+
+    describe('GET /currentUser', function () {
+        var url = '/currentUser';
+
+        it('User can get the profile data', function (done) {
+
+            async.waterfall([
+
+                //make request:
+                function (cb) {
+                    userAgent1
+                        .get(url)
+                        .end(function (err, res) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            expect(res.status).to.equals(200);
+                            expect(res.body).to.be.instanceof(Object);
+
+                            cb(null, res.body);
+                        });
+                },
+
+                //check database:
+                function (user, cb) {
+                    var userId = users[0].id;
+                    var criteria = {
+                        id: userId
+                    };
+                    var fetchOptions = {
+                        withRelated: ['profile', 'company']
+                    };
+
+                    expect(user).to.have.property('id');
+                    expect(user).to.have.property('email');
+                    expect(user).to.have.property('profile');
+                    expect(user).to.have.property('company');
+                    expect(user).to.not.have.property('password');
+
+                    UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
+                        var userJSON;
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        userJSON = userModel.toJSON();
+
+                        expect(user.id).to.equals(userJSON.id);
+                        expect(user.email).to.equals(userJSON.email);
+                        expect(user.profile.first_name).to.equals(userJSON.profile.first_name);
+                        expect(user.profile.last_name).to.equals(userJSON.profile.last_name);
+                        expect(user.profile.phone).to.equals(userJSON.profile.phone);
+                        expect(user.company.id).to.equals(userJSON.company.id);
+
+                        cb();
+                    });
+
+                }
+            ], function (err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+
+        });
+
+    });
+
     describe('PUT /profile', function () {
         var url = '/profile';
 
         it('User can update the first_name', function (done) {
             var data = {
-                first_name: 'new First Name'
+                profile: {
+                    first_name: 'new First Name'
+                }
             };
 
             async.waterfall([
@@ -293,19 +462,19 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
 
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('first_name');
-                        expect(profile.first_name).to.equals(data.first_name);
+
+                        expect(profile.first_name).to.equals(data.profile.first_name);
 
                         cb();
                     });
@@ -316,9 +485,11 @@ module.exports = function (db, defaults) {
 
         it('User can update the last_name', function (done) {
             var data = {
-                last_name: 'new Last Name'
+                profile: {
+                    last_name: 'new Last Name'
+                }
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -326,12 +497,12 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
 
                 //check the database:
@@ -340,67 +511,20 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('last_name');
-                        expect(profile.last_name).to.equals(data.last_name);
-                        
-                        cb();
-                    });
+                        expect(profile.last_name).to.equals(data.profile.last_name);
 
-                }
-            ], done);
-        });
-
-        it('User can update the company', function (done) {
-            var data = {
-                company: 'new company'
-            };
-            
-            async.waterfall([
-                //make request:
-                function (cb) {
-                    userAgent1
-                        .put(url)
-                        .send(data)
-                        .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
-                },
-
-                //check the database:
-                function (cb) {
-                    var userId = users[0].id;
-                    var criteria = {
-                        user_id: userId
-                    };
-                    
-                    ProfileModel.find(criteria).exec(function (err, profileModel) {
-                        var profile;
-                        
-                        if (err) {
-                            return cb(err);
-                        }
-                        
-                        profile = profileModel.toJSON();
-                        
-                        expect(profile).to.be.instanceof(Object);
-                        expect(profile).to.be.have.property('company');
-                        expect(profile.company).to.equals(data.company);
-                        
                         cb();
                     });
 
@@ -410,9 +534,11 @@ module.exports = function (db, defaults) {
 
         it('User can update the phone', function (done) {
             var data = {
-                phone: '123456789'
+                profile: {
+                    phone: '123456789'
+                }
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -420,12 +546,12 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
 
                 //check the database:
@@ -434,20 +560,69 @@ module.exports = function (db, defaults) {
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('phone');
-                        expect(profile.phone).to.equals(data.phone);
-                        
+                        expect(profile.phone).to.equals(data.profile.phone);
+
+                        cb();
+                    });
+
+                }
+            ], done);
+        });
+
+        it('Admin-User can update the permissions', function (done) {
+            var data = {
+                profile: {
+                    permissions: PERMISSIONS.ADMIN
+                }
+            };
+
+            async.waterfall([
+                //make request:
+                function (cb) {
+                    userAgent1
+                        .put(url)
+                        .send(data)
+                        .end(function (err, res) {
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
+                },
+
+                //check the database:
+                function (cb) {
+                    var userId = users[0].id;
+                    var criteria = {
+                        user_id: userId
+                    };
+
+                    ProfileModel.find(criteria).exec(function (err, profileModel) {
+                        var profile;
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        profile = profileModel.toJSON();
+
+                        expect(profile).to.be.instanceof(Object);
+                        expect(profile).to.be.have.property('permissions');
+                        expect(profile.permissions).to.equals(data.profile.permissions);
+
                         cb();
                     });
 
@@ -456,13 +631,14 @@ module.exports = function (db, defaults) {
         });
 
         it('User can update the profile with valid data', function (done) {
-            var data ={
-                first_name: 'new first name 2',
-                last_name: 'new last name 2',
-                company: 'a new company',
-                phone: '123456789'
+            var data = {
+                profile: {
+                    first_name: 'new first name 2',
+                    last_name: 'new last name 2',
+                    phone: '123456789'
+                }
             };
-            
+
             async.waterfall([
                 //make request:
                 function (cb) {
@@ -470,40 +646,38 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
-
                 //check the database:
                 function (cb) {
                     var userId = users[0].id;
                     var criteria = {
                         user_id: userId
                     };
-                    
+
                     ProfileModel.find(criteria).exec(function (err, profileModel) {
                         var profile;
-                        
+
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         profile = profileModel.toJSON();
-                        
+
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('first_name');
                         expect(profile).to.be.have.property('last_name');
                         expect(profile).to.be.have.property('company');
                         expect(profile).to.be.have.property('phone');
-                        expect(profile.first_name).to.equals(data.first_name);
-                        expect(profile.last_name).to.equals(data.last_name);
-                        expect(profile.company).to.equals(data.company);
-                        expect(profile.phone).to.equals(data.phone);
-                        
+                        expect(profile.first_name).to.equals(data.profile.first_name);
+                        expect(profile.last_name).to.equals(data.profile.last_name);
+                        expect(profile.phone).to.equals(data.profile.phone);
+
                         cb();
                     });
 
@@ -512,4 +686,103 @@ module.exports = function (db, defaults) {
         });
 
     });
-}
+
+    describe('GET /users', function () {
+        var url = '/users';
+
+        it('Collaborators', function (done) {
+            var userId = users[0].id;
+            var criteria = {
+                id: userId
+            };
+
+            var queryOptions = {
+                companyId: 1
+            };
+            var fetchOptions = {
+                withRelated: ['profile']
+            };
+
+            UserModel
+                .findCollaborators(queryOptions, fetchOptions)
+                .exec(function (err, userModels) {
+                    var user;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(userModels.models).to.have.property('length');
+                    expect(userModels.models).to.have.length(4);
+
+                    done();
+                });
+        });
+
+        it('User can get the list of collaborators', function (done) {
+            userAgent1
+                .get(url)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+                    expect(res.body).to.be.instanceof(Array);
+                    expect(res.body).to.have.length(4);
+
+                    done();
+                });
+        });
+
+    });
+
+    describe('GET /users/:id', function () {
+        var url = '/users';
+
+        it('Admin can get the user by id', function (done) {
+            var userId = 3;
+            var getUrl = url + '/' + userId;
+
+            userAgent1
+                .get(getUrl)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+                    expect(res.body).to.be.instanceof(Object);
+                    expect(res.body).to.have.property('id');
+                    expect(res.body).to.have.property('profile');
+                    expect(res.body.id).to.equals(userId);
+
+                    done();
+                });
+        });
+
+        it('Another Admin can\'t get the user by id', function (done) {
+            var userId = 3;
+            var getUrl = url + '/' + userId;
+
+            userAgent2
+                .get(getUrl)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    console.log(res.body);
+
+                    expect(res.status).to.equals(400);
+                    expect(res.body).to.be.instanceof(Object);
+                    expect(res.body).to.have.property('error');
+                    expect(res.body.error).to.include('Not Found');
+
+                    done();
+                });
+        });
+
+    });
+
+};
