@@ -70,11 +70,43 @@ var UsersHandler = function (PostGre) {
     };
 
     function updateUserById(userId, options, callback) {
-        var firstName = options.profile.first_name;
-        var lastName = options.profile.last_name;
-        var phone = options.phone;
-        var company = options.company;
+        var profile = options.profile;
+        var firstName;
+        var lastName;
+        var phone;
+        var permissions;
         var profileData = {};
+
+        if (options.profile) {
+            profile = options.profile;
+
+            if (profile.first_name) {
+                firstName = profile.first_name;
+            }
+            if (profile.last_name) {
+                lastName = profile.last_name;
+            }
+            if (profile.phone) {
+                phone = profile.phone;
+            }
+            if (profile.permissions) {
+                permissions = profile.permissions;
+
+                if (Object.keys(PERMISSOINS).indexOf(permissions) === -1) {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
+                    }
+                    return;
+                }
+
+                if (!session.isAdmin(req)) {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(badRequests.AccessError());
+                    }
+                    return;
+                }
+            }
+        }
 
         async.waterfall([
 
@@ -92,6 +124,10 @@ var UsersHandler = function (PostGre) {
                 }
                 if (company !== undefined) {
                     profileData.company = company;
+                }
+
+                if (profile.permissions) {
+                    permissions = profile.permissions;
                 }
 
                 if (Object.keys(profileData).length === 0) {
