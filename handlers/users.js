@@ -19,6 +19,7 @@ var CompaniesHandler = require('../handlers/companies');
 var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
+    var ProfileModel = Models.Profile;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
     var companiesHandler = new CompaniesHandler(PostGre);
@@ -29,15 +30,7 @@ var UsersHandler = function (PostGre) {
         shaSum.update(pass);
         return shaSum.digest('hex');
     };
-    
-    function saveUser(data, callback) {
-        if (data && data.id) {
-            return UserModel.forge({ id: data.id }).save(data, { patch: true }).exec(callback);
-        } else {
-            return UserModel.forge().save(data).exec(callback);
-        }
-    };
-    
+
     function removeUser(options, callback) {
         var userId;
         var userModel;
@@ -45,16 +38,16 @@ var UsersHandler = function (PostGre) {
         if (options && (typeof options === 'number')) {
             userId = options;
         }
-        
+
         if (options && (options instanceof UserModel)) {
             userModel = options;
         }
-        
+
         if (!userId && !userModel) {
             //todo: invalid incoming params
             return console.error(badRequests.NotEnParams());
         }
-        
+
         if (userModel) {
             userModel.destroy().exec(callback);
         } else {
@@ -68,26 +61,58 @@ var UsersHandler = function (PostGre) {
                         if (callback && (typeof callback === 'function')) {
                             callback(err);
                         }
-                    
+
                     } else {
                         userModel.destroy().exec(callback);
                     }
                 });
         }
     };
-    
+
     function updateUserById(userId, options, callback) {
-        var firstName = options.profile.first_name;
-        var lastName = options.profile.last_name;
-        var phone = options.phone;
-        var company = options.company;
+        var profile = options.profile;
+        var firstName;
+        var lastName;
+        var phone;
+        var permissions;
         var profileData = {};
-        
+
+        if (options.profile) {
+            profile = options.profile;
+
+            if (profile.first_name) {
+                firstName = profile.first_name;
+            }
+            if (profile.last_name) {
+                lastName = profile.last_name;
+            }
+            if (profile.phone) {
+                phone = profile.phone;
+            }
+            if (profile.permissions) {
+                permissions = profile.permissions;
+
+                if (Object.keys(PERMISSOINS).indexOf(permissions) === -1) {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
+                    }
+                    return;
+                }
+
+                if (!session.isAdmin(req)) {
+                    if (callback && (typeof callback === 'function')) {
+                        callback(badRequests.AccessError());
+                    }
+                    return;
+                }
+            }
+        }
+
         async.waterfall([
 
             //check incoming params and prepare the saveData:
             function (cb) {
-                
+
                 if (firstName) {
                     profileData.first_name = firstName;
                 }
@@ -100,11 +125,15 @@ var UsersHandler = function (PostGre) {
                 if (company !== undefined) {
                     profileData.company = company;
                 }
-                
-                if (Object.keys(profileData).length === 0) {
-                    return cb(badRequests.NotEnParams({ message: 'There are no params for update' }));
+
+                if (profile.permissions) {
+                    permissions = profile.permissions;
                 }
-                
+
+                if (Object.keys(profileData).length === 0) {
+                    return cb(badRequests.NotEnParams({message: 'There are no params for update'}));
+                }
+
                 cb();
             },
 
@@ -117,7 +146,7 @@ var UsersHandler = function (PostGre) {
                     required: true,
                     withRelated: ['profile']
                 };
-                
+
                 UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
                     if (err) {
                         return cb(err);
@@ -129,15 +158,15 @@ var UsersHandler = function (PostGre) {
             //save the profile:
             function (userModel, cb) {
                 var profileModel = userModel.related('profile');
-                
+
                 profileModel
-                    .save(profileData, { patch: true })
+                    .save(profileData, {patch: true})
                     .exec(function (err, profileModel) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, userModel);
-                });
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, userModel);
+                    });
             }
         ], function (err, userModel) {
             if (err) {
@@ -151,7 +180,7 @@ var UsersHandler = function (PostGre) {
             }
         });
     };
-    
+
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
@@ -159,19 +188,19 @@ var UsersHandler = function (PostGre) {
         var company = options.company;
         var confirmToken;
         var userData;
-        
+
         //validate options:
         if (!email || !password || !company) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password', 'company'] }));
+            return next(badRequests.NotEnParams({reqParams: ['email', 'password', 'company']}));
         }
-        
+
         //email validation:
         if (!EMAIL_REGEXP.test(email)) {
             return next(badRequests.InvalidEmail());
         }
-        
+
         async.waterfall([
-            
+
             //check unique email:
             function (cb) {
                 var criteria = {
@@ -200,22 +229,22 @@ var UsersHandler = function (PostGre) {
                     confirm_token: confirmToken
                 };
 
-                saveUser(userData, function (err, userModel) {
+                UserModel.upsert(userData, function (err, userModel) {
                     if (err) {
                         return cb(err);
                     }
                     cb(null, userModel);
                 });
             },
-            
+
             //save the profile:
             function (userModel, cb) {
                 var userId = userModel.id;
                 var profileData = profilesHandler.prepareSaveData(options);
-                
+
                 profileData.user_id = userId;
                 profileData.permissions = PERMISSOINS.OWNER;
-                profilesHandler.saveProfile(profileData, function (err, profileModel) {
+                ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
                         return cb(err);
@@ -234,13 +263,13 @@ var UsersHandler = function (PostGre) {
                 //cb(null, userModel);
 
                 companiesHandler.createCompanyWithOwner(companyOptions, function (err, company) {
-                    if (err) { 
+                    if (err) {
                         //return console.error(err);
                         return cb(err);
                     }
                     cb(null, userModel);
                 });
-            } 
+            }
 
         ], function (err, userModel) {
             var mailerOptions;
@@ -248,14 +277,14 @@ var UsersHandler = function (PostGre) {
             if (err) {
                 return next(err);
             }
-            
+
             mailerOptions = {
                 email: email,
                 confirmToken: confirmToken
-            }
+            };
             mailer.onSendConfirm(mailerOptions);
 
-            res.status(201).send({ success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE });
+            res.status(201).send({success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE});
         });
 
     };
@@ -265,21 +294,22 @@ var UsersHandler = function (PostGre) {
         var email = options.email;
         var password = options.password;
         var criteria;
+        var fetchOptions;
 
         if (!email || !password) {
-            return next(badRequests.NotEnParams({ reqParams: ['email', 'password'] }));
+            return next(badRequests.NotEnParams({reqParams: ['email', 'password']}));
         }
 
         criteria = {
             email: email,
             password: getEncryptedPass(password)
         };
+        fetchOptions = {
+            withRelated: ['profile', 'company']
+        };
 
         UserModel
-            .forge(criteria)
-            .fetch({
-                withRelated: ['profile', 'company']
-            })
+            .find(criteria, fetchOptions)
             .exec(function (err, userModel) {
                 var profile;
                 var company;
@@ -290,7 +320,7 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
-                if (!userModel || !userModel.id) { 
+                if (!userModel || !userModel.id) {
                     return next(badRequests.SignInError());
                 }
 
@@ -315,11 +345,11 @@ var UsersHandler = function (PostGre) {
 
     this.confirmEmail = function (req, res, next) {
         var confirmToken = req.params.confirmToken;
-        
+
         async.waterfall([
-        
+
             //try to find the user by confirmToken:
-            function (cb) { 
+            function (cb) {
                 var criteria = {
                     confirm_token: confirmToken
                 };
@@ -331,11 +361,11 @@ var UsersHandler = function (PostGre) {
                         if (err) {
                             return cb(err);
                         }
-                    
+
                         if (!userModel || !userModel.id) {
                             return cb(badRequests.NotFound());
                         }
-                            
+
                         cb(null, userModel);
                     });
             },
@@ -345,9 +375,9 @@ var UsersHandler = function (PostGre) {
                 var saveData = {
                     confirm_token: null
                 };
-                
+
                 userModel
-                    .save(saveData, { patch: true })
+                    .save(saveData, {patch: true})
                     .exec(function (err, updatedUser) {
                         if (err) {
                             return cb(err);
@@ -363,19 +393,19 @@ var UsersHandler = function (PostGre) {
             res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
         });
     };
-    
+
     this.getCurrentUser = function (req, res, next) {
         var userId = req.session.userId;
         var criteria = {
             id: userId
         };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
 
         UserModel
-            .forge(criteria)
-            .fetch({
-                require: true,
-                withRelated: ['profile', 'company']
-            })
+            .find(criteria, fetchOptions)
             .then(function (userModel) {
                 res.status(200).send(userModel);
             })
@@ -384,16 +414,16 @@ var UsersHandler = function (PostGre) {
             })
             .catch(next);
     };
-    
+
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
         var options = req.body;
-        
+
         updateUserById(userId, options, function (err, userModel) {
             if (err) {
                 return next(err);
             }
-            res.status(200).send({ success: 'success updated', user: userModel });
+            res.status(200).send({success: 'success updated', user: userModel});
         });
     };
 
@@ -421,8 +451,8 @@ var UsersHandler = function (PostGre) {
                 if (userModel && userModel.id) {
 
                     userModel
-                        .save(saveData, {patch : true})
-                        .then(function (user){
+                        .save(saveData, {patch: true})
+                        .then(function (user) {
                             var userJSON = user.attributes;
 
                             mailer.onForgotPassword(userJSON);
@@ -449,7 +479,7 @@ var UsersHandler = function (PostGre) {
             .forge({
                 forgot_token: forgotToken
             })
-            .fetch({require : true})
+            .fetch({require: true})
             .then(function (userModel) {
                 var saveOptions = {
                     password: getEncryptedPass(params.password),
@@ -463,7 +493,7 @@ var UsersHandler = function (PostGre) {
                     })
                     .catch(next);
             })
-            .catch(UserModel.NotFoundError,function(err){
+            .catch(UserModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());
             })
             .catch(next);
@@ -479,7 +509,7 @@ var UsersHandler = function (PostGre) {
 
         //validate options:
         if (!email) {
-            return next(badRequests.NotEnParams({ reqParams: ['email'] }));
+            return next(badRequests.NotEnParams({reqParams: ['email']}));
         }
 
         //email validation:
@@ -487,7 +517,7 @@ var UsersHandler = function (PostGre) {
             return next(badRequests.InvalidEmail());
         }
 
-        if (!session.isAdmin(req)){
+        if (!session.isAdmin(req)) {
             return next(badRequests.AccessError())
         }
 
@@ -520,7 +550,7 @@ var UsersHandler = function (PostGre) {
                     password: getEncryptedPass(userPassword)
                 };
 
-                saveUser(userData, function (err, userModel) {
+                UserModel.upsert(userData, function (err, userModel) {
                     if (err) {
                         return cb(err);
                     }
@@ -536,7 +566,7 @@ var UsersHandler = function (PostGre) {
 
                 profileData.user_id = userId;
                 profileData.permissions = options.permissions;
-                profilesHandler.saveProfile(profileData, function (err, profileModel) {
+                ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
                         return cb(err);
@@ -551,11 +581,11 @@ var UsersHandler = function (PostGre) {
                 var userId = userModel.id;
                 var companyId = req.session.companyId;
                 var companyData = {
-                    userId   : userId,
+                    userId: userId,
                     companyId: companyId
                 };
-                companiesHandler.insertIntoUserCompanies(companyData, function(err, resultModel){
-                    if (err){
+                companiesHandler.insertIntoUserCompanies(companyData, function (err, resultModel) {
+                    if (err) {
                         return cb(err);
                     }
                     cb(null, userModel);
@@ -578,7 +608,7 @@ var UsersHandler = function (PostGre) {
             };
             mailer.onUserInvite(mailerOptions);
 
-            res.status(201).send({ success: MESSAGES.SUCCESS_INVITE_MESSAGE });
+            res.status(201).send({success: MESSAGES.SUCCESS_INVITE_MESSAGE});
         });
 
     };
@@ -588,7 +618,6 @@ var UsersHandler = function (PostGre) {
         var userId = req.session.userId;
         var companyId = req.session.companyId;
         var queryOptions = { //TODO: query options page, count, orderBy ...
-            userId: userId,
             companyId: companyId
         };
         var fetchOptions = {
@@ -605,19 +634,20 @@ var UsersHandler = function (PostGre) {
             });
     };
 
-    this.getUser = function(req, res, next) {
-        //TODO: check companyId
+    this.getUser = function (req, res, next) {
         var userId = req.params.id;
-        var criteria = {
-            id: userId
+        var companyId = req.session.companyId;
+        var queryOptions = {
+            userId: userId,
+            companyId: companyId
         };
         var fetchOptions = {
-            required: true,
+            require: true,
             withRelated: ['profile']
         };
 
         UserModel
-            .find(criteria, fetchOptions)
+            .findCollaborator(queryOptions, fetchOptions)
             .then(function (userModel) {
                 res.status(200).send(userModel);
             })
@@ -635,12 +665,12 @@ var UsersHandler = function (PostGre) {
             if (err) {
                 return next(err);
             }
-            res.status(200).send({ success: 'success updated', user: userModel });
+            res.status(200).send({success: 'success updated', user: userModel});
         });
     };
 
     this.renderError = function (err, req, res, next) {
-        res.render('errorTemplate', { error: err });
+        res.render('errorTemplate', {error: err});
     };
 };
 

@@ -2,7 +2,6 @@
 
 var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
-var async = require('async');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -16,13 +15,13 @@ module.exports = function (db, defaults) {
     var Models = db.Models;
     var UserModel = Models.User;
     var ProfileModel = Models.Profile;
-    
+
     var host = process.env.HOST;
-    
+
     var agent = request.agent(host);
     var userAgent1 = request.agent(host);
     var userAgent2 = request.agent(host);
-    
+
     var users = defaults.getData('users');
     var user1 = {
         email: users[0].attributes.email,
@@ -32,125 +31,140 @@ module.exports = function (db, defaults) {
         email: users[1].attributes.email,
         password: defaults.password
     };
-    
-    describe('Test Users', function () {
-        
-        it('test 1', function (done) {
-            done();
-        });
 
-    });
-    
     describe('Test session', function () {
         var url = '/signIn';
-        
+
         it('User1 can loggin', function (done) {
             userAgent1
                 .post(url)
                 .send(user1)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(200);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('success');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('success');
+
+                    done();
+                });
         });
+
+        it('User2 can loggin', function (done) {
+            userAgent2
+                .post(url)
+                .send(user2)
+                .end(function (err, res) {
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('success');
+
+                    done();
+                });
+        });
+
     });
-    
+
     describe('POST /signUp', function () {
         var url = '/signUp';
-        
+
         it('User can\'t signUp without email', function (done) {
             var data = {
                 password: 'xxx',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(400);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include(notEnParamsMessage);
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include(notEnParamsMessage);
+
+                    done();
+                });
 
         });
-        
+
         it('User can\'t signUp without password', function (done) {
             var ticks = new Date().valueOf();
             var data = {
                 email: 'mail_' + ticks + '@mail.com',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(400);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include(notEnParamsMessage);
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include(notEnParamsMessage);
+
+                    done();
+                });
         });
-        
+
         it('User can\'t signUp without company', function (done) {
             var ticks = new Date().valueOf();
             var data = {
                 email: 'mail_' + ticks + '@mail.com',
                 password: 'xxx'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(400);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include(notEnParamsMessage);
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include(notEnParamsMessage);
+
+                    done();
+                });
         });
-        
+
         it('User cant signUp with invalid email', function (done) {
             var ticks = new Date().valueOf();
             var data = {
@@ -158,27 +172,27 @@ module.exports = function (db, defaults) {
                 password: 'xxx',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(400);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Incorrect');
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Incorrect');
+
+                    done();
+                });
         });
-        
+
         it('User cant signUp with exists email', function (done) {
             var ticks = new Date().valueOf();
             var data = {
@@ -186,27 +200,27 @@ module.exports = function (db, defaults) {
                 password: 'xxx',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(400);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('in use');
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(400);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('in use');
+
+                    done();
+                });
         });
-        
+
         it('User cant signUp with valid data', function (done) {
             var ticks = new Date().valueOf();
             var data = {
@@ -214,148 +228,148 @@ module.exports = function (db, defaults) {
                 password: 'xxx',
                 company: 'myCompany'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                if (err) {
-                    return cb(err);
-                }
-                
-                body = res.body;
-                
-                expect(res.status).to.equals(201);
-                expect(body).to.be.instanceof(Object);
-                expect(body).to.have.property('success');
-                expect(body.success).to.include(MESSAGES.SUCCESS_REGISTRATION_MESSAGE);
-                
-                done();
-            });
+                    var body;
+                    if (err) {
+                        return done(err);
+                    }
+
+                    body = res.body;
+
+                    expect(res.status).to.equals(201);
+                    expect(body).to.be.instanceof(Object);
+                    expect(body).to.have.property('success');
+                    expect(body.success).to.include(MESSAGES.SUCCESS_REGISTRATION_MESSAGE);
+
+                    done();
+                });
 
         });
 
     });
-    
+
     describe('POST /signIn', function () {
         var url = '/signIn';
-        
+
         it('Can\'t signIn without email', function (done) {
             var data = {
                 email: user1.password
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(400);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Not enough incoming parameters.');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(400);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Not enough incoming parameters.');
+
+                    done();
+                });
         });
-        
+
         it('Can\'t signIn without password', function (done) {
             var data = {
                 email: user1.email
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(400);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Not enough incoming parameters.');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(400);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Not enough incoming parameters.');
+
+                    done();
+                });
         });
-        
+
         it('Can\'t signIn with unconfirmed email', function (done) {
             var data = {
                 email: 'unconfirmed@mail.com',
                 password: '123456'
             };
-            
+
             agent
                 .post(url)
                 .send(data)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(400);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('error');
-                expect(body.error).to.include('Please confirm your account');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(400);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('error');
+                    expect(body.error).to.include('Please confirm your account');
+
+                    done();
+                });
         });
-        
+
         it('Can signIn with valid email password', function (done) {
             agent
                 .post(url)
                 .send(user1)
                 .end(function (err, res) {
-                var body;
-                
-                if (err) {
-                    return done(err);
-                }
-                
-                expect(res.status).to.equals(200);
-                
-                body = res.body;
-                
-                expect(body).to.be.instanceOf(Object);
-                expect(body).to.have.property('success');
-                
-                done();
-            });
+                    var body;
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    body = res.body;
+
+                    expect(body).to.be.instanceOf(Object);
+                    expect(body).to.have.property('success');
+
+                    done();
+                });
         });
 
     });
-    
+
     describe('GET /currentUser', function () {
         var url = '/currentUser';
-        
+
         it('User can get the profile data', function (done) {
-            
+
             async.waterfall([
-                
+
                 //make request:
-                function (cb) { 
+                function (cb) {
                     userAgent1
                         .get(url)
                         .end(function (err, res) {
@@ -364,7 +378,7 @@ module.exports = function (db, defaults) {
                             }
                             expect(res.status).to.equals(200);
                             expect(res.body).to.be.instanceof(Object);
-                            
+
                             cb(null, res.body);
                         });
                 },
@@ -378,7 +392,7 @@ module.exports = function (db, defaults) {
                     var fetchOptions = {
                         withRelated: ['profile', 'company']
                     };
-                    
+
                     expect(user).to.have.property('id');
                     expect(user).to.have.property('email');
                     expect(user).to.have.property('profile');
@@ -391,7 +405,7 @@ module.exports = function (db, defaults) {
                         if (err) {
                             return cb(err);
                         }
-                        
+
                         userJSON = userModel.toJSON();
 
                         expect(user.id).to.equals(userJSON.id);
@@ -411,7 +425,7 @@ module.exports = function (db, defaults) {
                 }
                 done();
             });
-            
+
         });
 
     });
@@ -434,7 +448,7 @@ module.exports = function (db, defaults) {
                             if (err) {
                                 return cb();
                             }
-                           expect(res.status).to.equals(200);
+                            expect(res.status).to.equals(200);
                             cb();
                         });
                 },
@@ -478,12 +492,12 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
 
                 //check the database:
@@ -525,17 +539,17 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
 
                 //check the database:
                 function (cb) {
-                   var userId = users[0].id;
+                    var userId = users[0].id;
                     var criteria = {
                         user_id: userId
                     };
@@ -572,12 +586,12 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
 
                 //check the database:
@@ -608,7 +622,7 @@ module.exports = function (db, defaults) {
         });
 
         it('User can update the profile with valid data', function (done) {
-            var data ={
+            var data = {
                 first_name: 'new first name 2',
                 last_name: 'new last name 2',
                 company: 'a new company',
@@ -622,12 +636,12 @@ module.exports = function (db, defaults) {
                         .put(url)
                         .send(data)
                         .end(function (err, res) {
-                        if (err) {
-                            return cb();
-                        }
-                        expect(res.status).to.equals(200);
-                        cb();
-                    });
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
                 },
                 //check the database:
                 function (cb) {
@@ -674,11 +688,10 @@ module.exports = function (db, defaults) {
             };
 
             var queryOptions = {
-                userId: userId,
                 companyId: 1
             };
             var fetchOptions = {
-                withRelated: ['profile', 'company']
+                withRelated: ['profile']
             };
 
             UserModel
@@ -690,10 +703,8 @@ module.exports = function (db, defaults) {
                         return done(err);
                     }
 
-                    console.log(userModels.models);
-
                     expect(userModels.models).to.have.property('length');
-                    expect(userModels.models).to.have.length(3);
+                    expect(userModels.models).to.have.length(4);
 
                     done();
                 });
@@ -703,16 +714,16 @@ module.exports = function (db, defaults) {
             userAgent1
                 .get(url)
                 .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+                    if (err) {
+                        return done(err);
+                    }
 
-                expect(res.status).to.equals(200);
-                expect(res.body).to.be.instanceof(Array);
-                expect(res.body).to.have.length(3);
+                    expect(res.status).to.equals(200);
+                    expect(res.body).to.be.instanceof(Array);
+                    expect(res.body).to.have.length(4);
 
-                done();
-            });
+                    done();
+                });
         });
 
     });
@@ -740,6 +751,29 @@ module.exports = function (db, defaults) {
                     done();
                 });
         });
+
+        it('Another Admin can\'t get the user by id', function (done) {
+            var userId = 3;
+            var getUrl = url + '/' + userId;
+
+            userAgent2
+                .get(getUrl)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    console.log(res.body);
+
+                    expect(res.status).to.equals(400);
+                    expect(res.body).to.be.instanceof(Object);
+                    expect(res.body).to.have.property('error');
+                    expect(res.body.error).to.include('Not Found');
+
+                    done();
+                });
+        });
+
     });
 
 };
