@@ -2,6 +2,7 @@
 
 var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
+var PERMISSIONS = require('../../constants/permissions');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -572,6 +573,55 @@ module.exports = function (db, defaults) {
                         expect(profile).to.be.instanceof(Object);
                         expect(profile).to.be.have.property('phone');
                         expect(profile.phone).to.equals(data.profile.phone);
+
+                        cb();
+                    });
+
+                }
+            ], done);
+        });
+
+        it('Admin-User can update the permissions', function (done) {
+            var data = {
+                profile: {
+                    permissions: PERMISSIONS.ADMIN
+                }
+            };
+
+            async.waterfall([
+                //make request:
+                function (cb) {
+                    userAgent1
+                        .put(url)
+                        .send(data)
+                        .end(function (err, res) {
+                            if (err) {
+                                return cb();
+                            }
+                            expect(res.status).to.equals(200);
+                            cb();
+                        });
+                },
+
+                //check the database:
+                function (cb) {
+                    var userId = users[0].id;
+                    var criteria = {
+                        user_id: userId
+                    };
+
+                    ProfileModel.find(criteria).exec(function (err, profileModel) {
+                        var profile;
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        profile = profileModel.toJSON();
+
+                        expect(profile).to.be.instanceof(Object);
+                        expect(profile).to.be.have.property('permissions');
+                        expect(profile.permissions).to.equals(data.profile.permissions);
 
                         cb();
                     });

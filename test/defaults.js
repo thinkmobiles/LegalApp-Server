@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 var TABLES = require('../constants/tables');
-var PERMISSOINS = require('../constants/permissions');
+var PERMISSIONS = require('../constants/permissions');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -28,11 +28,11 @@ module.exports = function (db) {
     var profiles = [{
             first_name: 'user',
             last_name: '1',
-            permissions: PERMISSOINS.OWNER
+            permissions: PERMISSIONS.OWNER
         }, {
             first_name: 'user',
             last_name: '2',
-            permissions: PERMISSOINS.OWNER
+            permissions: PERMISSIONS.OWNER
         }, {
             first_name: 'unconfirmed',
             last_name: 'user'
