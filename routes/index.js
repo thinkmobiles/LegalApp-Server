@@ -5,12 +5,18 @@ var express = require('express');
 var router = express.Router();
 var SessionHandler = require('../handlers/sessions');
 var UserHandler = require('../handlers/users');
+var LinksHandler = require('../handlers/links');
 
 module.exports = function (app) {
     var logWriter = require('../helpers/logWriter')();
-    var postGre = app.get('PostGre');
-    var session = new SessionHandler(postGre);
-    var users = new UserHandler(postGre);
+    var PostGre = app.get('PostGre');
+    var session = new SessionHandler(PostGre);
+    var users = new UserHandler(PostGre);
+    var links = new LinksHandler(PostGre);
+    var usersRouter = require('./users')(app);
+    var attachments = require('./attachments')(app);
+    var linksRouter = require('./links')(app);
+    var linksFieldsRouter = require('./linksFields')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -32,8 +38,10 @@ module.exports = function (app) {
         res.render('successConfirm.html');
     });
 
-    var usersRouter = require('./users')(app);
     app.use('/users', usersRouter);
+    app.post('/uploadFile', attachments);
+    app.use('/links', linksRouter);
+    app.use('/linksFields', linksFieldsRouter);
 
     function notFound(req, res, next) {
         res.status(404);

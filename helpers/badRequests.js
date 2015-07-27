@@ -375,7 +375,7 @@ var BadRequestModule = function () {
         BlockedAccount: BlockedAccount,
         UnknownDeviceOS: UnknownDeviceOS,
         NoActiveDevices: NoActiveDevices,
-        PaymentRequired: PaymentRequired,
+        PaymentRequired: PaymentRequired
     }
 };
 

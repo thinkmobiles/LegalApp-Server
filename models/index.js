@@ -4,7 +4,7 @@ var Models = function ( PostGre ) {
 
     PostGre.plugin('visibility'); //https://github.com/tgriesser/bookshelf/wiki/Plugin:-Visibility
     var Model = PostGre.Model.extend({
-        hasTimestamps: true,
+        hasTimestamps: true
         //getTableName: function () {
         //    return this.tableName.replace(/s$/, '');
         //}
@@ -21,5 +21,7 @@ var Models = function ( PostGre ) {
     this.User =  require('./user')( PostGre, Model );
     this.UserCompanies =  require('./userCompanies')( PostGre, Model );
     this.Profile =  require('./profile')( PostGre, Model );
+    this.Links =  require('./links')( PostGre, Model );
+    this.LinksFields =  require('./linksFields')( PostGre, Model );
 };
 module.exports = Models;

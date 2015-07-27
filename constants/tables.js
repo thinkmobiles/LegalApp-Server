@@ -3,5 +3,7 @@ module.exports = {
     IMAGES: 'images',
     PROFILES: 'profiles',
     USER_COMPANIES: 'user_companies',
-    USERS: 'users'
+    USERS: 'users',
+    LINKS: 'links',
+    LINKS_FIELDS: 'links_fields'
 };

@@ -53,8 +53,22 @@ module.exports = function (knex) {
                 row.string('forgot_token');
                 //row.integer('role').notNullable().defaultTo(0); //0 - customer, 1 - superAdmin
                 row.timestamps();
-            })
+            }),
 
+            createTable(TABLES.LINKS, function (row) {
+                row.increments().primary();
+                row.string('name');
+                row.integer('company_id').index();
+                row.timestamps();
+            }),
+
+            createTable(TABLES.LINKS_FIELDS, function (row) {
+                row.increments().primary();
+                row.integer('link_id').index();
+                row.string('name');
+                row.string('code');
+                row.timestamps();
+            })
 
         ], function (err, results) {
             if (err) {
