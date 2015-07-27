@@ -15,12 +15,20 @@ define([
         id : 'addUserForm',
 
         events: {
-            "click #addInvite" : "inviteUser"
+            "click #addInvite" : "actionUser"
         },
 
-        initialize: function () {
+        initialize: function (options) {
 
-            this.render()
+            this.editThisForm = false;
+            if (options){
+                if (options.userModel) {
+                    this.editThisForm = true;
+                    this.userModel = options.userModel;
+                }
+            }
+
+            this.render();
         },
 
         inviteUser: function (){
@@ -29,7 +37,7 @@ define([
             var lastName = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
             var email = thisEL.find('#addEmail').val().trim();
-            var permissions = thisEL.find("[selected = 'selected']").data('id');
+            var permissions = thisEL.find("#addRole option:selected").data('id');
 
             var inviteData = {
                 first_name  : firstName,
@@ -40,6 +48,7 @@ define([
             };
 
             this.userModel = new UserModel();
+
             this.userModel.save(inviteData,{
                 wait : true,
                 success : function(){
@@ -52,8 +61,55 @@ define([
 
         },
 
+        updateUser : function(){
+            var thisEL = this.$el;
+            var firstName = thisEL.find('#addFName').val().trim();
+            var lastName = thisEL.find('#addLName').val().trim();
+            var phone = thisEL.find('#addPhone').val().trim();
+            var email = thisEL.find('#addEmail').val().trim();
+            var permissions = thisEL.find("#addRole option:selected").data('id');
+
+            var updateData = {
+                profile : {
+                    first_name : firstName,
+                    last_name  : lastName
+                },
+                phone          : phone,
+                email          : email,
+                permissions    : permissions
+            };
+
+            //this.userModel = new UserModel({id : this.userID});
+
+            this.userModel.save(updateData,{
+                wait : true,
+                success : function(){
+                    alert('User updated successfully');
+                },
+                error : function(){
+                    alert('Error'); // todo message
+                }
+            });
+
+        },
+
+        actionUser : function(){
+            if (this.editThisForm){
+                this.updateUser()
+            } else {
+                this.inviteUser()
+            }
+        },
+
         render: function () {
-            this.$el.html(_.template(AddUserTemplate));
+            if (!this.editThisForm) {
+                this.$el.html(_.template(AddUserTemplate)({edit : false}));
+            } else {
+                this.$el.html(_.template(AddUserTemplate)({
+                    edit   : true,
+                    usrMdl : this.userModel.toJSON()
+                }));
+            }
             return this;
         }
 

@@ -17,8 +17,6 @@ define([
                 reset: true,
                 success: function(coll){
                     console.log(coll.toJSON())
-                },
-                error: function(xhr, text){
                 }
             });
         }

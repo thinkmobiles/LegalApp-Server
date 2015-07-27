@@ -5,8 +5,14 @@
 define([], function () {
     var UserModel = Backbone.Model.extend({
 
-        url : function(){
-            return "/user"
+        url: function () {
+            var id_;
+            if (this.get('id')) {
+                id_ = this.get('id');
+
+                return "/users/" + id_;
+            }
+                return "/users";
         },
 
         initialize: function () {

@@ -77,8 +77,8 @@ var UsersHandler = function (PostGre) {
     };
     
     function updateUserById(userId, options, callback) {
-        var firstName = options.first_name;
-        var lastName = options.last_name;
+        var firstName = options.profile.first_name;
+        var lastName = options.profile.last_name;
         var phone = options.phone;
         var company = options.company;
         var profileData = {};

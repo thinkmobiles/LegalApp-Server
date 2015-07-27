@@ -16,7 +16,8 @@ define([
 
 
         events: {
-            "click #addNewUser" : "showAddTemplate"
+            "click #addNewUser" : "showAddTemplate",
+            "click .userRow"    : "showEditTemplate"
         },
 
         initialize: function () {
@@ -24,9 +25,7 @@ define([
 
             this.usersCollection = new UsersCollection();
 
-            this.listenTo(this.usersCollection, 'sync', this.renderUsersList());
-
-
+            this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
 
         },
 
@@ -36,15 +35,11 @@ define([
                 this.tableView.undelegateEvents()
             }
 
-            var usersColl = this.usersCollection.toJSON();
-            this.tableView = new UsrListView({coll : usersColl});
+            if (this.usersCollection.length) {
+                this.tableView = new UsrListView({coll: this.usersCollection});
+            }
 
-            //this.$el.find('usersTable').append(this.tableView.el);
         },
-
-        //afterRender : function(){
-        //    this.renderUsersList();
-        //},
 
         showAddTemplate : function(){
 
@@ -53,8 +48,21 @@ define([
             }
 
             this.addView = new AddUserView();
-            this.$el.find('#addNewUser').hide();
-            this.$el.find('#addUserContainer').append(this.addView.el);
+            this.$el.find('#addUserContainer').html(this.addView.el);
+        },
+
+        showEditTemplate : function(event){
+            var userID = $(event.target).closest('.userRow').data('id');
+            var editableUser;
+
+            if (this.addView){
+                this.addView.undelegateEvents()
+            }
+
+            editableUser = this.usersCollection.get(userID);
+
+            this.addView = new AddUserView({userModel : editableUser});
+            this.$el.find('#addUserContainer').html(this.addView.el);
         },
 
         render: function () {

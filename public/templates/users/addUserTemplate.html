@@ -1,10 +1,12 @@
-    <input type="text" id="addFName" placeholder="First name*">
-    <input type="text" id="addLName" placeholder="Last name*">
-    <input type="text" id="addPhone" placeholder="Phone">
-    <input type="email" id="addEmail" placeholder="Email Address">
+    <input type="text" id="addFName" placeholder="First name*" value="<%= edit ? usrMdl.profile.first_name : ''%>">
+    <input type="text" id="addLName" placeholder="Last name*" value="<%= edit ? usrMdl.profile.last_name : ''%>">
+    <input type="text" id="addPhone" placeholder="Phone" value="<%= edit ? usrMdl.phone : ''%>">
+    <input type="email" id="addEmail" placeholder="Email Address" value="<%= edit ? usrMdl.email : ''%>">
     <select id="addRole">
-        <option data-id="3" selected="selected">Viewer</option>
-        <option data-id="2">Editor</option>
-        <option data-id="1">Admin</option>
+        <option class="usrRole" selected="selected" data-id="3" label="Viewer">
+        <option class="usrRole"  data-id="2" label="Editor">
+        <%if (App.sessionData.get('role') === 0){%>
+            <option class="usrRole" data-id="1" label="Admin">
+        <%}%>
     </select>
-    <input type="button" id="addInvite" value="Invite">
+    <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">

@@ -26,7 +26,7 @@ define([
 
         render: function () {
 
-            $("#listTable").html(_.template(UsrListTemp)(this.currentUsersList));
+            $("#listTable").html(_.template(UsrListTemp)({usrLst : this.currentUsersList.toJSON()}));
 
             return this;
         }
