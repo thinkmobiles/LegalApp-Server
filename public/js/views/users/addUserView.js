@@ -33,6 +33,7 @@ define([
 
         inviteUser: function (){
             var thisEL = this.$el;
+            var self = this;
             var firstName = thisEL.find('#addFName').val().trim();
             var lastName = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
