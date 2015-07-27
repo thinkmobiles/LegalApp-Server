@@ -69,16 +69,16 @@ define([
             var firstName = thisEL.find('#addFName').val().trim();
             var lastName = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
-            var email = thisEL.find('#addEmail').val().trim();
+            //var email = thisEL.find('#addEmail').val().trim();
             var permissions = thisEL.find("#addRole option:selected").data('id');
 
             var updateData = {
                 profile : {
                     first_name : firstName,
-                    last_name  : lastName
-                },
-                phone          : phone,
-                email          : email
+                    last_name  : lastName,
+                    phone      : phone,
+                    permissions: permissions
+                }
             };
 
             this.userModel.save(updateData,{
