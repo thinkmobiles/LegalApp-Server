@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Created by kille on 24.07.2015.
  */
@@ -21,18 +23,21 @@ module.exports = function (PostGre, ParentModel) {
             })
     };
     var removeLinkField = function (linkId, companyId, callback) {
-        knex(TABLES.LINKS_FIELDS)
-            .innerJoin(TABLES.LINKS, TABLES.LINKS+'.id', TABLES.LINKS_FIELDS+'.link_id')
+        var subquery = knex.select('id')
+            .from(TABLES.LINKS)
             .where({
-                link_id: linkId,
+                id: linkId,
                 company_id: companyId
-            })
+            });
+
+        knex(TABLES.LINKS_FIELDS)
+            .whereIn('link_id', subquery)
             .del()
             .exec(function (err, result) {
                 if (callback && typeof (callback) === 'function') {
                     callback(err, result);
                 }
-            })
+            });
     };
 
     var LinksModel = ParentModel.extend({
@@ -56,7 +61,7 @@ module.exports = function (PostGre, ParentModel) {
                     if (callback && typeof (callback) === 'function') {
                         callback(err, result);
                     }
-                })
+                });
         }
     });
 

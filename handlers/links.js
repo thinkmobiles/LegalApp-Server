@@ -101,7 +101,7 @@ var LinksHandler = function (PostGre) {
     };
 
     this.removeLink = function (req, res, next) {
-        var companyId = req.session.company_id;
+        var companyId = req.session.companyId;
         var linkid = req.params.id;
 
         LinksModel
