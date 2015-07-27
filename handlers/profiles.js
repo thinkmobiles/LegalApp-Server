@@ -28,14 +28,6 @@ var ProfileHandler = function (PostGre) {
         return saveData;
     };
     
-    this.saveProfile = function (data, callback) {
-        if (data && data.id) {
-            ProfileModel.forge({ id: data.id }).save(data, { patch: true }).exec(callback);
-        } else {
-            ProfileModel.forge().save(data).exec(callback);
-        }
-    };
-    
     this.removeProfile = function (userId, callback) {
         //TODO: ...
     };

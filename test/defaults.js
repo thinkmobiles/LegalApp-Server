@@ -54,6 +54,13 @@ module.exports = function (db) {
             user_id: 5,
             company_id: 1
         }];
+    var companies = [{
+            name: 'company 1',
+            owner_id: 1
+        }, {
+            name: 'company 2',
+            owner_id: 2
+    }];
 
     function create(callback) {
         async.waterfall([
@@ -86,7 +93,7 @@ module.exports = function (db) {
 
             //companies:
             function (cb) {
-                factory.createMany(TABLES.COMPANIES, 2, function (err, companies) {
+                factory.createMany(TABLES.COMPANIES, companies, 2, function (err, companies) {
                     if (err) return cb(err);
                     defaultData.companies = companies;
                     cb();

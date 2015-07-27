@@ -28,8 +28,7 @@ module.exports = function (PostGre, ParentModel) {
         //            });
         //        });
             
-    }, {
-        findCollaborators: function (queryOptions, fetchOptions) {
+    }, { getCollaborators: function (queryOptions) {
             var page;
             var limit;
             var orderBy;
@@ -40,25 +39,34 @@ module.exports = function (PostGre, ParentModel) {
             if (queryOptions && queryOptions.companyId) {
                 companyId = queryOptions.companyId;
             }
-            
+
             if (queryOptions && queryOptions.userId) {
                 userId = queryOptions.userId;
             }
 
             return this
                 .query(function (qb) {
-                    qb.innerJoin('user_companies', 'users.id', 'user_companies.user_id');
-                
+                    qb.innerJoin(TABLES.USER_COMPANIES, 'users.id', 'user_companies.user_id');
+
                     if (userId) {
-                        qb.andWhere('users.id', '<>', userId);
+                        qb.andWhere('users.id', userId);
                     }
-                
-                    if (companyId) { 
+
+                    if (companyId) {
                         qb.andWhere('user_companies.company_id', companyId);
                     }
 
                     qb.select('users.*');
-                })
+                });
+        },
+
+        findCollaborator: function (queryOptions, fetchOptions) {
+            return this.getCollaborators(queryOptions)
+                .fetch(fetchOptions);
+        },
+
+        findCollaborators: function (queryOptions, fetchOptions) {
+            return this.getCollaborators(queryOptions)
                 .fetchAll(fetchOptions);
         }
     
