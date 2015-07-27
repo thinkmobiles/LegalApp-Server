@@ -29,6 +29,10 @@ define([
 
         },
 
+        renderTrigger : function(){
+            this.usersCollection.fetch({reset : true});
+        },
+
         renderUsersList : function(){
 
             if (this.tableView){
@@ -48,6 +52,7 @@ define([
             }
 
             this.addView = new AddUserView();
+            this.addView.on('redirectList', this.renderTrigger, this);
             this.$el.find('#addUserContainer').html(this.addView.el);
         },
 
@@ -62,6 +67,7 @@ define([
             editableUser = this.usersCollection.get(userID);
 
             this.addView = new AddUserView({userModel : editableUser});
+            this.addView.on('redirectList', this.renderTrigger, this);
             this.$el.find('#addUserContainer').html(this.addView.el);
         },
 

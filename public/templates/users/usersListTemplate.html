@@ -1,15 +1,11 @@
 <% usrLst.forEach(function(user){%>
     <tr class="userRow" data-id="<%= user.id%>">
         <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-        <% if (user.profile.permissions === 3) {%>
-            <td>Viewer</td>
-        <%}%>
-        <% if (user.profile.permissions === 2) {%>
-            <td>Editor</td>
-        <%}%>
-        <% if (user.profile.permissions === 1) {%>
-            <td>Admin</td>
-        <%}%>
+        <td>
+            <%if (user.profile.permissions == 3){%>Viewer<%}%>
+            <%if (user.profile.permissions == 2){%>Editor<%}%>
+            <%if (user.profile.permissions == 1){%>Admin<%}%>
+        </td>
         <td></td>
     </tr>
 <% }) %>

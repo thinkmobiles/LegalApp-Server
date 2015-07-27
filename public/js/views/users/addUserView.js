@@ -53,6 +53,7 @@ define([
                 wait : true,
                 success : function(){
                     alert('User invited successfully');
+                    self.trigger('redirectList');
                 },
                 error : function(){
                     alert('Error'); // todo message
@@ -62,6 +63,7 @@ define([
         },
 
         updateUser : function(){
+            var self = this;
             var thisEL = this.$el;
             var firstName = thisEL.find('#addFName').val().trim();
             var lastName = thisEL.find('#addLName').val().trim();
@@ -75,16 +77,14 @@ define([
                     last_name  : lastName
                 },
                 phone          : phone,
-                email          : email,
-                permissions    : permissions
+                email          : email
             };
-
-            //this.userModel = new UserModel({id : this.userID});
 
             this.userModel.save(updateData,{
                 wait : true,
                 success : function(){
                     alert('User updated successfully');
+                    self.trigger('redirectList');
                 },
                 error : function(){
                     alert('Error'); // todo message
