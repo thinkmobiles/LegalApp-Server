@@ -76,7 +76,7 @@ var LinksHandler = function (PostGre) {
 
         LinksModel
             .forge({id: id})
-            .fetch({require: true})
+            .fetch({require: true, withRelated: ['linkFields']})
             .then(function (link) {
                 res.status(200).send(link);
             })
@@ -87,13 +87,13 @@ var LinksHandler = function (PostGre) {
     };
 
     this.getLinks = function (req, res, next) {
-        var companyId = req.session.companyId;
-        //var companyId = 5543;
+        //var companyId = req.session.companyId;
+        var companyId = 5543;
 
         LinksModel
             .forge()
             .where({company_id: companyId})
-            .fetchAll({require: true})
+            .fetchAll({require: true, withRelated: ['linkFields']})
             .then(function (links) {
                 res.status(200).send(links);
             })
@@ -101,20 +101,17 @@ var LinksHandler = function (PostGre) {
     };
 
     this.removeLink = function (req, res, next) {
-        var id = req.params.id;
+        var companyId = req.session.company_id;
+        var linkid = req.params.id;
 
         LinksModel
-            .forge({id: id})
-            .fetch({require: true})
-            .then(function (link) {
-                link
-                    .destroy();
-                res.status(200).send({success: 'Link successfully deleted.'});
-            })
-            .catch(LinksModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+            .removeById(linkid,companyId, function(err){
+                if (err){
+                    next(err);
+                } else{
+                    res.status(200).send({success: 'Link successfully deleted.'});
+                }
+            });
     };
 
 };
