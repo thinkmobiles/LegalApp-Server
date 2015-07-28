@@ -16,8 +16,8 @@ define([
 
 
         events: {
-            "click #addNewUser" : "showAddTemplate",
-            "click .userRow"    : "showEditTemplate"
+            "click #addNewUser"  : "showAddTemplate",
+            "click .userRow"     : "showEditTemplate"
         },
 
         initialize: function () {
@@ -46,6 +46,7 @@ define([
         },
 
         showAddTemplate : function(){
+            this.$el.find('.active').removeClass('active');
 
             if (this.addView){
                 this.addView.undelegateEvents()
@@ -57,8 +58,13 @@ define([
         },
 
         showEditTemplate : function(event){
-            var userID = $(event.target).closest('.userRow').data('id');
+            var userRow = $(event.target).closest('.userRow');
+            var userID  = userRow.data('id');
+            var container = userRow.closest('#listTable');
             var editableUser;
+
+            container.find('.active').removeClass('active');
+            userRow.addClass('active');
 
             if (this.addView){
                 this.addView.undelegateEvents()

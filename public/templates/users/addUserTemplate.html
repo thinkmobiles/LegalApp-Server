@@ -1,12 +1,16 @@
+    <%var permiss = edit ? usrMdl.profile.permissions : 1%>
     <input type="text" id="addFName" placeholder="First name*" value="<%= edit ? usrMdl.profile.first_name : ''%>">
     <input type="text" id="addLName" placeholder="Last name*" value="<%= edit ? usrMdl.profile.last_name : ''%>">
     <input type="text" id="addPhone" placeholder="Phone" value="<%= edit ? usrMdl.phone : ''%>">
     <input type="email" id="addEmail" placeholder="Email Address" value="<%= edit ? usrMdl.email : ''%>">
     <select id="addRole">
-        <option <%= (edit && usrMdl.profile.permissions === 3) ? 'selected' : ''%> data-id="3" label="Viewer">
-        <option <%= (edit && usrMdl.profile.permissions === 2) ? 'selected' : ''%> data-id="2" label="Editor" >
-        <%if (App.sessionData.get('role') === 0){%>
-        <option <%= (edit && usrMdl.profile.permissions === 1) ? 'selected' : ''%> data-id="1" label="Admin">
+        <option data-id="3" <%= (permiss === 3) ? 'selected' : ''%> >Viewer</option>
+        <option data-id="2" <%= (permiss === 2) ? 'selected' : ''%> >Editor</option>
+        <%if (role === 0){%>
+        <option data-id="1" <%= (permiss === 1) ? 'selected' : ''%> >Admin</option>
         <%}%>
     </select>
     <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">
+    <% if (edit){%>
+    <input type="button" id="addDelete" value="Delete">
+    <%}%>

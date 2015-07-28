@@ -19,7 +19,7 @@ define([
 
 
         events: {
-            "click #signupButton"     : "signUp"
+            "click #signupButton" : "signUp"
         },
 
         setDefaultData: function () {
@@ -48,18 +48,19 @@ define([
             event.preventDefault();
 
             var self = this;
+            var thisEl = this.$el;
             //var errors = [];
             //var messages = [];
 
             var stateModelUpdate = {
                 errors        : false,
                 messages      : false,
-                email         : this.$el.find("#signupEmail").val().trim(),
-                firstName     : this.$el.find("#signupFName").val().trim(),
-                lastName      : this.$el.find("#signupLName").val().trim(),
-                password      : this.$el.find("#signupPass").val().trim(),
-                company       : this.$el.find("#signupCompany").val().trim(),
-                iAcceptConditions: this.$el.find("#iAgree").prop('checked')
+                email         : thisEl.find("#signupEmail").val().trim(),
+                firstName     : thisEl.find("#signupFName").val().trim(),
+                lastName      : thisEl.find("#signupLName").val().trim(),
+                password      : thisEl.find("#signupPass").val().trim(),
+                company       : thisEl.find("#signupCompany").val().trim(),
+                iAcceptConditions: thisEl.find("#iAgree").prop('checked')
             };
 
 

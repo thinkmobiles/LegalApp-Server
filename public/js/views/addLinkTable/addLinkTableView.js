@@ -20,14 +20,15 @@ define([
 
         render: function () {
 
+            this.undelegateEvents();
             this.$el.html(_.template(AddTemplate)).dialog({
                 closeOnEscape: false,
                 autoOpen: true,
-                resizable: true,
                 dialogClass: "dialogWindow",
                 modal: true,
                 width: "600px"
             });
+            this.delegateEvents();
 
             return this;
         }

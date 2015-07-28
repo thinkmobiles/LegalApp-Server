@@ -9,7 +9,7 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id:"loginDiv",
+        id       :"loginDiv",
 
         initialize: function () {
             this.setDefaultData();
@@ -44,15 +44,16 @@ define([
             event.preventDefault();
 
             var self = this;
+            var thisEl = this.$el;
             var errors = [];
             var messages = [];
 
             var stateModelUpdate = {
                 errors     : false,
                 messages   : false,
-                email      : this.$el.find("#loginEmail").val().trim(),
-                password   : this.$el.find("#loginPass").val().trim(),
-                rememberMe : this.$el.find('#rememberMe').prop('checked')
+                email      : thisEl.find("#loginEmail").val().trim(),
+                password   : thisEl.find("#loginPass").val().trim(),
+                rememberMe : thisEl.find('#rememberMe').prop('checked')
             };
 
             this.stateModel.set(stateModelUpdate);

@@ -25,9 +25,10 @@ define([
         },
 
         changePassword: function(){
+            var thisEl = this.$el;
             var token  = this.token;
-            var password = this.$el.find('#newPass').val().trim();
-            var confirmPassword = this.$el.find('#confirmPass').val().trim();
+            var password = thisEl.find('#newPass').val().trim();
+            var confirmPassword = thisEl.find('#confirmPass').val().trim();
 
             // ============ todo please
             if (password === confirmPassword) {
