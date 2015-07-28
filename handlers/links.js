@@ -29,10 +29,40 @@ var LinksHandler = function (PostGre) {
 
     this.createLink = function (req, res, next) {
         var options = req.body;
+
+        options.company_id = req.session.companyId;
+
+        async.waterfall([
+
+            //create link:
+            function (cb) {
+                self.addLink(options, cb)
+            },
+
+            //create linkFields
+            function (linkModel, cb) {
+                options.Id = linkModel.id;
+                if (options.link_fields && options.link_fields.length) {
+                    linkFieldsHandler.addLinkFields(options, cb)
+                } else {
+                    cb(null, linkModel);
+                }
+            }
+
+        ], function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'Link created', model: result});
+
+        });
+    };
+
+    this.addLink = function (options, callback) {
         var saveData;
 
         if (!options.name) {
-            return next(badRequests.NotEnParams({reqParams: 'name'}));
+            return callback(badRequests.NotEnParams({reqParams: 'name'}));
         }
 
         saveData = self.prepareSaveData(options);
@@ -40,10 +70,7 @@ var LinksHandler = function (PostGre) {
             .forge()
             .save(saveData)
             .exec(function (err, link) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({success: 'Link created', model: link});
+                callback(err, link);
             });
     };
 

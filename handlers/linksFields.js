@@ -46,14 +46,14 @@ var LinksFieldsHandler = function (PostGre) {
 
         if (!linkFields || !linkFields.length) {
             if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: 'links_fields or link_Id'})); //TODO: link_fields
+                callback(badRequests.NotEnParams({reqParams: 'link_fields'})); //TODO: link_fields
             }
             return;
         }
 
         async.each(linkFields,
             function (fields, cb) {
-
+                fields.link_id = options.Id;
                 addField(fields, function (err, linkFieldModel) {
                     if (err) {
                         return cb(err);
@@ -64,7 +64,8 @@ var LinksFieldsHandler = function (PostGre) {
 
             }, function (err) {
                 if (callback && (typeof callback === 'function')) {
-                    callback(err, createdModels);
+                    options.link_fields = createdModels;
+                    callback(err, options);
                 }
             }
         );
