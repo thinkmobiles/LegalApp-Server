@@ -32,5 +32,6 @@ var Models = function ( PostGre ) {
     this.Profile =  require('./profile')( PostGre, Model );
     this.Links =  require('./links')( PostGre, Model );
     this.LinksFields =  require('./linksFields')( PostGre, Model );
+    this.Template =  require('./templates')( PostGre, Model );
 };
 module.exports = Models;

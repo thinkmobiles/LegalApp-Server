@@ -99,6 +99,9 @@ module.exports = function (db, defaults) {
                         if (err) {
                             return done(err);
                         }
+
+                        expect(res.status).to.equals(201);
+
                         done();
                     });
 
