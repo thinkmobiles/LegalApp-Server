@@ -299,6 +299,7 @@ module.exports = function (db, defaults) {
             it('Admin can get the template by id', function (done) {
                 var templateId = 1;
                 var deleteUrl = url + '/' + templateId;
+                var linkId = 1;
 
                 async.waterfall([
 
@@ -311,9 +312,6 @@ module.exports = function (db, defaults) {
                                 if (err) {
                                     return cb(err);
                                 }
-
-                                console.log(res.body.stack);
-                                console.log(res.body.error);
 
                                 expect(res.status).to.equals(200);
                                 expect(res.body).to.be.instanceof(Object);
@@ -350,7 +348,23 @@ module.exports = function (db, defaults) {
 
                             //check links (dependecies):
                             function (cb) {
-                                cb();
+                                var criteria = {
+                                    id: linkId
+                                };
+
+                                knex(TABLES.LINKS)
+                                    .where(criteria)
+                                    .count()
+                                    .exec(function (err, result) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        expect(result).to.be.instanceof(Array);
+                                        expect(result.length).to.be.equals(1);
+                                        expect(result[0]).to.have.property('count');
+                                        expect(result[0].count).to.equals("0");
+                                        cb();
+                                    });
                             }
 
                         ], function (err) {

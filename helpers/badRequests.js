@@ -269,6 +269,9 @@ var BadRequestModule = function () {
         if (!errOptions.message) {
             errOptions.message = 'You do not have sufficient rights';
         }
+        if (!errOptions.status) {
+            errOptions.status = 403;
+        }
 
         return new Errors(errOptions);
     };

@@ -11,24 +11,13 @@ module.exports = function (PostGre, ParentModel) {
             return this.hasOne(PostGre.Models.Profile);
         },
 
-        company: function () { 
+        company: function () {
             return this.belongsToMany(PostGre.Models.Company, 'owner_id')
                 .through(PostGre.Models.UserCompanies, 'user_id', 'company_id');
         },
-        
-        //collaborators: function () {
-        //    var company = this.related('company');
-        //    var companyId = (company && company.id) ? company.id : 1; 
-            
-        //    return this.belongsToMany(PostGre.Models.User, 'id')
-        //        .query(function (qb) {
-        //            qb.innerJoin(TABLES.USER_COMPANIES, 'user_companies.user_id', 'users.id')
-        //                .where({
-        //                "user_companies.company_id": companyId
-        //            });
-        //        });
-            
-    }, { getCollaborators: function (queryOptions) {
+
+    }, {
+        getCollaborators: function (queryOptions) {
             var page;
             var limit;
             var orderBy;
@@ -69,7 +58,7 @@ module.exports = function (PostGre, ParentModel) {
             return this.getCollaborators(queryOptions)
                 .fetchAll(fetchOptions);
         }
-    
+
     });
 
     return UserModel;
