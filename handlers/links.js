@@ -5,10 +5,12 @@
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+var LinkFieldHandler = require('../handlers/linksFields');
 
 var LinksHandler = function (PostGre) {
     var Models = PostGre.Models;
     var LinksModel = Models.Links;
+    var linkFieldsHandler = new LinkFieldHandler(PostGre);
     var self = this;
 
     this.prepareSaveData = function (params) {

@@ -27,8 +27,51 @@ var LinksFieldsHandler = function (PostGre) {
         return saveData;
     };
 
+    function addField(data, callback) {
+        var saveData = self.prepareSaveData(data);
+
+        LinksFieldsModel
+            .forge()
+            .save(saveData)
+            .exec(function (err, linkFieldModel) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err, linkFieldModel);
+                }
+            });
+    };
+
+    this.addLinkFields = function (options, callback) {
+        var linkFields = options.link_fields;
+        var createdModels = [];
+
+        if (!linkFields || !linkFields.length) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: 'links_fields or link_Id'})); //TODO: link_fields
+            }
+            return;
+        }
+
+        async.each(linkFields,
+            function (fields, cb) {
+
+                addField(fields, function (err, linkFieldModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    createdModels.push(linkFieldModel);
+                    cb();
+                });
+
+            }, function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err, createdModels);
+                }
+            }
+        );
+    };
+
     this.createLinksFields = function (req, res, next) {
-        var linksId = req.body.id;
+        /*var linksId = req.body.id;
         var linksFields = req.body.links_fields;
         var saveData;
         var linksmodels = [];
@@ -59,7 +102,16 @@ var LinksFieldsHandler = function (PostGre) {
                     res.status(201).send({success: 'Links created', model: linksmodels});
                 }
             }
-        );
+        );*/
+
+        var options = req.body;
+
+        self.addLinkFields(options, function (err, models) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'Link fields created', models: models});
+        });
 
     };
 

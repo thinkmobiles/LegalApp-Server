@@ -66,6 +66,7 @@ var TemplatesHandler = function (PostGre) {
             .query(function (qb) {
                 qb.where({'company_id': companyId});
             })
+            //.fetchAll({withRelated: ['link.linkFields']})
             .fetchAll()
             .exec(function (err, result) {
                 var templateModels;
