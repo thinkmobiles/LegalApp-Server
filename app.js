@@ -1,6 +1,7 @@
 'use strict';
-
 var express = require('express');
+var multer  = require('multer');
+
 var http = require('http');
 var consolidate = require('consolidate');
 var compression = require('compression');
@@ -12,6 +13,8 @@ var router = express.Router({
     caseSensitive: true,
     strict: true
 });
+var app = express();
+global.done=false;
 
 if (!process.env.NODE_ENV) {
     //TODO change NODE_ENV for production server
@@ -31,7 +34,22 @@ if (process.env.NODE_ENV === 'production') {
     require('./config/development');
 }
 
-var app = express();
+/*Configure the multer.*/
+
+app.use(multer({ dest: process.env.AMAZON_S3_BUCKET,
+    rename: function (fieldname, filename) {
+        //return filename+Date.now();
+        return filename;
+    },
+    onFileUploadStart: function (file) {
+        console.log(file.originalname + ' is starting ...');
+    },
+    onFileUploadComplete: function (file) {
+        console.log(file.fieldname + ' uploaded to  ' + file.path);
+        global.done=true;
+    }
+}));
+
 var httpServer = http.createServer(app);
 
 app.set('port', process.env.PORT || 8850);

@@ -5,11 +5,9 @@ var BadRequestModule = function () {
     var DEFAULT_ERROR_MESSAGE = 'error';
     var DEFAULT_ERROR_STATUS = 400;
 
-    var NOT_ENAUGH_PARAMS = "Not enough incoming parameters.";
+    var NOT_ENOUGH_PARAMS = "Not enough incoming parameters.";
     var INVALID_EMAIL = "Incorrect email address.";
     var EMAIL_IN_USE = 'Email in use. Please input another email address.';
-    var DEVICE_IN_USE = 'deviceId in use. Please input another deviceId';
-    var NO_UPDATE_PARAMS = 'There are no params for update.';
 
     function Errors(options) {
         //http://j-query.blogspot.com/2014/03/custom-error-objects-in-javascript.html
@@ -32,11 +30,11 @@ var BadRequestModule = function () {
         } else {
             this.status = DEFAULT_ERROR_STATUS;
         }
-    }
+    };
 
     Errors.prototype = Object.create(Error.prototype);
 
-    function NotEnParams(options) {
+    this.NotEnParams = function (options) {
         var errOptions;
 
         if (options) {
@@ -50,16 +48,16 @@ var BadRequestModule = function () {
         }
 
         if (!errOptions.message) {
-            errOptions.message = NOT_ENAUGH_PARAMS;
+            errOptions.message = NOT_ENOUGH_PARAMS;
         }
         if (options && options.reqParams) {
             errOptions.message += 'This parameters are required: ' + options.reqParams;
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function InvalidEmail(options) {
+    this.InvalidEmail = function(options) {
         var errOptions;
 
         if (options) {
@@ -76,9 +74,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function EmailInUse(options) {
+    this.EmailInUse = function(options) {
         var errOptions;
 
         if (options) {
@@ -95,28 +93,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function DeviceIdInUse(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'DoubledDeviceId';
-        }
-        if (!errOptions.message) {
-            errOptions.message = DEVICE_IN_USE;
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function DeviceAlreadySubscribed(options) {
+    this.DeviceAlreadySubscribed = function(options) {
         var errOptions;
 
         if (options) {
@@ -133,9 +112,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function InvalidValue(options) {
+    this.InvalidValue = function(options) {
         var errOptions;
         var errMessage;
 
@@ -161,9 +140,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function UnknownDeviceOS(options) {
+    this.UnknownDeviceOS = function(options) {
         var errOptions;
         var errMessage;
 
@@ -183,9 +162,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function NotFound(options) {
+    this.NotFound = function(options) {
         var errOptions;
         var errMessage;
 
@@ -210,9 +189,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function UnconfirmedEmail(options) {
+    this.UnconfirmedEmail = function(options) {
         var errOptions;
 
         if (options) {
@@ -232,9 +211,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function SignInError(options) {
+    this.SignInError = function(options) {
         var errOptions;
 
         if (options) {
@@ -254,9 +233,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function BlockedAccount(options) {
+    this.BlockedAccount = function(options) {
         var errOptions;
 
         if (options) {
@@ -273,9 +252,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function AccessError(options) {
+    this.AccessError = function(options) {
         var errOptions;
 
         if (options) {
@@ -292,53 +271,9 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    function CaptchaError(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'CaptchaError';
-        }
-        if (!errOptions.status) {
-            errOptions.status = 400;
-        }
-        if (!errOptions.message) {
-            errOptions.message = 'The reCAPTCHA wasn\'t entered correctly. Go back and try it again.';
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function NoActiveDevices(options) {
-        var errOptions;
-
-        if (options) {
-            errOptions = options;
-        } else {
-            errOptions = {};
-        }
-
-        if (!errOptions.name) {
-            errOptions.name = 'NoActiveDevices';
-        }
-        if (!errOptions.status) {
-            errOptions.status = 400;
-        }
-        if (!errOptions.message) {
-            errOptions.message = 'The are no active devices';
-        }
-
-        return new Errors(errOptions);
-    }
-
-    function PaymentRequired(options) {
+    this.PaymentRequired = function(options) {
         var errOptions;
 
         if (options) {
@@ -358,25 +293,8 @@ var BadRequestModule = function () {
         }
 
         return new Errors(errOptions);
-    }
+    };
 
-    return {
-        NotEnParams: NotEnParams,
-        InvalidEmail: InvalidEmail,
-        EmailInUse: EmailInUse,
-        DeviceAlreadySubscribed: DeviceAlreadySubscribed,
-        DeviceIdInUse: DeviceIdInUse,
-        InvalidValue: InvalidValue,
-        NotFound: NotFound,
-        UnconfirmedEmail: UnconfirmedEmail,
-        SignInError: SignInError,
-        AccessError: AccessError,
-        CaptchaError:CaptchaError,
-        BlockedAccount: BlockedAccount,
-        UnknownDeviceOS: UnknownDeviceOS,
-        NoActiveDevices: NoActiveDevices,
-        PaymentRequired: PaymentRequired,
-    }
 };
 
 module.exports = new BadRequestModule();
