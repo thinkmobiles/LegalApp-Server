@@ -33,9 +33,9 @@ define([
 
         inviteUser: function (){
             var thisEL = this.$el;
-            var self = this;
+            var self   = this;
             var firstName = thisEL.find('#addFName').val().trim();
-            var lastName = thisEL.find('#addLName').val().trim();
+            var lastName  = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
             var email = thisEL.find('#addEmail').val().trim();
             var permissions = thisEL.find("#addRole option:selected").data('id');
@@ -69,25 +69,24 @@ define([
             var firstName = thisEL.find('#addFName').val().trim();
             var lastName = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
-            //var email = thisEL.find('#addEmail').val().trim();
             var permissions = thisEL.find("#addRole option:selected").data('id');
 
             var updateData = {
                 profile : {
-                    first_name : firstName,
-                    last_name  : lastName,
-                    phone      : phone,
-                    permissions: permissions
+                    first_name  : firstName,
+                    last_name   : lastName,
+                    phone       : phone,
+                    permissions : permissions
                 }
             };
 
             this.userModel.save(updateData,{
-                wait : true,
-                success : function(){
+                wait   : true,
+                success: function(){
                     alert('User updated successfully');
                     self.trigger('redirectList');
                 },
-                error : function(){
+                error  : function(){
                     alert('Error'); // todo message
                 }
             });
@@ -104,11 +103,15 @@ define([
 
         render: function () {
             if (!this.editThisForm) {
-                this.$el.html(_.template(AddUserTemplate)({edit : false}));
+                this.$el.html(_.template(AddUserTemplate)({
+                    edit   : false,
+                    role   : App.sessionData.get('role')
+                }));
             } else {
                 this.$el.html(_.template(AddUserTemplate)({
                     edit   : true,
-                    usrMdl : this.userModel.toJSON()
+                    usrMdl : this.userModel.toJSON(),
+                    role   : App.sessionData.get('role')
                 }));
             }
             return this;

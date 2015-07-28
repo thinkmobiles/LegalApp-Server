@@ -49,7 +49,7 @@ define([
 
         saveProfile: function(){
             var profNameFirst = this.$el.find('#profFName').val().trim();
-            var profNameLast = this.$el.find('#profLName').val().trim();
+            var profNameLast  = this.$el.find('#profLName').val().trim();
             var profPhone = this.$el.find('#profPhone').val().trim();
 
             var saveData = {
