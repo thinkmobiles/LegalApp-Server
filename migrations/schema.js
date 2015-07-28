@@ -158,7 +158,10 @@ module.exports = function (knex) {
             dropTable(TABLES.INVITES),
             dropTable(TABLES.PROFILES),
             dropTable(TABLES.USER_COMPANIES),
-            dropTable(TABLES.USERS)
+            dropTable(TABLES.USERS),
+            dropTable(TABLES.LINKS),
+            dropTable(TABLES.LINKS_FIELDS)
+
         ], function (err) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {

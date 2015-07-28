@@ -25,6 +25,8 @@ module.exports = function (db) {
     var lastNameCounter = 0;
     var companyCounter = 0;
     var userCompanyCounter = 0;
+    var Links = Models.Links;
+    var linkcounter = 0;
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
@@ -65,12 +67,25 @@ module.exports = function (db) {
 
     //users:
     factory.define(TABLES.USERS, User, {
-        
+
         // define attributes using properties and functions:
         password: getEncryptedPass(PASSWORD),
         email: function () {
             emailCounter++;
             return 'user_' + emailCounter + '_@test.com';
+        }
+    });
+
+    factory.define(TABLES.LINKS, Links, {
+
+        // define attributes using properties and functions:
+        name: function () {
+            linkcounter++;
+            return 'link_' + linkcounter;
+        },
+        company_id: function () {
+            companyCounter++;
+            return companyCounter;
         }
     });
     

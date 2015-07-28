@@ -87,15 +87,22 @@ var LinksHandler = function (PostGre) {
     };
 
     this.getLinks = function (req, res, next) {
-        //var companyId = req.session.companyId;
-        var companyId = 5543;
+        var companyId = req.session.companyId;
+        //var companyId = 5543;
 
         LinksModel
             .forge()
             .where({company_id: companyId})
             .fetchAll({require: true, withRelated: ['linkFields']})
             .then(function (links) {
-                res.status(200).send(links);
+                if (links && Array.isArray(links.models) && links.models.length) {
+                    res.status(200).send(links.models);
+                } else {
+                    res.status(200).send([]);
+                }
+            })
+            .catch(LinksModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
             })
             .catch(next);
     };
@@ -105,10 +112,10 @@ var LinksHandler = function (PostGre) {
         var linkid = req.params.id;
 
         LinksModel
-            .removeById(linkid,companyId, function(err){
-                if (err){
+            .removeById(linkid, companyId, function (err) {
+                if (err) {
                     next(err);
-                } else{
+                } else {
                     res.status(200).send({success: 'Link successfully deleted.'});
                 }
             });
