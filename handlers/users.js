@@ -89,10 +89,6 @@ var UsersHandler = function (PostGre) {
             }
             if (profile.permissions !== undefined) {
 
-                console.log('VALID_PERMISSIONS');
-                console.log(VALID_PERMISSIONS);
-                console.log(VALID_PERMISSIONS.indexOf(profile.permissions));
-
                 if ( VALID_PERMISSIONS.indexOf(profile.permissions) === -1) {
                     return callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
                 }
@@ -397,7 +393,7 @@ var UsersHandler = function (PostGre) {
             permissions = options.profile.permissions;
 
             if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
-                return next(badRequests.AccessError({status: 403}));
+                return next(badRequests.AccessError());
             }
         }
 
@@ -642,6 +638,17 @@ var UsersHandler = function (PostGre) {
     this.updateUser = function (req, res, next) {
         var userId = req.params.id;
         var options = req.body;
+        var currentUserId = req.session.userId;
+        var permissions;
+
+        //check permissions:
+        if ((options.profile && (options.profile.permissions !== undefined))) {
+            permissions = options.profile.permissions;
+
+            if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
+                return next(badRequests.AccessError());
+            }
+        }
 
         updateUserById(userId, options, function (err, userModel) {
             if (err) {

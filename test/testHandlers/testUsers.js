@@ -935,13 +935,52 @@ module.exports = function (db, defaults) {
         });
 
         describe('PUT /users/:id', function () {
-            var url = '/profile';
+            var url = '/users';
 
             it('Editor user can\'t update the other users profile', function (done) {
-                done(); //TODO: ...
+                var data = {
+                    profile: {
+                        first_name: 'new first name',
+                        last_name: 'new last name',
+                        permissions: PERMISSIONS.USER
+                    }
+                };
+                var updateUrl = url + '/' + 1;
+
+                editorUserAgent
+                    .put(updateUrl)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
+            });
+
+            it('Admin can\'t update the permissions to owner', function (done) {
+                var data = {
+                    profile: {
+                        first_name: 'new first name',
+                        last_name: 'new last name',
+                        permissions: PERMISSIONS.OWNER
+                    }
+                };
+                var updateUrl = url + '/' + 6;
+
+                adminUserAgent
+                    .put(updateUrl)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
             });
 
         });
-
     });
 };
