@@ -61,6 +61,16 @@ module.exports = function (db) {
             name: 'company 2',
             owner_id: 2
     }];
+    var links = [{
+        name:'link 1',
+        company_id:1
+    }, {
+        name:'link 2',
+        company_id:1
+    },{
+        name:'link 3',
+        company_id:2
+    }];
 
     var templates = [
         {
@@ -134,6 +144,12 @@ module.exports = function (db) {
                     defaultData.templates = templateModels;
                     cb();
                 });
+            },
+            function(cd){
+                factory.createMany(TABLES.LINKS, links, 3, function (err, links) {
+                    defaultData.links = links;
+                    cd(err, links);
+            });
             }
 
         ], function (err) {

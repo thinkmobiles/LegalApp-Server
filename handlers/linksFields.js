@@ -34,7 +34,7 @@ var LinksFieldsHandler = function (PostGre) {
         var linksmodels = [];
 
         if (!linksFields ||!linksId) {
-            return next(badRequests.NotEnParams({reqParams: 'links_fields or Id'}));
+            return next(badRequests.NotEnParams({reqParams: 'links_fields or links_Id'}));
         }
 
         async.each(linksFields,
@@ -62,23 +62,6 @@ var LinksFieldsHandler = function (PostGre) {
         );
 
     };
-
-
-    /*this.getLinksFields = function (req, res, next) {
-        //var companyId = req.session.companyId;
-        var linksId = req.params.id;
-
-        LinksFieldsModel
-            .forge()
-            .where({link_id: id})
-            .fetchAll()
-            .then(function (linksFields) {
-                return linksFields;
-            })
-            .catch(function (err) {
-                return err;
-            })
-    };*/
 
     this.getLinksFieldsById = function (req, res, next) {
         //var companyId = req.session.companyId;
