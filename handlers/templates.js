@@ -16,20 +16,21 @@ var TemplatesHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
+    var LinkModel = Models.Link;
     var TemplateModel = Models.Template;
     var session = new SessionHandler(PostGre);
     var self = this;
 
-    function remove(criteria, callback) {
-        knex(TABLES.TEMPLATES)
-            .where(criteria)
-            .del()
-            .exec(function (err, result) {
-                if (callback && (typeof callback === 'function')) {
-                    callback(err, result);
-                }
-            });
-    };
+    /*    function remove(criteria, callback) {
+     knex(TABLES.TEMPLATES)
+     .where(criteria)
+     .del()
+     .exec(function (err, result) {
+     if (callback && (typeof callback === 'function')) {
+     callback(err, result);
+     }
+     });
+     };*/
 
     this.createTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
@@ -119,22 +120,50 @@ var TemplatesHandler = function (PostGre) {
         //return next(badRequests.InvalidValue({message: 'This method is not implemented yet'}));
         var companyId = req.session.companyId;
         var templateId = req.params.id;
+        var criteria = {
+            id: templateId,
+            company_id: companyId
+        };
+        var fetchParams = {
+            require: true
+        };
 
-        async.parallel([
+        async.waterfall([
 
-            //remove the template:
+            //try to find the template:
             function (cb) {
-                var criteria = {
-                    company_id: companyId,
-                    id: templateId
-                };
 
-                remove(criteria, cb);
+                TemplateModel
+                    .find(criteria, fetchParams)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
             },
 
-            //remove the links:
-            function (cb) {
-                cb();
+            //try to remove the deps.:
+            function (templateModel, cb) {
+                templateModel.removeDependencies(function (err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, templateModel);
+                });
+            },
+
+            //try to remove the template:
+            function (templateModel, cb) {
+                templateModel
+                    .destroy()
+                    .exec(function (err) {
+                        if (err) {
+                            cb(err);
+                        }
+                        cb();
+                    });
             }
 
         ], function (err) {
