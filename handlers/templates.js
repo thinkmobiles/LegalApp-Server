@@ -1,5 +1,6 @@
 'use strict';
 
+var TABLES = require('../constants/tables');
 var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var PERMISSIONS = require('../constants/permissions');
@@ -13,23 +14,9 @@ var SessionHandler = require('../handlers/sessions');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
-    var UserModel = Models.User;
     var TemplateModel = Models.Template;
     var session = new SessionHandler(PostGre);
     var self = this;
-
-    function preparaSaveData() {
-        var saveData = {};
-
-        if (params && params.name) {
-            saveData.name = params.name;
-        }
-        if (params && params.link_id) {
-            saveData.link_id = params.link_id;
-        }
-
-        return saveData;
-    };
 
     this.createTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
@@ -66,6 +53,7 @@ var TemplatesHandler = function (PostGre) {
             .query(function (qb) {
                 qb.where({'company_id': companyId});
             })
+            //.fetchAll({withRelated: ['link.linkFields']})
             .fetchAll()
             .exec(function (err, result) {
                 var templateModels;
@@ -115,7 +103,60 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.removeTemplate = function (req, res, next) {
-        return next(badRequests.InvalidValue({message: 'This method is not implemented yet'}));
+        var companyId = req.session.companyId;
+        var templateId = req.params.id;
+        var criteria = {
+            id: templateId,
+            company_id: companyId
+        };
+        var fetchParams = {
+            require: true
+        };
+
+        async.waterfall([
+
+            //try to find the template:
+            function (cb) {
+
+                TemplateModel
+                    .find(criteria, fetchParams)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //try to remove the deps.:
+            function (templateModel, cb) {
+                templateModel.removeDependencies(function (err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, templateModel);
+                });
+            },
+
+            //try to remove the template:
+            function (templateModel, cb) {
+                templateModel
+                    .destroy()
+                    .exec(function (err) {
+                        if (err) {
+                            cb(err);
+                        }
+                        cb();
+                    });
+            }
+
+        ], function (err) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'Success removed'});
+        });
     };
 };
 

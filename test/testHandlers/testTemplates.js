@@ -13,6 +13,7 @@ var badRequests = require('../../helpers/badRequests');
 var notEnParamsMessage = badRequests.NotEnParams().message;
 
 module.exports = function (db, defaults) {
+    var knex = db.knex;
     var Models = db.Models;
     var UserModel = Models.User;
     var TemplateModel = Models.Template;
@@ -264,9 +265,6 @@ module.exports = function (db, defaults) {
                                     return cb(err);
                                 }
 
-                                console.log(res.body.stack);
-                                console.log(res.body.error);
-
                                 expect(res.status).to.equals(200);
                                 expect(res.body).to.be.instanceof(Object);
                                 expect(res.body).to.have.property('id');
@@ -281,6 +279,100 @@ module.exports = function (db, defaults) {
                     //check database
                     function (template, cb) {
                         cb(); //TODO: write some test
+                    }
+
+                ], function (err, result) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+
+            });
+
+        });
+
+        describe('DELETE /templates/:id', function () {
+
+            var url = '/templates';
+
+            it('Admin can get the template by id', function (done) {
+                var templateId = 1;
+                var deleteUrl = url + '/' + templateId;
+                var linkId = 1;
+
+                async.waterfall([
+
+                    //make request:
+                    function (cb) {
+
+                        userAgent1
+                            .delete(deleteUrl)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return cb(err);
+                                }
+
+                                expect(res.status).to.equals(200);
+                                expect(res.body).to.be.instanceof(Object);
+                                expect(res.body).to.have.property('success');
+
+                                cb(null, res.body);
+                            });
+                    },
+
+                    //check database
+                    function (template, cb) {
+                        async.parallel([
+
+                            //check template:
+                            function (cb) {
+                                var criteria = {
+                                    id: templateId
+                                };
+
+                                knex(TABLES.TEMPLATES)
+                                    .where(criteria)
+                                    .count()
+                                    .exec(function (err, result) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        expect(result).to.be.instanceof(Array);
+                                        expect(result.length).to.be.equals(1);
+                                        expect(result[0]).to.have.property('count');
+                                        expect(result[0].count).to.equals("0");
+                                        cb();
+                                    });
+                            },
+
+                            //check links (dependecies):
+                            function (cb) {
+                                var criteria = {
+                                    id: linkId
+                                };
+
+                                knex(TABLES.LINKS)
+                                    .where(criteria)
+                                    .count()
+                                    .exec(function (err, result) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        expect(result).to.be.instanceof(Array);
+                                        expect(result.length).to.be.equals(1);
+                                        expect(result[0]).to.have.property('count');
+                                        expect(result[0].count).to.equals("0");
+                                        cb();
+                                    });
+                            }
+
+                        ], function (err) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            cb();
+                        });
                     }
 
                 ], function (err, result) {

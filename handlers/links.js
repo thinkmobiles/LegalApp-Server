@@ -5,10 +5,12 @@
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+var LinkFieldHandler = require('../handlers/linksFields');
 
 var LinksHandler = function (PostGre) {
     var Models = PostGre.Models;
     var LinksModel = Models.Links;
+    var linkFieldsHandler = new LinkFieldHandler(PostGre);
     var self = this;
 
     this.prepareSaveData = function (params) {
@@ -27,10 +29,40 @@ var LinksHandler = function (PostGre) {
 
     this.createLink = function (req, res, next) {
         var options = req.body;
+
+        options.company_id = req.session.companyId;
+
+        async.waterfall([
+
+            //create link:
+            function (cb) {
+                self.addLink(options, cb)
+            },
+
+            //create linkFields
+            function (linkModel, cb) {
+                options.Id = linkModel.id;
+                if (options.link_fields && options.link_fields.length) {
+                    linkFieldsHandler.addLinkFields(options, cb)
+                } else {
+                    cb(null, linkModel);
+                }
+            }
+
+        ], function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'Link created', model: result});
+
+        });
+    };
+
+    this.addLink = function (options, callback) {
         var saveData;
 
         if (!options.name) {
-            return next(badRequests.NotEnParams({reqParams: 'name'}));
+            return callback(badRequests.NotEnParams({reqParams: 'name'}));
         }
 
         saveData = self.prepareSaveData(options);
@@ -38,10 +70,7 @@ var LinksHandler = function (PostGre) {
             .forge()
             .save(saveData)
             .exec(function (err, link) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({success: 'Link created', model: link});
+                callback(err, link);
             });
     };
 
@@ -87,15 +116,22 @@ var LinksHandler = function (PostGre) {
     };
 
     this.getLinks = function (req, res, next) {
-        //var companyId = req.session.companyId;
-        var companyId = 5543;
+        var companyId = req.session.companyId;
+        //var companyId = 5543;
 
         LinksModel
             .forge()
             .where({company_id: companyId})
             .fetchAll({require: true, withRelated: ['linkFields']})
             .then(function (links) {
-                res.status(200).send(links);
+                if (links && Array.isArray(links.models) && links.models.length) {
+                    res.status(200).send(links.models);
+                } else {
+                    res.status(200).send([]);
+                }
+            })
+            .catch(LinksModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
             })
             .catch(next);
     };
@@ -105,10 +141,10 @@ var LinksHandler = function (PostGre) {
         var linkid = req.params.id;
 
         LinksModel
-            .removeById(linkid,companyId, function(err){
-                if (err){
+            .removeById(linkid, companyId, function (err) {
+                if (err) {
                     next(err);
-                } else{
+                } else {
                     res.status(200).send({success: 'Link successfully deleted.'});
                 }
             });

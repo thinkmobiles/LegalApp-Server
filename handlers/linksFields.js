@@ -27,14 +27,58 @@ var LinksFieldsHandler = function (PostGre) {
         return saveData;
     };
 
+    function addField(data, callback) {
+        var saveData = self.prepareSaveData(data);
+
+        LinksFieldsModel
+            .forge()
+            .save(saveData)
+            .exec(function (err, linkFieldModel) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err, linkFieldModel);
+                }
+            });
+    };
+
+    this.addLinkFields = function (options, callback) {
+        var linkFields = options.link_fields;
+        var createdModels = [];
+
+        if (!linkFields || !linkFields.length) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: 'link_fields'})); //TODO: link_fields
+            }
+            return;
+        }
+
+        async.each(linkFields,
+            function (fields, cb) {
+                fields.link_id = options.Id;
+                addField(fields, function (err, linkFieldModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    createdModels.push(linkFieldModel);
+                    cb();
+                });
+
+            }, function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    options.link_fields = createdModels;
+                    callback(err, options);
+                }
+            }
+        );
+    };
+
     this.createLinksFields = function (req, res, next) {
-        var linksId = req.body.id;
+        /*var linksId = req.body.id;
         var linksFields = req.body.links_fields;
         var saveData;
         var linksmodels = [];
 
         if (!linksFields ||!linksId) {
-            return next(badRequests.NotEnParams({reqParams: 'links_fields or Id'}));
+            return next(badRequests.NotEnParams({reqParams: 'links_fields or links_Id'}));
         }
 
         async.each(linksFields,
@@ -59,26 +103,18 @@ var LinksFieldsHandler = function (PostGre) {
                     res.status(201).send({success: 'Links created', model: linksmodels});
                 }
             }
-        );
+        );*/
+
+        var options = req.body;
+
+        self.addLinkFields(options, function (err, models) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'Link fields created', models: models});
+        });
 
     };
-
-
-    /*this.getLinksFields = function (req, res, next) {
-        //var companyId = req.session.companyId;
-        var linksId = req.params.id;
-
-        LinksFieldsModel
-            .forge()
-            .where({link_id: id})
-            .fetchAll()
-            .then(function (linksFields) {
-                return linksFields;
-            })
-            .catch(function (err) {
-                return err;
-            })
-    };*/
 
     this.getLinksFieldsById = function (req, res, next) {
         //var companyId = req.session.companyId;
