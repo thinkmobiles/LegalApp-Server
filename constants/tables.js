@@ -6,5 +6,6 @@ module.exports = {
     USER_COMPANIES: 'user_companies',
     USERS: 'users',
     LINKS: 'links',
-    LINKS_FIELDS: 'links_fields'
+    LINKS_FIELDS: 'links_fields',
+    TEMPLATES: 'templates'
 };

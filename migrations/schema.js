@@ -74,6 +74,14 @@ module.exports = function (knex) {
                 row.string('name');
                 row.string('code');
                 row.timestamps();
+            }),
+
+            createTable(TABLES.TEMPLATES, function (row) {
+                row.increments().primary();
+                row.integer('company_id').index();
+                row.integer('link_id').index();
+                row.string('name');
+                row.timestamps();
             })
 
         ], function (err, results) {
@@ -156,9 +164,12 @@ module.exports = function (knex) {
             dropTable(TABLES.COMPANIES),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
+            dropTable(TABLES.LINKS_FIELDS),
+            dropTable(TABLES.LINKS),
             dropTable(TABLES.PROFILES),
             dropTable(TABLES.USER_COMPANIES),
-            dropTable(TABLES.USERS)
+            dropTable(TABLES.USERS),
+            dropTable(TABLES.TEMPLATES)
         ], function (err) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {
