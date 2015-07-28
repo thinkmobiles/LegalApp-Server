@@ -13,7 +13,7 @@ module.exports = function (app) {
     var linkshandler = new LinksHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.post('/', linkshandler.createLink);
+    router.post('/', session.authenticatedUser, linkshandler.createLink);
     router.put('/:id', session.authenticatedUser, linkshandler.updateLink);
     router.get('/', session.authenticatedUser, linkshandler.getLinks);
     router.get('/:id', session.authenticatedUser, linkshandler.getLink);
