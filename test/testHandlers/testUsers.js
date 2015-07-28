@@ -22,6 +22,9 @@ module.exports = function (db, defaults) {
     var agent = request.agent(host);
     var userAgent1 = request.agent(host);
     var userAgent2 = request.agent(host);
+    var adminUserAgent = request.agent(host);
+    var editorUserAgent = request.agent(host);
+    var baseUserAgent = request.agent(host);
 
     var users = defaults.getData('users');
     var user1 = {
@@ -30,6 +33,18 @@ module.exports = function (db, defaults) {
     };
     var user2 = {
         email: users[1].attributes.email,
+        password: defaults.password
+    };
+    var editorUser = {
+        email: users[3].attributes.email,
+        password: defaults.password
+    };
+    var baseUser = {
+        email: users[4].attributes.email,
+        password: defaults.password
+    };
+    var adminUser = {
+        email: users[5].attributes.email,
         password: defaults.password
     };
 
@@ -64,6 +79,72 @@ module.exports = function (db, defaults) {
                 userAgent2
                     .post(url)
                     .send(user2)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('success');
+
+                        done();
+                    });
+            });
+
+            it('Editor user can loggin', function (done) {
+                editorUserAgent
+                    .post(url)
+                    .send(editorUser)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('success');
+
+                        done();
+                    });
+            });
+
+            it('Base User can loggin', function (done) {
+                baseUserAgent
+                    .post(url)
+                    .send(baseUser)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('success');
+
+                        done();
+                    });
+            });
+
+            it('Admin User can loggin', function (done) {
+                adminUserAgent
+                    .post(url)
+                    .send(adminUser)
                     .end(function (err, res) {
                         var body;
 
@@ -583,7 +664,7 @@ module.exports = function (db, defaults) {
                 ], done);
             });
 
-            it('Admin-User can update the permissions', function (done) {
+            it('Owner-User can update the permissions', function (done) {
                 var data = {
                     profile: {
                         permissions: PERMISSIONS.ADMIN
@@ -687,6 +768,72 @@ module.exports = function (db, defaults) {
                 ], done);
             });
 
+            it('Editor User can\'t change the permissions', function (done) {
+                var data = {
+                    profile: {
+                        first_name: 'new first name',
+                        last_name: 'new last name',
+                        permissions: PERMISSIONS.OWNER
+                    }
+                };
+
+                editorUserAgent
+                    .put(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
+
+            });
+
+            it('Base User can\'t change the permissions', function (done) {
+                var data = {
+                    profile: {
+                        first_name: 'new first name',
+                        last_name: 'new last name',
+                        permissions: PERMISSIONS.ADMIN
+                    }
+                };
+
+                baseUserAgent
+                    .put(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
+
+            });
+
+            it('Admin User can\'t change the permissions to owner', function (done) {
+                var data = {
+                    profile: {
+                        first_name: 'new first name',
+                        last_name: 'new last name',
+                        permissions: PERMISSIONS.OWNER
+                    }
+                };
+
+                adminUserAgent
+                    .put(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
+
+            });
+
         });
 
         describe('GET /users', function () {
@@ -715,7 +862,7 @@ module.exports = function (db, defaults) {
                         }
 
                         expect(userModels.models).to.have.property('length');
-                        expect(userModels.models).to.have.length(4);
+                        expect(userModels.models).to.have.length(5);
 
                         done();
                     });
@@ -731,7 +878,7 @@ module.exports = function (db, defaults) {
 
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Array);
-                        expect(res.body).to.have.length(4);
+                        expect(res.body).to.have.length(5);
 
                         done();
                     });
@@ -783,6 +930,15 @@ module.exports = function (db, defaults) {
 
                         done();
                     });
+            });
+
+        });
+
+        describe('PUT /users/:id', function () {
+            var url = '/profile';
+
+            it('Editor user can\'t update the other users profile', function (done) {
+                done(); //TODO: ...
             });
 
         });

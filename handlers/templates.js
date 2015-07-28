@@ -13,24 +13,10 @@ var badRequests = require('../helpers/badRequests');
 var SessionHandler = require('../handlers/sessions');
 
 var TemplatesHandler = function (PostGre) {
-    var knex = PostGre.knex;
     var Models = PostGre.Models;
-    var UserModel = Models.User;
-    var LinkModel = Models.Link;
     var TemplateModel = Models.Template;
     var session = new SessionHandler(PostGre);
     var self = this;
-
-    /*    function remove(criteria, callback) {
-     knex(TABLES.TEMPLATES)
-     .where(criteria)
-     .del()
-     .exec(function (err, result) {
-     if (callback && (typeof callback === 'function')) {
-     callback(err, result);
-     }
-     });
-     };*/
 
     this.createTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
@@ -117,7 +103,6 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.removeTemplate = function (req, res, next) {
-        //return next(badRequests.InvalidValue({message: 'This method is not implemented yet'}));
         var companyId = req.session.companyId;
         var templateId = req.params.id;
         var criteria = {
