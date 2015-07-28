@@ -15,7 +15,7 @@ var notEnParamsMessage = badRequests.NotEnParams().message;
 module.exports = function (db, defaults) {
     var Models = db.Models;
     var UserModel = Models.User;
-    var ProfileModel = Models.Profile;
+    var TemplateModel = Models.Template;
 
     var host = process.env.HOST;
 
@@ -100,14 +100,109 @@ module.exports = function (db, defaults) {
                             return done(err);
                         }
 
-                        expect(res.status).to.equals(201);
+                        expect(res.status).to.equals(400);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.have.property('error');
+                        expect(res.body.error).to.include(notEnParamsMessage);
 
                         done();
                     });
-
             });
 
-        });
+            it('Can\'t create template without link_id', function (done) {
+                var data = {
+                    name: 'Test template'
+                };
 
+                userAgent1
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(400);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.have.property('error');
+                        expect(res.body.error).to.include(notEnParamsMessage);
+
+                        done();
+                    });
+            });
+
+            it('Can create template with valid data', function (done) {
+                var data = {
+                    name: 'My first Template',
+                    link_id: 1
+                };
+
+                async.waterfall([
+
+                    //make request:
+                    function (cb) {
+                        userAgent1
+                            .post(url)
+                            .send(data)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return cb(err);
+                                }
+
+                                expect(res.status).to.equals(201);
+                                expect(res.body).to.be.instanceof(Object);
+                                expect(res.body).to.have.property('success');
+                                expect(res.body).to.have.property('model');
+
+                                cb(null, res.body.model);
+                            });
+                    },
+
+                    //check database
+                    function (template, cb) {
+                        var criteria = {};
+
+                        expect(template).to.be.instanceof(Object);
+                        expect(template).to.have.property('id');
+                        expect(template).to.have.property('name');
+                        expect(template).to.have.property('link_id');
+
+                        expect(template.name).to.equals(data.name);
+                        expect(template.link_id).to.equals(data.link_id);
+
+                        criteria.id = template.id;
+                        TemplateModel
+                            .find(criteria)
+                            .exec(function (err, templateModel) {
+                                var templateJSON;
+
+                                if (err) {
+                                    return cb(err);
+                                }
+
+                                expect(templateModel).to.be.instanceof(Object);
+
+                                templateJSON = templateModel.toJSON();
+
+                                expect(templateJSON).to.have.property('id');
+                                expect(templateJSON).to.have.property('company_id');
+
+                                expect(templateJSON.name).to.equals(data.name);
+                                expect(templateJSON.link_id).to.equals(data.link_id);
+                                expect(templateJSON.company_id).to.equals(1);
+
+                                cb();
+                            });
+
+                    }
+
+                ], function (err, result) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+            });
+        });
     });
 };
