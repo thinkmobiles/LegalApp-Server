@@ -204,5 +204,50 @@ module.exports = function (db, defaults) {
                 });
             });
         });
+
+        describe('GET /templates', function () {
+            var url = '/templates/';
+
+            it('Admin can get the list of templates', function (done) {
+
+                async.waterfall([
+
+                    //make request:
+                    function (cb) {
+                        userAgent1
+                            .get(url)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return cb(err);
+                                }
+
+                                console.log(res.body.stack);
+                                console.log(res.body.error);
+
+                                expect(res.status).to.equals(200);
+                                expect(res.body).to.be.instanceof(Array);
+                                expect(res.body).to.have.property('length');
+                                expect(res.body.length).to.equals(3);
+
+                                cb(null, res.body);
+                            });
+                    },
+
+                    //check database
+                    function (template, cb) {
+                        cb(); //TODO: write some test
+                    }
+
+                ], function (err, result) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+
+            });
+
+        });
+
     });
 };

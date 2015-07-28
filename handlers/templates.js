@@ -59,7 +59,31 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
-        return next(badRequests.InvalidValue({message: 'GET /templates is not implemented yet'}));
+        var companyId = req.session.companyId;
+
+        TemplateModel
+            .forge()
+            .query(function (qb) {
+                qb.where({'company_id': companyId});
+            })
+            .fetchAll()
+            .exec(function (err, result) {
+                var templateModels;
+
+                if (err) {
+                    return next(err);
+                }
+
+                if (result && result.models) {
+                    templateModels = result.models;
+                } else {
+                    templateModels = [];
+                }
+
+                res.status(200).send(templateModels);
+
+            });
+
     };
 
     this.getTemplate = function (req, res, next) {
