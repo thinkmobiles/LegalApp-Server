@@ -38,7 +38,7 @@ define([
                         firstName : response.profile.first_name,
                         lastName  : response.profile.last_name,
                         phone     : response.profile.phone,
-                        company   : response.profile.company
+                        company   : response.company[0].name
                     });
                 },
                 error  : function () {

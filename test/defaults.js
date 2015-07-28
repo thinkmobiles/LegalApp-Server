@@ -72,6 +72,24 @@ module.exports = function (db) {
         company_id:2
     }];
 
+    var templates = [
+        {
+            name: 'Employee',
+            link_id: 1,
+            company_id: 1
+        },
+        {
+            name: 'Employee',
+            link_id: 2,
+            company_id: 2
+        },
+        {
+            name: 'License',
+            link_id: 3,
+            company_id: 1
+        }
+    ];
+
     function create(callback) {
         async.waterfall([
             
@@ -115,6 +133,15 @@ module.exports = function (db) {
                 factory.createMany(TABLES.USER_COMPANIES, userCompanies, function (err, companies) {
                     if (err) return cb(err);
                     defaultData.userCompanies = userCompanies;
+                    cb();
+                });
+            },
+
+            //create templates:
+            function (cb) {
+                factory.createMany(TABLES.TEMPLATES, templates, function (err, templateModels) {
+                    if (err) return cb(err);
+                    defaultData.templates = templateModels;
                     cb();
                 });
             },

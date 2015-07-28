@@ -1,10 +1,10 @@
 /**
- * Created by andrey on 22.07.15.
+ * Created by root on 28.07.15.
  */
 
 define([
-    'text!templates/templates/templatesTemplate.html'
-], function (TempTemplate) {
+    'text!templates/documents/documentsListTemplate.html'
+], function (ListTemplate) {
 
     var View;
     View = Backbone.View.extend({
@@ -14,7 +14,7 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(TempTemplate));
+            this.$el.html(_.template(ListTemplate));
             return this;
         }
 

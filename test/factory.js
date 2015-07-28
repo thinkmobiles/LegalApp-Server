@@ -19,6 +19,7 @@ module.exports = function (db) {
     var UserCompanies = Models.UserCompanies;
     var User = Models.User;
     var Profile = Models.Profile;
+    var Template = Models.Template;
     var profilesCount = 0;
     var emailCounter = 0;
     var firstNameCounter = 0;
@@ -27,6 +28,7 @@ module.exports = function (db) {
     var userCompanyCounter = 0;
     var Links = Models.Links;
     var linkcounter = 0;
+    var templateCount = 0;
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
@@ -88,6 +90,16 @@ module.exports = function (db) {
             return companyCounter;
         }
     });
-    
+
+    //templates:
+    factory.define(TABLES.TEMPLATES, Template, {
+        name: function () {
+            templateCount++;
+            return 'template_' + templateCount;
+        },
+        company_id: 1,
+        link_id: 1
+    });
+
     return factory;
 };

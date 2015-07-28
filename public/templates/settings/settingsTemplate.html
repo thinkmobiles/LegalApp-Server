@@ -1,3 +1,35 @@
 <div>
-    <h2>Hello, i am "Settings" page</h2>
+    <div id="topSettings">
+    <h2>Settings</h2>
+    <div id="goToAdd">
+        <span>Add template</span>
+    </div>
+    </div>
+    <ul class="tabs">
+        <li><a class="active" href="javascript:;">Templates</a></li>
+        <li><a href="javascript:;">Documents</a></li>
+    </ul>
+    <div class="tabs-items">
+        <div class="tabs-item openTab">
+            <table id="templatesTable" border="1">
+                <col width="10%">
+                <col width="30%">
+                <col width="15%">
+                <col width="30%">
+                <col width="15%">
+
+                <thead>
+                <tr>
+                    <th>Logo</th>
+                    <th class="sortableData" data-sort="name">Name</th>
+                    <th>Links</th>
+                    <th>File</th>
+                    <th>Linked Template</th>
+                </tr>
+                </thead>
+                <tbody id="templatesList"></tbody>
+            </table>
+        </div>
+        <div class="tabs-item"></div>
+    </div>
 </div>

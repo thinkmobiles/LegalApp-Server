@@ -17,6 +17,7 @@ module.exports = function (app) {
     var attachments = require('./attachments')(app);
     var linksRouter = require('./links')(app);
     var linksFieldsRouter = require('./linksFields')(app);
+    var templatesRouter = require('./templates')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -42,6 +43,7 @@ module.exports = function (app) {
     app.post('/uploadFile', attachments);
     app.use('/links', linksRouter);
     app.use('/linksFields', linksFieldsRouter);
+    app.use('/templates', templatesRouter);
 
     function notFound(req, res, next) {
         res.status(404);

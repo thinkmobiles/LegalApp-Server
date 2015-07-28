@@ -3,10 +3,10 @@
     <input type="text" id="addPhone" placeholder="Phone" value="<%= edit ? usrMdl.phone : ''%>">
     <input type="email" id="addEmail" placeholder="Email Address" value="<%= edit ? usrMdl.email : ''%>">
     <select id="addRole">
-        <option class="usrRole" selected="selected" data-id="3" label="Viewer">
-        <option class="usrRole"  data-id="2" label="Editor">
+        <option <%= (edit && usrMdl.profile.permissions === 3) ? 'selected' : ''%> data-id="3" label="Viewer">
+        <option <%= (edit && usrMdl.profile.permissions === 2) ? 'selected' : ''%> data-id="2" label="Editor" >
         <%if (App.sessionData.get('role') === 0){%>
-            <option class="usrRole" data-id="1" label="Admin">
+        <option <%= (edit && usrMdl.profile.permissions === 1) ? 'selected' : ''%> data-id="1" label="Admin">
         <%}%>
     </select>
     <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">

@@ -19,7 +19,8 @@ define([
             "signup"                :  "signup",
             "users"                 :  "users",
             "settings"              :  "settings",
-            "templates"             :  "templates",
+            "settings/addTemplate"  :  "addTemplate",
+            "documents/:viewType"   :  "documents",
             "userProfile"           :  "userProfile",
             "forgotPassword"        :  "forgotPassword",
             "resetPassword/:token"  :  "resetPassword",
@@ -32,8 +33,16 @@ define([
                 new TopMenuView();
         },
 
-        loadWrapperView: function (name, params, redirect) {
+        loadWrapperView: function (argName, params, argRedirect, argViewType) {
             var self = this;
+            var name = argName;
+            var vt = '';
+            var redirect = argRedirect;
+            var viewType = argViewType;
+
+            if (viewType){
+                vt = viewType.charAt(0).toUpperCase()+viewType.slice(1)
+            }
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -47,11 +56,11 @@ define([
                 }
             }
 
-            require(['views/'+name+'/'+name+'View'], function (View) {
-                if (!self[name+'View']) {
-                    self[name+'View'] = new View();
+            require(['views/'+name+'/'+name+vt+'View'], function (View) {
+                if (!self[name+vt+'View']) {
+                    self[name+vt+'View'] = new View();
                 }
-                self.changeWrapperView(self[name+'View'], params);
+                self.changeWrapperView(self[name+vt+'View'], params);
             });
         },
 
@@ -78,7 +87,6 @@ define([
         },
 
         any: function () {
-            //this.loadWrapperView('users');
             Backbone.history.navigate("users", {trigger: true});
         },
 
@@ -114,8 +122,12 @@ define([
             this.loadWrapperView('users', null, REDIRECT.whenNOTAuthorized);
         },
 
-        templates: function () {
-            this.loadWrapperView('templates', null, REDIRECT.whenNOTAuthorized);
+        documents: function (viewType) {
+                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+        },
+
+        addTemplate: function () {
+            this.loadWrapperView('addTemplate', null, REDIRECT.whenNOTAuthorized);
         },
 
         settings: function () {

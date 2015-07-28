@@ -14,6 +14,11 @@ var Models = function ( PostGre ) {
                 .forge(forgeOptions)
                 .fetch(fetchOptions);
         },
+        findAll: function (forgeOptions, fetchOptions) {
+            return this
+                .forge(forgeOptions)
+                .fetchAll(fetchOptions);
+        },
         upsert: function (data, callback) {
             if (data && data.id) {
                 //update:
@@ -30,7 +35,10 @@ var Models = function ( PostGre ) {
     this.User =  require('./user')( PostGre, Model );
     this.UserCompanies =  require('./userCompanies')( PostGre, Model );
     this.Profile =  require('./profile')( PostGre, Model );
-    this.Links =  require('./links')( PostGre, Model );
-    this.LinksFields =  require('./linksFields')( PostGre, Model );
+    this.Link =  require('./links')( PostGre, Model );
+    this.Links =  require('./links')( PostGre, Model ); //TODO: remove Links and use Link
+    this.LinkFields =  require('./linksFields')( PostGre, Model );
+    this.LinksFields =  require('./linksFields')( PostGre, Model ); //TODO: remove LinksFields and use Link
+    this.Template =  require('./templates')( PostGre, Model );
 };
 module.exports = Models;
