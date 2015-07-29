@@ -57,9 +57,8 @@ define([
             }
 
             require(['views/'+name+'/'+name+vt+'View'], function (View) {
-                if (!self[name+vt+'View']) {
-                    self[name+vt+'View'] = new View();
-                }
+                self[name+vt+'View'] = new View();
+
                 self.changeWrapperView(self[name+vt+'View'], params);
             });
         },

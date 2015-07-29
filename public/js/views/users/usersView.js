@@ -39,10 +39,7 @@ define([
                 this.tableView.undelegateEvents()
             }
 
-            if (this.usersCollection.length) {
-                this.tableView = new UsrListView({coll: this.usersCollection});
-            }
-
+            this.tableView = new UsrListView({coll: this.usersCollection});
         },
 
         showAddTemplate : function(){
