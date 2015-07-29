@@ -27,7 +27,9 @@ module.exports = function (db) {
     var companyCounter = 0;
     var userCompanyCounter = 0;
     var Links = Models.Links;
-    var linkcounter = 0;
+    var linkCounter = 0;
+    var LinkFields = Models.LinkFields;
+    var linkFieldsCounter = 0;
     var templateCount = 0;
 
     function getEncryptedPass(pass) {
@@ -82,13 +84,26 @@ module.exports = function (db) {
 
         // define attributes using properties and functions:
         name: function () {
-            linkcounter++;
-            return 'link_' + linkcounter;
+            linkCounter++;
+            return 'link_' + linkCounter;
         },
         company_id: function () {
             companyCounter++;
             return companyCounter;
         }
+    });
+
+    factory.define(TABLES.LINKS_FIELDS, LinkFields, {
+
+        // define attributes using properties and functions:
+        link_id: 2,
+        name: function () {
+            return 'name_' + linkFieldsCounter;
+        },
+        code: function () {
+            return '<code_' + linkFieldsCounter + '>';
+        }
+
     });
 
     //templates:

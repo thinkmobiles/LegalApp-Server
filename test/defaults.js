@@ -87,11 +87,24 @@ module.exports = function (db) {
         company_id: 1
     }, {
         name: 'link 2',
-        company_id: 1
+        company_id: 7
+
     }, {
         name: 'link 3',
         company_id: 2
     }];
+    var links_fields = [
+        {
+            name: 'First test name',
+            code: 'ftname'
+        }, {
+            name: 'Last test name',
+            code: 'ltname'
+        }, {
+            name: '5500 грн.',
+            code: 'tsalary'
+        }
+    ];
 
     var templates = [
         {
@@ -166,18 +179,24 @@ module.exports = function (db) {
                     cb();
                 });
             },
-            function (cd) {
+            function (cb) {
                 factory.createMany(TABLES.LINKS, links, 3, function (err, links) {
                     defaultData.links = links;
-                    cd(err, links);
+                    cb();
+                });
+            },
+            function (cb) {
+                factory.createMany(TABLES.LINKS_FIELDS, links_fields, 3, function (err, linkFields) {
+                    defaultData.links_fields = linkFields;
+                    cb();
                 });
             }
 
-        ], function (err) {
+        ], function (err, result) {
             if (err) {
                 return callback(err);
             }
-            callback();
+            callback(err, result);
         });
     };
 
