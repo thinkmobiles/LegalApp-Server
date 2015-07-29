@@ -74,30 +74,82 @@ var LinksHandler = function (PostGre) {
             });
     };
 
-    this.updateLink = function (req, res, next) {
-        var id = req.params.id;
-        var options = req.body;
-        var saveData = self.prepareSaveData(options);
-
-        if (!Object.keys(saveData).length) {
-            return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
-        }
+    this.modifyLink = function (linkId, linksaveData, callback) {
 
         LinksModel
-            .forge({id: id})
-            .save(saveData, {patch: true})
+            .forge({id: linkId})
+            .save(linksaveData, {patch: true})
             .then(function (linkModel) {
-                res.status(200).send({success: 'Link updated', model: linkModel});
+                callback(null, linkModel);
             })
             .catch(LinksModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
+                callback(badRequests.NotFound());
             })
             .catch(function (err) {
                 if (err.message && err.message.indexOf('No rows were affected in the update') !== -1) {
-                    return next(badRequests.NotFound());
+                    return callback(badRequests.NotFound());
                 }
-                next(err);
+                callback(err);
             });
+    };
+
+    this.updateLink = function (req, res, next) {
+        //var id = req.params.id;
+        var options = req.body;
+        options.company_id = req.session.companyId;
+        var linksaveData = self.prepareSaveData(options);
+        //var linkFieldsSaveData = linkFieldsHandler.prepareSaveData(options);
+        var linkId = req.params.id;
+
+            //TODO check this condition mb empty Array be in options.link_fields or nothing
+        if ((Object.keys(linksaveData).length === 1) && !options.link_fields) {
+            return next(badRequests.NotEnParams({message: 'Nothing to update'}))
+        }
+
+
+        async.waterfall([
+
+            //update link:
+            function (cb) {
+                self.modifyLink(linkId, linksaveData, cb)
+            },
+
+            //update linkFields
+            function (linkModel, cb) {
+                options.Id = linkModel.id;
+                if (options.link_fields && options.link_fields.length) {
+                    linkFieldsHandler.modifyLinkFields(options, cb)
+                } else {
+                    cb(null, linkModel);
+                }
+            }
+
+        ], function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'Link updated', model: result});
+
+        });
+        /*if (!Object.keys(saveData).length) {
+         return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
+         }
+
+         LinksModel
+         .forge({id: id})
+         .save(saveData, {patch: true})
+         .then(function (linkModel) {
+         res.status(200).send({success: 'Link updated', model: linkModel});
+         })
+         .catch(LinksModel.NotFoundError, function (err) {
+         next(badRequests.NotFound());
+         })
+         .catch(function (err) {
+         if (err.message && err.message.indexOf('No rows were affected in the update') !== -1) {
+         return next(badRequests.NotFound());
+         }
+         next(err);
+         });*/
     };
 
     this.getLink = function (req, res, next) {
@@ -117,7 +169,6 @@ var LinksHandler = function (PostGre) {
 
     this.getLinks = function (req, res, next) {
         var companyId = req.session.companyId;
-        //var companyId = 5543;
 
         LinksModel
             .forge()

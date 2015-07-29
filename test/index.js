@@ -36,8 +36,8 @@ describe('Database initialization', function () {
     });
 
     it('Test handlers', function () {
-        require('./testHandlers/testUsers')(PostGre, defaults);
-        //require('./testHandlers/testLinks')(PostGre, defaults);
+        //require('./testHandlers/testUsers')(PostGre, defaults);
+        require('./testHandlers/testLinks')(PostGre, defaults);
         //require('./testHandlers/testTemplates')(PostGre, defaults);
     });
 

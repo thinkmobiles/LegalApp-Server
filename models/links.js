@@ -22,7 +22,7 @@ module.exports = function (PostGre, ParentModel) {
                 }
             })
     };
-    var removeLinkField = function (linkId, companyId, callback) {
+    var removeLinkFields = function (linkId, companyId, callback) {
         var subquery = knex.select('id')
             .from(TABLES.LINKS)
             .where({
@@ -52,7 +52,7 @@ module.exports = function (PostGre, ParentModel) {
 
             async.waterfall([
                     function (cb) {
-                        removeLinkField(linkId, companyId, cb);
+                        removeLinkFields(linkId, companyId, cb);
                     },
                     function (result, cb) {
                         removeLink(linkId, companyId, cb);

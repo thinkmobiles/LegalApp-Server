@@ -27,6 +27,19 @@ var LinksFieldsHandler = function (PostGre) {
         return saveData;
     };
 
+    function modifyField (data, callback) {
+        var saveData = self.prepareSaveData(data);
+
+        LinksFieldsModel
+            .forge({id : data.id})
+            .save(saveData, {patch:true})
+            .exec(function (err, linkFieldModel) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err, linkFieldModel);
+                }
+            });
+    };
+
     function addField(data, callback) {
         var saveData = self.prepareSaveData(data);
 
@@ -65,6 +78,38 @@ var LinksFieldsHandler = function (PostGre) {
             }, function (err) {
                 if (callback && (typeof callback === 'function')) {
                     options.link_fields = createdModels;
+                    callback(err, options);
+                }
+            }
+        );
+    };
+
+    this.modifyLinkFields = function (options, callback) {
+        var linkFields = options.link_fields;
+        var updatedModels = [];
+
+        if (!linkFields || !linkFields.length) {
+            if (callback && (typeof callback === 'function')) {
+                //callback(badRequests.NotEnParams({reqParams: 'link_fields'}));
+                callback(null, updatedModels);
+            }
+            return;
+        }
+
+        async.each(linkFields,
+            function (fields, cb) {
+                //fields.link_id = options.Id;
+                modifyField(fields, function (err, linkFieldModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    updatedModels.push(linkFieldModel);
+                    cb();
+                });
+
+            }, function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    options.link_fields = updatedModels;
                     callback(err, options);
                 }
             }
