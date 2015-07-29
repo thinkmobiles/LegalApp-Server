@@ -86,10 +86,6 @@ module.exports = function (db) {
         name: function () {
             linkCounter++;
             return 'link_' + linkCounter;
-        },
-        company_id: function () {
-            companyCounter++;
-            return companyCounter;
         }
     });
 

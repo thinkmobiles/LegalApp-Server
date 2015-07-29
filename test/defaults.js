@@ -87,7 +87,7 @@ module.exports = function (db) {
         company_id: 1
     }, {
         name: 'link 2',
-        company_id: 7
+        company_id: 1
 
     }, {
         name: 'link 3',

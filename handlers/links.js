@@ -94,11 +94,9 @@ var LinksHandler = function (PostGre) {
     };
 
     this.updateLink = function (req, res, next) {
-        //var id = req.params.id;
         var options = req.body;
         options.company_id = req.session.companyId;
         var linksaveData = self.prepareSaveData(options);
-        //var linkFieldsSaveData = linkFieldsHandler.prepareSaveData(options);
         var linkId = req.params.id;
 
             //TODO check this condition mb empty Array be in options.link_fields or nothing

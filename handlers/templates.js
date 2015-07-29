@@ -18,6 +18,20 @@ var TemplatesHandler = function (PostGre) {
     var session = new SessionHandler(PostGre);
     var self = this;
 
+    this.prepareSaveData = function (params) {
+        var saveData = {};
+
+        if (params && params.name) {
+            saveData.name = params.name;
+        }
+
+        if (params && params.link_id) {
+            saveData.link_id = params.link_id;
+        }
+
+        return saveData;
+    };
+
     this.createTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
         var options = req.body;
@@ -98,10 +112,6 @@ var TemplatesHandler = function (PostGre) {
 
     };
 
-    this.updateTemplate = function (req, res, next) {
-        return next(badRequests.InvalidValue({message: 'DELETE /templates/:id is not implemented yet'}));
-    };
-
     this.removeTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
         var templateId = req.params.id;
@@ -156,6 +166,58 @@ var TemplatesHandler = function (PostGre) {
                 return next(err);
             }
             res.status(200).send({success: 'Success removed'});
+        });
+    };
+
+    this.updateTemplate = function (req, res, next) {
+        var templateSaveData = self.prepareSaveData(req.body);
+        var templateId = req.params.id;
+        var companyId = req.session.companyId;
+        var criteria = {
+            id: templateId,
+            company_id: companyId || 1
+        };
+        var fetchOptions = {
+            required: true
+        };
+
+        if (Object.keys(templateSaveData).length === 0) {
+            return next(badRequests.NotEnParams({message: 'Nothing to update'}))
+        }
+
+        async.waterfall([
+
+            //try to find the template:
+            function (cb) {
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //try to update template:
+            function (templateModel, cb) {
+                templateModel
+                    .save(templateSaveData, {patch:true})
+                    .exec(function (err, tempModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, templateModel);
+                    });
+            }
+
+        ], function (err, templateModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'Success updated', model: templateModel});
         });
     };
 };

@@ -240,11 +240,19 @@ module.exports = function (db, defaults) {
                 .post(url)
                 .send(link2)
                 .end(function (err, res) {
+                    var body;
+
                     if (err) {
                         return done(err);
                     }
+                    body = res.body;
 
                     expect(res.status).to.equals(201);
+                    expect(body).to.have.property('model');
+                    expect(body.model.name).to.equals(link2.name);
+                    expect(body.model.company_id).to.equals(link2.company_id);
+                    expect(body.model.link_fields[0].name).to.equals(link2.link_fields[0].name);
+                    expect(body.model.link_fields[0].code).to.equals(link2.link_fields[0].code);
 
                     done();
                 });
