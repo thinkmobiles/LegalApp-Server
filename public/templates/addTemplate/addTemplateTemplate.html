@@ -11,10 +11,21 @@
         <dt><input type="text" id="tempLogo" placeholder="Logo"></dt>
         <dd><input type="button" id="loadLogo" value="Browse"></dd>
 
-        <dt><input type="text" id="tempLinkTable" placeholder="Link Table"></dt>
+        <dt>
+            <input type="text" id="tempLinkTable" placeholder="Link Table">
+            <ul>
+                <li id="addNewLink">Add New Link Table</li>
+                <% lnkColl.forEach(function(link){%>
+                <li class="linkName" data-id="<%= link.id%>"><%= link.name%></li>
+                <%})%>
+            </ul>
+        </dt>
         <dd></dd>
 
         <dt><input type="text" id="tempLink" placeholder="Link to Template"></dt>
         <dd></dd>
     </dl>
+    <div id="linksFields">
+        <!--link fields container-->
+    </div>
 </div>

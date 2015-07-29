@@ -9,7 +9,7 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id       :"loginDiv",
+        id        :"loginDiv",
 
         initialize: function () {
             this.setDefaultData();
@@ -72,20 +72,22 @@ define([
                 return this;
             }
             $.ajax({
-                url     : "/signIn",
-                type    : "POST",
-                dataType: 'json',
+                url      : "/signIn",
+                type     : "POST",
+                dataType : 'json',
                 data:{
-                    email     : stateModelUpdate.email,
-                    password  : stateModelUpdate.password
+                    email    : stateModelUpdate.email,
+                    password : stateModelUpdate.password
                 },
                 success: function (res) {
+                    var profile = res.user.profile;
+
                     $('#topMenu').show();
                     $('#leftMenu').show();
                     console.log(res);
                     App.sessionData.set({
                         authorized : true,
-                        user       : res.user.profile.first_name+" "+res.user.profile.last_name
+                        user       : profile.first_name+" "+profile.last_name
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
