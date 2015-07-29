@@ -12,14 +12,7 @@ define([
             return "/links"
         },
 
-        initialize: function(){
-            this.fetch({
-                reset: true,
-                success: function(coll){
-                    console.log(coll.toJSON())
-                }
-            });
-        }
+        initialize: function(){}
     });
 
     return LinksCollection;

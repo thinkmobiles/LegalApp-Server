@@ -13,12 +13,9 @@
 
         <dt>
             <input type="text" id="tempLinkTable" placeholder="Link Table">
-            <ul>
-                <li id="addNewLink">Add New Link Table</li>
-                <% lnkColl.forEach(function(link){%>
-                <li class="linkName" data-id="<%= link.id%>"><%= link.name%></li>
-                <%})%>
-            </ul>
+            <div id="linkContainer">
+                <!--link names container-->
+            </div>
         </dt>
         <dd></dd>
 

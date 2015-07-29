@@ -16,11 +16,12 @@ define([
         },
 
         events : {
-            "click #addField"   : "addNewRow",
+            "click #addField"    : "addNewRow",
             "click #saveButton"  : "saveNewValues"
         },
 
         saveNewValues : function(){
+            var self = this;
             var linkModel;
             var saveData;
             var thisEl = this.$el;
@@ -42,6 +43,7 @@ define([
             } else {
                 if (!(!activeName && !activeCode)){
                     alert('Please, fill empty fields');
+                    return;
                 }
             }
 
@@ -67,13 +69,18 @@ define([
             linkModel.save(saveData,{
                 wait  : true,
                 success : function(){
-                    Backbone.history.navigate('settings/addTemplate',{trigger : true});
-                    alert('Links where created successfully');
+                    self.hideDialog();
+                    self.trigger('renderParentLinks');
+                    alert('Links were created successfully');
                 },
                 error   : function(){
                     alert('Error');  //todo -error message-
                 }
             });
+        },
+
+        hideDialog: function () {
+            $('.dialogWindow').remove();
         },
 
         addNewRow: function(){
@@ -96,7 +103,7 @@ define([
 
         render: function () {
 
-            this.undelegateEvents();
+            //this.undelegateEvents();
             this.$el.html(_.template(AddTemplate)).dialog({
                 closeOnEscape: false,
                 autoOpen: true,
@@ -104,7 +111,8 @@ define([
                 modal: true,
                 width: "600px"
             });
-            this.delegateEvents();
+
+            //this.delegateEvents();
 
             return this;
         }
