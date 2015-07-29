@@ -27,7 +27,8 @@ define([],function () {
         } else {
             App.sessionData.set({
                 authorized : false,
-                user       : null
+                user       : null,
+                role       : null
             });
             $('#topMenu').hide();
             $('#leftMenu').hide();
