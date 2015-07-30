@@ -18,6 +18,7 @@ module.exports = function (app) {
     var linksRouter = require('./links')(app);
     var linksFieldsRouter = require('./linksFields')(app);
     var templatesRouter = require('./templates')(app);
+    var dropBoxRouter = require('./dropBox')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -45,6 +46,8 @@ module.exports = function (app) {
     app.use('/linksFields', linksFieldsRouter);
     app.use('/templates', templatesRouter);
 
+    app.use('/dropbox', dropBoxRouter);
+
     function notFound(req, res, next) {
         res.status(404);
 
@@ -67,7 +70,7 @@ module.exports = function (app) {
             if ((status === 401) || (status === 403)) {
                 logWriter.log('', err.message + '\n' + err.stack);
             }
-            res.status(status).send({ error: err.message });
+            res.status(status).send({error: err.message});
 
         } else {
             if ((status === 401) || (status === 403)) {
@@ -77,7 +80,7 @@ module.exports = function (app) {
                 if (process.env.NODE_ENV !== 'test') console.error(err.stack);
                 logWriter.log('', err.message + '\n' + err.stack);
             }
-            res.status(status).send({ error: err.message, stack: err.stack });
+            res.status(status).send({error: err.message, stack: err.stack});
         }
 
         //next();

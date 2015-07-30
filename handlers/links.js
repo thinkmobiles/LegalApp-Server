@@ -76,22 +76,22 @@ var LinksHandler = function (PostGre) {
 
     /*this.modifyLink = function (linkId, linksaveData, callback) {
 
-        LinksModel
-            .forge({id: linkId})
-            .save(linksaveData, {patch: true})
-            .then(function (linkModel) {
-                callback(null, linkModel);
-            })
-            .catch(LinksModel.NotFoundError, function (err) {
-                callback(badRequests.NotFound());
-            })
-            .catch(function (err) {
-                if (err.message && err.message.indexOf('No rows were affected in the update') !== -1) {
-                    return callback(badRequests.NotFound());
-                }
-                callback(err);
-            });
-    };*/
+     LinksModel
+     .forge({id: linkId})
+     .save(linksaveData, {patch: true})
+     .then(function (linkModel) {
+     callback(null, linkModel);
+     })
+     .catch(LinksModel.NotFoundError, function (err) {
+     callback(badRequests.NotFound());
+     })
+     .catch(function (err) {
+     if (err.message && err.message.indexOf('No rows were affected in the update') !== -1) {
+     return callback(badRequests.NotFound());
+     }
+     callback(err);
+     });
+     };*/
 
     this.updateLink = function (req, res, next) {
         var options = req.body;
@@ -115,7 +115,7 @@ var LinksHandler = function (PostGre) {
         async.waterfall([
 
             //try to find link
-            function (cb){
+            function (cb) {
                 LinksModel
                     .find(criteria, fetchOptions)
                     .then(function (linksModel) {
@@ -130,7 +130,7 @@ var LinksHandler = function (PostGre) {
             //update link:
             function (linksModel, cb) {
                 linksModel
-                    .save(linksaveData, {patch:true})
+                    .save(linksaveData, {patch: true})
                     .exec(function (err, resultModel) {
                         if (err) {
                             return cb(err);
@@ -142,10 +142,10 @@ var LinksHandler = function (PostGre) {
             //update linkFields
             function (resultModel, cb) {
                 options.Id = resultModel.id;
-                // if link_fields exists then try to update them
+                // if link_fields exists, then try to update them
                 if (options.link_fields && options.link_fields.length) {
-                    linkFieldsHandler.modifyLinkFields(options, function(err, fieldsModels){
-                        if (err){
+                    linkFieldsHandler.modifyLinkFields(options, function (err, fieldsModels) {
+                        if (err) {
                             cb(err, resultModel);
                         } else {
                             resultModel.attributes.link_fields = fieldsModels;

@@ -46,20 +46,16 @@ module.exports = function (db, defaults) {
     };
     var link2 = {
         name: links[1].attributes.name,
-        company_id: links[1].attributes.company_id,
         link_fields: [
             {
-                link_id: linkFields[0].attributes.link_id,
                 name: linkFields[0].attributes.name,
                 code: linkFields[0].attributes.code
             },
             {
-                link_id: linkFields[1].attributes.link_id,
                 name: linkFields[1].attributes.name,
                 code: linkFields[1].attributes.code
             },
             {
-                link_id: linkFields[2].attributes.link_id,
                 name: linkFields[2].attributes.name,
                 code: linkFields[2].attributes.code
             }
@@ -250,7 +246,7 @@ module.exports = function (db, defaults) {
                     expect(res.status).to.equals(201);
                     expect(body).to.have.property('model');
                     expect(body.model.name).to.equals(link2.name);
-                    expect(body.model.company_id).to.equals(link2.company_id);
+                    expect(body.model.company_id).to.equals(1);
                     expect(body.model.link_fields[0].name).to.equals(link2.link_fields[0].name);
                     expect(body.model.link_fields[0].code).to.equals(link2.link_fields[0].code);
 
