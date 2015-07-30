@@ -74,7 +74,7 @@ var LinksHandler = function (PostGre) {
             });
     };
 
-    this.modifyLink = function (linkId, linksaveData, callback) {
+    /*this.modifyLink = function (linkId, linksaveData, callback) {
 
         LinksModel
             .forge({id: linkId})
@@ -91,34 +91,69 @@ var LinksHandler = function (PostGre) {
                 }
                 callback(err);
             });
-    };
+    };*/
 
     this.updateLink = function (req, res, next) {
         var options = req.body;
         options.company_id = req.session.companyId;
         var linksaveData = self.prepareSaveData(options);
         var linkId = req.params.id;
+        var criteria = {
+            id: linkId,
+            company_id: options.company_id
+        };
+        var fetchOptions = {
+            required: true,
+            withrelated: ['linkFields']
+        };
 
-            //TODO check this condition mb empty Array be in options.link_fields or nothing
+        // === 1 because company_id exists anyway in options (from session)
         if ((Object.keys(linksaveData).length === 1) && !options.link_fields) {
             return next(badRequests.NotEnParams({message: 'Nothing to update'}))
         }
 
-
         async.waterfall([
 
+            //try to find link
+            function (cb){
+                LinksModel
+                    .find(criteria, fetchOptions)
+                    .then(function (linksModel) {
+                        cb(null, linksModel);
+                    })
+                    .catch(LinksModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
             //update link:
-            function (cb) {
-                self.modifyLink(linkId, linksaveData, cb)
+            function (linksModel, cb) {
+                linksModel
+                    .save(linksaveData, {patch:true})
+                    .exec(function (err, resultModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, resultModel);
+                    });
             },
 
             //update linkFields
-            function (linkModel, cb) {
-                options.Id = linkModel.id;
+            function (resultModel, cb) {
+                options.Id = resultModel.id;
+                // if link_fields exists then try to update them
                 if (options.link_fields && options.link_fields.length) {
-                    linkFieldsHandler.modifyLinkFields(options, cb)
+                    linkFieldsHandler.modifyLinkFields(options, function(err, fieldsModels){
+                        if (err){
+                            cb(err, resultModel);
+                        } else {
+                            resultModel.attributes.link_fields = fieldsModels;
+                            cb(null, resultModel);
+                        }
+                    })
                 } else {
-                    cb(null, linkModel);
+                    cb(null, resultModel);
                 }
             }
 
@@ -129,25 +164,6 @@ var LinksHandler = function (PostGre) {
             res.status(200).send({success: 'Link updated', model: result});
 
         });
-        /*if (!Object.keys(saveData).length) {
-         return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
-         }
-
-         LinksModel
-         .forge({id: id})
-         .save(saveData, {patch: true})
-         .then(function (linkModel) {
-         res.status(200).send({success: 'Link updated', model: linkModel});
-         })
-         .catch(LinksModel.NotFoundError, function (err) {
-         next(badRequests.NotFound());
-         })
-         .catch(function (err) {
-         if (err.message && err.message.indexOf('No rows were affected in the update') !== -1) {
-         return next(badRequests.NotFound());
-         }
-         next(err);
-         });*/
     };
 
     this.getLink = function (req, res, next) {
@@ -171,18 +187,22 @@ var LinksHandler = function (PostGre) {
         LinksModel
             .forge()
             .where({company_id: companyId})
-            .fetchAll({require: true, withRelated: ['linkFields']})
-            .then(function (links) {
-                if (links && Array.isArray(links.models) && links.models.length) {
-                    res.status(200).send(links.models);
-                } else {
-                    res.status(200).send([]);
+            .fetchAll({withRelated: ['linkFields']})
+            .exec(function (err, result) {
+                var linksModels;
+
+                if (err) {
+                    return next(err);
                 }
-            })
-            .catch(LinksModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+
+                if (result && result.models) {
+                    linksModels = result.models;
+                } else {
+                    linksModels = [];
+                }
+
+                res.status(200).send(linksModels);
+            });
     };
 
     this.removeLink = function (req, res, next) {

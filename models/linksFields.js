@@ -6,7 +6,8 @@ var TABLES = require('../constants/tables');
 
 module.exports = function (PostGre, ParentModel) {
     var LinksFieldsModel = ParentModel.extend({
-        tableName: TABLES.LINKS_FIELDS
+        tableName: TABLES.LINKS_FIELDS,
+        hidden: ['created_at', 'updated_at']
 
        /* link: function () {
             return this.belongsTo(PostGre.Models.Links, 'id');
