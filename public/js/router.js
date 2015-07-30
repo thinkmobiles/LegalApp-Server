@@ -20,6 +20,7 @@ define([
             "users"                 :  "users",
             "settings"              :  "settings",
             "settings/addTemplate"  :  "addTemplate",
+            "settings/templates"    :  "templates",
             "documents"             :  "documents",
             "userProfile"           :  "userProfile",
             "forgotPassword"        :  "forgotPassword",
@@ -118,6 +119,10 @@ define([
 
         addTemplate: function () {
             this.loadWrapperView('addTemplate', null, REDIRECT.whenNOTAuthorized);
+        },
+
+        templates: function () {
+            this.loadWrapperView('templates', null, REDIRECT.whenNOTAuthorized);
         },
 
         settings: function () {
