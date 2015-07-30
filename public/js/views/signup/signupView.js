@@ -49,18 +49,25 @@ define([
 
             var self = this;
             var thisEl = this.$el;
+            var email  = thisEl.find("#signupEmail").val().trim();
+            var firstName = thisEl.find("#signupFName").val().trim();
+            var lastName  = thisEl.find("#signupLName").val().trim();
+            var password  = thisEl.find("#signupPass").val().trim();
+            var confPassword = thisEl.find("#signupConfPass").val().trim();
+            var company = thisEl.find("#signupCompany").val().trim();
+            var iAcceptConditions = thisEl.find("#iAgree").prop('checked');
             //var errors = [];
             //var messages = [];
 
             var stateModelUpdate = {
                 errors        : false,
                 messages      : false,
-                email         : thisEl.find("#signupEmail").val().trim(),
-                firstName     : thisEl.find("#signupFName").val().trim(),
-                lastName      : thisEl.find("#signupLName").val().trim(),
-                password      : thisEl.find("#signupPass").val().trim(),
-                company       : thisEl.find("#signupCompany").val().trim(),
-                iAcceptConditions: thisEl.find("#iAgree").prop('checked')
+                email         : email,
+                firstName     : firstName,
+                lastName      : lastName,
+                password      : password,
+                company       : company,
+                iAcceptConditions: iAcceptConditions
             };
 
 

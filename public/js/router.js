@@ -20,7 +20,7 @@ define([
             "users"                 :  "users",
             "settings"              :  "settings",
             "settings/addTemplate"  :  "addTemplate",
-            "documents/:viewType"   :  "documents",
+            "documents"             :  "documents",
             "userProfile"           :  "userProfile",
             "forgotPassword"        :  "forgotPassword",
             "resetPassword/:token"  :  "resetPassword",
@@ -33,16 +33,11 @@ define([
                 new TopMenuView();
         },
 
-        loadWrapperView: function (argName, params, argRedirect, argViewType) {
+        loadWrapperView: function (argName, argParams, argRedirect) {
             var self = this;
             var name = argName;
-            var vt = '';
+            var params =  argParams;
             var redirect = argRedirect;
-            var viewType = argViewType;
-
-            if (viewType){
-                vt = viewType.charAt(0).toUpperCase()+viewType.slice(1)
-            }
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -56,14 +51,14 @@ define([
                 }
             }
 
-            require(['views/'+name+'/'+name+vt+'View'], function (View) {
-                self[name+vt+'View'] = new View();
+            require(['views/'+name+'/'+name+'View'], function (View) {
+                self[name+'View'] = new View(params);
 
-                self.changeWrapperView(self[name+vt+'View'], params);
+                self.changeWrapperView(self[name+'View']);
             });
         },
 
-        changeWrapperView: function (wrapperView, params) {
+        changeWrapperView: function (wrapperView) {
             var wrap = $('#wrapper');
 
             if (this.wrapperView) {
@@ -78,10 +73,6 @@ define([
 
             if (wrapperView.afterRender) {
                 wrapperView.afterRender();
-            }
-
-            if (wrapperView.setParams) {
-                wrapperView.setParams(params);
             }
         },
 
@@ -121,8 +112,8 @@ define([
             this.loadWrapperView('users', null, REDIRECT.whenNOTAuthorized);
         },
 
-        documents: function (viewType) {
-                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+        documents: function () {
+                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized);
         },
 
         addTemplate: function () {

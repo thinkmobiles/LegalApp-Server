@@ -15,14 +15,16 @@ define([
             "click #savePass" : "changePassword"
         },
 
-        initialize: function () {
+        initialize: function (params) {
+            this.token=params.token;
+
             this.render()
         },
 
-        setParams: function (params) {
-            this.token=params.token;
-            this.render()
-        },
+        //setParams: function (params) {
+        //    this.token=params.token;
+        //    this.render()
+        //},
 
         changePassword: function(){
             var thisEl = this.$el;
