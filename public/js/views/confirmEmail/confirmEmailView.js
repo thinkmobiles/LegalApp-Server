@@ -17,12 +17,12 @@ define([
             "click #confirmButton" : "goToLogin"
         },
 
-        initialize: function () {
+        initialize: function (params) {
+            this.token=params.token;
             this.render()
         },
 
-        setParams: function (params) {
-            this.token=params.token;
+        afterRender: function () {
             if (this.token) {
                 this.checkLogin()
             }

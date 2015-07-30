@@ -1,3 +1,7 @@
 <div>
-    <h2>Hello, i am "List" page</h2>
+    <ul>
+        <% coll.forEach(function(document){%>
+            <li class="docName" data-id="<%= document.id%>"><%= document.name%></li>
+        <%})%>
+    </ul>
 </div>

@@ -14,7 +14,6 @@ define([
         tagName : "tbody",
 
         events: {
-
         },
 
         initialize: function (options) {
@@ -25,7 +24,7 @@ define([
 
         render: function () {
 
-            $("#templatesList").html(_.template(TempList)({tmpLst : this.currentTempList.toJSON()}));
+            $('#templatesList').html(_.template(TempList)({tmpLst : this.currentTempList.toJSON()}));
 
             return this;
         }

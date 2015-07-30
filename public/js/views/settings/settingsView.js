@@ -5,8 +5,9 @@
 define([
     'text!templates/settings/settingsTemplate.html',
     'collections/templatesCollection',
-    'views/settings/templatesListView'
-], function (SettingsTemplate , TempCollection , TempListView) {
+    'views/settings/templatesListView',
+    'views/templates/templatesView'
+], function (SettingsTemplate , TempCollection , TempListView, TemplatesView) {
 
     var View;
     View = Backbone.View.extend({
@@ -20,29 +21,17 @@ define([
         },
 
         events : {
-            "click #goToAdd"   : "goToAddTemplate",
-            "click .tabs a"    : "changeTabs"
+            "click #goToAdd"       : "goToAddTemplate"
+            //"click #openTemplates" : "goToTemplates"
         },
 
         goToAddTemplate : function(){
             Backbone.history.navigate('settings/addTemplate',{trigger : true});
         },
 
-        changeTabs : function(event){
-            var target = $(event.target);
-            var container = $('.tabs');
-            var container2 = $('.tabs-items');
-            var n;
-
-            container.find('.active').removeClass('active');
-            target.addClass('active');
-
-            n = container.find('li').index(target.parent());
-
-            container2.find('.openTab').removeClass('openTab');
-            container2.find('.tabs-item').eq(n).addClass('openTab');
-
-        },
+        //goToTemplates : function (){
+        //    new TemplatesView({coll: this.tempCollection});
+        //},
 
         renderTableList : function(){
 
@@ -50,9 +39,7 @@ define([
                 this.tableView.undelegateEvents()
             }
 
-            if (this.tempCollection.length) {
-                this.tableView = new TempListView({coll: this.tempCollection});
-            }
+            this.tableView = new TempListView({coll: this.tempCollection});
         },
 
         render: function () {
