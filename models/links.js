@@ -42,6 +42,7 @@ module.exports = function (PostGre, ParentModel) {
 
     var LinksModel = ParentModel.extend({
         tableName: TABLES.LINKS,
+        hidden: ['created_at', 'updated_at'],
 
         linkFields: function () {
             return this.hasMany(PostGre.Models.LinksFields);

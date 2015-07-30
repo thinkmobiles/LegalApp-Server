@@ -310,9 +310,9 @@ module.exports = function (db, defaults) {
                 });
         });
 
-        it('Try update link 4 to hasNoPermissions by id 4', function (done) {
+        it('Try update link 4 to Unathorized by id 4', function (done) {
             var newLink = {
-                name: 'hasNoPermissions'
+                name: 'Unathorized'
             };
 
             agent

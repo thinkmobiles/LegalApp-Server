@@ -175,7 +175,7 @@ var TemplatesHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var criteria = {
             id: templateId,
-            company_id: companyId || 1
+            company_id: companyId
         };
         var fetchOptions = {
             required: true

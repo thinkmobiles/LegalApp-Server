@@ -27,17 +27,46 @@ var LinksFieldsHandler = function (PostGre) {
         return saveData;
     };
 
-    function modifyField (data, callback) {
+    function modifyField(data, callback) {
         var saveData = self.prepareSaveData(data);
+        var criteria = {id: data.id};
+        var fetchCriteria = {require: true};
 
-        LinksFieldsModel
-            .forge({id : data.id})
-            .save(saveData, {patch:true})
-            .exec(function (err, linkFieldModel) {
-                if (callback && (typeof callback === 'function')) {
-                    callback(err, linkFieldModel);
-                }
-            });
+
+        async.waterfall([
+
+            //try to find field:
+            function (cb) {
+                LinksFieldsModel
+                    .find(criteria, fetchCriteria)
+                    .then(function (fieldModel) {
+                        cb(null, fieldModel);
+                    })
+                    .catch(LinksFieldsModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //update field:
+            function (fieldModel, cb) {
+                fieldModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, resultfieldModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, resultfieldModel);
+                    });
+            }
+
+        ], function (err, result) {
+            if (err) {
+                callback(err);
+            } else {
+                callback(null, result);
+            }
+        });
     };
 
     function addField(data, callback) {
@@ -110,46 +139,13 @@ var LinksFieldsHandler = function (PostGre) {
             }, function (err) {
                 if (callback && (typeof callback === 'function')) {
                     options.link_fields = updatedModels;
-                    callback(err, options);
+                    callback(err, updatedModels);
                 }
             }
         );
     };
 
     this.createLinksFields = function (req, res, next) {
-        /*var linksId = req.body.id;
-        var linksFields = req.body.links_fields;
-        var saveData;
-        var linksmodels = [];
-
-        if (!linksFields ||!linksId) {
-            return next(badRequests.NotEnParams({reqParams: 'links_fields or links_Id'}));
-        }
-
-        async.each(linksFields,
-            function (data, callback) {
-                data.link_id = linksId;
-                saveData = self.prepareSaveData(data);
-                LinksFieldsModel
-                    .forge()
-                    .save(saveData)
-                    .exec(function (err, links) {
-                        if (err) {
-                            callback(err);
-                        }else {
-                            linksmodels.push(links);
-                            callback();
-                        }
-                    });
-            }, function (err) {
-                if (err) {
-                    next(err);
-                } else {
-                    res.status(201).send({success: 'Links created', model: linksmodels});
-                }
-            }
-        );*/
-
         var options = req.body;
 
         self.addLinkFields(options, function (err, models) {
@@ -167,7 +163,7 @@ var LinksFieldsHandler = function (PostGre) {
 
         LinksFieldsModel
             .forge({id: linksFieldsId})
-            .fetch({require:true})
+            .fetch({require: true})
             .then(function (linksField) {
                 res.status(200).send(linksField);
             })
