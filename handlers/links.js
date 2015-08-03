@@ -118,8 +118,8 @@ var LinksHandler = function (PostGre) {
             function (cb) {
                 LinksModel
                     .find(criteria, fetchOptions)
-                    .then(function (linksModel) {
-                        cb(null, linksModel);
+                    .then(function (linkModel) {
+                        cb(null, linkModel);
                     })
                     .catch(LinksModel.NotFoundError, function (err) {
                         cb(badRequests.NotFound());
@@ -128,8 +128,8 @@ var LinksHandler = function (PostGre) {
             },
 
             //update link:
-            function (linksModel, cb) {
-                linksModel
+            function (linkModel, cb) {
+                linkModel
                     .save(linksaveData, {patch: true})
                     .exec(function (err, resultModel) {
                         if (err) {

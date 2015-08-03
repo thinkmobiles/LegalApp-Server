@@ -117,7 +117,7 @@ module.exports = function (db, defaults) {
 
     });
 
-    describe('Test creation links', function () {
+    describe('CREATE links', function () {
         var url = '/links';
 
         it('Create link1', function (done) {
@@ -211,7 +211,7 @@ module.exports = function (db, defaults) {
                 });
         });
 
-        it('Can\'t create link without company_id (unathorized user havent compaty_id)', function (done) {
+        it('Can\'t create link without company_id (unauthorized user havent compaty_id)', function (done) {
             var linkWithoutCompanyId = {
                 name: links[0].attributes.name
             };
@@ -255,7 +255,7 @@ module.exports = function (db, defaults) {
         })
     });
 
-    describe('Test updste link by id', function () {
+    describe('UPDATE link by id', function () {
         var url = '/links/4';
         var newLink = {
             name: 'link 4',
@@ -306,9 +306,9 @@ module.exports = function (db, defaults) {
                 });
         });
 
-        it('Try update link 4 to Unathorized by id 4', function (done) {
+        it('Unauthorized user can\'t update link', function (done) {
             var newLink = {
-                name: 'Unathorized'
+                name: 'Unauthorized'
             };
 
             agent
@@ -327,10 +327,11 @@ module.exports = function (db, defaults) {
     });
 
 
-    describe('GET links by company_id from session', function () {
+    describe('GET link', function () {
         var url = '/links/';
+        var urlByID = '/links/3';
 
-        it('GET links by company_id = 1', function (done) {
+        it('GET links by company_id = 1 from session', function (done) {
             userAgent1
                 .get(url)
                 .end(function (err, res) {
@@ -345,12 +346,13 @@ module.exports = function (db, defaults) {
                     body = res.body;
 
                     expect(body).to.be.instanceOf(Array);
+                    expect(body[0].company_id).to.equals(1);
 
                     done();
                 });
         });
 
-        it('Can\'t GET links when unathorized ', function (done) {
+        it('Can\'t GET links when unauthorized ', function (done) {
             agent
                 .get(url)
                 .end(function (err, res) {
@@ -369,14 +371,10 @@ module.exports = function (db, defaults) {
                     done();
                 });
         });
-    });
-
-    describe('GET link by id', function () {
-        var url = '/links/3';
 
         it('GET link by id = 3', function (done) {
             userAgent1
-                .get(url)
+                .get(urlByID)
                 .end(function (err, res) {
                     var body;
 
@@ -398,4 +396,59 @@ module.exports = function (db, defaults) {
         });
     });
 
+    describe('DELETE link', function () {
+        var url = '/links/1';
+        var url2 = '/links/150';
+        var url3 = '/links/2';
+
+        it('Delete link by id = 1', function (done) {
+            userAgent1
+                .delete(url)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    LinkModel
+                        .find({id: 1}, {require: true})
+                        .then(function (linkModel) {
+                            err = new Error('delete is not complete (link was found in DB)');
+                            done(err);
+                        })
+                        .catch(LinkModel.NotFoundError, function (err) {
+                            done();
+                        });
+                });
+        });
+
+        it('Delete not existed link', function (done) {
+            userAgent1
+                .delete(url2)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(200);
+
+                    done();
+                });
+        });
+
+        it('Delete link when unauthorized', function (done) {
+            agent
+                .delete(url3)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(res.status).to.equals(401);
+
+                    done();
+                });
+        });
+    });
 };
