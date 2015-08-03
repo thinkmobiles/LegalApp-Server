@@ -8,7 +8,7 @@ var badRequests = require('../helpers/badRequests');
 
 var LinksFieldsHandler = function (PostGre) {
     var Models = PostGre.Models;
-    var LinksFieldsModel = Models.LinksFields;
+    var LinkFieldsModel = Models.LinkFields;
     var self = this;
 
     this.prepareSaveData = function (params) {
@@ -37,12 +37,12 @@ var LinksFieldsHandler = function (PostGre) {
 
             //try to find field:
             function (cb) {
-                LinksFieldsModel
+                LinkFieldsModel
                     .find(criteria, fetchCriteria)
                     .then(function (fieldModel) {
                         cb(null, fieldModel);
                     })
-                    .catch(LinksFieldsModel.NotFoundError, function (err) {
+                    .catch(LinkFieldsModel.NotFoundError, function (err) {
                         cb(badRequests.NotFound());
                     })
                     .catch(cb);
@@ -72,7 +72,7 @@ var LinksFieldsHandler = function (PostGre) {
     function addField(data, callback) {
         var saveData = self.prepareSaveData(data);
 
-        LinksFieldsModel
+        LinkFieldsModel
             .forge()
             .save(saveData)
             .exec(function (err, linkFieldModel) {
@@ -119,7 +119,6 @@ var LinksFieldsHandler = function (PostGre) {
 
         if (!linkFields || !linkFields.length) {
             if (callback && (typeof callback === 'function')) {
-                //callback(badRequests.NotEnParams({reqParams: 'link_fields'}));
                 callback(null, updatedModels);
             }
             return;
@@ -127,7 +126,6 @@ var LinksFieldsHandler = function (PostGre) {
 
         async.each(linkFields,
             function (fields, cb) {
-                //fields.link_id = options.Id;
                 modifyField(fields, function (err, linkFieldModel) {
                     if (err) {
                         return cb(err);
@@ -138,14 +136,13 @@ var LinksFieldsHandler = function (PostGre) {
 
             }, function (err) {
                 if (callback && (typeof callback === 'function')) {
-                    options.link_fields = updatedModels;
                     callback(err, updatedModels);
                 }
             }
         );
     };
 
-    this.createLinksFields = function (req, res, next) {
+    this.createLinkFields = function (req, res, next) {
         var options = req.body;
 
         self.addLinkFields(options, function (err, models) {
@@ -159,15 +156,15 @@ var LinksFieldsHandler = function (PostGre) {
 
     this.getLinksFieldsById = function (req, res, next) {
         //var companyId = req.session.companyId;
-        var linksFieldsId = req.params.id;
+        var linkFieldsId = req.params.id;
 
-        LinksFieldsModel
-            .forge({id: linksFieldsId})
+        LinkFieldsModel
+            .forge({id: linkFieldsId})
             .fetch({require: true})
-            .then(function (linksField) {
-                res.status(200).send(linksField);
+            .then(function (linkField) {
+                res.status(200).send(linkField);
             })
-            .catch(LinksFieldsModel.NotFoundError, function (err) {
+            .catch(LinkFieldsModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());
             })
             .catch(next);

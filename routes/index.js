@@ -18,7 +18,6 @@ module.exports = function (app) {
     var linksRouter = require('./links')(app);
     var linksFieldsRouter = require('./linksFields')(app);
     var templatesRouter = require('./templates')(app);
-    var dropBoxRouter = require('./dropBox')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -45,8 +44,6 @@ module.exports = function (app) {
     app.use('/links', linksRouter);
     app.use('/linksFields', linksFieldsRouter);
     app.use('/templates', templatesRouter);
-
-    app.use('/dropbox', dropBoxRouter);
 
     function notFound(req, res, next) {
         res.status(404);

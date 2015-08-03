@@ -109,7 +109,7 @@ var UsersHandler = function (PostGre) {
                     id: userId
                 };
                 var fetchOptions = {
-                    required: true,
+                    require: true,
                     withRelated: ['profile']
                 };
 

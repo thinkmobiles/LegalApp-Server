@@ -103,7 +103,7 @@ var LinksHandler = function (PostGre) {
             company_id: options.company_id
         };
         var fetchOptions = {
-            required: true,
+            require: true,
             withrelated: ['linkFields']
         };
 
@@ -114,7 +114,7 @@ var LinksHandler = function (PostGre) {
 
         async.waterfall([
 
-            //try to find link
+            //try to find link:
             function (cb) {
                 LinksModel
                     .find(criteria, fetchOptions)
@@ -139,22 +139,16 @@ var LinksHandler = function (PostGre) {
                     });
             },
 
-            //update linkFields
+            //update linkFields (find and update):
             function (resultModel, cb) {
-                options.Id = resultModel.id;
-                // if link_fields exists, then try to update them
-                if (options.link_fields && options.link_fields.length) {
-                    linkFieldsHandler.modifyLinkFields(options, function (err, fieldsModels) {
-                        if (err) {
-                            cb(err, resultModel);
-                        } else {
-                            resultModel.attributes.link_fields = fieldsModels;
-                            cb(null, resultModel);
-                        }
-                    })
-                } else {
-                    cb(null, resultModel);
-                }
+                linkFieldsHandler.modifyLinkFields(options, function (err, fieldsModels) {
+                    if (err) {
+                        cb(err, resultModel);
+                    } else {
+                        resultModel.attributes.link_fields = fieldsModels;
+                        cb(null, resultModel);
+                    }
+                });
             }
 
         ], function (err, result) {
