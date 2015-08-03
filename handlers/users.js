@@ -385,17 +385,18 @@ var UsersHandler = function (PostGre) {
 
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
-        var options = req.body;
-        var permissions;
+        var options = {};
+        //var permissions;
+        options.profile = req.body;
 
-        //check permissions:
+        /*//check permissions:
         if ((options.profile && (options.profile.permissions !== undefined))) {
             permissions = options.profile.permissions;
 
             if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
                 return next(badRequests.AccessError());
             }
-        }
+        }*/
 
         updateUserById(userId, options, function (err, userModel) {
             if (err) {
