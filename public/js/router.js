@@ -37,8 +37,10 @@ define([
         loadWrapperView: function (argName, argParams, argRedirect) {
             var self = this;
             var name = argName;
+            var nameView = name+'View';
             var params =  argParams;
             var redirect = argRedirect;
+            var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -52,29 +54,23 @@ define([
                 }
             }
 
-            require(['views/'+name+'/'+name+'View'], function (View) {
-                self[name+'View'] = new View(params);
+            require(['views/'+name+'/'+nameView], function (View) {
+                self[nameView] = new View(params);
 
-                self.changeWrapperView(self[name+'View']);
+                if (self.wrapperView) {
+                    self.wrapperView.undelegateEvents();
+                    wrapper.html('');
+                }
+
+                wrapper.html(self[nameView].el);
+                self[nameView].delegateEvents();
+
+                this.wrapperView = self[nameView];
+
+                if (self[nameView].afterRender) {
+                    self[nameView].afterRender();
+                }
             });
-        },
-
-        changeWrapperView: function (wrapperView) {
-            var wrap = $('#wrapper');
-
-            if (this.wrapperView) {
-                this.wrapperView.undelegateEvents();
-                wrap.html('');
-            }
-
-            wrap.html(wrapperView.el);
-            wrapperView.delegateEvents();
-
-            this.wrapperView = wrapperView;
-
-            if (wrapperView.afterRender) {
-                wrapperView.afterRender();
-            }
         },
 
         any: function () {

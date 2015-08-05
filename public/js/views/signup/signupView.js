@@ -56,8 +56,6 @@ define([
             var confPassword = thisEl.find("#signupConfPass").val().trim();
             var company = thisEl.find("#signupCompany").val().trim();
             var iAcceptConditions = thisEl.find("#iAgree").prop('checked');
-            //var errors = [];
-            //var messages = [];
 
             var stateModelUpdate = {
                 errors        : false,
@@ -70,48 +68,8 @@ define([
                 iAcceptConditions: iAcceptConditions
             };
 
-
             this.stateModel.set(stateModelUpdate);
 
-            //if (!stateModelUpdate.email || !validation.validEmail(stateModelUpdate.email)) {
-            //    errObj.email.push('Password is not equal to confirm password');
-            //}
-            //
-            //validation.checkNameField(errObj, true, stateModelUpdate.firstName, 'firstName');
-            //validation.checkNameField(errObj, true, stateModelUpdate.lastName, 'lastName');
-            //validation.checkPasswordField(errObj, true, stateModelUpdate.password, 'password');
-            //validation.checkPasswordField(errObj, true, stateModelUpdate.confirmPassword, 'confirmPassword');
-            //
-            //if (stateModelUpdate.password !== stateModelUpdate.confirmPassword) {
-            //    errObj.confirmPassword.push('Password is not equal to confirm password');
-            //}
-            //
-            //if (!stateModelUpdate.iAcceptConditions) {
-            //    errObj.condAndTerm.push('Terms and conditions is not checked');
-            //}
-            //
-            //if (!captchaData || captchaData.response === '') {
-            //    errObj.captcha.push('please check reCAPTCHA');
-            //}
-            //
-            //
-            //for (var my in errObj){
-            //    errCount += errObj[my].length;
-            //}
-            //
-            //if (errors.length > 0 || messages.length > 0 || errCount>0) {
-            //    if (errors.length > 0) {
-            //        stateModelUpdate.errors = errors;
-            //    }
-            //    if (messages.length > 0) {
-            //        stateModelUpdate.messages = messages;
-            //    }
-            //    if (errCount > 0) {
-            //        stateModelUpdate.errObj = errObj;
-            //    }
-            //    this.stateModel.set(stateModelUpdate);
-            //    return this;
-            //}
             $.ajax({
                 url  : "/signUp",
                 type : "POST",

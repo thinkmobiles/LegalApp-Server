@@ -3,8 +3,9 @@
  */
 
 define([
-    'text!templates/userProfile/userProfileTemplate.html'
-], function (UsrProfTemp) {
+    'text!templates/userProfile/userProfileTemplate.html',
+    'custom'
+], function (UsrProfTemp, custom) {
 
     var View;
     View = Backbone.View.extend({
@@ -48,9 +49,16 @@ define([
         },
 
         saveProfile: function(){
-            var profNameFirst = this.$el.find('#profFName').val().trim();
-            var profNameLast  = this.$el.find('#profLName').val().trim();
-            var profPhone = this.$el.find('#profPhone').val().trim();
+            var this_el = this.$el;
+            var profNameFirst = this_el.find('#profFName').val().trim();
+            var profNameLast  = this_el.find('#profLName').val().trim();
+            var profPhone = this_el.find('#profPhone').val().trim();
+            var imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
+
+            var image = {
+                imageSrc : imageSRC,
+
+            };
 
             var saveData = {
                 first_name : profNameFirst,
@@ -82,6 +90,9 @@ define([
             var tempData = this.currentModel.toJSON();
 
             this.$el.html(_.template(UsrProfTemp)(tempData));
+
+            custom.canvasDraw({ model: this.currentModel.toJSON() }, this);
+
             return this;
         }
 

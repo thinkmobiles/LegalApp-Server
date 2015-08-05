@@ -21,11 +21,6 @@ define([
             this.render()
         },
 
-        //setParams: function (params) {
-        //    this.token=params.token;
-        //    this.render()
-        //},
-
         changePassword: function(){
             var thisEl = this.$el;
             var token  = this.token;
