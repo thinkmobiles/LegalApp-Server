@@ -388,7 +388,8 @@ var UsersHandler = function (PostGre) {
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;  /// ==============
         var options = {};
-        var image = req.body.image;
+        var image = {};
+        image.imageSrc = req.body.imageSrc;
         image.imageable_id = userId;
         image.imageable_type = 'avatar';
 
