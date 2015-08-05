@@ -25,14 +25,14 @@ define([
         },
 
         getAvatar : function (){
-            var image = this.$el.find('')
+            var image = this.$el.find('#topBarLogo');
 
             $.ajax({
                 url  : "/getAvatar",
                 type : "GET",
 
                 success: function (res) {
-
+                    image.attr('src', res)
                 },
                 error: function () {
                     alert('Error');  //todo -message-
@@ -72,6 +72,9 @@ define([
 
             this.$el.html(_.template(TopTemplate)(data));
             $('#leftMenu').html(_.template(LeftTemplate));
+
+            this.getAvatar();
+
             return this;
         }
     });
