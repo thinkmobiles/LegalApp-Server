@@ -1,3 +1,4 @@
 ﻿module.exports = {
-    AVATARS: 'avatars'
+    AVATARS: 'avatars',
+    LOGOS: 'logos'
 };

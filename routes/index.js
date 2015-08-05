@@ -6,6 +6,7 @@ var router = express.Router();
 var SessionHandler = require('../handlers/sessions');
 var UserHandler = require('../handlers/users');
 var LinksHandler = require('../handlers/links');
+var ImageHandler = require('../handlers/images');
 
 module.exports = function (app) {
     var logWriter = require('../helpers/logWriter')();
@@ -13,6 +14,7 @@ module.exports = function (app) {
     var session = new SessionHandler(PostGre);
     var users = new UserHandler(PostGre);
     var links = new LinksHandler(PostGre);
+    var images = new ImageHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
     var linksRouter = require('./links')(app);
@@ -28,7 +30,7 @@ module.exports = function (app) {
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
     app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
-    app.put('/profile', session.authenticatedUser, users.changeProfile);
+    app.put('/profile',  users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
 
@@ -40,10 +42,11 @@ module.exports = function (app) {
     });
 
     app.use('/users', usersRouter);
-    app.post('/uploadFile', attachments);
+    //app.use('/uploadFile', attachments);
     app.use('/links', linksRouter);
     app.use('/linksFields', linksFieldsRouter);
     app.use('/templates', templatesRouter);
+    app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
 
     function notFound(req, res, next) {
         res.status(404);

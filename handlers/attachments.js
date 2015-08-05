@@ -3,18 +3,16 @@
  */
 'use strict';
 
-var fs = require('fs');
-
 var Attachments = function () {
 
     this.getFile = function(req, res){
         if (!req.files.file){
             res.status(400).send('You do not choose the file.');
         } else {
-             if(global.done==true){
+             //if(global.done===true){
                 console.log(req.files);
                 res.status(201).send('File uploaded.');
-            };
+            //};
         };
     };
 

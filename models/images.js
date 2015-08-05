@@ -48,11 +48,11 @@ module.exports = function (PostGre, ParentModel) {
             //TODO: remove the file from storage
         }
     }, {
-        getImageUrl: function (imageName, key) {
-            var bucket;
+        getImageUrl: function (imageName, key, bucket) {
+            //var bucket;
             var name;
 
-            bucket = BUCKETS.AVATARS;
+            //bucket = BUCKETS.AVATARS;              //TODO for Logos
             name = this.getFileName(imageName, key);
 
             return imageUploader.getImageUrl(name, bucket);

@@ -162,10 +162,19 @@ var LinksHandler = function (PostGre) {
 
     this.getLink = function (req, res, next) {
         var id = req.params.id;
+        var companyId = req.session.companyId;
+        var criteria = {
+            id: id,
+            company_id: companyId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['linkFields']
+        };
 
         LinksModel
-            .forge({id: id})
-            .fetch({require: true, withRelated: ['linkFields']})
+            .forge(criteria)
+            .fetch(fetchOptions)
             .then(function (link) {
                 res.status(200).send(link);
             })
