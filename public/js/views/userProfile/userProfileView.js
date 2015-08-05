@@ -48,12 +48,31 @@ define([
             });
         },
 
+        letsDrawCanvas : function (){
+            var self = this;
+
+            $.ajax({
+                url    : "/getAvatar",
+                type   : "GET",
+
+                success: function (response) {
+                    custom.canvasDraw({ imageSrc : response}, self);
+                },
+                error  : function () {
+                    alert('Error'); // todo -error-
+                }
+            });
+
+
+        },
+
         saveProfile: function(){
             var this_el = this.$el;
             var profNameFirst = this_el.find('#profFName').val().trim();
             var profNameLast  = this_el.find('#profLName').val().trim();
             var profPhone = this_el.find('#profPhone').val().trim();
             var imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
+            var logoContainer = $('#topBarLogo');
 
             var saveData = {
                 first_name : profNameFirst,
@@ -68,12 +87,12 @@ define([
                 data   : saveData,
 
                 success: function () {
+                    logoContainer.attr('src',imageSRC);
                     alert('Profile updated successfully');
 
                     App.sessionData.set({
                         user: profNameFirst+' '+profNameLast
                     });
-
                     Backbone.history.navigate("users", {trigger: true});
                 },
                 error  : function (err) {
@@ -87,7 +106,7 @@ define([
 
             this.$el.html(_.template(UsrProfTemp)(tempData));
 
-            custom.canvasDraw({ model: this.currentModel.toJSON() }, this);
+            this.letsDrawCanvas();
 
             return this;
         }

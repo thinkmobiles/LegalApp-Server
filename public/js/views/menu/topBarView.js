@@ -27,17 +27,19 @@ define([
         getAvatar : function (){
             var image = this.$el.find('#topBarLogo');
 
-            $.ajax({
-                url  : "/getAvatar",
-                type : "GET",
+            if (App.sessionData.get('authorized')) {
+                $.ajax({
+                    url: "/getAvatar",
+                    type: "GET",
 
-                success: function (res) {
-                    image.attr('src', res)
-                },
-                error: function () {
-                    alert('Error');  //todo -message-
-                }
-            });
+                    success: function (res) {
+                        image.attr('src', res)
+                    },
+                    error: function () {
+                        alert('Error');  //todo -message-
+                    }
+                });
+            }
         },
 
         logout: function () {
