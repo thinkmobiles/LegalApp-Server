@@ -43,6 +43,10 @@ define([
             });
         },
 
+        afterRender : function(){
+            this.appendLinksNames();
+        },
+
         showLinksTable: function(){
 
             if (this.addDialogView){
@@ -67,8 +71,6 @@ define([
 
         render: function () {
             this.$el.html(this.mainTemplate);
-
-            this.appendLinksNames();
 
             return this;
         }

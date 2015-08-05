@@ -102,18 +102,21 @@ define([
         },
 
         render: function () {
+            var role = App.sessionData.get('role');
+
             if (!this.editThisForm) {
                 this.$el.html(_.template(AddUserTemplate)({
                     edit   : false,
-                    role   : App.sessionData.get('role')
+                    role   : role
                 }));
             } else {
                 this.$el.html(_.template(AddUserTemplate)({
                     edit   : true,
                     usrMdl : this.userModel.toJSON(),
-                    role   : App.sessionData.get('role')
+                    role   : role
                 }));
             }
+
             return this;
         }
 

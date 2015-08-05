@@ -1,4 +1,11 @@
-<div>
+<div class="avatar">
+    <div class="upload">
+        Edit
+        <input type="file" value="Edit" id="inputImg" accept="image/*">
+    </div>
+    <canvas id="avatar" width="140" height="140"></canvas>
+</div>
+<div id="profileInfo">
     <label for="profFName">First name:</label>
     <input id="profFName" type="text" value="<%= firstName %>">
     <label for="profLName">Last name:</label>

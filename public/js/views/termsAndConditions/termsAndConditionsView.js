@@ -3,14 +3,23 @@
  */
 
 define([
-    'text!templates/termsAndConditions/termsAndConditionsTemplate.html'
-], function (template) {
+    'text!templates/termsAndConditions/termsAndConditionsTemplate.html',
+    'views/castom/signatureView'
+], function (template , SigView) {
 
     var View;
     View = Backbone.View.extend({
 
         initialize: function () {
             this.render();
+        },
+
+        events : {
+            "click #testButton" : "testEvent"
+        },
+
+        testEvent: function(){
+            new SigView();
         },
 
         render: function () {
