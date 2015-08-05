@@ -186,7 +186,8 @@ var imagesUploader = function (dirConfig) {
     }
 
     function removeImage(imageName, folderName, callback) {
-        var imageDir = defaultImageDir;
+        //var imageDir = defaultImageDir;
+        var imageDir = 'uploads';
         if (folderName) {
             if (typeof folderName === 'function') {
                 callback = folderName;

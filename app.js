@@ -1,6 +1,6 @@
 'use strict';
 var express = require('express');
-var multer  = require('multer');
+//var multer  = require('multer');
 
 var http = require('http');
 var consolidate = require('consolidate');
@@ -14,7 +14,7 @@ var router = express.Router({
     strict: true
 });
 var app = express();
-global.done=false;
+//global.done=false;
 
 if (!process.env.NODE_ENV) {
     //TODO change NODE_ENV for production server
@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === 'production') {
 
 /*Configure the multer.*/
 
-app.use(multer({ dest: process.env.AMAZON_S3_BUCKET,
+/*app.use(multer({ dest: process.env.AMAZON_S3_BUCKET,
     rename: function (fieldname, filename) {
         //return filename+Date.now();
         return filename;
@@ -48,7 +48,7 @@ app.use(multer({ dest: process.env.AMAZON_S3_BUCKET,
         console.log(file.fieldname + ' uploaded to  ' + file.path);
         global.done=true;
     }
-}));
+}));*/
 
 var httpServer = http.createServer(app);
 

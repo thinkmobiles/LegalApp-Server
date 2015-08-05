@@ -178,7 +178,7 @@ var TemplatesHandler = function (PostGre) {
             company_id: companyId
         };
         var fetchOptions = {
-            required: true
+            require: true
         };
 
         if (Object.keys(templateSaveData).length === 0) {

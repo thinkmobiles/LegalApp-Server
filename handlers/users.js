@@ -16,6 +16,7 @@ var mailer = require('../helpers/mailer');
 var SessionHandler = require('../handlers/sessions');
 var ProfilesHandler = require('../handlers/profiles');
 var CompaniesHandler = require('../handlers/companies');
+var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
 var UsersHandler = function (PostGre) {
@@ -25,6 +26,7 @@ var UsersHandler = function (PostGre) {
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
     var companiesHandler = new CompaniesHandler(PostGre);
+    var imageHandler = new ImagesHandler(PostGre);
     var self = this;
 
     function getEncryptedPass(pass) {
@@ -89,7 +91,7 @@ var UsersHandler = function (PostGre) {
             }
             if (profile.permissions !== undefined) {
 
-                if ( VALID_PERMISSIONS.indexOf(profile.permissions) === -1) {
+                if (VALID_PERMISSIONS.indexOf(profile.permissions) === -1) {
                     return callback(badRequests.InvalidValue({message: 'Invalid value for "permissions"'}));
                 }
 
@@ -109,7 +111,7 @@ var UsersHandler = function (PostGre) {
                     id: userId
                 };
                 var fetchOptions = {
-                    required: true,
+                    require: true,
                     withRelated: ['profile']
                 };
 
@@ -384,23 +386,38 @@ var UsersHandler = function (PostGre) {
     };
 
     this.changeProfile = function (req, res, next) {
-        var userId = req.session.userId;
-        var options = req.body;
-        var permissions;
+        var userId = req.session.userId;  /// ==============
+        var options = {};
+        var image = req.body.image;
+        image.imageable_id = userId;
+        image.imageable_type = 'avatar';
 
-        //check permissions:
-        if ((options.profile && (options.profile.permissions !== undefined))) {
-            permissions = options.profile.permissions;
+        //var permissions;
+        options.profile = req.body;
 
-            if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
-                return next(badRequests.AccessError());
-            }
-        }
+        /*//check permissions:
+         if ((options.profile && (options.profile.permissions !== undefined))) {
+         permissions = options.profile.permissions;
+
+         if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
+         return next(badRequests.AccessError());
+         }
+         }*/
 
         updateUserById(userId, options, function (err, userModel) {
             if (err) {
                 return next(err);
             }
+
+            if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
+                imageHandler.saveImage(image, function (err) {
+                    if (err) {
+                        return next(err)
+                    }
+
+                });
+            };
+
             res.status(200).send({success: 'success updated', user: userModel});
         });
     };
