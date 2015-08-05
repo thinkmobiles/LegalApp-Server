@@ -24,6 +24,22 @@ define([
             this.render();
         },
 
+        getAvatar : function (){
+            var image = this.$el.find('')
+
+            $.ajax({
+                url  : "/getAvatar",
+                type : "GET",
+
+                success: function (res) {
+
+                },
+                error: function () {
+                    alert('Error');  //todo -message-
+                }
+            });
+        },
+
         logout: function () {
             $.ajax({
                 url  : "/signOut",

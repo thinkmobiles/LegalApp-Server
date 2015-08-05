@@ -59,7 +59,7 @@ define([
                 first_name : profNameFirst,
                 last_name  : profNameLast,
                 phone      : profPhone,
-                imageSrc : imageSRC
+                imageSrc   : imageSRC
             };
 
             $.ajax({
