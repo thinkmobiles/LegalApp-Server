@@ -55,15 +55,11 @@ define([
             var profPhone = this_el.find('#profPhone').val().trim();
             var imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
 
-            var image = {
-                imageSrc : imageSRC,
-
-            };
-
             var saveData = {
                 first_name : profNameFirst,
                 last_name  : profNameLast,
-                phone      : profPhone
+                phone      : profPhone,
+                imageSrc : imageSRC
             };
 
             $.ajax({
