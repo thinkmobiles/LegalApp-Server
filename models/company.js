@@ -9,6 +9,10 @@ module.exports = function (PostGre, ParentModel) {
         
         owner: function () {
             return this.belongsTo(PostGre.Models.User);
+        },
+
+        logo: function() {
+            return this.morphOne(PostGre.Models.Image, 'imageable');
         }
     });
     

@@ -112,7 +112,7 @@ var UsersHandler = function (PostGre) {
                 };
                 var fetchOptions = {
                     require: true,
-                    withRelated: ['profile']
+                    withRelated: ['profile', 'avatar']
                 };
 
                 UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
@@ -371,7 +371,7 @@ var UsersHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated: ['profile', 'company']
+            withRelated: ['profile', 'company', 'avatar']
         };
 
         UserModel
@@ -386,15 +386,16 @@ var UsersHandler = function (PostGre) {
     };
 
     this.changeProfile = function (req, res, next) {
-        var userId = req.session.userId;  /// ==============
+        var userId = req.session.userId;
         var options = {};
         var image = {};
+
         image.imageSrc = req.body.imageSrc;
         image.imageable_id = userId;
-        image.imageable_type = 'avatar';
-
-        //var permissions;
+        image.imageable_type = 'users';
         options.profile = req.body;
+        //var permissions;
+
 
         /*//check permissions:
          if ((options.profile && (options.profile.permissions !== undefined))) {
@@ -405,22 +406,92 @@ var UsersHandler = function (PostGre) {
          }
          }*/
 
-        updateUserById(userId, options, function (err, userModel) {
+        async.waterfall([
+
+            //update user profile
+            function (cb) {
+                updateUserById(userId, options, function (err, userModel) {
+                    if (!err) {
+                        image.id = userModel.relations.avatar.attributes.id;
+                        image.oldName = userModel.relations.avatar.attributes.name;
+                        image.oldKey = userModel.relations.avatar.attributes.key;
+                    }
+                    cb(err, userModel);
+                });
+            },
+
+            //update users avatar
+            function (userModel, cb) {
+                if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
+                    imageHandler.saveImage(image, function (err) {
+                        cb(err, userModel);
+
+                    });
+                } else {
+                    cb();
+                }
+            }
+
+        ], function (err, userModel) {
             if (err) {
                 return next(err);
             }
-
-            if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
-                imageHandler.saveImage(image, function (err) {
-                    if (err) {
-                        return next(err)
-                    }
-
-                });
-            };
-
             res.status(200).send({success: 'success updated', user: userModel});
+
         });
+
+        //==================================================================
+        /*async.waterfall([
+
+         //update user profile
+         function (cb) {
+         updateUserById(userId, options, function (err, userModel) {
+         cb(err, userModel);
+         });
+         },
+
+         //update users avatar
+         function (userModel, cb) {
+         if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
+         imageHandler.saveImage(image, function (err) {
+         if (err) {
+         cb(err);
+         } else {
+         cb(null, userModel);
+         }
+
+         });
+         } else {
+         cb(null, userModel);
+         }
+         }
+
+         ], function (err, userModel) {
+         if (err) {
+         return next(err);
+         }
+         res.status(200).send({success: 'success updated', user: userModel});
+
+         });*/
+
+        //================================================================
+        /*updateUserById(userId, options, function (err, userModel) {
+         if (err) {
+         return next(err);
+         }
+
+         if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
+         imageHandler.saveImage(image, function (err) {
+         if (err) {
+         return next(err)
+         }
+
+         });
+         }
+         ;
+
+         res.status(200).send({success: 'success updated', user: userModel});
+         });*/
     };
 
     this.forgotPassword = function (req, res, next) {

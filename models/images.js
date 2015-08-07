@@ -49,17 +49,16 @@ module.exports = function (PostGre, ParentModel) {
         }
     }, {
         getImageUrl: function (imageName, key, bucket) {
-            //var bucket;
+            var newbucket = bucket || BUCKETS.AVATARS;
             var name;
 
-            //bucket = BUCKETS.AVATARS;              //TODO for Logos
-            name = this.getFileName(imageName, key);
+            name = this.getFileName(imageName, key) + '.jpeg';
 
-            return imageUploader.getImageUrl(name, bucket);
+            return imageUploader.getImageUrl(name, newbucket);
         },
 
         getFileName: function (name, key) {
-            return key + '_' + name;// + '.png';
+            return key + '_' + name; //+ '.jpeg';
         },
 
         uploader: imageUploader

@@ -196,7 +196,7 @@ var imagesUploader = function (dirConfig) {
             }
         }
         //var imagePath = rootDir + osPathData.slash + defaultUploadsDir + osPathData.slash + imageDir + osPathData.slash + imageName;
-        var imagePath = rootDir + osPathData.slash + imageDir + osPathData.slash + imageName;
+        var imagePath = rootDir + osPathData.slash + imageDir + osPathData.slash + imageName + '.jpeg';
         fs.unlink(imagePath, function (err) {
             if (callback && typeof callback === 'function') {
                 callback(err);

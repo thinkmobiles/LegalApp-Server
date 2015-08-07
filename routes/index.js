@@ -47,6 +47,7 @@ module.exports = function (app) {
     app.use('/linksFields', linksFieldsRouter);
     app.use('/templates', templatesRouter);
     app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
+    app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
 
     function notFound(req, res, next) {
         res.status(404);

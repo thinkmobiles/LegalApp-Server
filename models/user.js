@@ -16,6 +16,10 @@ module.exports = function (PostGre, ParentModel) {
                 .through(PostGre.Models.UserCompanies, 'user_id', 'company_id');
         },
 
+        avatar: function() {
+            return this.morphOne(PostGre.Models.Image, 'imageable');
+        }
+
     }, {
         getCollaborators: function (queryOptions) {
             var page;

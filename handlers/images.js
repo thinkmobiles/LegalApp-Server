@@ -119,8 +119,6 @@ var imagesHandler = function (PostGre) {
         var fileName;
         var saveParams;
         var imageableId;
-        //var imageableType;
-        //var post_id;
         var oldImageName;
         var newImageName;
 
@@ -138,18 +136,18 @@ var imagesHandler = function (PostGre) {
 
          } else {*/
 
-        if (image.imageable_type === 'avatar') {
+        if (image.imageable_type === 'users') {
             bucket = BUCKETS.AVATARS;
         }
 
-        if (image.imageable_type === 'logo') {
+        if (image.imageable_type === 'compaies') {
             bucket = BUCKETS.LOGOS;
         }
 
-// ==================== TODO ==========================
-       /* if (image && image.imageable_id && image.imageable_type) { //TODO remove image: image.name, image.key = undefined, find in DB?
+        // delete old file
+        if (image && image.oldName && image.oldKey) {
             //update (we must remove the old image);
-            oldImageName = ImageModel.getFileName(image.name, image.key);
+            oldImageName = ImageModel.getFileName(image.oldName, image.oldKey);
             imageUploader.removeImage(oldImageName, bucket, function (err) {
                 if (err) {
                     if (process.env.NODE_ENV !== 'production') {
@@ -158,10 +156,9 @@ var imagesHandler = function (PostGre) {
                     }
                 }
             });
-        }*/
+        }
 
         ticks = new Date().valueOf();
-        //post_id = image.post_id;
         imageableId = image.imageable_id;
         //imageableType = image.imageable_type;
         fileName = bucket + '_' + imageableId;
@@ -367,10 +364,10 @@ var imagesHandler = function (PostGre) {
     this.getUserAvatar = function (req, res, next) {
         var userId = req.session.userId;
         var imageableId = userId;
-        var imageableType = 'avatar';
+        var imageableType = 'users';
         var companyId = req.session.companyId; //TODO some check permissions or members of company
         var criteria = {
-            imageable_id: userId,
+            imageable_id: imageableId,
             imageable_type: imageableType
         };
         var fetchOptions = {
@@ -384,23 +381,61 @@ var imagesHandler = function (PostGre) {
 
         if (imageableId && imageableType) {
             ImageModel
-                //.getImageUrl(name,key)
                 .find(criteria, fetchOptions)
                 .then(function (imageModel) {
-                    imageName = imageModel.attributes.name + '.jpeg'; //must store in DB????
+                    imageName = imageModel.attributes.name;
                     key = imageModel.attributes.key;
                     imageUrl = ImageModel.getImageUrl(imageName, key, bucket);
 
                     res.status(200).send(imageUrl);
                 })
                 .catch(ImageModel.NotFoundError, function (err) {
-                    next(badRequests.NotFound());
+                    res.status(200).send('');  //send default image (when user dont have avatar)
                 })
                 .catch(next);
 
 
         } else {
-            next(badRequests.NotEnParams({required: 'imageable_id or imageable_type'}))
+            next(badRequests.NotEnParams({required: 'user_id'}))
+        }
+    };
+
+    this.getCompanyLogo = function (req, res, next) {
+        var companyId = req.session.companyId; //TODO some check permissions or members of company
+        var imageableId = companyId;
+        var imageableType = 'companies';
+
+        var criteria = {
+            imageable_id: imageableId,
+            imageable_type: imageableType
+        };
+        var fetchOptions = {
+            require: true
+        };
+        var imageName;
+        var key;
+        var imageUrl;
+        var bucket = BUCKETS.LOGOS;
+
+
+        if (imageableId && imageableType) {
+            ImageModel
+                .find(criteria, fetchOptions)
+                .then(function (imageModel) {
+                    imageName = imageModel.attributes.name;
+                    key = imageModel.attributes.key;
+                    imageUrl = ImageModel.getImageUrl(imageName, key, bucket);
+
+                    res.status(200).send(imageUrl);
+                })
+                .catch(ImageModel.NotFoundError, function (err) {
+                    res.status(200).send(''); //send default image (when company dont have logo)
+                })
+                .catch(next);
+
+
+        } else {
+            next(badRequests.NotEnParams({required: 'company_id'}))
         }
     };
 
