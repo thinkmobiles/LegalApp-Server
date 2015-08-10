@@ -379,6 +379,8 @@ var imagesHandler = function (PostGre) {
         var bucket = BUCKETS.AVATARS;
 
 
+
+
         if (imageableId && imageableType) {
             ImageModel
                 .find(criteria, fetchOptions)

@@ -22,6 +22,7 @@ module.exports = function (app) {
     var linksRouter = require('./links')(app);
     var linksFieldsRouter = require('./linksFields')(app);
     var templatesRouter = require('./templates')(app);
+    var companiesRouter = require('./companies')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -37,21 +38,23 @@ module.exports = function (app) {
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
 
-    app.get('/error', function (req, res, next) {
-        res.render('errorTemplate'); //Internal Server Error
-    });
-    app.get('/successConfirm', function (req, res, next) {
-        res.render('successConfirm.html');
-    });
+    app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
+    app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
+    app.get('/getHtml', mammothHandler.docxToHtml);
 
     app.use('/users', usersRouter);
     //app.use('/uploadFile', attachments);
     app.use('/links', linksRouter);
     app.use('/linksFields', linksFieldsRouter);
     app.use('/templates', templatesRouter);
-    app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
-    app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
-    app.get('/getHtml', mammothHandler.docxToHtml);
+    app.use('/companies', companiesRouter);
+
+    app.get('/error', function (req, res, next) {
+        res.render('errorTemplate'); //Internal Server Error
+    });
+    app.get('/successConfirm', function (req, res, next) {
+        res.render('successConfirm.html');
+    });
 
     function notFound(req, res, next) {
         res.status(404);

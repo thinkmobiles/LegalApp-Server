@@ -1,13 +1,16 @@
 'use strict';
 
+var TABLES = require('../constants/tables');
 var PERMISSIONS = require('../constants/permissions');
+var STATUSES = require('../constants/statuses');
+var CONSTANTS = require('../constants/index');
+
+var crypto = require('crypto');
 var async = require('async');
 
 module.exports = function (knex) {
-    var TABLES = require('../constants/tables');
-    var crypto = require('crypto');
-    
-    function create(callback) {
+
+    function createTables(callback) {
 
         async.parallel([
                 
@@ -41,6 +44,7 @@ module.exports = function (knex) {
                 row.string('last_name');
                 row.string('company');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
+                row.integer('statuses').notNullable().defaultTo(STATUSES.CREATED);
                 row.string('phone');
                 row.timestamps();
             }), 
@@ -96,7 +100,65 @@ module.exports = function (knex) {
             }
         });
     }
-    
+
+    function createDefaults(callback) {
+        async.waterfall([
+            //create default super admin:
+            function (cb) {
+                var encryptedPass;
+                var data;
+                var shaSum = crypto.createHash('sha256');
+
+                shaSum.update(CONSTANTS.DEFAULT_SUPERADMIN_PASSWORD); //default pass
+                encryptedPass = shaSum.digest('hex');
+                data = {
+                    //id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    email: CONSTANTS.DEFAULT_SUPERADMIN_EMAIL,
+                    password: encryptedPass
+                };
+
+                insertData(TABLES.USERS, data, cb);
+            },
+
+            //create super admin\s profile:
+            function (cb) {
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
+                    last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
+                };
+
+                insertData(TABLES.PROFILES, data, cb);
+            },
+
+            //create McInnesCooper's company:
+            function(cb) {
+                var data = {
+                    //id: CONSTANTS.DEFAULT_COMPANY_ID,
+                    name: CONSTANTS.DEFAUlT_COMPANY_NAME,
+                    owner_id: CONSTANTS.DEFAULT_SUPERADMIN_ID
+                };
+
+                insertData(TABLES.COMPANIES, data, cb);
+            },
+
+            //create default user_companies:
+            function (cb) {
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    company_id: CONSTANTS.DEFAULT_COMPANY_ID
+                };
+
+                insertData(TABLES.USER_COMPANIES, data, cb);
+            }
+
+        ], function (err, result) {
+            if (callback && (typeof callback === 'function')) {
+                callback(err, result);
+            }
+        });
+    }
+
     function createTable(tableName, crateFieldsFunc) {
         console.log('CREATE TABLE "%s"', tableName);
         
@@ -123,7 +185,43 @@ module.exports = function (knex) {
                 });
         }
     }
-    
+
+    function insertData(tableName, data, callback) {
+        console.log('>>> insertData()');
+        console.log('>>> tableName:', tableName);
+        console.log('>>> data:', data);
+
+        knex(tableName)
+            .where(data)
+            .then(function (rows) {
+                if (rows && rows.length) { //the data is already exists:
+                    if (callback && (typeof callback === 'function')) {
+                        callback();
+                    }
+                    return;
+                }
+
+                knex(tableName)
+                    .insert(data)
+                    .then(function (){
+                        if (callback && (typeof callback === 'function')) {
+                            callback();
+                        }
+                    })
+                    .catch(function (err) {
+                        if (callback && (typeof callback === 'function')) {
+                            callback(err);
+                        }
+                    })
+
+            })
+            .catch(function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            });
+    }
+
     function createDefaultAdmin() {
         var shaSum = crypto.createHash('sha256');
         shaSum.update('1q2w3e4r'); //default pass
@@ -142,7 +240,25 @@ module.exports = function (knex) {
             console.log('superAdmin Creation Error: ' + err)
         })
     }
-    
+
+    function create(callback) {
+
+        async.waterfall([
+            createTables,
+            createDefaults
+        ], function (err) {
+            if(err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            } else {
+                if (callback && (typeof callback === 'function')) {
+                    callback();
+                }
+            }
+        });
+    }
+
     function dropTable(tableName) {
         return function (cb) {
             //console.log('DROP TABLE IF EXISTS "%s"', tableName);

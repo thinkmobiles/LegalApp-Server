@@ -13,6 +13,7 @@ module.exports = function (db) {
     var Collections = db.Collections;
     var User = Models.User;
     var Profile = Models.Profile;
+    var userCounter = 1;
 
     var defaultData = {};
 

@@ -20,12 +20,13 @@ module.exports = function (db) {
     var User = Models.User;
     var Profile = Models.Profile;
     var Template = Models.Template;
-    var profilesCount = 0;
-    var emailCounter = 0;
-    var firstNameCounter = 0;
-    var lastNameCounter = 0;
-    var companyCounter = 0;
-    var userCompanyCounter = 0;
+    var profilesCount = 1;
+    var emailCounter = 1;
+    var userCounter  = 1;
+    var firstNameCounter = 1;
+    var lastNameCounter = 1;
+    var companyCounter = 1;
+    var userCompanyCounter = 1;
     var Links = Models.Links;
     var linkCounter = 0;
     var LinkFields = Models.LinkFields;
@@ -71,8 +72,6 @@ module.exports = function (db) {
 
     //users:
     factory.define(TABLES.USERS, User, {
-
-        // define attributes using properties and functions:
         password: getEncryptedPass(PASSWORD),
         email: function () {
             emailCounter++;
