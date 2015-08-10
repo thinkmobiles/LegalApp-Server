@@ -4,8 +4,9 @@
 
 define([
     'text!templates/menu/topBarTemplate.html',
-    'text!templates/menu/leftBarTemplate.html'
-], function (TopTemplate, LeftTemplate) {
+    'text!templates/menu/leftBarTemplate.html',
+    'views/menu/iWantToView'
+], function (TopTemplate, LeftTemplate, WantView) {
 
     var View;
     View = Backbone.View.extend({
@@ -14,7 +15,8 @@ define([
 
         events: {
             'click #buttonLogout'   : 'logout',
-            'click #profileTop'     : 'showPofile'
+            'click #profileTop'     : 'showPofile',
+            'click #middleTopBar'   : 'showWantForm'
         },
 
         initialize: function () {
@@ -22,6 +24,15 @@ define([
             this.listenTo(App.sessionData, 'change:user', this.render);
 
             this.render();
+        },
+
+        showWantForm : function(){
+            if (this.iWantView){
+                this.iWantView.undelegateEvents();
+            }
+
+            this.iWantView = new WantView();
+            this.$el.find('#iWantContainer').html(this.iWantView.el);
         },
 
         getAvatar : function (){

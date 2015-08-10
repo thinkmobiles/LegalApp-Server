@@ -19,7 +19,6 @@ define([
             "signup"                :  "signup",
             "users"                 :  "users",
             "settings"              :  "settings",
-            "settings/addTemplate"  :  "addTemplate",
             "templates/:viewType"   :  "templates",
             "documents/:viewType"   :  "documents",
             "taskList"              :  "taskList",
@@ -125,10 +124,6 @@ define([
 
         documents: function (viewType) {
                 this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
-        },
-
-        addTemplate: function () {
-            this.loadWrapperView('addTemplate', null, REDIRECT.whenNOTAuthorized);
         },
 
         templates: function (viewType) {

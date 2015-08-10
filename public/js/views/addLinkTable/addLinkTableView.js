@@ -11,6 +11,9 @@ define([
     var View;
     View = Backbone.View.extend({
 
+        id        : "addItemRight",
+        className : "addItemRight",
+
         initialize: function () {
             this.render();
         },
@@ -69,7 +72,7 @@ define([
             linkModel.save(saveData,{
                 wait  : true,
                 success : function(){
-                    self.hideDialog();
+                    //self.hideDialog();
                     self.trigger('renderParentLinks');
                     alert('Links were created successfully');
                 },
@@ -79,9 +82,9 @@ define([
             });
         },
 
-        hideDialog: function () {
-            $('.dialogWindow').remove();
-        },
+        //hideDialog: function () {
+        //    $('.dialogWindow').remove();
+        //},
 
         addNewRow: function(){
             var thisEl = this.$el;
@@ -103,16 +106,17 @@ define([
 
         render: function () {
 
-            //this.undelegateEvents();
-            this.$el.html(_.template(AddTemplate)).dialog({
-                closeOnEscape: false,
-                autoOpen: true,
-                dialogClass: "dialogWindow",
-                modal: true,
-                width: "600px"
-            });
+            this.undelegateEvents();
+            this.$el.html(_.template(AddTemplate));
+            //this.$el.html(_.template(AddTemplate)).dialog({
+            //    closeOnEscape: false,
+            //    autoOpen: true,
+            //    dialogClass: "dialogWindow",
+            //    modal: true,
+            //    width: "600px"
+            //});
 
-            //this.delegateEvents();
+            this.delegateEvents();
 
             return this;
         }
