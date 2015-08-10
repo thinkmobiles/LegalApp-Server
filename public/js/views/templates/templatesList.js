@@ -3,7 +3,7 @@
  */
 
 define([
-    'text!templates/settings/templatesListTemplate.html'
+    'text!templates/templates/templatesList.html'
 ], function (TempList) {
 
     var View;

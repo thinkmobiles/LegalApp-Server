@@ -1,8 +1,26 @@
     <%var permiss = edit ? usrMdl.profile.permissions : 1%>
-    <input type="text" id="addFName" placeholder="First name*" value="<%= edit ? usrMdl.profile.first_name : ''%>">
-    <input type="text" id="addLName" placeholder="Last name*" value="<%= edit ? usrMdl.profile.last_name : ''%>">
-    <input type="text" id="addPhone" placeholder="Phone" value="<%= edit ? usrMdl.phone : ''%>">
-    <input type="email" id="addEmail" placeholder="Email Address" value="<%= edit ? usrMdl.email : ''%>">
+    <div id="adminClient"><span>Admin</span><span>Client</span></div>
+    <div id="addNewUser">
+        <span>ADD NEW USER</span>
+        <p>*denotes required fields</p>
+    </div>
+    <div>
+        <label for="addFName">First name*</label><br>
+        <input type="text" id="addFName" placeholder="ie: John" value="<%= edit ? usrMdl.profile.first_name : ''%>">
+    </div>
+    <div>
+        <label for="addLName">Last name*</label><br>
+        <input type="text" id="addLName" placeholder="ie: Smith" value="<%= edit ? usrMdl.profile.last_name : ''%>">
+    </div>
+    <div>
+        <label for="addEmail">Email Address*</label><br>
+        <input type="email" id="addEmail" placeholder="ie : yohnsmith@mail.com" value="<%= edit ? usrMdl.email : ''%>">
+    </div>
+    <div>
+    <label for="addPhone">Phone</label><br>
+    <input type="text" id="addPhone" placeholder="ie: +380000000000" value="<%= edit ? usrMdl.phone : ''%>">
+    </div>
+    <div>
     <select id="addRole">
         <option data-id="3" <%= (permiss === 3) ? 'selected' : ''%> >Viewer</option>
         <option data-id="2" <%= (permiss === 2) ? 'selected' : ''%> >Editor</option>
@@ -10,6 +28,7 @@
         <option data-id="1" <%= (permiss === 1) ? 'selected' : ''%> >Admin</option>
         <%}%>
     </select>
+    </div>
     <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">
     <% if (edit){%>
     <input type="button" id="addDelete" value="Delete">

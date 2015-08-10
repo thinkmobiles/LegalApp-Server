@@ -27,6 +27,7 @@ module.exports = function (app) {
     app.get('/isAuth', session.isAuthenticatedUser);
     app.post('/signUp', users.signUp);
     app.post('/signIn', users.signIn);
+    app.post('/signIn/:inviteToken', users.firstSignIn);
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
     app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);

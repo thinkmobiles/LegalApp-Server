@@ -16,8 +16,7 @@ define([
 
 
         events: {
-            "click #addNewUser"  : "showAddTemplate",
-            "click .userRow"     : "showEditTemplate"
+            "click #addNewUser"  : "showAddTemplate"
         },
 
         initialize: function () {
@@ -26,7 +25,6 @@ define([
             this.usersCollection = new UsersCollection();
 
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
-
         },
 
         renderTrigger : function(){
@@ -42,8 +40,7 @@ define([
             this.tableView = new UsrListView({coll: this.usersCollection});
         },
 
-        showAddTemplate : function(){
-            this.$el.find('.active').removeClass('active');
+        addTemplate : function(){
 
             if (this.addView){
                 this.addView.undelegateEvents()
@@ -54,29 +51,31 @@ define([
             this.$el.find('#addUserContainer').html(this.addView.el);
         },
 
-        showEditTemplate : function(event){
-            var userRow = $(event.target).closest('.userRow');
-            var userID  = userRow.data('id');
-            var container = userRow.closest('#listTable');
-            var editableUser;
-
-            container.find('.active').removeClass('active');
-            userRow.addClass('active');
-
-            if (this.addView){
-                this.addView.undelegateEvents()
-            }
-
-            editableUser = this.usersCollection.get(userID);
-
-            this.addView = new AddUserView({userModel : editableUser});
-            this.addView.on('redirectList', this.renderTrigger, this);
-            this.$el.find('#addUserContainer').html(this.addView.el);
-        },
+        //showEditTemplate : function(event){
+        //    var userRow = $(event.target).closest('.userRow');
+        //    var userID  = userRow.data('id');
+        //    var container = userRow.closest('#listTable');
+        //    var editableUser;
+        //
+        //    container.find('.active').removeClass('active');
+        //    userRow.addClass('active');
+        //
+        //    if (this.addView){
+        //        this.addView.undelegateEvents()
+        //    }
+        //
+        //    editableUser = this.usersCollection.get(userID);
+        //
+        //    this.addView = new AddUserView({userModel : editableUser});
+        //    this.addView.on('redirectList', this.renderTrigger, this);
+        //    this.$el.find('#addUserContainer').html(this.addView.el);
+        //},
 
         render: function () {
-
             this.$el.html(_.template(UsersTemplate));
+
+            this.addTemplate();
+
             return this;
         }
 

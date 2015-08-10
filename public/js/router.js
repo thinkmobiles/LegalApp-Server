@@ -15,18 +15,20 @@ define([
         view        : null,
 
         routes: {
-            "login"                 :  "login",
+            "login(/:token)"        :  "login",
             "signup"                :  "signup",
             "users"                 :  "users",
             "settings"              :  "settings",
             "settings/addTemplate"  :  "addTemplate",
-            "settings/templates"    :  "templates",
-            "documents"             :  "documents",
+            "templates/:viewType"   :  "templates",
+            "documents/:viewType"   :  "documents",
+            "taskList"              :  "taskList",
             "userProfile"           :  "userProfile",
             "forgotPassword"        :  "forgotPassword",
             "resetPassword/:token"  :  "resetPassword",
             "termsAndConditions"    :  "termsAndConditions",
             "confirmEmail(/:token)" :  "confirmEmail",
+            "help"                  :  "help",
             "*any"                  :  "any"
         },
 
@@ -34,12 +36,14 @@ define([
                 new TopMenuView();
         },
 
-        loadWrapperView: function (argName, argParams, argRedirect) {
+        loadWrapperView: function (argName, argParams, argRedirect, argViewType) {
             var self = this;
             var name = argName;
             var nameView = name+'View';
             var params =  argParams;
             var redirect = argRedirect;
+            var viewType;
+            var someString;
             var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
@@ -52,6 +56,12 @@ define([
                 if (App.sessionData.get('authorized')){
                     return Backbone.history.navigate("users", {trigger: true});
                 }
+            }
+
+            if (argViewType){
+                //someString = argViewType.viewType;
+                viewType = argViewType[0].toUpperCase()+argViewType.slice(1);
+                nameView = name+viewType+'View';
             }
 
             require(['views/'+name+'/'+nameView], function (View) {
@@ -77,8 +87,8 @@ define([
             Backbone.history.navigate("users", {trigger: true});
         },
 
-        login: function () {
-            this.loadWrapperView('login', null, REDIRECT.whenAuthorized);
+        login: function (token) {
+            this.loadWrapperView('login', {token : token}, REDIRECT.whenAuthorized);
         },
 
         signup: function () {
@@ -109,20 +119,28 @@ define([
             this.loadWrapperView('users', null, REDIRECT.whenNOTAuthorized);
         },
 
-        documents: function () {
-                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized);
+        taskList : function (){
+            this.loadWrapperView('taskList', null, REDIRECT.whenNOTAuthorized);
+        },
+
+        documents: function (viewType) {
+                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
         },
 
         addTemplate: function () {
             this.loadWrapperView('addTemplate', null, REDIRECT.whenNOTAuthorized);
         },
 
-        templates: function () {
-            this.loadWrapperView('templates', null, REDIRECT.whenNOTAuthorized);
+        templates: function (viewType) {
+            this.loadWrapperView('templates', null, REDIRECT.whenNOTAuthorized, viewType);
         },
 
         settings: function () {
             this.loadWrapperView('settings', null, REDIRECT.whenNOTAuthorized);
+        },
+
+        help: function(){
+            this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);
         }
 
     });

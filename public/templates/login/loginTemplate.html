@@ -1,10 +1,17 @@
     <span>McCinnes Cooper LOGO</span>
     <form id="logInForm">
-        <h1>Sign into APP</h1>
-        <input type="email" id="loginEmail" placeholder="Email Address">
+        <h1>Sign in</h1>
+        <%if(!isInvite){%>
+            <input type="email" id="loginEmail" placeholder="Email Address">
+        <%}%>
         <input type="password" id="loginPass" placeholder="Password">
+        <%if(isInvite){%>
+            <input type="password" id="confLoginPass" placeholder="Confirm password">
+        <%}%>
         <input type="button" id="loginButton" value="Sign in">
         <input type="checkbox" id="rememberMe"><label for="rememberMe">Remember me</label>
-        <a href="#forgotPassword" class="link">I forgot my password</a>
+        <%if(!isInvite){%>
+            <a href="#forgotPassword" class="link">I forgot my password</a>
+        <%}%>
         <a href="#signup" class="link">I don`t have an account</a>
     </form>

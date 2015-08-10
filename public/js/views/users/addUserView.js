@@ -12,7 +12,7 @@ define([
 
     View = Backbone.View.extend({
 
-        id : 'addUserForm',
+        //el : '#addUserContainer',
 
         events: {
             "click #addInvite" : "actionUser"
