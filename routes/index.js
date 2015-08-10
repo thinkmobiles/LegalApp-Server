@@ -7,6 +7,7 @@ var SessionHandler = require('../handlers/sessions');
 var UserHandler = require('../handlers/users');
 var LinksHandler = require('../handlers/links');
 var ImageHandler = require('../handlers/images');
+var MammothHandler = require('../handlers/mammoth');
 
 module.exports = function (app) {
     var logWriter = require('../helpers/logWriter')();
@@ -15,6 +16,7 @@ module.exports = function (app) {
     var users = new UserHandler(PostGre);
     var links = new LinksHandler(PostGre);
     var images = new ImageHandler(PostGre);
+    var mammothHandler = new MammothHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
     var linksRouter = require('./links')(app);
@@ -48,6 +50,7 @@ module.exports = function (app) {
     app.use('/templates', templatesRouter);
     app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
     app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
+    app.get('/getHtml', mammothHandler.docxToHtml);
 
     function notFound(req, res, next) {
         res.status(404);

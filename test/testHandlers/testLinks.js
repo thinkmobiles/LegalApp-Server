@@ -372,7 +372,7 @@ module.exports = function (db, defaults) {
                 });
         });
 
-        it('GET link by id = 3', function (done) {
+        it('Can\'t GET link by id = 3 (from another company)', function (done) {
             userAgent1
                 .get(urlByID)
                 .end(function (err, res) {
@@ -382,14 +382,14 @@ module.exports = function (db, defaults) {
                         return done(err);
                     }
 
-                    expect(res.status).to.equals(200);
+                    expect(res.status).to.equals(400);
 
                     body = res.body;
 
                     expect(body).to.be.instanceOf(Object);
 
-                    expect(body.name).to.equals(link3.name);
-                    expect(body.company_id).to.equals(2);
+                    expect(body.name).to.not.equals(link3.name);
+                    expect(body.company_id).to.not.equals(2);
 
                     done();
                 });

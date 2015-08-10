@@ -173,8 +173,7 @@ var LinksHandler = function (PostGre) {
         };
 
         LinksModel
-            .forge(criteria)
-            .fetch(fetchOptions)
+            .find(criteria, fetchOptions)
             .then(function (link) {
                 res.status(200).send(link);
             })
