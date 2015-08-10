@@ -26,7 +26,7 @@ define([
         },
 
         goToAddTemplate : function(){
-            Backbone.history.navigate('settings/addTemplate',{trigger : true});
+            Backbone.history.navigate('addTemplate',{trigger : true});
         },
 
         renderTableList : function(){

@@ -36,6 +36,10 @@ a {
   width: 30%;
   height: 100%;
   background-color: #7c7b7b;
+  line-height: 9;
+  span {
+    margin-left: 10px;
+  }
 }
 
 #rightTopBar {
@@ -95,6 +99,10 @@ a {
   padding: 20px 30px;
 }
 
+//#addTemplateContainer {
+//  display: none;
+//}
+
 #adminClient {
   border-bottom: 1px solid;
 }
@@ -102,14 +110,22 @@ a {
 #wrapper {
 
 }
-#addUserContainer {
+
+#addItemLeft {
+  display: block;
+}
+
+#addItemRight {
+  display: block;
+}
+
+.addItemLeft {
   width: 27%;
   height: 600px;
   float: left;
   background-color: #3d3d3d;
   color: #eaeaea;
   display: block;
-  //border-right: 1px solid;
   div {
     margin: 10px;
 
@@ -121,6 +137,29 @@ a {
     }
   }
 }
+
+.addItemRight {
+  width: 30%;
+  height: 600px;
+  float: left;
+  background-color: lightgrey;
+  display: block;
+  div {
+    margin: 10px;
+
+    input {
+      width: 280px;
+    }
+    label {
+      float:left;
+    }
+  }
+}
+
+#addUserContainer {
+
+}
+
 #tableDiv {
   float: left;
   display: block;
@@ -161,17 +200,15 @@ a {
 .userRow.active {
   background-color: #696969;
 }
-.tempThumbnail {
-  border: 2px solid black;
-  width: 200px;
-  height: 200px;
+.tempGrid {
+  border: 1px solid black;
+  width: 100px;
+  height: 100px;
   display: block;
   float: left;
   margin: 10px 10px;
 }
-.tempThumbnail .tempLogo {
-  height: 160px;
-}
+
 .docGrid {
   border: 2px solid black;
   width: 200px;
@@ -185,4 +222,13 @@ a {
 }
 .canvasDialog canvas {
   border: 2px solid black;
+}
+
+#iWantContainer {
+}
+
+#iWantTo {
+  background-color: white;
+  border: 1px solid;
+  position: absolute;
 }
