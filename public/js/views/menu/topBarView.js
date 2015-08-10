@@ -34,9 +34,6 @@ define([
 
                     success: function (res) {
                         image.attr('src', res)
-                    },
-                    error: function () {
-                        alert('Error');  //todo -message-
                     }
                 });
             }

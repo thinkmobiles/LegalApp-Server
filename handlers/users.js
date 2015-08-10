@@ -313,6 +313,88 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    this.firstSignIn = function (req, res, next) {
+        var forgotToken = req.params.inviteToken;
+
+        var options = req.body;
+        var password = options.password;
+
+        if (!password) {
+            return next(badRequests.NotEnParams({reqParams: ['password']}));
+        }
+
+        async.waterfall([
+
+            //try to find the user by forgot_token:
+            function (cb) {
+                var criteria = {
+                    forgot_token: forgotToken
+                };
+
+                UserModel
+                    .forge(criteria)
+                    .fetch({withRelated : ['profile', 'company']})
+                    .exec(function (err, userModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!userModel || !userModel.id) {
+                            return cb(badRequests.NotFound());
+                        }
+
+                        cb(null, userModel);
+                    });
+            },
+
+            //set "new password" and forgot_token = null:
+            function (userModel, cb) {
+                var saveData = {
+                    forgot_token: null,
+                    password    : getEncryptedPass(password)
+                };
+
+                userModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, updatedUser) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, updatedUser);
+                    });
+            }
+
+        ], function (err, userModel) {
+            var profile;
+            var company;
+            var companyId;
+            var sessionOptions;
+
+            if (err) {
+                return next(err);
+            }
+
+            if (!userModel || !userModel.id) {
+                return next(badRequests.SignInError());
+            }
+
+            profile = userModel.related('profile');
+            company = userModel.related('company');
+
+            if (company && company.models.length && company.models[0].id) {
+                companyId = company.models[0].id;
+            }
+
+            sessionOptions = {
+                permissions: profile.get('permissions'),
+                companyId  : companyId
+            };
+
+            session.register(req, res, userModel, sessionOptions);
+            //res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
+        });
+    };
+
     this.confirmEmail = function (req, res, next) {
         var confirmToken = req.params.confirmToken;
 
@@ -569,9 +651,10 @@ var UsersHandler = function (PostGre) {
     this.inviteUser = function (req, res, next) {
         var options = req.body;
         var email = options.email;
+        var companyId = options.companyId;
         var company;
         var userData;
-        var userPassword;
+        var forgotToken;
         var invitedUserId;
 
         //validate options:
@@ -611,10 +694,10 @@ var UsersHandler = function (PostGre) {
 
             //invite a new user:
             function (cb) {
-                userPassword = tokenGenerator.generate(6);
+                forgotToken = tokenGenerator.generate();
                 userData = {
-                    email: email,
-                    password: getEncryptedPass(userPassword)
+                    email       : email,
+                    forgot_token: forgotToken
                 };
 
                 UserModel.upsert(userData, function (err, userModel) {
@@ -646,9 +729,10 @@ var UsersHandler = function (PostGre) {
             //add current user to company
             function (userModel, cb) {
                 var userId = userModel.id;
-                var companyId = req.session.companyId;
+                //var companyId = req.session.companyId;
+                var companyId = 1;
                 var companyData = {
-                    userId: userId,
+                    userId   : userId,
                     companyId: companyId
                 };
                 companiesHandler.insertIntoUserCompanies(companyData, function (err, resultModel) {
@@ -670,8 +754,8 @@ var UsersHandler = function (PostGre) {
             }
 
             mailerOptions = {
-                email: email,
-                userPassword: userPassword
+                email     : email,
+                resetToken: forgotToken
             };
             mailer.onUserInvite(mailerOptions);
 

@@ -1,47 +1,65 @@
-body {
-  //padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+body,html {
+  margin: 0;
 }
 
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
 a {
   color: #00B7FF;
 }
-
 #leftMenu {
-  width: 100px;
+  width: 8%;
   height: 900px;
   float: left;
-  background-color: #696969;
   display: none;
-  padding: 0 10px;
+  div {
+    margin-top: 40px;
+  }
+}
+#topMenu {
+  height: 80px;
 }
 
-#topMenu {
-  background-color: #696969;
-  display: block;
-  height: 50px;
-  padding: 15px;
+#leftTopBar {
+  background-color: #e31937;
+  width: 35%;
+  height: 100%;
+  float: left;
+  /* display: block; */
+  padding: 0px;
+  margin: 0px;
+}
+
+#middleTopBar {
+  float: left;
+  width: 30%;
+  height: 100%;
+  background-color: #7c7b7b;
+}
+
+#rightTopBar {
+  float: left;
+  width: 35%;
+  height: 100%;
+  background-color: #3d3d3d;
 }
 
 #profileTop {
-  margin-left: 800px;
   float: left;
   line-height: 40px;
-  a {
-    float: right
-  }
 }
-
+#profileTop a {
+  float: right;
+}
 #buttonLogout {
   display: block;
   float: right;
 }
-
 #companySpan {
   display: block;
   float: left;
 }
-
 #loginDiv {
   top: 50%;
   left: 50%;
@@ -51,12 +69,10 @@ a {
   margin-top: -170px;
   margin-left: -230px;
 }
-
 #logInForm {
   padding: 20px;
   border: 4px double black;
 }
-
 #signUpDiv {
   width: 600px;
   height: 300px;
@@ -68,76 +84,83 @@ a {
   padding: 20px;
   border: 4px double black;
   text-align: center;
-  input{
-    margin: 10px 10px;
-  }
+}
+#signUpDiv input {
+  margin: 10px 10px;
+}
+#addUserForm {
+  border: 1px solid black;
+  height: 200px;
+  width: 27%;
+  padding: 20px 30px;
 }
 
-#addUserForm {
-  border: 4px double black;
-  height: 200px;
-  width: 500px;
-  padding: 20px 30px;
-  margin: 0px 140px;
+#adminClient {
+  border-bottom: 1px solid;
 }
 
 #wrapper {
-  margin-left: 150px;
-  margin-top: 35px;
-}
 
+}
 #addUserContainer {
-  margin: 0px 0px 20px;
-}
+  width: 27%;
+  height: 600px;
+  float: left;
+  background-color: #3d3d3d;
+  color: #eaeaea;
+  display: block;
+  //border-right: 1px solid;
+  div {
+    margin: 10px;
 
+    input {
+      width: 280px;
+    }
+    label {
+      float:left;
+    }
+  }
+}
+#tableDiv {
+  float: left;
+  display: block;
+  width: 59%;
+  margin: 35px;
+}
 #usersTable {
-  width: 850px;
+  width: 100%;
 }
-
 .dialogWindow {
   border: 4px double black;
   background-color: white;
   position: fixed !important;
 }
-
 .tabs {
   margin: 0;
   padding: 0;
 }
-
-.tabs li {
-
-}
-
-.tabs li a{
+.tabs li a {
   color: #9E9E9E;
 }
-
 .tabs li a.active {
   color: #0a13cc !important;
 }
-
 .tabs-items {
   display: table-cell;
   border-left: 2px solid #e5e5e5;
 }
-
 .tabs-items .tabs-item {
   display: none;
 }
-
 .tabs-items .openTab {
   display: block !important;
 }
-
 .navBut.active {
   color: #0a13cc !important;
 }
-
 .userRow.active {
-  background-color: #E0E3EF;
+  background-color: #696969;
 }
-
 .tempThumbnail {
   border: 2px solid black;
   width: 200px;
@@ -145,11 +168,10 @@ a {
   display: block;
   float: left;
   margin: 10px 10px;
-  .tempLogo {
-    height: 160px;
-  }
 }
-
+.tempThumbnail .tempLogo {
+  height: 160px;
+}
 .docGrid {
   border: 2px solid black;
   width: 200px;
@@ -158,10 +180,9 @@ a {
   float: left;
   margin: 10px 10px;
 }
-
 .canvasDialog {
   border: 2px solid black;
-  canvas {
-    border: 2px solid black;
-  }
+}
+.canvasDialog canvas {
+  border: 2px solid black;
 }

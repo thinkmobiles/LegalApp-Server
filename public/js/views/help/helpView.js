@@ -3,9 +3,9 @@
  */
 
 define([
-    'text!templates/settings/settingsTemplate.html'
+    'text!templates/help/helpTemplate.html'
 
-], function (SettingsTemp) {
+], function (HelpTemp) {
 
     var View;
     View = Backbone.View.extend({
@@ -19,7 +19,7 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(SettingsTemp));
+            this.$el.html(_.template(HelpTemp));
             return this;
         }
 

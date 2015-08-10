@@ -137,8 +137,7 @@ var MailerModule = function () {
         var mailOptions;
 
         templateOptions = {
-            url: process.env.HOST + '/#login',
-            user_pass: options.userPassword
+            url: process.env.HOST + '/#login/'+options.resetToken
         };
 
         mailOptions = {

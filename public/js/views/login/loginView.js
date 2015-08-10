@@ -4,6 +4,7 @@
 
 define([
     'text!templates/login/loginTemplate.html'
+
 ], function (LoginTemplate) {
 
     var View;
@@ -11,9 +12,12 @@ define([
 
         id        :"loginDiv",
 
-        initialize: function () {
-            this.setDefaultData();
+        typicalLogin : _.template(LoginTemplate),
 
+        initialize: function (option) {
+            this.token = option.token;
+
+            this.setDefaultData();
             this.listenTo(this.stateModel, 'change', this.render);
 
             this.render();
@@ -45,16 +49,30 @@ define([
 
             var self = this;
             var thisEl = this.$el;
+            var data;
+            var currentUrl = "/signIn";
             var errors = [];
             var messages = [];
 
             var stateModelUpdate = {
                 errors     : false,
                 messages   : false,
-                email      : thisEl.find("#loginEmail").val().trim(),
                 password   : thisEl.find("#loginPass").val().trim(),
                 rememberMe : thisEl.find('#rememberMe').prop('checked')
             };
+
+            if (!this.token){
+                stateModelUpdate.email = thisEl.find("#loginEmail").val().trim();
+                data = {
+                    email    : stateModelUpdate.email,
+                    password : stateModelUpdate.password
+                }
+            } else {
+                currentUrl += "/"+this.token;
+                data = {
+                    password : stateModelUpdate.password
+                }
+            }
 
             this.stateModel.set(stateModelUpdate);
 
@@ -72,13 +90,10 @@ define([
                 return this;
             }
             $.ajax({
-                url      : "/signIn",
+                url      : currentUrl,
                 type     : "POST",
                 dataType : 'json',
-                data:{
-                    email    : stateModelUpdate.email,
-                    password : stateModelUpdate.password
-                },
+                data     : data,
                 success: function (res) {
                     var profile = res.user.profile;
 
@@ -115,7 +130,18 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(LoginTemplate)(this.stateModel.toJSON()));
+            var this_el = this.$el;
+            var isInvite = false;
+            var tempModel = this.stateModel.toJSON();
+            tempModel.isInvite = isInvite;
+
+            if (this.token){
+                isInvite = true;
+                this_el.html(this.typicalLogin({isInvite : isInvite}));
+            } else {
+                this_el.html(this.typicalLogin(tempModel));
+            }
+
             return this;
         }
 

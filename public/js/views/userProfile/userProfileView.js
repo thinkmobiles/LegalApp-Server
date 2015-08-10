@@ -59,7 +59,7 @@ define([
                     custom.canvasDraw({ imageSrc : response}, self);
                 },
                 error  : function () {
-                    alert('Error'); // todo -error-
+                    custom.canvasDraw(null, self);
                 }
             });
 

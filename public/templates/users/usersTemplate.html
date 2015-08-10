@@ -1,21 +1,19 @@
 <div>
-    <div id="addNewUser"><span>ADD NEW USER</span></div>
-    <div id="addUserContainer">
+    <div id="addUserContainer"><!--addUserTemplate--></div>
+    <div id="tableDiv">
+        <table id="usersTable" border="1">
+            <col width="30%">
+            <col width="20%">
+            <col width="50%">
 
+            <thead>
+            <tr>
+                <th class="sortableData" data-sort="name">Name</th>
+                <th class="sortableData" data-sort="role">Role</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody id="listTable"></tbody>
+        </table>
     </div>
-
-    <table id="usersTable" border="1">
-        <col width="30%">
-        <col width="20%">
-        <col width="50%">
-
-        <thead>
-        <tr>
-            <th class="sortableData" data-sort="name">Name</th>
-            <th class="sortableData" data-sort="role">Role</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody id="listTable"></tbody>
-    </table>
 </div>

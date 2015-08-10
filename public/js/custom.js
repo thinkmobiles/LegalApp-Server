@@ -85,7 +85,6 @@ define([],function () {
             ctx.drawImage(img, 0, 0, canva_width, canva_height);
         };
         img.src = currentImage;
-        //context.imageSrc = currentImage;
     };
 
     return {
