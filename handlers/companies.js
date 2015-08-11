@@ -115,8 +115,23 @@ var CompaniesHandler = function (PostGre) {
     };
 
     this.getCompanies = function (req, res, next) {
+        var options = req.query;
+        var searchTerm = options.search;
+        var page = req.query.page || 1;
+        var limit = req.query.count || 10;
+
         CompanyModel
             .forge()
+            .query(function (qb) {
+                if (searchTerm) {
+                    searchTerm = searchTerm.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(name) LIKE '%" + searchTerm + "%' "
+                    );
+                }
+                qb.offset(( page - 1 ) * limit)
+                    .limit(limit);
+            })
             .fetchAll()
             .then(function (rows) {
                 res.status(200).send(rows);

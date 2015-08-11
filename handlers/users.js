@@ -650,7 +650,7 @@ var UsersHandler = function (PostGre) {
         var options = req.body;
         var email = options.email;
         var companyId = options.companyId;
-        var permissions = options.profile.permissions;
+        var permissions = options.permissions;
 
         //var company;
         var userData;
@@ -775,7 +775,7 @@ var UsersHandler = function (PostGre) {
             companyId: companyId
         };
         var fetchOptions = {
-            withRelated: ['profile']
+            withRelated: ['profile', 'avatar']
         };
 
         UserModel
@@ -797,7 +797,7 @@ var UsersHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated: ['profile']
+            withRelated: ['profile', 'avatar']
         };
 
         UserModel
