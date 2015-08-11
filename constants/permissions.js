@@ -1,5 +1,6 @@
 ﻿module.exports = {
-    OWNER: 0,
+    OWNER: 0, //todo: use SUPER_ADMIN
+    SUPER_ADMIN: 0,
     ADMIN: 1,
     EDITOR: 2,
     USER: 3, //TODO: use VIEWER

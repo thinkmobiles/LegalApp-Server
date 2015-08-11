@@ -219,6 +219,30 @@ module.exports = function (db, defaults) {
                     });
             });
 
+            it('Admin Can get the list of companies', function (done) {
+
+                adminUserAgent
+                    .get(url)
+                    .end(function (err, res) {
+                        var companyModel;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body).to.be.have.length.above(1);
+
+                        companyModel = res.body[0];
+
+                        expect(companyModel).to.be.instanceof(Object);
+                        expect(companyModel).to.have.property('id');
+                        expect(companyModel).to.have.property('name');
+
+                        done();
+                    });
+            });
         });
     });
 };

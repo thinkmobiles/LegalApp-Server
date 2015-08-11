@@ -315,7 +315,6 @@ var UsersHandler = function (PostGre) {
 
     this.firstSignIn = function (req, res, next) {
         var forgotToken = req.params.inviteToken;
-
         var options = req.body;
         var password = options.password;
 
@@ -351,7 +350,7 @@ var UsersHandler = function (PostGre) {
             function (userModel, cb) {
                 var saveData = {
                     forgot_token: null,
-                    password    : getEncryptedPass(password)
+                    password: getEncryptedPass(password)
                 };
 
                 userModel
@@ -391,7 +390,6 @@ var UsersHandler = function (PostGre) {
             };
 
             session.register(req, res, userModel, sessionOptions);
-            //res.status(200).send({success: MESSAGES.SUCCESS_EMAIL_CONFIRM});
         });
     };
 
@@ -652,14 +650,16 @@ var UsersHandler = function (PostGre) {
         var options = req.body;
         var email = options.email;
         var companyId = options.companyId;
-        var company;
+        var permissions = options.profile.permissions;
+
+        //var company;
         var userData;
         var forgotToken;
         var invitedUserId;
 
         //validate options:
-        if (!email) {
-            return next(badRequests.NotEnParams({reqParams: ['email']}));
+        if (!email || (permissions === undefined)) {
+            return next(badRequests.NotEnParams({reqParams: ['email', 'permissions']}));
         }
 
         //email validation:
@@ -667,8 +667,12 @@ var UsersHandler = function (PostGre) {
             return next(badRequests.InvalidEmail());
         }
 
-        if (!session.isAdmin(req)) {
-            return next(badRequests.AccessError())
+        if (session.isAdmin(req)) {
+            companyId = options.companyId || req.session.companyId;
+        } else if (session.isClientAdmin(req)) {
+            companyId = req.session.companyId;
+        } else {
+            return next(badRequests.AccessError());
         }
 
         async.waterfall([
@@ -696,7 +700,7 @@ var UsersHandler = function (PostGre) {
             function (cb) {
                 forgotToken = tokenGenerator.generate();
                 userData = {
-                    email       : email,
+                    email: email,
                     forgot_token: forgotToken
                 };
 
@@ -729,12 +733,11 @@ var UsersHandler = function (PostGre) {
             //add current user to company
             function (userModel, cb) {
                 var userId = userModel.id;
-                //var companyId = req.session.companyId;
-                var companyId = 1;
                 var companyData = {
                     userId   : userId,
                     companyId: companyId
                 };
+
                 companiesHandler.insertIntoUserCompanies(companyData, function (err, resultModel) {
                     if (err) {
                         return cb(err);
@@ -754,7 +757,7 @@ var UsersHandler = function (PostGre) {
             }
 
             mailerOptions = {
-                email     : email,
+                email: email,
                 resetToken: forgotToken
             };
             mailer.onUserInvite(mailerOptions);

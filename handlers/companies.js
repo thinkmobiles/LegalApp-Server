@@ -2,6 +2,7 @@
 
 var CONSTANTS = require('../constants/index');
 var PERMISSIONS = require('../constants/permissions');
+var TABLES = require('../constants/tables');
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
@@ -111,6 +112,16 @@ var CompaniesHandler = function (PostGre) {
             res.status(201).send({success: 'created', model: companyModel});
         });
 
+    };
+
+    this.getCompanies = function (req, res, next) {
+        CompanyModel
+            .forge()
+            .fetchAll()
+            .then(function (rows) {
+                res.status(200).send(rows);
+            })
+            .catch(next);
     };
 };
 
