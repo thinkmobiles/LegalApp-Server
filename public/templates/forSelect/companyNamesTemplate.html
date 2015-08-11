@@ -1,0 +1,4 @@
+    <li data-id="add_company">+Add New Company</li>
+    <% companies.forEach(function(company){%>
+        <li data-id="<%= company.id%>"><%= company.name%></li>
+    <%})%>

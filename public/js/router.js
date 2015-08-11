@@ -19,6 +19,7 @@ define([
             "signup"                :  "signup",
             "users"                 :  "users",
             "settings"              :  "settings",
+            "templates/preview/:id" :  "tempPre",
             "templates/:viewType"   :  "templates",
             "documents/:viewType"   :  "documents",
             "taskList"              :  "taskList",
@@ -123,7 +124,11 @@ define([
         },
 
         documents: function (viewType) {
-                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+            this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+        },
+
+        tempPre: function (id){
+            this.loadWrapperView('tempPre', {id : id}, REDIRECT.whenNOTAuthorized);
         },
 
         templates: function (viewType) {

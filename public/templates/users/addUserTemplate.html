@@ -28,6 +28,8 @@
         <option data-id="1" <%= (permiss === 1) ? 'selected' : ''%> >Admin</option>
         <%}%>
     </select>
+    <ul id="tableNames">
+    </ul>
     </div>
     <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">
     <% if (edit){%>

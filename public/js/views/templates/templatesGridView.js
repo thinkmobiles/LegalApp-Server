@@ -24,12 +24,21 @@ define([
         },
 
         events : {
-            "click #addDiv"     : "goToAddTemplate"
+            "click #addDiv"     : "goToAddTemplate",
+            "click .tempGrid"   : "goToPreview"
         },
 
         goToAddTemplate : function(){
             var currentView =  new AddTemplate();
             this.$el.find('#addTemplateContainer').html(currentView.el);
+        },
+
+        goToPreview: function(event){
+            var target_id = $(event.target).closest('.tempGrid').data('id');
+            var url = '#templates/preview/'+target_id;
+            if (target_id){
+                Backbone.history.navigate(url, {trigger: true});
+            }
         },
 
         renderAllGrids : function(){

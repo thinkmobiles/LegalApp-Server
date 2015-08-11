@@ -4,15 +4,17 @@
 
 define([
     'text!templates/users/addUserTemplate.html',
+    'text!templates/forSelect/companyNamesTemplate.html',
     'models/userModel'
 
-], function (AddUserTemplate, UserModel) {
+], function (AddUserTemplate, CompanyName, UserModel) {
 
     var View;
 
     View = Backbone.View.extend({
 
         //el : '#addUserContainer',
+        companyTemp : _.template(CompanyName),
 
         events: {
             "click #addInvite" : "actionUser"
@@ -61,6 +63,20 @@ define([
                 }
             });
 
+        },
+
+        renderCompanies : function(){
+            var self = this;
+
+            $.ajax({
+                url  : "/companies",
+                type : "GET",
+
+                success : function(response){
+                    var co_s = response.toJSON();
+                    self.$el.find('#tableNames').html(self.companyTemp(co_s));
+                }
+            });
         },
 
         updateUser : function(){
@@ -116,6 +132,8 @@ define([
                     role   : role
                 }));
             }
+
+            this.renderCompanies();
 
             return this;
         }
