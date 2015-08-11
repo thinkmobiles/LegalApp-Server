@@ -87,6 +87,28 @@ define([],function () {
         img.src = currentImage;
     };
 
+    var getLinkTables = function (id, url, data, content, isCreate, canBeEmpty) {
+        $.ajax({
+            url  : url,
+            data : data,
+            type : 'GET',
+
+            success : function(response){
+                content.linkNames = [];
+                if (canBeEmpty) {
+                    content.linkNames.push({id: "", name: "Select"});
+                }
+                content.linkNames = content.linkNames.concat(_.map(response, function (item) {
+                    return {id: item.id, name: item.name};
+                }));
+
+                if (isCreate) {
+                    $(id).text(content.responseObj[id][0].name).attr("data-id", content.responseObj[id][0]._id);
+                }
+            }
+        });
+    };
+
     return {
         runApplication : runApplication,
         canvasDraw     : canvasDraw,

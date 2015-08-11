@@ -16,6 +16,7 @@ define([
 
         id        : "addItemLeft",
         className : "addItemLeft",
+        linkNames : [],
 
         initialize: function () {
             this.linksCollection = new LinksCollection();
