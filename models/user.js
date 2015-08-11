@@ -1,6 +1,7 @@
 'use strict';
 
 var TABLES = require('../constants/tables');
+var BUCKETS = require('../constants/buckets');
 
 module.exports = function (PostGre, ParentModel) {
     var UserModel = ParentModel.extend({
@@ -18,6 +19,32 @@ module.exports = function (PostGre, ParentModel) {
 
         avatar: function() {
             return this.morphOne(PostGre.Models.Image, 'imageable');
+        },
+
+        toJSON: function () {
+            var attributes;
+            var avatar;
+            var avatarKey;
+            var avatarName;
+            var bucket = BUCKETS.AVATARS;
+            var imageUrl;
+
+            attributes = ParentModel.prototype.toJSON.call(this);
+
+            if (attributes.id && this.relations && this.relations.avatar) {
+                avatar = this.relations.avatar;
+
+                if (avatar.id && avatar.attributes.key && avatar.attributes.name) {
+                    avatarName = avatar.attributes.name;
+                    avatarKey = avatar.attributes.key;
+                    imageUrl = PostGre.Models.Image.getImageUrl(avatarName, avatarKey);
+                }
+
+                attributes.avatar = {
+                    url: imageUrl
+                };
+            }
+            return attributes;
         }
 
     }, {
