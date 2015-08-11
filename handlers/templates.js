@@ -204,7 +204,7 @@ var TemplatesHandler = function (PostGre) {
             //try to update template:
             function (templateModel, cb) {
                 templateModel
-                    .save(templateSaveData, {patch:true})
+                    .save(templateSaveData, {patch: true})
                     .exec(function (err, tempModel) {
                         if (err) {
                             return cb(err);
@@ -219,6 +219,33 @@ var TemplatesHandler = function (PostGre) {
             }
             res.status(200).send({success: 'Success updated', model: templateModel});
         });
+    };
+
+    this.createDocument = function (htmlText, fields, values, callback) {
+
+        //check input params
+        if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) {
+
+            for (var i in values) {
+                var val = values[i];
+                var code = fields[i];
+
+                //replace fields in input html by values
+                htmlText = htmlText.replace(new RegExp(code, 'g'), val);
+            }
+
+            //return result
+            if (callback && (typeof callback === 'function')) {
+                callback(null, htmlText); //all right
+            }
+            return htmlText;
+
+        } else {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({required: ['htmlText', 'values', 'fields']}));
+            }
+            return '';
+        }
     };
 };
 

@@ -4,6 +4,7 @@ var CONSTANTS = require('../constants/index');
 var PERMISSIONS = require('../constants/permissions');
 
 var async = require('async');
+var badRequests = require('../helpers/badRequests');
 
 var CompaniesHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -14,7 +15,7 @@ var CompaniesHandler = function (PostGre) {
     
     this.createCompanyWithOwner = function (options, callback) {
         var userId = options.userId;
-        var name = options.company;
+        var name = options.name || options.company; //TODO: !!!;
         
         //TODO: validate incom. params
         
@@ -90,6 +91,27 @@ var CompaniesHandler = function (PostGre) {
             });
     };
 
+    this.newCompany = function (req, res, next) {
+        var userId = req.session.userId || 1; //TODO: !!!
+        var options = req.body;
+        var name = options.name;
+        var createOptions = {
+            userId: userId,
+            name: name
+        };
+
+        if (!name) {
+            return next(badRequests.NotEnParams({reqParams: ['name']}));
+        }
+
+        self.createCompanyWithOwner(createOptions, function (err, companyModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'created', model: companyModel});
+        });
+
+    };
 };
 
 module.exports = CompaniesHandler;
