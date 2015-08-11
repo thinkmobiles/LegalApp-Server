@@ -73,8 +73,7 @@ define([
                 type : "GET",
 
                 success : function(response){
-                    var co_s = response.toJSON();
-                    self.$el.find('#tableNames').html(self.companyTemp(co_s));
+                    self.$el.find('#tableNames').html(self.companyTemp({coll : response}));
                 }
             });
         },
