@@ -140,7 +140,7 @@ var imagesHandler = function (PostGre) {
             bucket = BUCKETS.AVATARS;
         }
 
-        if (image.imageable_type === 'compaies') {
+        if (image.imageable_type === 'companies') {
             bucket = BUCKETS.LOGOS;
         }
 
