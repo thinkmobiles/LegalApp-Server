@@ -87,6 +87,30 @@ define([],function () {
         img.src = currentImage;
     };
 
+    var docXLoad = function (argContext, callback) {
+        var context = (argContext) ? argContext : this;
+        var inputFile = context.$('#tempFile');
+        inputFile.on('change', function (event) {
+            event.preventDefault();
+
+            var file = inputFile[0].files[0];
+            var filesExt = 'docx';
+            var parts = $(inputFile).val().split('.');
+            if (filesExt === parts[parts.length - 1]) {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    //var result =fr.result;
+                    callback(file);
+                };
+                //inputFile.val('');
+                fr.readAsDataURL(file);
+
+            } else {
+                alert('Invalid file type!');
+            }
+        });
+    };
+
     var getLinkTables = function (id, url, data, content, isCreate, canBeEmpty) {
         $.ajax({
             url  : url,
@@ -112,6 +136,7 @@ define([],function () {
     return {
         runApplication : runApplication,
         canvasDraw     : canvasDraw,
-        canvasDrawing  : canvasDrawing
+        canvasDrawing  : canvasDrawing,
+        docXLoad       : docXLoad
     };
 });
