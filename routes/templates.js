@@ -17,6 +17,7 @@ module.exports = function (app) {
     router.get('/:id', session.authenticatedUser, templates.getTemplate);
     router.put('/:id', session.authenticatedUser, templates.updateTemplate); //TODO: check permissions
     router.delete('/:id', session.authenticatedUser, templates.removeTemplate); //TODO: check permissions
+    router.get('/:id/preview', session.authenticatedUser, templates.previewTemplate);
 
     return router;
 };
