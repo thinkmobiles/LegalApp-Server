@@ -797,7 +797,7 @@ var UsersHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated: ['profile']
+            withRelated: ['profile', 'avatar']
         };
 
         UserModel
