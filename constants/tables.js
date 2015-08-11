@@ -1,4 +1,5 @@
 module.exports = {
+    ATTACHMENTS: 'attachments',
     COMPANIES: 'companies',
     IMAGES: 'images',
     INVITES: 'invites',

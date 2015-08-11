@@ -30,6 +30,7 @@ var Models = function ( PostGre ) {
         }
     });
 
+    this.Attachment =  require('./attachments')( PostGre, Model );
     this.Company =  require('./company')( PostGre, Model );
     this.Image =  require('./images')( PostGre, Model );
     this.User =  require('./user')( PostGre, Model );

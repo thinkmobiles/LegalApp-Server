@@ -4,7 +4,9 @@ var TABLES = require('../constants/tables');
 var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var PERMISSIONS = require('../constants/permissions');
+var BUCKETS = require('../constants/buckets');
 
+var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
 
@@ -15,8 +17,22 @@ var SessionHandler = require('../handlers/sessions');
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
     var TemplateModel = Models.Template;
+    var AttachmentModel = Models.Attachment;
     var session = new SessionHandler(PostGre);
     var self = this;
+
+    function random(number) {
+        return Math.floor((Math.random() * number));
+    }
+
+    function computeKey(name) {
+        var ticks_ = new Date().valueOf();
+        var key;
+
+        key = name + '_' + ticks_ + '_' + random(1000);
+
+        return key;
+    };
 
     this.prepareSaveData = function (params) {
         var saveData = {};
@@ -35,28 +51,146 @@ var TemplatesHandler = function (PostGre) {
     this.createTemplate = function (req, res, next) {
         var companyId = req.session.companyId;
         var options = req.body;
+        var templateFile = req.files.templateFile;
         var name = options.name;
         var linkId = options.link_id;
-        var saveData;
+        var originalFilename;
+        var extension;
 
-        if (!name || !linkId) {
-            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id']}));
+
+        if (!name || !linkId || !templateFile) {
+            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
         }
 
-        saveData = {
-            name: name,
-            link_id: linkId,
-            company_id: companyId
-        };
+        originalFilename = templateFile.originalFilename;
+        extension = originalFilename.slice(-4);
 
-        TemplateModel
-            .upsert(saveData, function (err, templateModel) {
-                if (err) {
-                    return next(err);
+        if (extension !== 'docx') {
+            return next(badRequests.InvalidValue({message: 'Incorrect file type'}));
+        }
+
+        async.waterfall([
+
+            //save the docx file:
+            function (cb) {
+                self.saveTheTemplateFile(templateFile, function (err, key) {
+                    console.log('>>> save template file -------------------------------');
+
+                    if (err) {
+                        console.error(err);
+                        return cb(err);
+                    }
+                    //TODO: save to attachments ...
+                    console.log('success. key = ', key);
+                    console.log('>>> --------------------------------------------------');
+                    cb(null, key);
+                });
+            },
+
+            //insert into templates:
+            function (key, cb) {
+                var saveData = {
+                    name: name,
+                    link_id: linkId,
+                    company_id: companyId
+                };
+
+                TemplateModel
+                    .upsert(saveData, function (err, templateModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, templateModel, key);
+                    });
+            },
+
+            //save into attachments:
+            function (templateModel, key, cb) {
+                var saveData = {
+                    attacheable_type: TABLES.TEMPLATES,
+                    attacheable_id: templateModel.id,
+                    name: BUCKETS.TEMPLATE_FILES,
+                    key: key
+                };
+
+                AttachmentModel
+                    .upsert(saveData, function (err, attachmentModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, templateModel);
+                    });
+
+            }
+
+        ], function (err, templateModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: MESSAGES.SUCCESS_CREATED_TEMPLATE, model: templateModel});
+        });
+    };
+
+    this.saveTheTemplateFile = function (file, callback) {
+        var uploader = PostGre.Models.Image.uploader;
+        var originalFilename = file.originalFilename;
+        var extension = originalFilename.slice(-4);
+
+        async.waterfall([
+
+            //get file from request:
+            function (cb) {
+
+                fs.readFile(file.path, function (err, data) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, data);
+                });
+            },
+
+            //save file to storage:
+            function (buffer, cb) {
+                var bucket = BUCKETS.TEMPLATE_FILES;
+                var name = BUCKETS.TEMPLATE_FILES;
+                var key = computeKey(name);
+                var fileData;
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log('--- Upload file ----------------');
+                    console.log('name', name);
+                    console.log('key', key);
+                    console.log('bucket', bucket);
+                    console.log('--------------------------------');
                 }
-                res.status(201).send({success: MESSAGES.SUCCESS_CREATED_TEMPLATE, model: templateModel});
-            });
 
+                fileData = {
+                    data: buffer,
+                    name: name,
+                    extention: extension
+                };
+
+                uploader.uploadFile(fileData, key, bucket, function (err, fileName) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, key);
+                });
+            }
+
+        ], function (err, result) {
+
+
+            if (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            } else {
+                if (callback && (typeof callback === 'function')) {
+                    callback(null, result);
+                }
+            }
+        });
     };
 
     this.getTemplates = function (req, res, next) {

@@ -7,6 +7,7 @@ var imagesUploader = function (dirConfig) {
     var defaultImageDir = 'images';
 
     var fs = require('fs');
+    var path = require('path');
     var os = require('os');
 
     var osPathData = getDirAndSlash();
@@ -204,11 +205,21 @@ var imagesUploader = function (dirConfig) {
         });
     }
 
+    function uploadFile(fileData, fileName, folderName, callback) {
+        var slash = osPathData.slash;
+        var dir = osPathData.dir + slash;
+
+        //fileData.name = fileName;
+
+        saveImage(fileData, dir, folderName, slash, callback);
+    }
+
     return {
         uploadImage: uploadImage,
         duplicateImage: duplicateImage,
         removeImage: removeImage,
-        getImageUrl: getImagePath
+        getImageUrl: getImagePath,
+        uploadFile: uploadFile
     };
 };
 

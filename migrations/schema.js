@@ -13,7 +13,16 @@ module.exports = function (knex) {
     function createTables(callback) {
 
         async.parallel([
-                
+
+            createTable(TABLES.ATTACHMENTS, function (row) {
+                row.increments().primary();
+                row.integer('attacheable_id').notNullable();
+                row.string('attacheable_type');
+                row.string('name');
+                row.string('key');
+                row.timestamps();
+            }),
+
             createTable(TABLES.COMPANIES, function (row) {
                 row.increments().primary();
                 row.integer('owner_id').notNullable().index();
@@ -85,6 +94,7 @@ module.exports = function (knex) {
                 row.integer('company_id').index();
                 row.integer('link_id').index();
                 row.string('name');
+                row.text('html_content');
                 row.timestamps();
             })
 

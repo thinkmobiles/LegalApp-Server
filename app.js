@@ -103,7 +103,7 @@ var redisConfig = {
 };
 
 app.use(session({
-    name: 'LegalApp',
+    name: 'LegalApp', 
     secret: process.env.CLIENT_SECRET || '1q2w3e4r5tazsxdcf2d4f6h8j0jge4547hh',
     resave: true,
     saveUninitialized: false,
