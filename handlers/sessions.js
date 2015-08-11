@@ -72,7 +72,15 @@ var Session = function (postGre) {
     };
 
     this.isAdmin = function (req) {
-        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.OWNER) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.SUPER_ADMIN) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    this.isClientAdmin = function (req) {
+        if (req.session && req.session.userId && req.session.loggedIn && req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
             return true;
         } else {
             return false;
@@ -111,7 +119,6 @@ var Session = function (postGre) {
 
         return result;
     };
-
 };
 
 module.exports = Session;

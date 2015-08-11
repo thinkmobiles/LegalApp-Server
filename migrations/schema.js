@@ -103,6 +103,7 @@ module.exports = function (knex) {
 
     function createDefaults(callback) {
         async.waterfall([
+
             //create default super admin:
             function (cb) {
                 var encryptedPass;
@@ -126,6 +127,7 @@ module.exports = function (knex) {
                     user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
                     first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
                     last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
+                    permissions: PERMISSIONS.SUPER_ADMIN
                 };
 
                 insertData(TABLES.PROFILES, data, cb);
