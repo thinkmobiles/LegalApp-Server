@@ -95,29 +95,29 @@ app.use(methodOverride());
 
 //<editor-fold desc="Sessions">
 var session = require('express-session');
-//var MemoryStore = require('connect-redis')(session);
-//var redisConfig = {
-//    db: parseInt(process.env.REDIS_DB_KEY),
-//    host: process.env.REDIS_HOST,
-//    port: parseInt(process.env.REDIS_PORT) || 6379
-//};
+var MemoryStore = require('connect-redis')(session);
+var redisConfig = {
+    db: parseInt(process.env.REDIS_DB_KEY),
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT) || 6379
+};
 
 app.use(session({
     name: 'LegalApp',
     secret: process.env.CLIENT_SECRET || '1q2w3e4r5tazsxdcf2d4f6h8j0jge4547hh',
     resave: true,
     saveUninitialized: false,
-    //store: new MemoryStore(redisConfig),
+    store: new MemoryStore(redisConfig),
     cookie: {
         maxAge: 1000 * 3600 * 24 * 365 * 5
     }
 }));
-//app.use(function (req, res, next) {
-//    if (!req.session) {
-//        return next(new Error('oh no')) // handle error
-//    }
-//    next() // otherwise continue
-//})
+app.use(function (req, res, next) {
+    if (!req.session) {
+        return next(new Error('oh no')); // handle error
+    }
+    next(); // otherwise continue
+});
 //</editor-fold>
 
 //<editor-fold desc="Deleting temporary files from NodeJS using fs">
