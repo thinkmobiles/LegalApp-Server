@@ -11,6 +11,8 @@ define([
 
     View = Backbone.View.extend({
 
+        el : '#wrapper',
+
         events: {
             "click #savePass" : "changePassword"
         },

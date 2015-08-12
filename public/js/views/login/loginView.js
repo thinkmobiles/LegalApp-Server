@@ -10,7 +10,8 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id        :"loginDiv",
+        el : '#wrapper',
+        //id        :"loginDiv",
 
         typicalLogin : _.template(LoginTemplate),
 

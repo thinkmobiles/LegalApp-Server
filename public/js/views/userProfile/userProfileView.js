@@ -10,6 +10,8 @@ define([
     var View;
     View = Backbone.View.extend({
 
+        el : '#wrapper',
+
         initialize: function () {
             this.currentModel = new Backbone.Model({
                 firstName : '',

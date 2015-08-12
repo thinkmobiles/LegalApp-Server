@@ -13,6 +13,8 @@ define([
     var View;
     View = Backbone.View.extend({
 
+        el : '#wrapper',
+
         templateItem : _.template(TempItem),
 
         initialize: function () {
@@ -29,7 +31,8 @@ define([
         },
 
         goToAddTemplate : function(){
-            var currentView =  new AddTemplate();
+            var currentView =  new AddTemplate({parentCont : this});
+            currentView.on('addInParentView', this.addOneGrid, this);
             this.$el.find('#addTemplateContainer').html(currentView.el);
         },
 
@@ -47,10 +50,14 @@ define([
             var currentCollection  = this.tempCollection.toJSON();
 
             currentCollection.forEach(function(template){
-                innerContext += self.templateItem(template);
+                innerContext = self.templateItem(template) + innerContext;
             });
 
             this.$el.append(innerContext);
+        },
+
+        addOneGrid: function(model){
+            this.$el.append(this.templateItem(model));
         },
 
         render: function () {

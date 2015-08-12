@@ -11,7 +11,8 @@ define([
 
     View = Backbone.View.extend({
 
-        id : 'addUserForm',
+        el : '#wrapper',
+        //id : 'addUserForm',
 
         events: {
             "click #confirmButton" : "goToLogin"

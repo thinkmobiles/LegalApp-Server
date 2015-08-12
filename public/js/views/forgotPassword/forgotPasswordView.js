@@ -9,7 +9,8 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id : 'addUserForm',
+        el : '#wrapper',
+        //id : 'addUserForm',
 
         initialize: function () {
             this.render();

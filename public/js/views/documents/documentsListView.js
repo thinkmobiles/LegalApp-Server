@@ -11,6 +11,8 @@ define([
 
     var DocView = Backbone.View.extend({
 
+        el : '#wrapper',
+
         mainTemp : _.template(MainTemplate),
         listTemp : _.template(ListTemplate),
         gridTemp : _.template(GridTemplate),
