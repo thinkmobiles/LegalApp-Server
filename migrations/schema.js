@@ -34,6 +34,7 @@ module.exports = function (knex) {
             createTable(TABLES.DOCUMENTS, function (row) {
                 row.increments().primary();
                 row.integer('template_id').notNullable().index();
+                row.integer('company_id').notNullable().index();
                 row.integer('assigned_id').index();
                 row.text('html_content');
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
