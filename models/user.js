@@ -1,7 +1,8 @@
 'use strict';
 
-var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
+var CONSTANTS = require('../constants/index');
+var TABLES = require('../constants/tables');
 
 module.exports = function (PostGre, ParentModel) {
     var UserModel = ParentModel.extend({
@@ -38,6 +39,8 @@ module.exports = function (PostGre, ParentModel) {
                     avatarName = avatar.attributes.name;
                     avatarKey = avatar.attributes.key;
                     imageUrl = PostGre.Models.Image.getImageUrl(avatarName, avatarKey);
+                } else {
+                    imageUrl = PostGre.Models.Image.uploader.getFileUrl(CONSTANTS.DEFAULT_AVATAR_URL, bucket);
                 }
 
                 attributes.avatar = {
