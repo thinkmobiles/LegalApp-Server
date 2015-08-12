@@ -87,7 +87,7 @@ define([],function () {
         img.src = currentImage;
     };
 
-    var docXLoad = function (argContext, callback) {
+    /*var docXLoad = function (argContext, callback) {
         var context = (argContext) ? argContext : this;
         var inputFile = context.$('#tempFile');
         inputFile.on('change', function (event) {
@@ -109,9 +109,9 @@ define([],function () {
                 alert('Invalid file type!');
             }
         });
-    };
+    };*/
 
-    var getLinkTables = function (id, url, data, content, isCreate, canBeEmpty) {
+    /*var getLinkTables = function (id, url, data, content, isCreate, canBeEmpty) {
         $.ajax({
             url  : url,
             data : data,
@@ -131,12 +131,12 @@ define([],function () {
                 }
             }
         });
-    };
+    };*/
 
     return {
         runApplication : runApplication,
         canvasDraw     : canvasDraw,
-        canvasDrawing  : canvasDrawing,
-        docXLoad       : docXLoad
+        canvasDrawing  : canvasDrawing
+        //docXLoad       : docXLoad
     };
 });

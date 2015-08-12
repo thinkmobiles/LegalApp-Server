@@ -1,25 +1,36 @@
 
 <h2>Add a Template</h2>
 
-    <form enctype="multipart/form-data" id="addAttachments" action="http://localhost:8850/templates" method="POST">
+    <form enctype="multipart/form-data" id="addTempForm" action="">
 
+        <div>
         <input type="text" id="tempName" name="name">
+        </div>
 
-        <!--<input type="file" name="docFile" id="tempFile" value="1">-->
+        <div>
+        <input type="file" id="tempFile" name="templateFile">
+        </div>
 
         <!--<input type="file" id="tempLogo">-->
 
-        <input type="text" id="tempLinkTable" name="link_id" placeholder="Link Table" value="14">
+        <div>
+        <input type="text" id="tempLinkTable" placeholder="Link Table">
+        <input type="text" id="fakeLinkTable" name="link_id">
         <div id="linkContainer">
             <!--link names container-->
         </div>
+        </div>
 
-        <!--<input type="text" id="tempLink" placeholder="Link to Template">-->
-<!---->
+        <div>
+        <input type="text" id="tempLink" placeholder="Link to Template">
+        </div>
+
         <div id="linksFields">
             <!--link fields container-->
         </div>
 
-        <input type="submit" id="tempSave" value="Save">
+        <div>
+        <input type="button" id="tempSave" value="Save">
+        </div>
 
     </form>
