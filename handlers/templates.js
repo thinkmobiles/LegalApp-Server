@@ -75,15 +75,10 @@ var TemplatesHandler = function (PostGre) {
             //save the docx file:
             function (cb) {
                 self.saveTheTemplateFile(templateFile, function (err, key) {
-                    console.log('>>> save template file -------------------------------');
-
                     if (err) {
                         console.error(err);
                         return cb(err);
                     }
-                    //TODO: save to attachments ...
-                    console.log('success. key = ', key);
-                    console.log('>>> --------------------------------------------------');
                     cb(null, key);
                 });
             },
@@ -93,8 +88,12 @@ var TemplatesHandler = function (PostGre) {
                 var bucket = BUCKETS.TEMPLATE_FILES;
                 var filePath = uploader.getFilePath(key, bucket);
                 var htmlContent = '';
+                var converterParams = {
+                    path: filePath
+                };
 
-                mammoth.convertToHtml({path: filePath})
+                mammoth
+                    .convertToHtml(converterParams)
                     .then(function(result){
                         var messages = result.messages; // Any messages, such as warnings during conversion
 
@@ -107,8 +106,6 @@ var TemplatesHandler = function (PostGre) {
                         cb(null, key, htmlContent);
                     })
                     .done();
-
-                //cb(null, key, htmlContent);
             },
 
             //insert into templates:

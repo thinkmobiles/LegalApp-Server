@@ -19,10 +19,12 @@ module.exports = function (app) {
     var mammothHandler = new MammothHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
-    var linksRouter = require('./links')(app);
-    var linksFieldsRouter = require('./linksFields')(app);
-    var templatesRouter = require('./templates')(app);
     var companiesRouter = require('./companies')(app);
+    var documentsRouter = require('./documents')(app);
+    var fieldsRouter = require('./fields')(app);
+    var linksFieldsRouter = require('./linksFields')(app);
+    var linksRouter = require('./links')(app);
+    var templatesRouter = require('./templates')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
@@ -42,12 +44,14 @@ module.exports = function (app) {
     app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
     app.get('/getHtml', mammothHandler.docxToHtml);
 
-    app.use('/users', usersRouter);
-    //app.use('/uploadFile', attachments);
-    app.use('/links', linksRouter);
-    app.use('/linksFields', linksFieldsRouter);
-    app.use('/templates', templatesRouter);
     app.use('/companies', companiesRouter);
+    app.use('/documents', documentsRouter);
+    app.use('/fields', fieldsRouter);
+    app.use('/linksFields', linksFieldsRouter);
+    app.use('/links', linksRouter);
+    app.use('/users', usersRouter);
+    app.use('/templates', templatesRouter);
+    //app.use('/uploadFile', attachments);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error

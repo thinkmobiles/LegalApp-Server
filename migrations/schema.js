@@ -1,6 +1,7 @@
 'use strict';
 
 var TABLES = require('../constants/tables');
+var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var STATUSES = require('../constants/statuses');
 var CONSTANTS = require('../constants/index');
@@ -28,7 +29,24 @@ module.exports = function (knex) {
                 row.integer('owner_id').notNullable().index();
                 row.string('name');
                 row.timestamps();
-            }), 
+            }),
+
+            createTable(TABLES.DOCUMENTS, function (row) {
+                row.increments().primary();
+                row.integer('template_id').notNullable().index();
+                row.integer('assigned_id').index();
+                row.text('html_content');
+                row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
+                row.timestamp('signed_at');
+                row.timestamps();
+            }),
+
+            createTable(TABLES.FIELDS, function (row) {
+                row.increments().primary();
+                row.string('name').notNullable();
+                row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
+                row.timestamps();
+            }),
 
             createTable(TABLES.IMAGES, function (row) {
                 row.increments().primary();
@@ -37,7 +55,7 @@ module.exports = function (knex) {
                 row.string('name');
                 row.string('key');
                 row.timestamps();
-            }), 
+            }),
 
             createTable(TABLES.INVITES, function (row) {
                 row.increments().primary();
@@ -162,6 +180,24 @@ module.exports = function (knex) {
                 };
 
                 insertData(TABLES.USER_COMPANIES, data, cb);
+            },
+
+            //create default fields:
+            function (cb) {
+                var fields = [{
+                    name: 'email',
+                    type: FIELD_TYPES.STRING
+                }, {
+                    name: 'first_name',
+                    type: FIELD_TYPES.STRING
+                },{
+                    name: 'last_name',
+                    type: FIELD_TYPES.STRING
+                }];
+
+                async.eachSeries(fields, function (data, eachCb) {
+                    insertData(TABLES.FIELDS, data, eachCb);
+                }, cb);
             }
 
         ], function (err, result) {
@@ -289,7 +325,10 @@ module.exports = function (knex) {
     function drop(callback) {
 
         return async.series([
+            dropTable(TABLES.ATTACHMENTS),
             dropTable(TABLES.COMPANIES),
+            dropTable(TABLES.DOCUMENTS),
+            dropTable(TABLES.FIELDS),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
             dropTable(TABLES.LINKS_FIELDS),
