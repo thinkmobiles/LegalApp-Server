@@ -77,8 +77,16 @@ var imagesUploader = function (dirConfig) {
     }
 
     function writer(path, imageData, callback) {
-        var imageNameWithExt = imageData.name + '.' + imageData.extention;
-        var imagePath = path + imageNameWithExt;
+        var imageNameWithExt;
+        var imagePath;
+
+        if (imageData.extention) {
+            imageNameWithExt = imageData.name + '.' + imageData.extention;
+        } else {
+            imageNameWithExt = imageData.name;
+        }
+
+        imagePath = path + imageNameWithExt;
 
         try {
             fs.writeFile(imagePath, imageData.data, function (err, data) {
@@ -214,12 +222,20 @@ var imagesUploader = function (dirConfig) {
         saveImage(fileData, dir, folderName, slash, callback);
     }
 
+    function getFilePath(fileName, folder) {
+        var filePath = path.join(path.dirname( require.main.filename ), rootDir, folder, fileName);
+
+        return filePath;
+    }
+
     return {
         uploadImage: uploadImage,
         duplicateImage: duplicateImage,
         removeImage: removeImage,
         getImageUrl: getImagePath,
-        uploadFile: uploadFile
+        uploadFile: uploadFile,
+        getFileUrl: getImagePath,
+        getFilePath: getFilePath
     };
 };
 

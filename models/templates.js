@@ -1,12 +1,13 @@
 'use strict';
 
 var TABLES = require('../constants/tables');
+var BUCKETS = require('../constants/buckets');
 var async = require('async');
 
 module.exports = function (PostGre, ParentModel) {
     var TemplateModel = ParentModel.extend({
         tableName: TABLES.TEMPLATES,
-        hidden: ['created_at', 'updated_at'],
+        hidden: ['html_content', 'created_at', 'updated_at'],
         initialize: function () {
             this.on('destroying', this.removeDependencies);
         },
@@ -17,6 +18,36 @@ module.exports = function (PostGre, ParentModel) {
 
         company: function () {
             return this.belongsTo(PostGre.Models.Company);
+        },
+
+        templateFile: function () {
+            return this.morphOne(PostGre.Models.Attachment, 'attacheable')
+        },
+
+        toJSON: function () {
+            var attributes;
+            var templateFile;
+            var key;
+            var name;
+            var bucket = BUCKETS.TEMPLATE_FILES;
+            var url;
+
+            attributes = ParentModel.prototype.toJSON.call(this);
+
+            if (attributes.id && this.relations && this.relations.templateFile) {
+                templateFile = this.relations.templateFile;
+
+                if (templateFile.id && templateFile.attributes.key && templateFile.attributes.name) {
+                    name = templateFile.attributes.name;
+                    key = templateFile.attributes.key;
+                    url = PostGre.Models.Image.uploader.getFileUrl(key, bucket);
+                }
+
+                attributes.templateFile = {
+                    url: url
+                };
+            }
+            return attributes;
         },
 
         removeDependencies: function (callback) {

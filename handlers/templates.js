@@ -9,6 +9,7 @@ var BUCKETS = require('../constants/buckets');
 var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
+var mammoth = require('mammoth');
 
 var badRequests = require('../helpers/badRequests');
 
@@ -16,6 +17,7 @@ var SessionHandler = require('../handlers/sessions');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
+    var uploader = PostGre.Models.Image.uploader;
     var TemplateModel = Models.Template;
     var AttachmentModel = Models.Attachment;
     var session = new SessionHandler(PostGre);
@@ -23,13 +25,13 @@ var TemplatesHandler = function (PostGre) {
 
     function random(number) {
         return Math.floor((Math.random() * number));
-    }
+    };
 
     function computeKey(name) {
         var ticks_ = new Date().valueOf();
         var key;
 
-        key = name + '_' + ticks_ + '_' + random(1000);
+        key = ticks_ + '_' + random(1000) + '_' + name;
 
         return key;
     };
@@ -56,7 +58,6 @@ var TemplatesHandler = function (PostGre) {
         var linkId = options.link_id;
         var originalFilename;
         var extension;
-
 
         if (!name || !linkId || !templateFile) {
             return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
@@ -87,12 +88,36 @@ var TemplatesHandler = function (PostGre) {
                 });
             },
 
-            //insert into templates:
+            //convert docx to html:
             function (key, cb) {
+                var bucket = BUCKETS.TEMPLATE_FILES;
+                var filePath = uploader.getFilePath(key, bucket);
+                var htmlContent = '';
+
+                mammoth.convertToHtml({path: filePath})
+                    .then(function(result){
+                        var messages = result.messages; // Any messages, such as warnings during conversion
+
+                        if (messages && messages.length) {
+                            console.error(messages);
+                        }
+
+                        htmlContent = result.value; // The generated HTML
+
+                        cb(null, key, htmlContent);
+                    })
+                    .done();
+
+                //cb(null, key, htmlContent);
+            },
+
+            //insert into templates:
+            function (key, htmlContent, cb) {
                 var saveData = {
                     name: name,
                     link_id: linkId,
-                    company_id: companyId
+                    company_id: companyId,
+                    html_content: htmlContent
                 };
 
                 TemplateModel
@@ -132,7 +157,6 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.saveTheTemplateFile = function (file, callback) {
-        var uploader = PostGre.Models.Image.uploader;
         var originalFilename = file.originalFilename;
         var extension = originalFilename.slice(-4);
 
@@ -152,7 +176,8 @@ var TemplatesHandler = function (PostGre) {
             //save file to storage:
             function (buffer, cb) {
                 var bucket = BUCKETS.TEMPLATE_FILES;
-                var name = BUCKETS.TEMPLATE_FILES;
+                //var name = BUCKETS.TEMPLATE_FILES;
+                var name = originalFilename;
                 var key = computeKey(name);
                 var fileData;
 
@@ -166,8 +191,7 @@ var TemplatesHandler = function (PostGre) {
 
                 fileData = {
                     data: buffer,
-                    name: name,
-                    extention: extension
+                    name: key //look like: 1439330842375_121_myFileName.docx
                 };
 
                 uploader.uploadFile(fileData, key, bucket, function (err, fileName) {
@@ -202,7 +226,7 @@ var TemplatesHandler = function (PostGre) {
                 qb.where({'company_id': companyId});
             })
             //.fetchAll({withRelated: ['link.linkFields']})
-            .fetchAll()
+            .fetchAll({withRelated: ['templateFile']})
             .exec(function (err, result) {
                 var templateModels;
 
@@ -231,7 +255,7 @@ var TemplatesHandler = function (PostGre) {
         };
         var fetchParams = {
             require: true,
-            withRelated: ['link']
+            withRelated: ['link', 'templateFile']
         };
 
         TemplateModel
@@ -353,6 +377,28 @@ var TemplatesHandler = function (PostGre) {
             }
             res.status(200).send({success: 'Success updated', model: templateModel});
         });
+    };
+
+    this.previewTemplate = function (req, res, next) {
+        var templateId = req.params.id;
+        var criteria = {
+            id: templateId
+        };
+        var fetchOptions = {
+            require: true
+        };
+
+        TemplateModel
+            .find(criteria, fetchOptions)
+            .then(function (templateModel) {
+                var html = templateModel.get('html_content');
+
+                res.status(200).send(html);
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
     };
 
     this.createDocument = function (htmlText, fields, values, callback) {
