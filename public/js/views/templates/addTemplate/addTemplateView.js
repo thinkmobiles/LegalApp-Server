@@ -19,7 +19,7 @@ define([
         id          : "addItemLeft",
         className   : "addItemLeft",
 
-        currentFile : null,
+        //currentFile : null,
 
         initialize: function () {
             this.linksCollection = new LinksCollection();
@@ -34,8 +34,8 @@ define([
 
         events : {
             "click #addNewLink"  : "showLinksTable",
-            "click .linkName"    : "linkSelect"
-            //"click #tempSave"    : "saveTemplate"
+            "click .linkName"    : "linkSelect",
+            "click #tempSave"    : "saveTemplate"
         },
 
         appendLinksNames : function(){
@@ -52,106 +52,89 @@ define([
             });
         },
 
-        //afterRender : function(){
-        //    this.appendLinksNames();
-        //},
-
         showLinksTable: function(){
-
-            //if (this.addDialogView){
-            //    this.addDialogView.undelegateEvents()
-            //}
-
             this.addDialogView = new AddLinkView();
             this.addDialogView.on('renderParentLinks', this.appendLinksNames, this);
             $('#addTemplateContainer').append(this.addDialogView.el);
         },
 
         saveTemplate: function(){
+            var this_el = this.$el;
+            var form = this_el.find('#addTempForm')[0];
+            var formData = new FormData(form);
+            //formData.append('templateFile', this_el.find('#tempFile')[0].files[0]);
+
+            $.ajax({
+                url: '/templates',
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(request){
+                    console.log(request);
+                    alert('Template was invited successfully');
+                }
+            })
+        },
+
+        /*saveTemplate: function(){
             var self = this;
             var this_el;
             var name;
             var link;
             var data;
+            this_el = this.$el;
+            var file = this_el.find('#tempFile')[0].files[0];
+            var forma =this_el.find('#addTempForm');
+            //name = this_el.find('#tempName').val().trim();
+            //link = this_el.find('#tempLinkTable').data('id');
 
-            if (this.currentFile){
-                this.currentModel = new TempModel();
-                this_el = this.$el;
-                var addInviteFile = this_el.find('#tempFile')[0].files[0];
-                this.$el.find("#addAttachments");
-                name = this_el.find('#tempName').val().trim();
-                link = this_el.find('#tempLinkTable').data('id');
+            //data = {
+            //    name : name,
+            //    link_id : link,
+            //    file : file
+            //};
 
-                data = {
-                    name : name,
-                    link_id : link,
-                    file : this.currentFile
-                };
+            forma.submit(function(e){
+                e.preventDefault();
 
-                //this.currentModel.save(data,{
-                //    success : function(){
-                //        alert('success');
-                //    },
-                //    error : function(){
-                //        alert('error');  // todo -error-
-                //    }
-                //});
+                forma.ajaxSubmit({
+                    url: "http://" + window.location.host +"/uploadFiles",
+                    type: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: data,
+                    success: function(){alert('fffff')},
+                    error: function(){alert('fyyyyy')}
+                })
+            });
 
-                //$.ajax({
-                //    url: '/templates',
-                //    type : 'POST',
-                //    enctype : 'multipart',
-                //    data : data,
-                //    success : function(){
-                //        alert('success');
-                //    },
-                //    error : function(){
-                //        alert('error');  // todo -error-
-                //    }
-                //});
-                addFrmFile.submit(function(e){
-                    e.preventDefault();
-
-                    addFrmFile.ajaxSubmit({
-                        url: "http://" + window.location.host +"/uploadFiles",
-                        type: "POST",
-                        processData: false,
-                        contentType: false,
-                        data: data,
-                        success: function(){alert('fffff')},
-                        error: function(){alert('fyyyyy')}
-                    })
-                });
-
-
-            } else {
-                alert('There are no file !!!');
-            }
-        },
+        },*/
 
         linkSelect: function(event){
             var thisEl = this.$el;
+            var fakeInput = thisEl.find('#fakeLinkTable');
             var target = $(event.target);
             var linkID = target.data('id');
             var resultTarget = thisEl.find('#tempLinkTable');
             var linkModel = this.linksCollection.get(linkID);
 
             resultTarget.val(target.text());
-            resultTarget.attr('data-id',linkID);
+            fakeInput.val(linkID);
             thisEl.find('#linksFields').html(this.linksFieldsTemplate({lnkFields : linkModel.get('linkFields')}));
         },
 
         render: function () {
-            var self = this;
+            //var self = this;
 
             this.undelegateEvents();
             this.$el.html(this.mainTemplate);
             this.delegateEvents();
 
             this.appendLinksNames();
-            custom.docXLoad(this, function(result){
-                self.currentFile = result;
-            });
+            //custom.docXLoad(this, function(result){
+            //    self.currentFile = result;
+            //});
 
             return this;
         }
