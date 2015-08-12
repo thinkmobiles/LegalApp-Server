@@ -43,7 +43,6 @@ define([
             var params =  argParams;
             var redirect = argRedirect;
             var viewType;
-            var someString;
             var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
@@ -59,7 +58,6 @@ define([
             }
 
             if (argViewType){
-                //someString = argViewType.viewType;
                 viewType = argViewType[0].toUpperCase()+argViewType.slice(1);
                 nameView = name+viewType+'View';
             }
@@ -69,11 +67,8 @@ define([
 
                 if (self.wrapperView) {
                     self.wrapperView.undelegateEvents();
-                    wrapper.html('');
+                    //wrapper.html('');
                 }
-
-                wrapper.html(self[nameView].el);
-                self[nameView].delegateEvents();
 
                 this.wrapperView = self[nameView];
 

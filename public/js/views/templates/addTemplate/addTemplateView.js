@@ -19,11 +19,8 @@ define([
         id          : "addItemLeft",
         className   : "addItemLeft",
 
-        //currentFile : null,
-
         initialize: function () {
             this.linksCollection = new LinksCollection();
-            //this.$el.find("#addItemLeft").show();
 
             this.render();
         },
@@ -33,9 +30,11 @@ define([
         linksNamesTemplate  : _.template(LinkNamTemp),
 
         events : {
-            "click #addNewLink"  : "showLinksTable",
-            "click .linkName"    : "linkSelect",
-            "click #tempSave"    : "saveTemplate"
+            "click #addNewLink"    : "showLinksTable",
+            "click .linkName"      : "linkSelect",
+            "click #tempSave"      : "saveTemplate",
+            "click #tempLinkTable" : "showHideTable"
+
         },
 
         appendLinksNames : function(){
@@ -58,11 +57,17 @@ define([
             $('#addTemplateContainer').append(this.addDialogView.el);
         },
 
+        showHideTable: function(){
+            var target = this.$el.find('#linkContainer');
+            target.toggle();
+
+        },
+
         saveTemplate: function(){
+            var self = this;
             var this_el = this.$el;
             var form = this_el.find('#addTempForm')[0];
             var formData = new FormData(form);
-            //formData.append('templateFile', this_el.find('#tempFile')[0].files[0]);
 
             $.ajax({
                 url: '/templates',
@@ -70,46 +75,16 @@ define([
                 data: formData,
                 contentType: false,
                 processData: false,
-                success: function(request){
-                    console.log(request);
-                    alert('Template was invited successfully');
+                success: function(response){
+                    alert('Template was added successfully');
+                    var model = response.model;
+                    self.trigger('addInParentView', model);
+                },
+                error: function(){
+                    alert('error'); //todo -error-
                 }
             })
         },
-
-        /*saveTemplate: function(){
-            var self = this;
-            var this_el;
-            var name;
-            var link;
-            var data;
-            this_el = this.$el;
-            var file = this_el.find('#tempFile')[0].files[0];
-            var forma =this_el.find('#addTempForm');
-            //name = this_el.find('#tempName').val().trim();
-            //link = this_el.find('#tempLinkTable').data('id');
-
-            //data = {
-            //    name : name,
-            //    link_id : link,
-            //    file : file
-            //};
-
-            forma.submit(function(e){
-                e.preventDefault();
-
-                forma.ajaxSubmit({
-                    url: "http://" + window.location.host +"/uploadFiles",
-                    type: "POST",
-                    processData: false,
-                    contentType: false,
-                    data: data,
-                    success: function(){alert('fffff')},
-                    error: function(){alert('fyyyyy')}
-                })
-            });
-
-        },*/
 
         linkSelect: function(event){
             var thisEl = this.$el;
@@ -119,22 +94,19 @@ define([
             var resultTarget = thisEl.find('#tempLinkTable');
             var linkModel = this.linksCollection.get(linkID);
 
-            resultTarget.val(target.text());
+            target.closest('#linkContainer').hide();
+            resultTarget.text(target.text());
             fakeInput.val(linkID);
             thisEl.find('#linksFields').html(this.linksFieldsTemplate({lnkFields : linkModel.get('linkFields')}));
         },
 
         render: function () {
-            //var self = this;
 
             this.undelegateEvents();
             this.$el.html(this.mainTemplate);
             this.delegateEvents();
 
             this.appendLinksNames();
-            //custom.docXLoad(this, function(result){
-            //    self.currentFile = result;
-            //});
 
             return this;
         }

@@ -14,6 +14,7 @@ define([
 
     View = Backbone.View.extend({
 
+        el : '#wrapper',
 
         events: {
             "click #addNewUser"  : "showAddTemplate"

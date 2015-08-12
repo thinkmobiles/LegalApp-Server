@@ -12,6 +12,8 @@ define([
     var View;
     View = Backbone.View.extend({
 
+        el : '#wrapper',
+
         initialize: function () {
             this.render();
 
