@@ -361,6 +361,43 @@ module.exports = function (db, defaults) {
 
         });
 
+        describe('GET /documents/list/:templateId', function () {
+            var url = '/documents/list';
+
+            it('Admin can get the list of documents by templateId', function (done) {
+                var templateId = 2;
+                var getUrl = url + '/' + templateId;
+
+                adminUserAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        var template;
+                        var document;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        template = res.body;
+
+                        expect(template).to.be.instanceof(Object);
+                        expect(template).to.have.property('documents');
+
+                        document = template.documents[0];
+
+                        expect(document).to.be.instanceof(Object);
+                        expect(document).to.have.property('id');
+                        expect(document).to.have.property('template_id');
+                        expect(document).to.not.have.property('html_content');
+
+                        expect(document.template_id).to.equals(templateId);
+                        done();
+                    });
+            });
+
+        });
     });
 };
 

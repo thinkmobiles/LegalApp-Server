@@ -21,7 +21,11 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         templateFile: function () {
-            return this.morphOne(PostGre.Models.Attachment, 'attacheable')
+            return this.morphOne(PostGre.Models.Attachment, 'attacheable');
+        },
+
+        documents: function () {
+            return this.hasMany(PostGre.Models.Document);
         },
 
         toJSON: function () {

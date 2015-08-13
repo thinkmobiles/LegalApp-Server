@@ -234,6 +234,28 @@ var DocumentsHandler = function (PostGre) {
             });
     };
 
+    this.getDocumentsByTemplate = function (req, res, next) {
+        //next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var templateId = req.params.templateId;
+        var criteria = {
+            id: templateId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['documents']
+        };
+
+        TemplateModel
+            .find(criteria, fetchOptions)
+            .then(function (templateModel) {
+                res.status(200).send(templateModel);
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
 };
 
 module.exports = DocumentsHandler;

@@ -13,6 +13,7 @@ module.exports = function (app) {
     router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
     router.get('/', session.authenticatedUser, documentsHandler.getDocuments);
     router.get('/list', session.authenticatedUser, documentsHandler.getDocumentsByTemplates);
+    router.get('/list/:templateId', session.authenticatedUser, documentsHandler.getDocumentsByTemplate);
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
