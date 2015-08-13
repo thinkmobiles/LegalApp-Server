@@ -234,11 +234,10 @@ module.exports = function (db, defaults) {
 
             it('Admin can create a new document with valid data', function (done) {
                 var data = {
-                    template_id: 1,
+                    template_id: 2,
                     values: {
                         first_name: 'Black',
-                        last_name: 'Jack',
-                        now: new Date()
+                        last_name: 'Jack'
                     }
                 };
 
@@ -260,5 +259,53 @@ module.exports = function (db, defaults) {
             });
 
         });
+
+        describe('GET /documents', function () {
+            var url = '/documents';
+
+            it('Admin can get the list of documents', function (done) {
+                adminUserAgent
+                    .get(url)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body).to.be.have.property('length');
+                        expect(res.body.length).to.equals(4);
+
+                        done();
+                    });
+            });
+
+        });
+
+        describe('GET /documents/:id', function () {
+            var url = '/documents';
+
+            it('Admin can get the list of documents', function (done) {
+                var id = 2;
+                var getUrl = url + '/2';
+
+                adminUserAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('id');
+                        expect(res.body.id).to.equals(id);
+
+                        done();
+                    });
+            });
+
+        });
+
     });
 };

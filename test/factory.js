@@ -20,6 +20,7 @@ module.exports = function (db) {
     var User = Models.User;
     var Profile = Models.Profile;
     var Template = Models.Template;
+    var Document = Models.Document;
     var profilesCount = 1;
     var emailCounter = 1;
     var userCounter  = 1;
@@ -32,6 +33,7 @@ module.exports = function (db) {
     var LinkFields = Models.LinkFields;
     var linkFieldsCounter = 0;
     var templateCount = 0;
+    var documentCount = 0;
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
@@ -118,6 +120,23 @@ module.exports = function (db) {
         },
         company_id: 1,
         link_id: 1
+    });
+
+    //documents:
+    factory.define(TABLES.DOCUMENTS, Document, {
+        html_content: function () {
+            var html = '<div>';
+
+            documentCount++;
+
+            html += '<h2>Template Name</h2>';
+            html += '<p>Hello first_name_' + documentCount + ' last_name_' + documentCount + '</p>';
+            html += '</div>';
+
+            return html;
+        },
+        template_id: 1,
+        company_id: 1
     });
 
     return factory;

@@ -111,11 +111,45 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocuments = function (req, res, next) {
-        next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var companyId = req.session.companyId;
+        var criteria = {
+            company_id: companyId
+        };
+
+        DocumentModel
+            .forge()
+            .query(function (qb) {
+                qb.where(criteria);
+            })
+            .fetchAll()
+            .exec(function (err, documentModels) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(documentModels);
+            });
     };
 
     this.getDocument = function (req, res, next) {
-        next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var documentId = req.params.id;
+        var companyId = req.session.companyId;
+        var criteria = {
+            id: documentId,
+            company_id: companyId
+        };
+        var fetchOptions = {
+
+        };
+
+        DocumentModel
+            .find(criteria, fetchOptions)
+            .then(function (documentModel) {
+                res.status(200).send(documentModel);
+            })
+            .catch(DocumentModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
     };
 
     this.createDocument = function (htmlText, fields, values, callback) {
