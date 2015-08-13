@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+<div>
+    <label for="createTime">Document Date</label><br>
+    <input type="text" id="createTime">
+</div>
 
-</body>
-</html>
+<% model.linkFields.forEach(function(field){%>
+    <%var id=field.id;%>
+    <%var name=field.name;%>
+    <div>
+        <label for="create_<%=id%>"><%=name%></label><br>
+        <input type="text" id="create_<%=id%>">
+    </div>
+<%})%>
+
+<div>
+    <input type="button" id="createButton" value="Next">
+</div>

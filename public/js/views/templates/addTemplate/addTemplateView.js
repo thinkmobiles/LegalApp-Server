@@ -8,15 +8,20 @@ define([
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
     'views/addLinkTable/addLinkTableView',
     'models/templateModel',
-    'collections/linksCollection',
-    'custom'
+    'collections/linksCollection'
 
-], function (TempTemplate, LinkFilTemp, LinkNamTemp, AddLinkView, TempModel, LinksCollection, custom) {
+], function (
+    TempTemplate,
+    LinkFilTemp,
+    LinkNamTemp,
+    AddLinkView,
+    TempModel,
+    LinksCollection) {
 
     var View;
     View = Backbone.View.extend({
 
-        id          : "addItemLeft",
+        //id          : "addItemLeft",
         className   : "addItemLeft",
 
         initialize: function () {
@@ -95,7 +100,7 @@ define([
             var linkModel = this.linksCollection.get(linkID);
 
             target.closest('#linkContainer').hide();
-            resultTarget.text(target.text());
+            resultTarget.val(target.text());
             fakeInput.val(linkID);
             thisEl.find('#linksFields').html(this.linksFieldsTemplate({lnkFields : linkModel.get('linkFields')}));
         },

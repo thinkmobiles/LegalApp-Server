@@ -43,7 +43,7 @@ define([
             var params =  argParams;
             var redirect = argRedirect;
             var viewType;
-            var wrapper = $('#wrapper');
+            //var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -67,7 +67,6 @@ define([
 
                 if (self.wrapperView) {
                     self.wrapperView.undelegateEvents();
-                    //wrapper.html('');
                 }
 
                 this.wrapperView = self[nameView];
