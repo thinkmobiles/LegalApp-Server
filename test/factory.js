@@ -107,6 +107,15 @@ module.exports = function (db) {
             templateCount++;
             return 'template_' + templateCount;
         },
+        html_content: function () {
+            var html = '<div>';
+
+            html += '<h2>Template Name</h2>';
+            html += '<p>Hello {first_name} {last_name} </p>';
+            html += '</div>';
+
+            return html;
+        },
         company_id: 1,
         link_id: 1
     });

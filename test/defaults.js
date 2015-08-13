@@ -96,6 +96,16 @@ module.exports = function (db) {
     }];
     var links_fields = [
         {
+            link_id: 1,
+            name: 'first_name',
+            code: '{first_name}'
+        },
+        {
+            link_id: 1,
+            name: 'last_name',
+            code: '{last_name}'
+        },
+        {
             name: 'First test name',
             code: 'ftname'
         }, {
@@ -187,7 +197,7 @@ module.exports = function (db) {
                 });
             },
             function (cb) {
-                factory.createMany(TABLES.LINKS_FIELDS, links_fields, 3, function (err, linkFields) {
+                factory.createMany(TABLES.LINKS_FIELDS, links_fields, 5, function (err, linkFields) {
                     defaultData.links_fields = linkFields;
                     cb();
                 });
