@@ -338,6 +338,8 @@ module.exports = function (db, defaults) {
                 adminUserAgent
                     .get(url)
                     .end(function (err, res) {
+                        var obj;
+
                         if (err) {
                             return done(err);
                         }
@@ -345,6 +347,14 @@ module.exports = function (db, defaults) {
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Array);
                         expect(res.body.length).gte(2);
+
+                        obj = res.body[0];
+
+                        expect(obj).to.be.instanceof(Object);
+                        expect(obj).to.have.property('id');
+                        expect(obj).to.have.property('name');
+                        expect(obj).to.have.property('count');
+
                         done();
                     });
             });
