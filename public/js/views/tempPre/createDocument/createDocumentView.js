@@ -34,6 +34,7 @@ define([
             var values = {};
             var data;
             var this_el = this.$el;
+            var myModel = new DocModel();
 
             links.linkFields.forEach(function(field){
                 values[field.name] = this_el.find('#create_'+field.id).val().trim();
@@ -43,13 +44,25 @@ define([
                 template_id : this.tempInfo.id,
                 values      : values
             };
+
+            myModel.save(data,{
+                success: function(){
+                    alert('success');
+                },
+                error: function(){
+                    alert('error'); //todo -error-
+                }
+            });
         },
 
         render: function () {
             var model = this.linkModel.toJSON()[0];
 
             this.undelegateEvents();
-            this.$el.html(this.mainTemplate({model : model}));
+            this.$el.html(this.mainTemplate({
+                model : model,
+                tName : this.tempInfo.name
+            }));
             this.delegateEvents();
 
             this.$el.find('#createTime').datepicker({
