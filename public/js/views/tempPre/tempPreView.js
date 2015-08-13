@@ -4,9 +4,10 @@
 
 define([
     'text!templates/tempPreview/tempPreviewTemplate.html',
+    'views/tempPre/createDocument/createDocumentView',
     'models/templateModel'
 
-], function (PreviwTemp, TempModel) {
+], function (PreviwTemp, CreateView, TempModel) {
 
     var View;
     View = Backbone.View.extend({
@@ -19,12 +20,19 @@ define([
             this.tempId =options.id;
 
             this.stateModel = new TempModel({id : this.tempId});
+            this.stateModel.on('sync', this.render, this);
 
-            this.render();
+            this.stateModel.fetch();
         },
 
         events : {
+            "click #createDoc" : "openCreateForm"
+        },
 
+        openCreateForm: function(){
+            var tempModel = this.stateModel.toJSON();
+            var currentView = new CreateView({model : tempModel});
+            this.$el.find('#createDocContainer').html(currentView.el);
         },
 
         findPreview: function(){
@@ -45,6 +53,7 @@ define([
         },
 
         render: function () {
+
             this.$el.html(this.currentTemp);
 
             this.findPreview();
