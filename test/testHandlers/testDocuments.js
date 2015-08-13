@@ -285,9 +285,9 @@ module.exports = function (db, defaults) {
         describe('GET /documents/:id', function () {
             var url = '/documents';
 
-            it('Admin can get the list of documents', function (done) {
+            it('Admin can get the document by id', function (done) {
                 var id = 2;
-                var getUrl = url + '/2';
+                var getUrl = url + '/' + id;
 
                 adminUserAgent
                     .get(getUrl)
@@ -299,6 +299,7 @@ module.exports = function (db, defaults) {
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Object);
                         expect(res.body).to.be.have.property('id');
+                        expect(res.body).to.be.have.property('template');
                         expect(res.body.id).to.equals(id);
 
                         done();
@@ -307,5 +308,101 @@ module.exports = function (db, defaults) {
 
         });
 
+        describe('GET /documents/:id/preview', function () {
+            var url = '/documents';
+
+            it('Admin can get the preview of document', function (done) {
+                var id = 2;
+                var getUrl = url + '/' + id + '/preview';
+
+                adminUserAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.text).to.be.a('string');
+                        expect(res.text).to.have.length.above(0);
+                        done();
+                    });
+            });
+
+        });
+
+        describe('GET /documents/list', function () {
+            var url = '/documents/list';
+
+            it('Admin can get the list of documents', function (done) {
+                adminUserAgent
+                    .get(url)
+                    .end(function (err, res) {
+                        var obj;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body.length).gte(2);
+
+                        obj = res.body[0];
+
+                        expect(obj).to.be.instanceof(Object);
+                        expect(obj).to.have.property('id');
+                        expect(obj).to.have.property('name');
+                        expect(obj).to.have.property('count');
+
+                        done();
+                    });
+            });
+
+        });
+
+        describe('GET /documents/list/:templateId', function () {
+            var url = '/documents/list';
+
+            it('Admin can get the list of documents by templateId', function (done) {
+                var templateId = 2;
+                var getUrl = url + '/' + templateId;
+
+                adminUserAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        var template;
+                        var document;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        template = res.body;
+
+                        expect(template).to.be.instanceof(Object);
+                        expect(template).to.have.property('documents');
+
+                        document = template.documents[0];
+
+                        expect(document).to.be.instanceof(Object);
+                        expect(document).to.have.property('id');
+                        expect(document).to.have.property('template_id');
+                        expect(document).to.not.have.property('html_content');
+
+                        expect(document.template_id).to.equals(templateId);
+                        done();
+                    });
+            });
+
+        });
     });
 };
+
+/*
+
+
+
+*/
