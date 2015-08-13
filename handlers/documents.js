@@ -79,9 +79,9 @@ var DocumentsHandler = function (PostGre) {
                 }
 
                 if (values && templateHtmlContent) {
-                    htmlContent = self.createDocument(templateHtmlContent, fields, values);
+                    htmlContent = self.createDocumentContent(templateHtmlContent, fields, values);
                 } else {
-                    htmlContent = 'empty';
+                    htmlContent = '';
                 }
 
                 saveData.company_id = templateModel.get('company_id');
@@ -93,7 +93,6 @@ var DocumentsHandler = function (PostGre) {
                         if (err) {
                             return cb(err);
                         }
-                        console.log(documentModel);
                         cb(null, documentModel)
                     });
             }
@@ -138,7 +137,8 @@ var DocumentsHandler = function (PostGre) {
             company_id: companyId
         };
         var fetchOptions = {
-
+            require: true,
+            withRelated: ['template']
         };
 
         DocumentModel
@@ -152,7 +152,31 @@ var DocumentsHandler = function (PostGre) {
             .catch(next);
     };
 
-    this.createDocument = function (htmlText, fields, values, callback) {
+    this.previewDocument = function (req, res, next) {
+        var documentId = req.params.id;
+        var companyId = req.session.companyId;
+        var criteria = {
+            id: documentId,
+            company_id: companyId
+        };
+        var fetchOptions = {
+            require: true
+        };
+
+        DocumentModel
+            .find(criteria, fetchOptions)
+            .then(function (documentModel) {
+                var html = documentModel.get('html_content');
+                res.status(200).send(html);
+            })
+            .catch(DocumentModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+
+    };
+
+    this.createDocumentContent = function (htmlText, fields, values, callback) {
 
         //check input params:
         if (!htmlText || !htmlText.length || !fields || !values) {
