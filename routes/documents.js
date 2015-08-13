@@ -10,10 +10,10 @@ module.exports = function (app) {
     var documentsHandler= new DocumentsHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.post('/', session.authenticatedUser, documentsHandler.newDocument); //todo check permissions...
+    router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
     router.get('/', session.authenticatedUser, documentsHandler.getDocuments);
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
-    router.put('/:id', session.authenticatedUser, documentsHandler.updateDocument);
+    router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
 
     return router;
 };

@@ -188,6 +188,77 @@ module.exports = function (db, defaults) {
                     });
             });
 
+            it('ViewUser can\'t create document', function (done) {
+                var data = {
+                    template_id: 1
+                };
+
+                baseUserAgent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(403);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('error');
+                        expect(res.body.error).to.include('You do not have sufficient rights');
+
+                        done();
+                    });
+            });
+
+            it('Admin can\'t create a new document with incorrect template_id', function (done) {
+                var data = {
+                    template_id: 1000
+                };
+
+                adminUserAgent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(400);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('error');
+                        expect(res.body.error).to.include('Not Found');
+
+                        done();
+                    });
+            });
+
+            it('Admin can create a new document with valid data', function (done) {
+                var data = {
+                    template_id: 1,
+                    values: {
+                        first_name: 'Black',
+                        last_name: 'Jack',
+                        now: new Date()
+                    }
+                };
+
+                adminUserAgent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(201);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('success');
+                        expect(res.body).to.be.have.property('model');
+
+                        done();
+                    });
+            });
+
         });
     });
 };
