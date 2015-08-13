@@ -10,12 +10,51 @@ var async = require('async');
 var badRequests = require('../helpers/badRequests');
 
 var DocumentsHandler = function (PostGre) {
+    var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
     var self = this;
+
+    function createDocumentContent (htmlText, fields, values, callback) {
+
+        //check input params:
+        if (!htmlText || !htmlText.length || !fields || !values) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
+            }
+            return false;
+        }
+
+        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
+
+        /*for (var i in values) {
+         var val = values[i];
+         var code = fields[i];
+
+         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
+         }*/
+
+        fields.forEach(function (field) {
+            var fieldName = field.name;
+            var searchValue = field.code;
+            var replaceValue;
+
+            if (fieldName in values) {
+                replaceValue = values[fieldName];
+                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+            }
+        });
+
+        //return result
+        if (callback && (typeof callback === 'function')) {
+            callback(null, htmlText); //all right
+        }
+        return htmlText;
+
+    };
 
     this.newDocument = function (req, res, next) {
         var options = req.body;
@@ -79,7 +118,7 @@ var DocumentsHandler = function (PostGre) {
                 }
 
                 if (values && templateHtmlContent) {
-                    htmlContent = self.createDocumentContent(templateHtmlContent, fields, values);
+                    htmlContent = createDocumentContent(templateHtmlContent, fields, values);
                 } else {
                     htmlContent = '';
                 }
@@ -176,42 +215,23 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
-    this.createDocumentContent = function (htmlText, fields, values, callback) {
+    this.getDocumentsByTemplates = function (req, res, next) {
+        var fields = [
+            TABLES.TEMPLATES + '.id',
+            TABLES.TEMPLATES + '.name'
+        ];
 
-        //check input params:
-        if (!htmlText || !htmlText.length || !fields || !values) {
-            if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
-            }
-            return false;
-        }
-
-        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
-
-        /*for (var i in values) {
-            var val = values[i];
-            var code = fields[i];
-
-            htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
-        }*/
-
-        fields.forEach(function (field) {
-            var fieldName = field.name;
-            var searchValue = field.code;
-            var replaceValue;
-
-            if (fieldName in values) {
-                replaceValue = values[fieldName];
-                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
-            }
-        });
-
-        //return result
-        if (callback && (typeof callback === 'function')) {
-            callback(null, htmlText); //all right
-        }
-        return htmlText;
-
+        knex(TABLES.TEMPLATES)
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+            .select(fields)
+            .groupBy(fields)
+            .count(TABLES.TEMPLATES + '.id')
+            .exec(function (err, rows) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(rows);
+            });
     };
 
 };

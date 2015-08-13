@@ -331,6 +331,26 @@ module.exports = function (db, defaults) {
 
         });
 
+        describe('GET /documents/list', function () {
+            var url = '/documents/list';
+
+            it('Admin can get the list of documents', function (done) {
+                adminUserAgent
+                    .get(url)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body.length).gte(2);
+                        done();
+                    });
+            });
+
+        });
+
     });
 };
 
