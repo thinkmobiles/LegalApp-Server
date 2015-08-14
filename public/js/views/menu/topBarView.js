@@ -15,8 +15,8 @@ define([
 
         events: {
             'click #buttonLogout'   : 'logout',
-            'click #profileTop'     : 'showPofile',
-            'click #middleTopBar'   : 'showWantForm'
+            'click #profileTop'     : 'showPofile'
+            //'click #middleTopBar'   : 'showWantForm'
         },
 
         initialize: function () {

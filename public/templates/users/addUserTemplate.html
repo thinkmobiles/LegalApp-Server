@@ -1,5 +1,8 @@
     <%var permiss = edit ? usrMdl.profile.permissions : 1%>
-    <div id="adminClient"><span>Admin</span><span>Client</span></div>
+    <div id="adminClient">
+        <span class="active" data-id="0">Admin</span>
+        <span data-id="1">Client</span>
+    </div>
     <div id="addNewUser">
         <span>ADD NEW USER</span>
         <p>*denotes required fields</p>
@@ -28,8 +31,11 @@
         <option data-id="1" <%= (permiss === 1) ? 'selected' : ''%> >Admin</option>
         <%}%>
     </select>
-    <ul id="tableNames">
-    </ul>
+    <a href="javascript:;" id="selectedCompany" data-id="0">Select Company</a>
+    <div id="companyContainer">
+        <ul id="companyNames">
+        </ul>
+    </div>
     </div>
     <input type="button" id="addInvite" value="<%= edit ? 'Edit' : 'Invite'%>">
     <% if (edit){%>

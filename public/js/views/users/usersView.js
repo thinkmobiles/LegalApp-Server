@@ -17,15 +17,27 @@ define([
         el : '#wrapper',
 
         events: {
-            "click #addNewUser"  : "showAddTemplate"
+            "click #addNewUser"  : "showAddTemplate",
+            "click #adminClient>span " : "changeCurrentState"
         },
 
         initialize: function () {
+            this.currentState = 0;
             this.render();
 
             this.usersCollection = new UsersCollection();
 
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
+        },
+
+        changeCurrentState: function(event){
+            var target = $(event.target);
+            var container = target.closest('#adminClient');
+
+            container.find('.active').removeClass('active');
+            target.addClass('active');
+
+            this.currentState = target.data('id');
         },
 
         renderTrigger : function(){
