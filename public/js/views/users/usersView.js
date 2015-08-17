@@ -22,25 +22,33 @@ define([
         },
 
         initialize: function () {
-            this.currentState = 0;
+            this.stateModel = new Backbone.Model();
+            this.stateModel.set('currentState', 0);
             this.render();
 
             this.usersCollection = new UsersCollection();
 
+            this.listenTo(this.stateModel, 'change:currentState', this.renderTrigger);
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
         },
 
         changeCurrentState: function(event){
             var target = $(event.target);
             var container = target.closest('#adminClient');
+            var theState;
 
             container.find('.active').removeClass('active');
             target.addClass('active');
 
-            this.currentState = target.data('id');
+            theState = target.data('id');
+            this.stateModel.set('currentState', theState);
         },
 
         renderTrigger : function(){
+            if (this.addView){
+                this.addView.currentState=this.stateModel.get('currentState');
+            }
+
             this.usersCollection.fetch({reset : true});
         },
 
