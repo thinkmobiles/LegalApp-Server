@@ -93,32 +93,32 @@ define([
                 permissions : permissions.data('id')
             };
 
-            if (this.currentState === 1){
-                if (+companyId) {
-                    inviteData.companyId = companyId;
-
-                    this.userModel = new UserModel();
-
-                    this.userModel.save(inviteData,{
-                        wait : true,
-                        success : function(){
-                            alert('User invited successfully');
-
-                            firstName.val('');
-                            lastName.val('');
-                            phone.val('');
-                            email.val('');
-
-                            self.trigger('redirectList');
-                        },
-                        error : function(){
-                            alert('Error'); // todo message
-                        }
-                    });
-                } else {
-                    alert("Enter, please, your client's company!");
-                }
+            if (this.currentState === 1 && +companyId === 0){
+                return alert("Enter, please, your client's company!");
             }
+
+            if (this.currentState === 1) {
+                inviteData.companyId = companyId;
+            }
+
+            this.userModel = new UserModel();
+
+            this.userModel.save(inviteData,{
+                wait : true,
+                success : function(){
+                    alert('User invited successfully');
+
+                    firstName.val('');
+                    lastName.val('');
+                    phone.val('');
+                    email.val('');
+
+                    self.trigger('redirectList');
+                },
+                error : function(){
+                    alert('Error'); // todo message
+                }
+            });
         },
 
         renderCompanies : function(){
