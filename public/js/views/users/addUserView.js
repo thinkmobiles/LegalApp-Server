@@ -83,7 +83,7 @@ define([
             var phone = thisEL.find('#addPhone');
             var email = thisEL.find('#addEmail');
             var permissions = thisEL.find("#addRole option:selected");
-            var companyId = thisEL.find("#selectedCompany").data('id');
+            var companyId = thisEL.find("#selectedCompany").attr('data-id');
 
             var inviteData = {
                 first_name  : firstName.val().trim(),
@@ -94,28 +94,31 @@ define([
             };
 
             if (this.currentState === 1){
-                inviteData.companyId = companyId;
-            }
+                if (+companyId) {
+                    inviteData.companyId = companyId;
 
-            this.userModel = new UserModel();
+                    this.userModel = new UserModel();
 
-            this.userModel.save(inviteData,{
-                wait : true,
-                success : function(){
-                    alert('User invited successfully');
+                    this.userModel.save(inviteData,{
+                        wait : true,
+                        success : function(){
+                            alert('User invited successfully');
 
-                    firstName.val('');
-                    lastName.val('');
-                    phone.val('');
-                    email.val('');
+                            firstName.val('');
+                            lastName.val('');
+                            phone.val('');
+                            email.val('');
 
-                    self.trigger('redirectList');
-                },
-                error : function(){
-                    alert('Error'); // todo message
+                            self.trigger('redirectList');
+                        },
+                        error : function(){
+                            alert('Error'); // todo message
+                        }
+                    });
+                } else {
+                    alert("Enter, please, your client's company!");
                 }
-            });
-
+            }
         },
 
         renderCompanies : function(){
