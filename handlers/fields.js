@@ -15,7 +15,7 @@ var FieldsHandler = function (PostGre) {
     var self = this;
 
     this.getFields = function (req, res, next) {
-        FieldModel
+        /*FieldModel
             .forge()
             .fetchAll()
             .exec(function (err, fileModels) {
@@ -23,7 +23,9 @@ var FieldsHandler = function (PostGre) {
                     return next(err);
                 }
                 res.status(200).send(fileModels);
-            });
+            });*/
+
+        res.status(200).send(FIELD_TYPES);
     };
 
     this.getField = function (req, res, next) {

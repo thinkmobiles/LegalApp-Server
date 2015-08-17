@@ -42,12 +42,12 @@ module.exports = function (knex) {
                 row.timestamps();
             }),
 
-            createTable(TABLES.FIELDS, function (row) {
+            /*createTable(TABLES.FIELDS, function (row) {
                 row.increments().primary();
                 row.string('name').notNullable();
                 row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
                 row.timestamps();
-            }),
+            }),*/
 
             createTable(TABLES.IMAGES, function (row) {
                 row.increments().primary();
@@ -71,6 +71,7 @@ module.exports = function (knex) {
                 row.string('email');
                 row.string('subject');
                 row.text('body');
+                row.string('type');
                 row.timestamps();
             }),
 
@@ -114,6 +115,7 @@ module.exports = function (knex) {
                 row.integer('link_id').index();
                 row.string('name');
                 row.string('code');
+                row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
                 row.timestamps();
             }),
 
@@ -192,7 +194,7 @@ module.exports = function (knex) {
                 insertData(TABLES.USER_COMPANIES, data, cb);
             },
 
-            //create default fields:
+            /*//create default fields:
             function (cb) {
                 var fields = [{
                     name: 'email',
@@ -208,7 +210,7 @@ module.exports = function (knex) {
                 async.eachSeries(fields, function (data, eachCb) {
                     insertData(TABLES.FIELDS, data, eachCb);
                 }, cb);
-            }
+            }*/
 
         ], function (err, result) {
             if (callback && (typeof callback === 'function')) {
@@ -338,9 +340,10 @@ module.exports = function (knex) {
             dropTable(TABLES.ATTACHMENTS),
             dropTable(TABLES.COMPANIES),
             dropTable(TABLES.DOCUMENTS),
-            dropTable(TABLES.FIELDS),
+            //dropTable(TABLES.FIELDS),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
+            dropTable(TABLES.MESSAGES),
             dropTable(TABLES.LINKS_FIELDS),
             dropTable(TABLES.LINKS),
             dropTable(TABLES.PROFILES),

@@ -531,6 +531,8 @@ module.exports = function (db, defaults) {
                             .put(url)
                             .send(data)
                             .end(function (err, res) {
+                                console.log(res.body);
+
                                 if (err) {
                                     return cb();
                                 }
@@ -768,7 +770,7 @@ module.exports = function (db, defaults) {
                 ], done);
             });
 
-            it('Editor User can\'t change the permissions', function (done) {
+            it('Editor User can\'t change the profile.permissions to admin', function (done) {
                 var data = {
                     profile: {
                         first_name: 'new first name',
@@ -846,7 +848,7 @@ module.exports = function (db, defaults) {
                 };
 
                 var queryOptions = {
-                    companyId: 1
+                    companyId: 2
                 };
                 var fetchOptions = {
                     withRelated: ['profile']
@@ -890,7 +892,7 @@ module.exports = function (db, defaults) {
             var url = '/users';
 
             it('Admin can get the user by id', function (done) {
-                var userId = 3;
+                var userId = 4;
                 var getUrl = url + '/' + userId;
 
                 userAgent1
@@ -911,7 +913,7 @@ module.exports = function (db, defaults) {
             });
 
             it('Another Admin can\'t get the user by id', function (done) {
-                var userId = 3;
+                var userId = 4;
                 var getUrl = url + '/' + userId;
 
                 userAgent2
@@ -920,8 +922,6 @@ module.exports = function (db, defaults) {
                         if (err) {
                             return done(err);
                         }
-
-                        console.log(res.body);
 
                         expect(res.status).to.equals(400);
                         expect(res.body).to.be.instanceof(Object);
