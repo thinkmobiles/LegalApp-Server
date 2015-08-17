@@ -82,7 +82,6 @@ module.exports = function (knex) {
                 row.string('last_name');
                 row.string('company');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
-                row.integer('statuses').notNullable().defaultTo(STATUSES.CREATED);
                 row.string('phone');
                 row.timestamps();
             }), 
@@ -100,6 +99,7 @@ module.exports = function (knex) {
                 row.string('password');
                 row.string('confirm_token');
                 row.string('forgot_token');
+                row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
                 row.timestamps();
             }),
 

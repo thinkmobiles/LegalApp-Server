@@ -4,6 +4,7 @@ var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
 var PERMISSIONS = require('../constants/permissions');
+var STATUSES = require('../constants/statuses');
 
 var async = require('async');
 var _ = require('lodash');
@@ -297,6 +298,10 @@ var UsersHandler = function (PostGre) {
 
                 if (userModel && userModel.get('confirm_token')) {
                     return next(badRequests.UnconfirmedEmail());
+                }
+
+                if (userModel && userModel.get('status') === STATUSES.DELETED) {
+                    return next(badRequests.AccessError({message: MESSAGES.DELETED_ACCOUNT, status: 403}));
                 }
 
                 profile = userModel.related('profile');
@@ -735,7 +740,6 @@ var UsersHandler = function (PostGre) {
     };
 
     this.getClients = function (req, res, next) {
-        //next(badRequests.AccessError({message: 'Not implemented yet'}));
         var options = req.query;
         var userId = req.session.userId;
         var companyId = req.session.companyId;
@@ -801,6 +805,10 @@ var UsersHandler = function (PostGre) {
             }
             res.status(200).send({success: 'success updated', user: userModel});
         });
+    };
+
+    this.searchUsers = function (req, res, next) {
+        next(badRequests.AccessError({message: 'Not implemented yet'}));
     };
 
     this.renderError = function (err, req, res, next) {
