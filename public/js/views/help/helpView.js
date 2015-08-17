@@ -17,7 +17,29 @@ define([
         },
 
         events : {
+            "click #helpSend" : "letsSendMail"
+        },
 
+        letsSendMail: function(){
+            var this_el = this.$el;
+            var eMail = this_el.find('#helpEmail').val().trim();
+            var subject = this_el.find('#helpSubject').val().trim();
+            var emailText = this_el.find('#helpText').val().trim();
+
+            var data = {
+                email     : eMail,
+                subject   : subject,
+                emailText : emailText
+            };
+
+            $.ajax({
+                url  : '/helpMe',
+                type : 'POST',
+                data :  data,
+                success : function(){
+                    alert('Your message was sent successfully');
+                }
+            });
         },
 
         render: function () {

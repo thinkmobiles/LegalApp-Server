@@ -39,6 +39,7 @@ module.exports = function (app) {
     app.put('/profile',  users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
+    app.post('/helpMe', users.helpMe);
 
     app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
     app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);

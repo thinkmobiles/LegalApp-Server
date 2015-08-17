@@ -270,7 +270,14 @@ a {
 
 #adminClient {
   span{
-    padding-right: 40px;
+    position: relative;
+    width: 50%;
+
+    &:nth-child(2){
+      float:right;
+      text-align: right;
+    }
+
     &.active {
       color : #e31937;
       border-bottom: 1px solid #e31937;
