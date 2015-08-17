@@ -26,7 +26,7 @@ module.exports = function (knex) {
 
             createTable(TABLES.COMPANIES, function (row) {
                 row.increments().primary();
-                row.integer('owner_id').notNullable().index();
+                row.integer('owner_id').index();
                 row.string('name');
                 row.timestamps();
             }),
@@ -63,7 +63,16 @@ module.exports = function (knex) {
                 row.integer('inivtee_id').notNullable().index();
                 row.string('invited_id').notNullable().index();
                 row.timestamps();
-            }), 
+            }),
+
+            createTable(TABLES.MESSAGES, function (row) {
+                row.increments().primary();
+                row.integer('owner_id').notNullable().index();
+                row.string('email');
+                row.string('subject');
+                row.text('body');
+                row.timestamps();
+            }),
 
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();

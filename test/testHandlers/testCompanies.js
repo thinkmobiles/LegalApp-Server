@@ -203,6 +203,8 @@ module.exports = function (db, defaults) {
                             return done(err);
                         }
 
+                        console.log(res.body);
+
                         expect(res.status).to.equals(201);
                         expect(res.body).to.be.instanceof(Object);
                         expect(res.body).to.be.have.property('success');
