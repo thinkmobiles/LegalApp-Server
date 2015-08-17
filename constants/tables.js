@@ -5,6 +5,7 @@ module.exports = {
     FIELDS: 'fields',
     IMAGES: 'images',
     INVITES: 'invites',
+    MESSAGES: 'messages',
     PROFILES: 'profiles',
     USER_COMPANIES: 'user_companies',
     USERS: 'users',

@@ -97,7 +97,7 @@ var CompaniesHandler = function (PostGre) {
         var options = req.body;
         var name = options.name;
         var createOptions = {
-            userId: userId,
+            //userId: userId,
             name: name
         };
 
@@ -105,13 +105,15 @@ var CompaniesHandler = function (PostGre) {
             return next(badRequests.NotEnParams({reqParams: ['name']}));
         }
 
-        self.createCompanyWithOwner(createOptions, function (err, companyModel) {
-            if (err) {
-                return next(err);
-            }
-            res.status(201).send({success: 'created', model: companyModel});
-        });
-
+        CompanyModel
+            .forge()
+            .save(createOptions)
+            .exec(function (err, companyModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({success: 'created', model: companyModel});
+            });
     };
 
     this.getCompanies = function (req, res, next) {
