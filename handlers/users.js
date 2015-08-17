@@ -23,6 +23,7 @@ var UsersHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var ProfileModel = Models.Profile;
+    var MessageModel = Models.Message;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
     var companiesHandler = new CompaniesHandler(PostGre);
@@ -843,6 +844,9 @@ var UsersHandler = function (PostGre) {
         var mailerOptions;
         var userId = req.session.userId;
         var fetchOptions;
+        var email = options.email;
+        var subject = options.subject;
+        var text = options.emailText;
         var criteria = {
             id: userId
         };
@@ -853,9 +857,9 @@ var UsersHandler = function (PostGre) {
         };
 
         mailerOptions = {
-            email   : options.email,
-            subject : options.subject,
-            text    : options.emailText
+            email   : email,
+            subject : subject,
+            text    : text
         };
 
         UserModel
@@ -865,6 +869,7 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
+                var saveData;
                 var profile = userModel.related('profile');
                 var company = userModel.related('company');
 
@@ -874,7 +879,22 @@ var UsersHandler = function (PostGre) {
                     mailerOptions.company = company.models[0].get('name');
                 }
 
+                saveData = {
+                    owner_id : userId,
+                    email    : email,
+                    subject  : subject,
+                    body     : text
+                };
+
+                MessageModel
+                    .upsert(saveData,function (err, updatedModel) {
+                        if (err) {
+                            return next(err);
+                        }
+                    });
+
                 mailer.helpMeMessage(mailerOptions);
+                res.status(200).send({success : 'success'});
             })
     }
 };
