@@ -16,6 +16,8 @@ define([
         //el : '#addUserContainer',
         companyTemp : _.template(CompanyName),
 
+        currentState : 0,
+
         events: {
             "click #addInvite"     : "actionUser",
             "click .selThisComp"   : "selectCurrentCompany",
@@ -65,22 +67,35 @@ define([
             });
         },
 
+        //cleanFormOldInfo: function (){
+        //    var thisEL = this.$el;
+        //    var firstName = thisEL.find('#addFName').val('');
+        //    var lastName  = thisEL.find('#addLName').val('');
+        //    var phone = thisEL.find('#addPhone').val('');
+        //    var email = thisEL.find('#addEmail').val('');
+        //},
+
         inviteUser: function (){
             var thisEL = this.$el;
             var self   = this;
-            var firstName = thisEL.find('#addFName').val().trim();
-            var lastName  = thisEL.find('#addLName').val().trim();
-            var phone = thisEL.find('#addPhone').val().trim();
-            var email = thisEL.find('#addEmail').val().trim();
-            var permissions = thisEL.find("#addRole option:selected").data('id');
+            var firstName = thisEL.find('#addFName');
+            var lastName  = thisEL.find('#addLName');
+            var phone = thisEL.find('#addPhone');
+            var email = thisEL.find('#addEmail');
+            var permissions = thisEL.find("#addRole option:selected");
+            var companyId = thisEL.find("#selectedCompany").data('id');
 
             var inviteData = {
-                first_name  : firstName,
-                last_name   : lastName,
-                phone       : phone,
-                email       : email,
-                permissions : permissions
+                first_name  : firstName.val().trim(),
+                last_name   : lastName.val().trim(),
+                phone       : phone.val().trim(),
+                email       : email.val().trim(),
+                permissions : permissions.data('id')
             };
+
+            if (this.currentState === 1){
+                inviteData.companyId = companyId;
+            }
 
             this.userModel = new UserModel();
 
@@ -88,6 +103,12 @@ define([
                 wait : true,
                 success : function(){
                     alert('User invited successfully');
+
+                    firstName.val('');
+                    lastName.val('');
+                    phone.val('');
+                    email.val('');
+
                     self.trigger('redirectList');
                 },
                 error : function(){
