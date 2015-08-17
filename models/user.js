@@ -58,6 +58,7 @@ module.exports = function (PostGre, ParentModel) {
             var order;
             var userId;
             var companyId;
+            var withoutCompany;
 
             if (queryOptions && queryOptions.companyId) {
                 companyId = queryOptions.companyId;
@@ -67,9 +68,13 @@ module.exports = function (PostGre, ParentModel) {
                 userId = queryOptions.userId;
             }
 
+            if (queryOptions && queryOptions.withoutCompany) {
+                withoutCompany = queryOptions.withoutCompany;
+            }
+
             return this
                 .query(function (qb) {
-                    qb.innerJoin(TABLES.USER_COMPANIES, 'users.id', 'user_companies.user_id');
+                    qb.innerJoin(TABLES.USER_COMPANIES, 'users.id', TABLES.USER_COMPANIES + '.user_id');
 
                     if (userId) {
                         qb.andWhere('users.id', userId);
@@ -77,6 +82,10 @@ module.exports = function (PostGre, ParentModel) {
 
                     if (companyId) {
                         qb.andWhere('user_companies.company_id', companyId);
+                    }
+
+                    if (withoutCompany) {
+                        qb.andWhere('user_companies.company_id', '<>', withoutCompany);
                     }
 
                     qb.select('users.*');

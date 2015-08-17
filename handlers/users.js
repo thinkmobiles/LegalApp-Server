@@ -734,6 +734,29 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    this.getClients = function (req, res, next) {
+        //next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var options = req.query;
+        var userId = req.session.userId;
+        var companyId = req.session.companyId;
+        var queryOptions = { //TODO: query options page, count, orderBy ...
+            withoutCompany: companyId
+        };
+        var fetchOptions = {
+            withRelated: ['profile', 'avatar']
+        };
+
+        UserModel
+            .findCollaborators(queryOptions, fetchOptions)
+            .exec(function (err, result) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(result.models);
+            });
+
+    };
+
     this.getUser = function (req, res, next) {
         var userId = req.params.id;
         var companyId = req.session.companyId;
