@@ -151,6 +151,29 @@ var MailerModule = function () {
         deliver(mailOptions,callback);
 
     }
+
+    this.helpMeMessage = function (options, callback) {
+        var templateOptions;
+        var mailOptions;
+
+        templateOptions = {
+            email     : options.email,
+            emailText : options.text,
+            name      : options.name,
+            company   : options.company
+        };
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,// todo -mcCooper mail-
+            subject: options.subject,
+            generateTextFromHTML: true,
+            html: _.template(fs.readFileSync('public/templates/mailer/helpMe.html', "utf8"))(templateOptions)
+        };
+
+        deliver(mailOptions,callback);
+
+    }
    
 };
 

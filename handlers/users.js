@@ -837,6 +837,46 @@ var UsersHandler = function (PostGre) {
     this.renderError = function (err, req, res, next) {
         res.render('errorTemplate', {error: err});
     };
+
+    this.helpMe = function (req, res, next){
+        var options = req.body;
+        var mailerOptions;
+        var userId = req.session.userId;
+        var fetchOptions;
+        var criteria = {
+            id: userId
+        };
+
+        fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
+
+        mailerOptions = {
+            email   : options.email,
+            subject : options.subject,
+            text    : options.emailText
+        };
+
+        UserModel
+            .find(criteria, fetchOptions)
+            .exec(function(err, userModel){
+                if (err) {
+                    return next(err);
+                }
+
+                var profile = userModel.related('profile');
+                var company = userModel.related('company');
+
+                mailerOptions.name = profile.get('first_name')+' '+profile.get('last_name');
+
+                if (company && company.models.length && company.models[0].id) {
+                    mailerOptions.company = company.models[0].get('name');
+                }
+
+                mailer.helpMeMessage(mailerOptions);
+            })
+    }
 };
 
 module.exports = UsersHandler;
