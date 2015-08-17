@@ -17,7 +17,9 @@ define([
         companyTemp : _.template(CompanyName),
 
         events: {
-            "click #addInvite" : "actionUser"
+            "click #addInvite"     : "actionUser",
+            "click .selThisComp"   : "selectCurrentCompany",
+            "click #goSaveCompany" : "goSaveCompany"
         },
 
         initialize: function (options) {
@@ -31,6 +33,36 @@ define([
             }
 
             this.render();
+        },
+
+        selectCurrentCompany: function(event){
+            var target = $(event.target);
+            var comId = target.data('id');
+            var comName = target.text().trim();
+            var resultField = this.$el.find('#selectedCompany');
+
+            resultField.text(comName);
+            resultField.attr('data-id', comId);
+        },
+
+        goSaveCompany: function(){
+            var self = this;
+            var this_el = this.$el;
+            var newCompany = this_el.find('#newCompName').val().trim();
+            var resultField = this_el.find('#selectedCompany');
+
+            $.ajax({
+                url : '/companies',
+                type : 'POST',
+                data : {name : newCompany},
+                success : function(response){
+                    var model = response.model;
+                    resultField.text(model.name);
+                    resultField.attr('data-id', model.id);
+                    self.renderCompanies();
+                },
+                error   : function(){}
+            });
         },
 
         inviteUser: function (){
@@ -73,7 +105,7 @@ define([
                 type : "GET",
 
                 success : function(response){
-                    self.$el.find('#tableNames').html(self.companyTemp({coll : response}));
+                    self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
                 }
             });
         },
