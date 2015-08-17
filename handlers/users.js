@@ -75,7 +75,7 @@ var UsersHandler = function (PostGre) {
     };
 
     function updateUserById(userId, options, callback) {
-        var profile = options.profile;
+        var profile;
         var profileData = {};
 
         if (options.profile) {
@@ -468,24 +468,24 @@ var UsersHandler = function (PostGre) {
 
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
-        var options = {};
+        var options = req.body;
         var image = {};
+        var permissions;
 
-        image.imageSrc = req.body.imageSrc;
-        image.imageable_id = userId;
-        image.imageable_type = 'users';
-        options.profile = req.body;
-        //var permissions;
+        //check permissions:
+        if ((options.profile && (options.profile.permissions !== undefined))) {
+            permissions = options.profile.permissions;
 
+            if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
+                return next(badRequests.AccessError());
+            }
+        }
 
-        /*//check permissions:
-         if ((options.profile && (options.profile.permissions !== undefined))) {
-         permissions = options.profile.permissions;
-
-         if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
-         return next(badRequests.AccessError());
-         }
-         }*/
+        if (options.imageSrc) {
+            image.imageSrc = req.body.imageSrc;
+            image.imageable_id = userId;
+            image.imageable_type = 'users';
+        }
 
         async.waterfall([
 
@@ -506,7 +506,6 @@ var UsersHandler = function (PostGre) {
                 if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
                     imageHandler.saveImage(image, function (err) {
                         cb(err, userModel);
-
                     });
                 } else {
                     cb();
@@ -518,61 +517,7 @@ var UsersHandler = function (PostGre) {
                 return next(err);
             }
             res.status(200).send({success: 'success updated', user: userModel});
-
         });
-
-        //==================================================================
-        /*async.waterfall([
-
-         //update user profile
-         function (cb) {
-         updateUserById(userId, options, function (err, userModel) {
-         cb(err, userModel);
-         });
-         },
-
-         //update users avatar
-         function (userModel, cb) {
-         if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
-         imageHandler.saveImage(image, function (err) {
-         if (err) {
-         cb(err);
-         } else {
-         cb(null, userModel);
-         }
-
-         });
-         } else {
-         cb(null, userModel);
-         }
-         }
-
-         ], function (err, userModel) {
-         if (err) {
-         return next(err);
-         }
-         res.status(200).send({success: 'success updated', user: userModel});
-
-         });*/
-
-        //================================================================
-        /*updateUserById(userId, options, function (err, userModel) {
-         if (err) {
-         return next(err);
-         }
-
-         if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
-         imageHandler.saveImage(image, function (err) {
-         if (err) {
-         return next(err)
-         }
-
-         });
-         }
-         ;
-
-         res.status(200).send({success: 'success updated', user: userModel});
-         });*/
     };
 
     this.forgotPassword = function (req, res, next) {
@@ -787,6 +732,29 @@ var UsersHandler = function (PostGre) {
                 }
                 res.status(200).send(result.models);
             });
+    };
+
+    this.getClients = function (req, res, next) {
+        //next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var options = req.query;
+        var userId = req.session.userId;
+        var companyId = req.session.companyId;
+        var queryOptions = { //TODO: query options page, count, orderBy ...
+            withoutCompany: companyId
+        };
+        var fetchOptions = {
+            withRelated: ['profile', 'avatar']
+        };
+
+        UserModel
+            .findCollaborators(queryOptions, fetchOptions)
+            .exec(function (err, result) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(result.models);
+            });
+
     };
 
     this.getUser = function (req, res, next) {
