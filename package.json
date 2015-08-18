@@ -13,9 +13,12 @@
     "bookshelf": "0.7.9",
     "chai": "3.2.0",
     "compression": "1.4.0",
+    "connect-multiparty": "^2.0.0",
     "connect-redis": "2.1.0",
     "consolidate": "0.12.1",
     "crypto": "0.0.3",
+    "docx2html": "^0.10.0",
+    "docx4js": "^0.11.0",
     "ejs": "2.2.4",
     "express": "4.8.4",
     "express-session": "1.7.5",
@@ -32,7 +35,8 @@
     "pg": "3.6.3",
     "redis": "0.12.1",
     "supertest": "0.15.0",
-    "swig": "1.4.2"
+    "swig": "1.4.2",
+    "xmldom": "^0.1.19"
   },
   "devDependencies": {}
 }

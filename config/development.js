@@ -15,7 +15,7 @@ process.env.mailerPassword = 'sendGridpassw365';
 process.env.REDIS_HOST = '134.249.164.53';
 //process.env.REDIS_HOST = '192.168.1.4';
 process.env.REDIS_PORT = '6379';
-process.env.REDIS_DB_KEY = '16';
+process.env.REDIS_DB_KEY = '11';
 
 process.env.UPLOADER_TYPE = 'FileSystem';
 process.env.AMAZON_S3_BUCKET = 'public/uploads/' + process.env.NODE_ENV.toLowerCase();

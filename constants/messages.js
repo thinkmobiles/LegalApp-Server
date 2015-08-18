@@ -5,5 +5,6 @@ module.exports = {
     SUCCESS_INVITE_MESSAGE: 'The user can see the password on his email',
     SUCCESS_SIGN_IN: 'success signIn',
     SUCCESS_EMAIL_CONFIRM: 'Verification completed. Your e-mail address has been verified. You can now log-in into the application.',
-    SUCCESS_CREATED_TEMPLATE: 'Template was created success'
+    SUCCESS_CREATED_TEMPLATE: 'Template was created success',
+    DELETED_ACCOUNT: 'Your Account was deleted'
 };

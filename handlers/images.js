@@ -1,8 +1,10 @@
 var BUCKETS = require('../constants/buckets');
+var CONSTANTS = require('../constants/index');
 var TABLES = require('../constants/tables');
+
 var SessionHandler = require('../handlers/sessions');
 var badRequests = require('../helpers/badRequests');
-//var logWriter = require('../modules/logWriter')();
+
 var _ = require('lodash');
 var async = require('async');
 
@@ -140,7 +142,7 @@ var imagesHandler = function (PostGre) {
             bucket = BUCKETS.AVATARS;
         }
 
-        if (image.imageable_type === 'compaies') {
+        if (image.imageable_type === 'companies') {
             bucket = BUCKETS.LOGOS;
         }
 
@@ -181,150 +183,7 @@ var imagesHandler = function (PostGre) {
         //}
     };
 
-    /*function likeAndIncrement(imageModel, likeOptions, callback) {
-     async.parallel([
-
-     //insert into likes:
-     function (cb) {
-     LikeModel
-     .forge()
-     .save(likeOptions)
-     .then(function (like) {
-     cb();
-     })
-     .catch(function (err) {
-     cb(err);
-     });
-     },
-
-     //increment the likes_count for the imageModel:
-     function (cb) {
-     var likesCount = imageModel.get('likes_count') + 1;
-     var saveData = {
-     likes_count: likesCount
-     };
-
-     imageModel
-     .save(saveData, {patch: true})
-     .then(function () {
-     cb();
-     })
-     .catch(function (err) {
-     cb(err);
-     });
-     }
-     ],
-     function (err) { //global callback for parallel
-     if (err) {
-     callback(err);
-     } else {
-     callback();
-     }
-     });
-     };
-
-     function unlikeAndDecrement(imageModel, likeModel, callback) {
-
-     async.parallel([
-
-     //decrement the old image's likes_count:
-     function (cb) {
-     PostGre.knex(TABLES.IMAGES)
-     .where('id', imageModel.id)
-     .decrement('likes_count', 1)
-     .then(function () {
-     cb();
-     })
-     .catch(function (err) {
-     cb(err)
-     });
-     },
-
-     //delete from likes:
-     function (cb) {
-     likeModel
-     .destroy()
-     .then(function () {
-     cb();
-     })
-     .catch(function (err) {
-     cb(err);
-     });
-     }
-
-     ],
-     function (err) { //global callback for parallel
-     if (err) {
-     callback(err);
-     } else {
-     callback();
-     }
-     });
-     };
-
-     function removeLikeFromRedis(imageId, userId, callback) {
-     var storage = redisClient.cacheStore; //redisClient from globals
-     var setName = TABLES.LIKES + ':' + imageId;
-
-     storage.delFromSet(setName, userId, function (err, result) {
-     if (err) {
-     if (callback && (typeof callback === 'function')) {
-     callback(err);
-     }
-     } else {
-     if (callback && (typeof callback === 'function')) {
-     callback(null, result);
-     }
-     }
-     });
-     };
-
-     function saveLikeIntoRedis(imageId, userId, callback) {
-     var storage = redisClient.cacheStore; //redisClient from globals
-     var setName = TABLES.LIKES + ':' + imageId;
-
-     storage.addToSet(setName, userId, function (err, result) {
-     if (err) {
-     if (callback && (typeof callback === 'function')) {
-     callback(err);
-     }
-     } else {
-     if (callback && (typeof callback === 'function')) {
-     callback(null, result);
-
-     }
-     }
-     })
-     };*/
-
-
-    /*this.saveImages = function (postId, images, callback) {
-     async.each(
-     images,
-     function (image, cb) {
-     var imgData = {
-     imageSrc: image,
-     post_id: postId
-     };
-     self.saveImage(imgData, function (err) {
-     if (err) {
-     cb(err);
-     } else {
-     cb();
-     }
-     });
-     }, function (err) {
-     if (err) {
-     callback(err);
-     } else {
-     callback();
-     }
-     });
-     };*/
-
     this.removeImage = function (imageModel, callback) {
-        /*var bucket = BUCKETS.POSTS;
-         var imageName;*/
 
         imageModel
             .destroy()
@@ -338,27 +197,6 @@ var imagesHandler = function (PostGre) {
                     callback(err);
                 }
             });
-        /*if (imageModel && imageModel.id) {
-
-         bucket = BUCKETS.POSTS;
-         imageName = ImageModel.getFileName(imageModel.get('name'), imageModel.get('key'));
-         imageUploader.removeImage(imageName, bucket, function (err) {
-         if (err) {
-         callback(err);
-         } else {
-         imageModel
-         .destroy()
-         .then(function () {
-         callback(null);
-         })
-         .otherwise(function (err) {
-         callback(err);
-         })
-         }
-         });
-         } else {
-         callback(null);
-         }*/
     };
 
     this.getUserAvatar = function (req, res, next) {
@@ -370,34 +208,31 @@ var imagesHandler = function (PostGre) {
             imageable_id: imageableId,
             imageable_type: imageableType
         };
-        var fetchOptions = {
-            require: true
-        };
         var imageName;
         var key;
         var imageUrl;
         var bucket = BUCKETS.AVATARS;
 
+        if (!imageableId || !imageableType) {
+            return next(badRequests.NotEnParams({required: 'user_id'}));
+        }
 
-        if (imageableId && imageableType) {
-            ImageModel
-                .find(criteria, fetchOptions)
-                .then(function (imageModel) {
+        ImageModel
+            .find(criteria)
+            .then(function (imageModel) {
+
+                if (imageModel && imageModel.id) {
                     imageName = imageModel.attributes.name;
                     key = imageModel.attributes.key;
                     imageUrl = ImageModel.getImageUrl(imageName, key, bucket);
+                } else {
+                    imageUrl = PostGre.Models.Image.uploader.getFileUrl(CONSTANTS.DEFAULT_AVATAR_URL, bucket);
+                }
 
-                    res.status(200).send(imageUrl);
-                })
-                .catch(ImageModel.NotFoundError, function (err) {
-                    res.status(200).send('');  //send default image (when user dont have avatar)
-                })
-                .catch(next);
+                res.status(200).send(imageUrl);
+            })
+            .catch(next);
 
-
-        } else {
-            next(badRequests.NotEnParams({required: 'user_id'}))
-        }
     };
 
     this.getCompanyLogo = function (req, res, next) {

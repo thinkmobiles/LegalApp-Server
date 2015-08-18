@@ -2,6 +2,7 @@
 
 var TABLES = require('../constants/tables');
 var PERMISSIONS = require('../constants/permissions');
+var STATUSES = require('../constants/statuses');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -13,6 +14,7 @@ module.exports = function (db) {
     var Collections = db.Collections;
     var User = Models.User;
     var Profile = Models.Profile;
+    var userCounter = 1;
 
     var defaultData = {};
 
@@ -29,6 +31,9 @@ module.exports = function (db) {
         email: 'base.user@mail.com'
     }, {
         email: 'admin.user@company1.com'
+    }, {
+        email: 'deleted.user@mail.com',
+        status: STATUSES.DELETED
     }];
 
     var profiles = [{
@@ -54,9 +59,13 @@ module.exports = function (db) {
         first_name: 'admin',
         last_name: 'user',
         permissions: PERMISSIONS.ADMIN
+    }, {
+        first_name: 'deleted',
+        last_name: 'user',
+        permissions: PERMISSIONS.EDITOR
     }];
 
-    var userCompanies = [{
+/*    var userCompanies = [{
         user_id: 1,
         company_id: 1
     }, {
@@ -74,13 +83,37 @@ module.exports = function (db) {
     }, {
         user_id: 6,
         company_id: 1
+    }];*/
+
+    var userCompanies = [{
+        user_id: 2,
+        company_id: 2
+    }, {
+        user_id: 3,
+        company_id: 3
+    }, {
+        user_id: 4,
+        company_id: 2
+    }, {
+        user_id: 5,
+        company_id: 2
+    }, {
+        user_id: 6,
+        company_id: 2
+    }, {
+        user_id: 7,
+        company_id: 2
+    }, {
+        user_id: 8,
+        company_id: 2
     }];
+
     var companies = [{
         name: 'company 1',
-        owner_id: 1
+        owner_id: 2
     }, {
         name: 'company 2',
-        owner_id: 2
+        owner_id: 3
     }];
     var links = [{
         name: 'link 1',
@@ -92,8 +125,21 @@ module.exports = function (db) {
     }, {
         name: 'link 3',
         company_id: 2
+    }, {
+        name: 'link 4',
+        company_id: 3
     }];
     var links_fields = [
+        {
+            link_id: 1,
+            name: 'first_name',
+            code: '{first_name}'
+        },
+        {
+            link_id: 1,
+            name: 'last_name',
+            code: '{last_name}'
+        },
         {
             name: 'First test name',
             code: 'ftname'
@@ -123,13 +169,29 @@ module.exports = function (db) {
             company_id: 1
         }
     ];
-
+    var documents = [
+        {
+            template_id: 1
+        },
+        {
+            template_id: 2,
+            company_id: 2
+        },
+        {
+            template_id: 2,
+            company_id: 2
+        },
+        {
+            template_id: 2,
+            company_id: 2
+        }
+    ];
     function create(callback) {
         async.waterfall([
 
             //create users:
             function (cb) {
-                factory.createMany(TABLES.USERS, users, 6, function (err, users) {
+                factory.createMany(TABLES.USERS, users, 7, function (err, users) {
                     defaultData.users = users;
                     cb(err, users);
                 });
@@ -186,8 +248,14 @@ module.exports = function (db) {
                 });
             },
             function (cb) {
-                factory.createMany(TABLES.LINKS_FIELDS, links_fields, 3, function (err, linkFields) {
+                factory.createMany(TABLES.LINKS_FIELDS, links_fields, 5, function (err, linkFields) {
                     defaultData.links_fields = linkFields;
+                    cb();
+                });
+            },
+            function (cb) {
+                factory.createMany(TABLES.DOCUMENTS, documents, function (err, documentModels) {
+                    defaultData.documents = documentModels;
                     cb();
                 });
             }

@@ -20,17 +20,20 @@ module.exports = function (db) {
     var User = Models.User;
     var Profile = Models.Profile;
     var Template = Models.Template;
-    var profilesCount = 0;
-    var emailCounter = 0;
-    var firstNameCounter = 0;
-    var lastNameCounter = 0;
-    var companyCounter = 0;
-    var userCompanyCounter = 0;
+    var Document = Models.Document;
+    var profilesCount = 1;
+    var emailCounter = 1;
+    var userCounter  = 1;
+    var firstNameCounter = 1;
+    var lastNameCounter = 1;
+    var companyCounter = 1;
+    var userCompanyCounter = 1;
     var Links = Models.Links;
     var linkCounter = 0;
     var LinkFields = Models.LinkFields;
     var linkFieldsCounter = 0;
     var templateCount = 0;
+    var documentCount = 0;
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
@@ -71,8 +74,6 @@ module.exports = function (db) {
 
     //users:
     factory.define(TABLES.USERS, User, {
-
-        // define attributes using properties and functions:
         password: getEncryptedPass(PASSWORD),
         email: function () {
             emailCounter++;
@@ -108,8 +109,34 @@ module.exports = function (db) {
             templateCount++;
             return 'template_' + templateCount;
         },
+        html_content: function () {
+            var html = '<div>';
+
+            html += '<h2>Template Name</h2>';
+            html += '<p>Hello {first_name} {last_name} </p>';
+            html += '</div>';
+
+            return html;
+        },
         company_id: 1,
         link_id: 1
+    });
+
+    //documents:
+    factory.define(TABLES.DOCUMENTS, Document, {
+        html_content: function () {
+            var html = '<div>';
+
+            documentCount++;
+
+            html += '<h2>Template Name</h2>';
+            html += '<p>Hello first_name_' + documentCount + ' last_name_' + documentCount + '</p>';
+            html += '</div>';
+
+            return html;
+        },
+        template_id: 1,
+        company_id: 1
     });
 
     return factory;

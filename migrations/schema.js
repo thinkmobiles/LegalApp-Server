@@ -1,22 +1,53 @@
 'use strict';
 
+var TABLES = require('../constants/tables');
+var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
+var STATUSES = require('../constants/statuses');
+var CONSTANTS = require('../constants/index');
+
+var crypto = require('crypto');
 var async = require('async');
 
 module.exports = function (knex) {
-    var TABLES = require('../constants/tables');
-    var crypto = require('crypto');
-    
-    function create(callback) {
+
+    function createTables(callback) {
 
         async.parallel([
-                
+
+            createTable(TABLES.ATTACHMENTS, function (row) {
+                row.increments().primary();
+                row.integer('attacheable_id').notNullable();
+                row.string('attacheable_type');
+                row.string('name');
+                row.string('key');
+                row.timestamps();
+            }),
+
             createTable(TABLES.COMPANIES, function (row) {
                 row.increments().primary();
-                row.integer('owner_id').notNullable().index();
+                row.integer('owner_id').index();
                 row.string('name');
                 row.timestamps();
-            }), 
+            }),
+
+            createTable(TABLES.DOCUMENTS, function (row) {
+                row.increments().primary();
+                row.integer('template_id').notNullable().index();
+                row.integer('company_id').notNullable().index();
+                row.integer('assigned_id').index();
+                row.text('html_content');
+                row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
+                row.timestamp('signed_at');
+                row.timestamps();
+            }),
+
+            /*createTable(TABLES.FIELDS, function (row) {
+                row.increments().primary();
+                row.string('name').notNullable();
+                row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
+                row.timestamps();
+            }),*/
 
             createTable(TABLES.IMAGES, function (row) {
                 row.increments().primary();
@@ -25,14 +56,24 @@ module.exports = function (knex) {
                 row.string('name');
                 row.string('key');
                 row.timestamps();
-            }), 
+            }),
 
             createTable(TABLES.INVITES, function (row) {
                 row.increments().primary();
                 row.integer('inivtee_id').notNullable().index();
                 row.string('invited_id').notNullable().index();
                 row.timestamps();
-            }), 
+            }),
+
+            createTable(TABLES.MESSAGES, function (row) {
+                row.increments().primary();
+                row.integer('owner_id').notNullable().index();
+                row.string('email');
+                row.string('subject');
+                row.text('body');
+                row.string('type');
+                row.timestamps();
+            }),
 
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();
@@ -58,6 +99,7 @@ module.exports = function (knex) {
                 row.string('password');
                 row.string('confirm_token');
                 row.string('forgot_token');
+                row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
                 row.timestamps();
             }),
 
@@ -73,6 +115,7 @@ module.exports = function (knex) {
                 row.integer('link_id').index();
                 row.string('name');
                 row.string('code');
+                row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
                 row.timestamps();
             }),
 
@@ -81,6 +124,7 @@ module.exports = function (knex) {
                 row.integer('company_id').index();
                 row.integer('link_id').index();
                 row.string('name');
+                row.text('html_content');
                 row.timestamps();
             })
 
@@ -96,7 +140,85 @@ module.exports = function (knex) {
             }
         });
     }
-    
+
+    function createDefaults(callback) {
+        async.waterfall([
+
+            //create default super admin:
+            function (cb) {
+                var encryptedPass;
+                var data;
+                var shaSum = crypto.createHash('sha256');
+
+                shaSum.update(CONSTANTS.DEFAULT_SUPERADMIN_PASSWORD); //default pass
+                encryptedPass = shaSum.digest('hex');
+                data = {
+                    //id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    email: CONSTANTS.DEFAULT_SUPERADMIN_EMAIL,
+                    password: encryptedPass
+                };
+
+                insertData(TABLES.USERS, data, cb);
+            },
+
+            //create super admin\s profile:
+            function (cb) {
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
+                    last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
+                    permissions: PERMISSIONS.SUPER_ADMIN
+                };
+
+                insertData(TABLES.PROFILES, data, cb);
+            },
+
+            //create McInnesCooper's company:
+            function(cb) {
+                var data = {
+                    //id: CONSTANTS.DEFAULT_COMPANY_ID,
+                    name: CONSTANTS.DEFAUlT_COMPANY_NAME,
+                    owner_id: CONSTANTS.DEFAULT_SUPERADMIN_ID
+                };
+
+                insertData(TABLES.COMPANIES, data, cb);
+            },
+
+            //create default user_companies:
+            function (cb) {
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    company_id: CONSTANTS.DEFAULT_COMPANY_ID
+                };
+
+                insertData(TABLES.USER_COMPANIES, data, cb);
+            },
+
+            /*//create default fields:
+            function (cb) {
+                var fields = [{
+                    name: 'email',
+                    type: FIELD_TYPES.STRING
+                }, {
+                    name: 'first_name',
+                    type: FIELD_TYPES.STRING
+                },{
+                    name: 'last_name',
+                    type: FIELD_TYPES.STRING
+                }];
+
+                async.eachSeries(fields, function (data, eachCb) {
+                    insertData(TABLES.FIELDS, data, eachCb);
+                }, cb);
+            }*/
+
+        ], function (err, result) {
+            if (callback && (typeof callback === 'function')) {
+                callback(err, result);
+            }
+        });
+    }
+
     function createTable(tableName, crateFieldsFunc) {
         console.log('CREATE TABLE "%s"', tableName);
         
@@ -123,7 +245,43 @@ module.exports = function (knex) {
                 });
         }
     }
-    
+
+    function insertData(tableName, data, callback) {
+        console.log('>>> insertData()');
+        console.log('>>> tableName:', tableName);
+        console.log('>>> data:', data);
+
+        knex(tableName)
+            .where(data)
+            .then(function (rows) {
+                if (rows && rows.length) { //the data is already exists:
+                    if (callback && (typeof callback === 'function')) {
+                        callback();
+                    }
+                    return;
+                }
+
+                knex(tableName)
+                    .insert(data)
+                    .then(function (){
+                        if (callback && (typeof callback === 'function')) {
+                            callback();
+                        }
+                    })
+                    .catch(function (err) {
+                        if (callback && (typeof callback === 'function')) {
+                            callback(err);
+                        }
+                    })
+
+            })
+            .catch(function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            });
+    }
+
     function createDefaultAdmin() {
         var shaSum = crypto.createHash('sha256');
         shaSum.update('1q2w3e4r'); //default pass
@@ -142,7 +300,25 @@ module.exports = function (knex) {
             console.log('superAdmin Creation Error: ' + err)
         })
     }
-    
+
+    function create(callback) {
+
+        async.waterfall([
+            createTables,
+            createDefaults
+        ], function (err) {
+            if(err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(err);
+                }
+            } else {
+                if (callback && (typeof callback === 'function')) {
+                    callback();
+                }
+            }
+        });
+    }
+
     function dropTable(tableName) {
         return function (cb) {
             //console.log('DROP TABLE IF EXISTS "%s"', tableName);
@@ -161,9 +337,13 @@ module.exports = function (knex) {
     function drop(callback) {
 
         return async.series([
+            dropTable(TABLES.ATTACHMENTS),
             dropTable(TABLES.COMPANIES),
+            dropTable(TABLES.DOCUMENTS),
+            //dropTable(TABLES.FIELDS),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
+            dropTable(TABLES.MESSAGES),
             dropTable(TABLES.LINKS_FIELDS),
             dropTable(TABLES.LINKS),
             dropTable(TABLES.PROFILES),

@@ -3,67 +3,61 @@
  */
 
 define([
-    'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
-    'text!templates/documents/documentsGridTemplate.html'
+    'text!templates/documents/documentsList.html'
 
-], function (MainTemplate, ListTemplate, GridTemplate) {
+], function (DocTemp, DocList) {
 
-    var DocView = Backbone.View.extend({
+    var View;
+    View = Backbone.View.extend({
 
-        mainTemp : _.template(MainTemplate),
-        listTemp : _.template(ListTemplate),
-        gridTemp : _.template(GridTemplate),
+        el : '#wrapper',
+
+        mainTemp : _.template(DocTemp),
+        docListTemp : _.template(DocList),
 
         initialize: function () {
-            this.stateModel = new Backbone.Model();
-            this.stateModel.set('currentVT','list');
+            var self = this;
 
-            this.listenTo(this.stateModel, 'change:currentVT', this.renderDocs);
-
-            this.render();
+            $.ajax({
+                url     : '/documents/list',
+                success : function(response){
+                    self.groupCollection = response;
+                    self.render();
+                }
+            });
         },
 
         events : {
-            "click .changeVT" : "changeViewType"
+            "click .nameForDoc" : "appendDocTable"
         },
 
-        changeViewType: function(event){
-            var target = $(event.target).data('value');
+        appendDocTable : function(event){
 
-            this.stateModel.set('currentVT',target);
-        },
+            var self = this;
+            var target = $(event.target);
+            var temp_id = target.closest('.nameForDoc').data('id');
+            var li_container = target.closest('.docsContainer');
 
-        renderDocs : function(){
-            this.documentsCollection = new Backbone.Collection();
-            for (var i=1; i<=10; i++) {
-                this.documentsCollection.add({
-                    id   : i,
-                    name : 'doc_name_'+i
-                });
-            }
 
-            var docContainer = this.$el.find('#docContent');
-            var coll = this.documentsCollection.toJSON();
-
-            if (this.stateModel.get('currentVT') === 'list'){
-                docContainer.html(this.listTemp({coll : coll}));
-            } else {
-                docContainer.html(this.gridTemp({coll : coll}));
-            }
+            $.ajax({
+                url : '/documents/list/'+temp_id,
+                success : function(response){
+                    //var documents = response.documents;
+                    li_container.find('#groupedDoc_'+temp_id).html(self.docListTemp({data : response}));
+                }
+            });
         },
 
         render: function () {
-
-            this.$el.html(this.mainTemp);
-
-            this.renderDocs();
+            var templates = this.groupCollection;
+            this.$el.html(this.mainTemp({templates : templates}));
 
             return this;
         }
 
     });
 
-    return DocView;
+    return View;
 
 });

@@ -43,6 +43,24 @@ var Session = function (postGre) {
         }
     };
 
+    this.authenticatedEditor = function (req, res, next) {
+        var availablePermissions = [
+            PERMISSIONS.SUPER_ADMIN,
+            PERMISSIONS.ADMIN,
+            PERMISSIONS.CLIENT_ADMIN,
+            PERMISSIONS.EDITOR,
+            PERMISSIONS.CLENT_EDITOR
+        ];
+        var permissions = req.session.permissions;
+
+        if (req.session && req.session.userId && req.session.loggedIn && (availablePermissions.indexOf(permissions) !== -1)) {
+
+            next();
+        } else {
+            next(badRequests.AccessError());
+        }
+    };
+
     this.isAuthenticatedUser = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn) {
             res.status(200).send();
@@ -53,16 +71,6 @@ var Session = function (postGre) {
         }
     };
 
-    /*this.authenticatedSuperAdmin = function (req, res, next) {
-        if (req.session && req.session.userId && req.session.loggedIn && req.session.userRole === SESSION_SUPER_ADMIN) {
-            next();
-        } else {
-            var err = new Error('Forbidden');
-            err.status = 403;
-            next(err);
-        }
-    };*/
-
     this.authenticatedAdmin = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.OWNER) || (req.session.permissions === PERMISSIONS.ADMIN))) {
             next();
@@ -72,7 +80,15 @@ var Session = function (postGre) {
     };
 
     this.isAdmin = function (req) {
-        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.OWNER) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.SUPER_ADMIN) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    this.isClientAdmin = function (req) {
+        if (req.session && req.session.userId && req.session.loggedIn && req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
             return true;
         } else {
             return false;
@@ -111,7 +127,6 @@ var Session = function (postGre) {
 
         return result;
     };
-
 };
 
 module.exports = Session;

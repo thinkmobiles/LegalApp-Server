@@ -1,7 +1,33 @@
-<div>
+<div class="addItemLeft" id="searchContainer">
+    <h2>Documents Search Filters</h2>
+
+        <label><input type="checkbox">By Creation Date</label><br>
+
+        <label><input type="checkbox">Last Opened</label><br>
+
+        <label><input type="checkbox">WIP</label><br>
+
+        <label><input type="checkbox">Signed</label><br>
+
+        <label><input type="checkbox">Not Signed</label><br>
+
+        <label><input type="checkbox">Saved</label><br>
+
+        <label><input type="checkbox">Newest</label><br>
+
+        <label><input type="checkbox">By Title</label><br>
+</div>
+<div id="listWrap">
     <ul>
-        <% coll.forEach(function(document){%>
-            <li class="docName" data-id="<%= document.id%>"><%= document.name%></li>
-        <%})%>
+    <%templates.forEach(function(temp){%>
+        <li class="docsContainer">
+            <div class="nameForDoc" data-id="<%=temp.id%>">
+                <%=temp.name%> (<%=temp.count%>)
+            </div>
+            <div id="groupedDoc_<%=temp.id%>">
+
+            </div>
+        </li>
+    <%})%>
     </ul>
 </div>

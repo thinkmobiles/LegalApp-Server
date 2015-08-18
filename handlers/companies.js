@@ -2,8 +2,10 @@
 
 var CONSTANTS = require('../constants/index');
 var PERMISSIONS = require('../constants/permissions');
+var TABLES = require('../constants/tables');
 
 var async = require('async');
+var badRequests = require('../helpers/badRequests');
 
 var CompaniesHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -14,7 +16,7 @@ var CompaniesHandler = function (PostGre) {
     
     this.createCompanyWithOwner = function (options, callback) {
         var userId = options.userId;
-        var name = options.company;
+        var name = options.name || options.company; //TODO: !!!;
         
         //TODO: validate incom. params
         
@@ -90,6 +92,54 @@ var CompaniesHandler = function (PostGre) {
             });
     };
 
+    this.newCompany = function (req, res, next) {
+        var userId = req.session.userId || 1; //TODO: !!!
+        var options = req.body;
+        var name = options.name;
+        var createOptions = {
+            //userId: userId,
+            name: name
+        };
+
+        if (!name) {
+            return next(badRequests.NotEnParams({reqParams: ['name']}));
+        }
+
+        CompanyModel
+            .forge()
+            .save(createOptions)
+            .exec(function (err, companyModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({success: 'created', model: companyModel});
+            });
+    };
+
+    this.getCompanies = function (req, res, next) {
+        var options = req.query;
+        var searchTerm = options.search;
+        var page = req.query.page || 1;
+        var limit = req.query.count || 10;
+
+        CompanyModel
+            .forge()
+            .query(function (qb) {
+                if (searchTerm) {
+                    searchTerm = searchTerm.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(name) LIKE '%" + searchTerm + "%' "
+                    );
+                }
+                qb.offset(( page - 1 ) * limit)
+                    .limit(limit);
+            })
+            .fetchAll()
+            .then(function (rows) {
+                res.status(200).send(rows);
+            })
+            .catch(next);
+    };
 };
 
 module.exports = CompaniesHandler;

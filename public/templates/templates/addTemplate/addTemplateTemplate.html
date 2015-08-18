@@ -1,30 +1,35 @@
 
 <h2>Add a Template</h2>
 
-    <div><input type="text" id="tempName" placeholder="Name"></div>
+    <form enctype="multipart/form-data" id="addTempForm" action="">
 
+        <div>
+        <input type="text" id="tempName" name="name">
+        </div>
 
-    <div>
-        <input type="text" id="tempFile" placeholder="File(Upload DOCX)">
-        <input type="button" id="loadFileBut" value="Browse">
-    </div>
+        <div>
+        <input type="file" id="tempFile" name="templateFile">
+        </div>
 
-    <div>
-        <input type="text" id="tempLogo" placeholder="Logo">
-        <input type="button" id="loadLogo" value="Browse">
-    </div>
-
-    <div>
-        <input type="text" id="tempLinkTable" placeholder="Link Table">
+        <div>
+        <!--<span id="tempLinkTable">Add Link Table</span>-->
+        <input type="text" id="tempLinkTable" placeholder="Add Link Table" readonly>
+        <input type="hidden" id="fakeLinkTable" name="link_id">
         <div id="linkContainer">
             <!--link names container-->
         </div>
-    </div>
+        </div>
 
-    <div>
-        <input type="text" id="tempLink" placeholder="Link to Template">
-    </div>
+        <!--<div>-->
+        <!--<input type="text" id="tempLink" placeholder="Link to Template">-->
+        <!--</div>-->
 
-    <div id="linksFields">
-        <!--link fields container-->
-    </div>
+        <div id="linksFields">
+            <!--link fields container-->
+        </div>
+
+        <div>
+        <input type="button" id="tempSave" value="Save">
+        </div>
+
+    </form>

@@ -19,6 +19,7 @@ define([
             "signup"                :  "signup",
             "users"                 :  "users",
             "settings"              :  "settings",
+            "templates/preview/:id" :  "tempPre",
             "templates/:viewType"   :  "templates",
             "documents/:viewType"   :  "documents",
             "taskList"              :  "taskList",
@@ -42,8 +43,7 @@ define([
             var params =  argParams;
             var redirect = argRedirect;
             var viewType;
-            var someString;
-            var wrapper = $('#wrapper');
+            //var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -58,7 +58,6 @@ define([
             }
 
             if (argViewType){
-                //someString = argViewType.viewType;
                 viewType = argViewType[0].toUpperCase()+argViewType.slice(1);
                 nameView = name+viewType+'View';
             }
@@ -68,11 +67,7 @@ define([
 
                 if (self.wrapperView) {
                     self.wrapperView.undelegateEvents();
-                    wrapper.html('');
                 }
-
-                wrapper.html(self[nameView].el);
-                self[nameView].delegateEvents();
 
                 this.wrapperView = self[nameView];
 
@@ -123,7 +118,11 @@ define([
         },
 
         documents: function (viewType) {
-                this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+            this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+        },
+
+        tempPre: function (id){
+            this.loadWrapperView('tempPre', {id : id}, REDIRECT.whenNOTAuthorized);
         },
 
         templates: function (viewType) {

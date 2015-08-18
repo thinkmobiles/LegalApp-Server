@@ -30,7 +30,10 @@ var Models = function ( PostGre ) {
         }
     });
 
+    this.Attachment =  require('./attachments')( PostGre, Model );
     this.Company =  require('./company')( PostGre, Model );
+    this.Document =  require('./documents')( PostGre, Model );
+    this.Field =  require('./fields')( PostGre, Model );
     this.Image =  require('./images')( PostGre, Model );
     this.User =  require('./user')( PostGre, Model );
     this.UserCompanies =  require('./userCompanies')( PostGre, Model );
@@ -40,5 +43,6 @@ var Models = function ( PostGre ) {
     this.LinkFields =  require('./linksFields')( PostGre, Model );
     this.LinksFields =  require('./linksFields')( PostGre, Model ); //TODO: remove LinksFields and use Link
     this.Template =  require('./templates')( PostGre, Model );
+    this.Message =  require('./message')( PostGre, Model );
 };
 module.exports = Models;

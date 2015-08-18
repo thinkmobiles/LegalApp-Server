@@ -1,8 +1,8 @@
 process.env.HOST = 'http://localhost:8851';
 process.env.PORT = '8851';
 
-process.env.RDS_HOSTNAME = '192.168.88.250';
-//process.env.RDS_HOSTNAME = 'localhost';
+//process.env.RDS_HOSTNAME = '192.168.88.250';
+process.env.RDS_HOSTNAME = 'localhost';
 process.env.RDS_USERNAME = 'postgres';
 process.env.RDS_PASSWORD = 'postgres';
 process.env.RDS_PORT = 5432;

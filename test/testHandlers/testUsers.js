@@ -3,6 +3,7 @@
 var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
 var PERMISSIONS = require('../../constants/permissions');
+var CONSTANTS = require('../../constants/index');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -19,7 +20,9 @@ module.exports = function (db, defaults) {
 
     var host = process.env.HOST;
 
+    var knex = db.knex;
     var agent = request.agent(host);
+    var superAdminAgent = request.agent(host);
     var userAgent1 = request.agent(host);
     var userAgent2 = request.agent(host);
     var adminUserAgent = request.agent(host);
@@ -52,6 +55,33 @@ module.exports = function (db, defaults) {
 
         describe('Test session', function () {
             var url = '/signIn';
+
+            it('SuperAdmin can loggin', function (done) {
+                var data = {
+                    email: CONSTANTS.DEFAULT_SUPERADMIN_EMAIL,
+                    password: CONSTANTS.DEFAULT_SUPERADMIN_PASSWORD
+                };
+
+                superAdminAgent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('success');
+
+                        done();
+                    });
+            });
 
             it('User1 can loggin', function (done) {
                 userAgent1
@@ -421,6 +451,35 @@ module.exports = function (db, defaults) {
                     });
             });
 
+            it('Can\'t signIn status DELETED', function (done) {
+                var deletedUser = users[6];
+                var data = {
+                    email: deletedUser.attributes.email,
+                    password: defaults.password
+                };
+
+                agent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(403);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('error');
+                        expect(body.error).to.include(MESSAGES.DELETED_ACCOUNT);
+
+                        done();
+                    });
+            });
+
             it('Can signIn with valid email password', function (done) {
                 agent
                     .post(url)
@@ -531,6 +590,8 @@ module.exports = function (db, defaults) {
                             .put(url)
                             .send(data)
                             .end(function (err, res) {
+                                console.log(res.body);
+
                                 if (err) {
                                     return cb();
                                 }
@@ -768,7 +829,7 @@ module.exports = function (db, defaults) {
                 ], done);
             });
 
-            it('Editor User can\'t change the permissions', function (done) {
+            it('Editor User can\'t change the profile.permissions to admin', function (done) {
                 var data = {
                     profile: {
                         first_name: 'new first name',
@@ -846,7 +907,7 @@ module.exports = function (db, defaults) {
                 };
 
                 var queryOptions = {
-                    companyId: 1
+                    companyId: 2
                 };
                 var fetchOptions = {
                     withRelated: ['profile']
@@ -862,7 +923,7 @@ module.exports = function (db, defaults) {
                         }
 
                         expect(userModels.models).to.have.property('length');
-                        expect(userModels.models).to.have.length(5);
+                        expect(userModels.models).to.have.length(6);
 
                         done();
                     });
@@ -878,7 +939,7 @@ module.exports = function (db, defaults) {
 
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Array);
-                        expect(res.body).to.have.length(5);
+                        expect(res.body).to.have.length(6);
 
                         done();
                     });
@@ -886,11 +947,61 @@ module.exports = function (db, defaults) {
 
         });
 
+        describe('GET /clients', function () {
+            var url = '/clients';
+
+            it('SuperAdmin can get the list of clients', function (done) {
+                var superAdminId = 1;
+
+                async.waterfall([
+
+                    //make query:
+                    function (cb) {
+                        knex(TABLES.USERS)
+                            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
+                            .where(TABLES.USER_COMPANIES + '.company_id', '<>', superAdminId)
+                            .exec(function (err, rows) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                console.log(rows);
+                                cb(null, rows);
+                            });
+                    },
+
+                    //make request:
+                    function (clients, cb) {
+                        superAdminAgent
+                            .get(url)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                done(null, clients, res);
+                            });
+                    }
+
+                ], function (err, clients, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    console.log(clients);
+
+                    expect(res.status).to.equals(200);
+                    expect(res.body).to.be.instanceof(Array);
+                    expect(res.body).to.have.length(clients.length);
+
+                    done();
+                });
+            });
+        });
+
         describe('GET /users/:id', function () {
             var url = '/users';
 
             it('Admin can get the user by id', function (done) {
-                var userId = 3;
+                var userId = 4;
                 var getUrl = url + '/' + userId;
 
                 userAgent1
@@ -911,7 +1022,7 @@ module.exports = function (db, defaults) {
             });
 
             it('Another Admin can\'t get the user by id', function (done) {
-                var userId = 3;
+                var userId = 4;
                 var getUrl = url + '/' + userId;
 
                 userAgent2
@@ -920,8 +1031,6 @@ module.exports = function (db, defaults) {
                         if (err) {
                             return done(err);
                         }
-
-                        console.log(res.body);
 
                         expect(res.status).to.equals(400);
                         expect(res.body).to.be.instanceof(Object);

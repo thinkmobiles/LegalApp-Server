@@ -7,6 +7,7 @@ var imagesUploader = function (dirConfig) {
     var defaultImageDir = 'images';
 
     var fs = require('fs');
+    var path = require('path');
     var os = require('os');
 
     var osPathData = getDirAndSlash();
@@ -76,8 +77,16 @@ var imagesUploader = function (dirConfig) {
     }
 
     function writer(path, imageData, callback) {
-        var imageNameWithExt = imageData.name + '.' + imageData.extention;
-        var imagePath = path + imageNameWithExt;
+        var imageNameWithExt;
+        var imagePath;
+
+        if (imageData.extention) {
+            imageNameWithExt = imageData.name + '.' + imageData.extention;
+        } else {
+            imageNameWithExt = imageData.name;
+        }
+
+        imagePath = path + imageNameWithExt;
 
         try {
             fs.writeFile(imagePath, imageData.data, function (err, data) {
@@ -204,11 +213,29 @@ var imagesUploader = function (dirConfig) {
         });
     }
 
+    function uploadFile(fileData, fileName, folderName, callback) {
+        var slash = osPathData.slash;
+        var dir = osPathData.dir + slash;
+
+        //fileData.name = fileName;
+
+        saveImage(fileData, dir, folderName, slash, callback);
+    }
+
+    function getFilePath(fileName, folder) {
+        var filePath = path.join(path.dirname( require.main.filename ), rootDir, folder, fileName);
+
+        return filePath;
+    }
+
     return {
         uploadImage: uploadImage,
         duplicateImage: duplicateImage,
         removeImage: removeImage,
-        getImageUrl: getImagePath
+        getImageUrl: getImagePath,
+        uploadFile: uploadFile,
+        getFileUrl: getImagePath,
+        getFilePath: getFilePath
     };
 };
 

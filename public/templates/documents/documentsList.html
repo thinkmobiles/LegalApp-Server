@@ -1,0 +1,11 @@
+<%var dName = data.name%>
+<div>
+    <table border="solid">
+        <%data.documents.forEach(function(doc){%>
+        <tr>
+            <th><%= dName%>_<%= doc.id%></th>
+            <th><%= doc.created_at%></th>
+        </tr>
+        <%})%>
+    </table>
+</div>

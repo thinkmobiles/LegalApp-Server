@@ -30,7 +30,10 @@ var imageUploader = function (config) {
         uploadImage: imageUploadImpl.uploadImage,
         duplicateImage: imageUploadImpl.duplicateImage,
         removeImage: imageUploadImpl.removeImage,
-        getImageUrl: imageUploadImpl.getImageUrl
+        getImageUrl: imageUploadImpl.getImageUrl,
+        uploadFile: imageUploadImpl.uploadFile,
+        getFileUrl: imageUploadImpl.getFileUrl,
+        getFilePath: imageUploadImpl.getFilePath
     };
 };
 

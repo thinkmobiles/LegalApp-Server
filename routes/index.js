@@ -19,8 +19,11 @@ module.exports = function (app) {
     var mammothHandler = new MammothHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
-    var linksRouter = require('./links')(app);
+    var companiesRouter = require('./companies')(app);
+    var documentsRouter = require('./documents')(app);
+    var fieldsRouter = require('./fields')(app);
     var linksFieldsRouter = require('./linksFields')(app);
+    var linksRouter = require('./links')(app);
     var templatesRouter = require('./templates')(app);
 
     app.get('/', function (req, res, next) {
@@ -36,6 +39,21 @@ module.exports = function (app) {
     app.put('/profile',  users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
+    app.get('/clients', session.authenticatedUser, users.getClients);
+    app.post('/helpMe', users.helpMe);
+
+    app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
+    app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
+    app.get('/getHtml', mammothHandler.docxToHtml);
+
+    app.use('/companies', companiesRouter);
+    app.use('/documents', documentsRouter);
+    app.use('/fields', fieldsRouter);
+    app.use('/linksFields', linksFieldsRouter);
+    app.use('/links', linksRouter);
+    app.use('/users', usersRouter);
+    app.use('/templates', templatesRouter);
+    //app.use('/uploadFile', attachments);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error
@@ -43,15 +61,6 @@ module.exports = function (app) {
     app.get('/successConfirm', function (req, res, next) {
         res.render('successConfirm.html');
     });
-
-    app.use('/users', usersRouter);
-    //app.use('/uploadFile', attachments);
-    app.use('/links', linksRouter);
-    app.use('/linksFields', linksFieldsRouter);
-    app.use('/templates', templatesRouter);
-    app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
-    app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
-    app.get('/getHtml', mammothHandler.docxToHtml);
 
     function notFound(req, res, next) {
         res.status(404);

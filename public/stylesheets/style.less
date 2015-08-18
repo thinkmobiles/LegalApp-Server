@@ -36,7 +36,6 @@ a {
   width: 30%;
   height: 100%;
   background-color: #7c7b7b;
-  line-height: 9;
   span {
     margin-left: 10px;
   }
@@ -111,13 +110,13 @@ a {
 
 }
 
-#addItemLeft {
-  display: block;
-}
+//#addItemLeft {
+//  display: block;
+//}
 
-#addItemRight {
-  display: block;
-}
+//#addItemRight {
+//  display: block;
+//}
 
 .addItemLeft {
   width: 27%;
@@ -129,9 +128,6 @@ a {
   div {
     margin: 10px;
 
-    input {
-      width: 280px;
-    }
     label {
       float:left;
     }
@@ -201,12 +197,13 @@ a {
   background-color: #696969;
 }
 .tempGrid {
-  border: 1px solid black;
+  border-bottom: 1px solid black;
   width: 100px;
-  height: 100px;
+  height: 120px;
   display: block;
   float: left;
   margin: 10px 10px;
+  text-align: center;
 }
 
 .docGrid {
@@ -231,4 +228,60 @@ a {
   background-color: white;
   border: 1px solid;
   position: absolute;
+}
+
+#leftPreview {
+  width: 57%;
+  height: 600px;
+  display: block;
+  float: left;
+}
+
+#rightPreview {
+  width: 35%;
+  height: 600px;
+}
+
+//#fakeLinkTable {
+//  display: none;
+//}
+
+#linkContainer {
+  display: none;
+}
+
+#previewContainer {
+  overflow-y: auto;
+  height: 500px;
+}
+
+#createDoc {
+  float: right;
+  margin-top: 30px;
+}
+
+.withCheck {
+  text-align: center;
+}
+
+#listWrap {
+  float: left;
+}
+
+#adminClient {
+  span{
+    position: relative;
+    width: 50%;
+    cursor: pointer;
+
+    &:nth-child(2){
+      float:right;
+      text-align: right;
+    }
+
+    &.active {
+      color : #e31937;
+      border-bottom: 1px solid #e31937;
+    }
+  }
 }
