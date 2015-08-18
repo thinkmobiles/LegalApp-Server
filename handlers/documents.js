@@ -8,6 +8,7 @@ var TABLES = require('../constants/tables');
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+var wkhtmltopdf = require('wkhtmltopdf');
 
 var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
@@ -18,7 +19,7 @@ var DocumentsHandler = function (PostGre) {
     var TemplateModel = Models.Template;
     var self = this;
 
-    function createDocumentContent (htmlText, fields, values, callback) {
+    function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
         if (!htmlText || !htmlText.length || !fields || !values) {
@@ -88,7 +89,7 @@ var DocumentsHandler = function (PostGre) {
                 };
 
                 if (values) {
-                    fetchOptions.withRelated =  ['link.linkFields'];
+                    fetchOptions.withRelated = ['link.linkFields'];
                 }
 
                 TemplateModel
@@ -254,6 +255,21 @@ var DocumentsHandler = function (PostGre) {
                 next(badRequests.NotFound());
             })
             .catch(next);
+    };
+
+    this.htmlToPdf = function (req, res, next) {
+        var html = '<h1>Test</h1><p>Hello world</p><img src="/public/uploads/development/avatars/1439284918701_97_avatars_1.jpeg" height="150" width="150">';
+        var ticks = new Date().valueOf();
+        var name = 'testPdf_' + ticks + '.pdf';
+        var filePath = 'public/uploads/development/pdfs/' + name;
+
+        wkhtmltopdf(html, {output: filePath}, function (err) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send('Pdf with name ' + name + ' was created');
+        });
+
     };
 
 };
