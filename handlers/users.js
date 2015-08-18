@@ -5,6 +5,7 @@ var MESSAGES = require('../constants/messages');
 var EMAIL_REGEXP = CONSTANTS.EMAIL_REGEXP;
 var PERMISSIONS = require('../constants/permissions');
 var STATUSES = require('../constants/statuses');
+var TABLES = require('../constants/tables');
 
 var async = require('async');
 var _ = require('lodash');
@@ -21,6 +22,7 @@ var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
 var UsersHandler = function (PostGre) {
+    var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var ProfileModel = Models.Profile;
@@ -847,7 +849,73 @@ var UsersHandler = function (PostGre) {
     };
 
     this.searchUsers = function (req, res, next) {
-        next(badRequests.AccessError({message: 'Not implemented yet'}));
+        var params = req.query;
+        var searchTerm = params.value;
+        var field = params.field;
+        var page = params.page || 1;
+        var limit = params.count || 10;
+        var orderBy = params.orderBy || TABLES.PROFILES + '.first_name';
+        var order = params.order || 'ASC';
+        var columns = [
+            TABLES.USERS + '.*',
+            TABLES.PROFILES + '.*',
+            TABLES.USERS + '.id as id',
+            TABLES.PROFILES + '.id as profile_id'
+        ];
+
+        var query = knex(TABLES.USERS)
+            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id');
+
+        query.where(function (qb) {
+
+            qb.where('status', '<>', STATUSES.DELETED);
+
+            if (searchTerm && field) {
+                searchTerm = searchTerm.toLowerCase();
+                qb.whereRaw(
+                    "LOWER(" + field + ") LIKE '%" + searchTerm + "%' "
+                );
+
+            } else if (searchTerm && !field) {
+                searchTerm = searchTerm.toLowerCase();
+                qb.whereRaw(
+                    "LOWER(first_name) LIKE '%" + searchTerm + "%' "
+                    + "OR LOWER(last_name) LIKE '%" + searchTerm + "%' "
+                    + "OR LOWER(phone) LIKE '%" + searchTerm + "%'"
+                    + "OR LOWER(email) LIKE '%" + searchTerm + "%'"
+                );
+            }
+
+        });
+
+        query
+            .select(columns)
+            .offset(( page - 1 ) * limit)
+            .limit(limit)
+            .orderBy(orderBy, order)
+            .exec(function (err, rows) {
+                var users = [];
+
+                if (err) {
+                    return next(err);
+                }
+
+                rows.forEach(function (user) {
+                    var userData = {
+                        id: user.id,
+                        email: user.email,
+                        profile: {
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            phone: user.phone
+                        }
+                    };
+
+                    users.push(userData)
+                });
+
+                res.status(200).send(users);
+            });
     };
 
     this.renderError = function (err, req, res, next) {
