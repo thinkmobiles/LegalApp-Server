@@ -78,6 +78,7 @@ var UsersHandler = function (PostGre) {
     function updateUserById(userId, options, callback) {
         var profile;
         var profileData = {};
+        var userData = {};
 
         if (options.profile) {
             profile = options.profile;
@@ -101,7 +102,11 @@ var UsersHandler = function (PostGre) {
             }
         }
 
-        if (Object.keys(profileData).length === 0) {
+        if (options.status !== undefined) {
+            userData.status = options.status;
+        }
+
+        if ((Object.keys(profileData).length === 0) && (Object.keys(userData).length === 0)) {
             return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
         }
 
