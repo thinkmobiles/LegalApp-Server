@@ -63,6 +63,9 @@ var DocumentsHandler = function (PostGre) {
         var saveData;
         var companyId = req.session.companyId;
 
+        console.log('create document');
+        console.log(options);
+
         if (!templateId) {
             return next(badRequests.NotEnParams({reqParams: ['template_id']}));
         }
@@ -256,6 +259,9 @@ var DocumentsHandler = function (PostGre) {
             .catch(next);
     };
 
+    this.sendDocumentToSign = function (req, res, next) {
+        next(badRequests.AccessError({message: 'Not implemented yet'}));
+    };
 };
 
 module.exports = DocumentsHandler;
