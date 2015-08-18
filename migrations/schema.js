@@ -38,6 +38,7 @@ module.exports = function (knex) {
                 row.integer('assigned_id').index();
                 row.text('html_content');
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
+                row.string('access_token');
                 row.timestamp('signed_at');
                 row.timestamps();
             }),
