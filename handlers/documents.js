@@ -261,6 +261,31 @@ var DocumentsHandler = function (PostGre) {
 
     this.sendDocumentToSign = function (req, res, next) {
         next(badRequests.AccessError({message: 'Not implemented yet'}));
+
+        var documentId = req.params.id;
+        var criteria = {
+            id: documentId
+        };
+        var fetchOptions = {
+            require: true
+        };
+
+        DocumentModel
+            .find(criteria, fetchOptions)
+            .then(function (documentModel) {
+                var userId = documentModel.get('assigned_id');
+
+                if (!userId) {
+                    return next(badRequests.InvalidValue({message: 'There is not assigned user'})); //TODO: ...
+                }
+
+                res.status(200).send({success: 'message was sent'});
+
+            })
+            .catch(DocumentModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
     };
 };
 
