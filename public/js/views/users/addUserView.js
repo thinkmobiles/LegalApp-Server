@@ -16,7 +16,7 @@ define([
         //el : '#addUserContainer',
         companyTemp : _.template(CompanyName),
 
-        currentState : 0,
+        currentState : true,
 
         events: {
             "click #addInvite"     : "actionUser",
@@ -93,11 +93,11 @@ define([
                 permissions : permissions.data('id')
             };
 
-            if (this.currentState === 1 && +companyId === 0){
+            if (!this.currentState && +companyId === 0){
                 return alert("Enter, please, your client's company!");
             }
 
-            if (this.currentState === 1) {
+            if (!this.currentState) {
                 inviteData.companyId = companyId;
             }
 
