@@ -179,7 +179,7 @@ var MailerModule = function () {
         var templateOptions;
         var mailOptions;
         var document = options.document;
-        var link = process.env.HOST + '/signature/' + document.access_token;
+        var link = process.env.HOST + '/documents/' + document.access_token + '/signature';
         var dstUser = options.dstUser;
         var srcUser = options.srcUser;
         var company = options.company;
@@ -187,8 +187,8 @@ var MailerModule = function () {
 
         templateOptions = {
             email     : dstUser.email,
-            srcUserName: srcUser.profile.first_name,
-            dstUserName: dstUser.profile.first_name,
+            srcUserName: srcUser.profile.last_name,
+            dstUserName: dstUser.profile.last_name,
             companyName: company.name,
             documentName: template.name,
             signatureLink: link

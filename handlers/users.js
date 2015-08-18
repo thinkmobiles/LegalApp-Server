@@ -79,6 +79,11 @@ var UsersHandler = function (PostGre) {
         var profile;
         var profileData = {};
         var userData = {};
+        var criteria;
+        var fetchOptions;/* = {
+            require: true
+            //withRelated: ['profile', 'avatar']
+        };*/
 
         if (options.profile) {
             profile = options.profile;
@@ -110,52 +115,88 @@ var UsersHandler = function (PostGre) {
             return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
         }
 
-        async.waterfall([
+        criteria = {
+            id: userId
+        };
 
-            //find the user:
-            function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    require: true,
-                    withRelated: ['profile', 'avatar']
-                };
+        fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'avatar']
+        };
 
-                UserModel.find(criteria, fetchOptions).exec(function (err, userModel) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, userModel);
-                });
-            },
+        /*if ((Object.keys(profileData).length !== 0)) {
+            fetchOptions.withRelated.push('profile');
+        }*/
 
-            //save the profile:
-            function (userModel, cb) {
-                var profileModel = userModel.related('profile');
+        //try to find the user:
+        UserModel
+            .find(criteria, fetchOptions)
+            .then(function (userModel) {
 
-                profileModel
-                    .save(profileData, {patch: true})
-                    .exec(function (err, profileModel) {
-                        if (err) {
-                            return cb(err);
+                //try to update parallel the users and the profiles table:
+                async.parallel({
+
+                    //update the user's table:
+                    updatedUser: function (cb) {
+
+                        if (Object.keys(userData).length === 0) {
+                            return cb(null, userModel); //nothing to update
                         }
-                        cb(null, userModel);
-                    });
-            }
+
+                        userModel
+                            .save(userData, {patch: true})
+                            .exec(function (err, model) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                cb(null, model);
+                            });
+                    },
+
+                    //save the profile:
+                    updatedProfile: function (cb) {
+                        var profileModel = userModel.related('profile');
+
+                        if (Object.keys(profileData).length === 0) {
+                            return cb(null, profileModel); //nothing to update
+                        }
+
+                        profileModel
+                            .save(profileData, {patch: true})
+                            .exec(function (err, model) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                cb(null, model);
+                            });
+                    }
 
 
-        ], function (err, userModel) {
-            if (err) {
+                }, function (err, results) {
+                    var updatedUser = results.updatedUser;
+
+                    if (err) {
+                        if (callback && (typeof callback === 'function')) {
+                            callback(err);
+                        }
+                    } else {
+                        if (callback && (typeof callback === 'function')) {
+                            callback(null, updatedUser);
+                        }
+                    }
+                });
+
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                if (callback && (typeof callback === 'function')) {
+                    callback(badRequests.NotFound());
+                }
+            })
+            .catch(function (err) {
                 if (callback && (typeof callback === 'function')) {
                     callback(err);
                 }
-            } else {
-                if (callback && (typeof callback === 'function')) {
-                    callback(null, userModel);
-                }
-            }
-        });
+            });
     };
 
     this.signUp = function (req, res, next) {
@@ -343,7 +384,7 @@ var UsersHandler = function (PostGre) {
 
                 UserModel
                     .forge(criteria)
-                    .fetch({withRelated : ['profile', 'company']})
+                    .fetch({withRelated: ['profile', 'company']})
                     .exec(function (err, userModel) {
                         if (err) {
                             return cb(err);
@@ -397,7 +438,7 @@ var UsersHandler = function (PostGre) {
 
             sessionOptions = {
                 permissions: profile.get('permissions'),
-                companyId  : companyId
+                companyId: companyId
             };
 
             session.register(req, res, userModel, sessionOptions);
@@ -690,7 +731,7 @@ var UsersHandler = function (PostGre) {
             function (userModel, cb) {
                 var userId = userModel.id;
                 var companyData = {
-                    userId   : userId,
+                    userId: userId,
                     companyId: companyId
                 };
 
@@ -820,7 +861,7 @@ var UsersHandler = function (PostGre) {
         res.render('errorTemplate', {error: err});
     };
 
-    this.helpMe = function (req, res, next){
+    this.helpMe = function (req, res, next) {
         var options = req.body;
         var mailerOptions;
         var userId = req.session.userId;
@@ -838,14 +879,14 @@ var UsersHandler = function (PostGre) {
         };
 
         mailerOptions = {
-            email   : email,
-            subject : subject,
-            text    : text
+            email: email,
+            subject: subject,
+            text: text
         };
 
         UserModel
             .find(criteria, fetchOptions)
-            .exec(function(err, userModel){
+            .exec(function (err, userModel) {
                 if (err) {
                     return next(err);
                 }
@@ -854,28 +895,28 @@ var UsersHandler = function (PostGre) {
                 var profile = userModel.related('profile');
                 var company = userModel.related('company');
 
-                mailerOptions.name = profile.get('first_name')+' '+profile.get('last_name');
+                mailerOptions.name = profile.get('first_name') + ' ' + profile.get('last_name');
 
                 if (company && company.models.length && company.models[0].id) {
                     mailerOptions.company = company.models[0].get('name');
                 }
 
                 saveData = {
-                    owner_id : userId,
-                    email    : email,
-                    subject  : subject,
-                    body     : text
+                    owner_id: userId,
+                    email: email,
+                    subject: subject,
+                    body: text
                 };
 
                 MessageModel
-                    .upsert(saveData,function (err, updatedModel) {
+                    .upsert(saveData, function (err, updatedModel) {
                         if (err) {
                             return next(err);
                         }
                     });
 
                 mailer.helpMeMessage(mailerOptions);
-                res.status(200).send({success : 'success'});
+                res.status(200).send({success: 'success'});
             })
     }
 };
