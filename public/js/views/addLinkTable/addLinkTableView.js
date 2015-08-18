@@ -4,9 +4,9 @@
 
 define([
     'text!templates/addLinkTable/addLinkTableTemplate.html',
-    'text!templates/addLinkTable/linksListTemplate.html',
+    'text!templates/forSelect/baseLinksTemplate.html',
     'models/linkModel'
-], function (AddTemplate, ListTemplate, LinkModel) {
+], function (AddTemplate, TypesList, LinkModel) {
 
     var View;
     View = Backbone.View.extend({
@@ -19,8 +19,9 @@ define([
         },
 
         events : {
-            "click #addField"    : "addNewRow",
-            "click #saveButton"  : "saveNewValues"
+            "click #addingBut"    : "addNewRow",
+            "click .baseType"     : "selectTypes",
+            "click #saveButton"   : "saveNewValues"
         },
 
         saveNewValues : function(){
@@ -28,37 +29,40 @@ define([
             var linkModel;
             var saveData;
             var thisEl = this.$el;
-            var activeName  = thisEl.find('#editName').val().trim();
-            var activeCode  = thisEl.find('#editCode').val().trim();
+            //var activeName  = thisEl.find('#addingName').val().trim();
+            //var activeCode  = thisEl.find('#addingCode').val().trim();
             var linksArray  = thisEl.find('.link_row');
             var arrayLength = linksArray.length;
             var tableName   = thisEl.find('#tabName').val().trim();
             var currentTarget;
             var name;
             var code;
+            var theType;
             var values = [];
 
-            if (activeName && activeCode) {
-                values.push({
-                    name  : activeName,
-                    code  : activeCode
-                })
-            } else {
-                if (!(!activeName && !activeCode)){
-                    alert('Please, fill empty fields');
-                    return;
-                }
-            }
+            //if (activeName && activeCode) {
+            //    values.push({
+            //        name  : activeName,
+            //        code  : activeCode
+            //    })
+            //} else {
+            //    if (!(!activeName && !activeCode)){
+            //        alert('Please, fill empty fields');
+            //        return;
+            //    }
+            //}
 
             if (arrayLength){
                 for (var i=arrayLength-1; i>=0; i--){
                     currentTarget = $(linksArray[i]);
                     name = currentTarget.find('.frst').text().trim();
                     code = currentTarget.find('.scnd').text().trim();
+                    theType = currentTarget.find('.thrd').attr('data-val');
 
                     values.push({
                         name   : name,
-                        code   : code
+                        code   : code,
+                        type   : theType
                     });
                 }
             }
@@ -82,41 +86,48 @@ define([
             });
         },
 
-        //hideDialog: function () {
-        //    $('.dialogWindow').remove();
-        //},
-
         addNewRow: function(){
             var thisEl = this.$el;
-            var activeName = thisEl.find('#editName');
-            var activeCode = thisEl.find('#editCode');
+            var activeName = thisEl.find('#addingName');
+            var activeCode = thisEl.find('#addingCode');
+            var activeType = thisEl.find('#addingBase');
             var name = activeName.val().trim();
             var code = activeCode.val().trim();
+            var theType = activeType.val().trim();
+            var theType_id = activeType.attr('data-val');
             var newRow;
 
             if (name && code){
-                newRow = "<tr class='link_row'><td class='frst'>"+name+"</td><td class='scnd'>"+code+"</td></tr>";
-                $(newRow).insertBefore('.editableRow');
+                newRow = "<tr class='link_row'><td class='frst'>"+name+"</td><td class='scnd'>"+code+"</td><td class='thrd' data-val="+theType_id+">"+theType+"</td></tr>";
+                thisEl.find('#linksList').append(newRow);
+
                 activeName.val('');
                 activeCode.val('');
+                activeType.val('String');
+                activeType.attr('data-val','STRING')
             } else {
                 alert('Please, fill empty fields');
             }
+        },
+
+        selectTypes: function (event){
+            var target = $(event.target);
+            var currentValue = target.text().trim();
+            var currentConst = target.attr('data-val');
+            var cont = this.$el.find('#addingBase');
+
+            cont.val(currentValue);
+            cont.attr('data-val', currentConst);
         },
 
         render: function () {
 
             this.undelegateEvents();
             this.$el.html(_.template(AddTemplate));
-            //this.$el.html(_.template(AddTemplate)).dialog({
-            //    closeOnEscape: false,
-            //    autoOpen: true,
-            //    dialogClass: "dialogWindow",
-            //    modal: true,
-            //    width: "600px"
-            //});
 
             this.delegateEvents();
+
+            this.$el.find('#baseLink').html(_.template(TypesList));
 
             return this;
         }
