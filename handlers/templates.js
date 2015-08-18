@@ -14,6 +14,7 @@ var mammoth = require('mammoth');
 var badRequests = require('../helpers/badRequests');
 
 var SessionHandler = require('../handlers/sessions');
+var AttachmentHandler = require('../handlers/attachments');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -21,6 +22,7 @@ var TemplatesHandler = function (PostGre) {
     var TemplateModel = Models.Template;
     var AttachmentModel = Models.Attachment;
     var session = new SessionHandler(PostGre);
+    var attachments = new AttachmentHandler(PostGre);
     var self = this;
 
     function random(number) {
@@ -74,7 +76,8 @@ var TemplatesHandler = function (PostGre) {
 
             //save the docx file:
             function (cb) {
-                self.saveTheTemplateFile(templateFile, function (err, key) {
+                //self.saveTheTemplateFile(templateFile, function (err, key) {
+                attachments.saveTheTemplateFile(templateFile, function (err, key) {
                     if (err) {
                         console.error(err);
                         return cb(err);
@@ -135,13 +138,27 @@ var TemplatesHandler = function (PostGre) {
                     key: key
                 };
 
+                attachments.saveAttachment(saveData, function (err, attachmentModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, templateModel);
+                });
+
+                /*var saveData = {
+                    attacheable_type: TABLES.TEMPLATES,
+                    attacheable_id: templateModel.id,
+                    name: BUCKETS.TEMPLATE_FILES,
+                    key: key
+                };
+
                 AttachmentModel
                     .upsert(saveData, function (err, attachmentModel) {
                         if (err) {
                             return cb(err);
                         }
                         cb(null, templateModel);
-                    });
+                    });*/
 
             }
 
@@ -153,7 +170,7 @@ var TemplatesHandler = function (PostGre) {
         });
     };
 
-    this.saveTheTemplateFile = function (file, callback) {
+    /*this.saveTheTemplateFile = function (file, callback) {
         var originalFilename = file.originalFilename;
         var extension = originalFilename.slice(-4);
 
@@ -212,7 +229,7 @@ var TemplatesHandler = function (PostGre) {
                 }
             }
         });
-    };
+    };*/
 
     this.getTemplates = function (req, res, next) {
         var companyId = req.session.companyId;
@@ -220,9 +237,10 @@ var TemplatesHandler = function (PostGre) {
         TemplateModel
             .forge()
             .query(function (qb) {
-                qb.where({'company_id': companyId});
+                qb.where({company_id: companyId});
             })
             //.fetchAll({withRelated: ['link.linkFields']})
+            //.fetchAll()
             .fetchAll({withRelated: ['templateFile']})
             .exec(function (err, result) {
                 var templateModels;

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div>
+    <p>Dear <%= dstUserName%>,</p>
+
+    <p><%= companyName%> has sent ypu a link to your <%= documentName%>. You can review and sign here:</p>
+    <p><a href="<%= signatureLink%>" target="_blank">link</a></p>
+    <p>Sincerely,</p>
+    <p><%= srcUserName%></p>
+</div>
+</body>
+</html>

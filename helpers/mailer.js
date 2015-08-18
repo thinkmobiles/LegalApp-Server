@@ -79,7 +79,7 @@ var MailerModule = function () {
         
         deliver(mailOptions, callback);
     }
-    
+
     function deliver(mailOptions, callback) {
         var user = process.env.mailerUserName;
         var pass = process.env.mailerPassword;
@@ -130,7 +130,7 @@ var MailerModule = function () {
 
             deliver(mailOptions,callback);
 
-    }
+    };
 
     this.onUserInvite = function(options, callback) {
         var templateOptions;
@@ -150,7 +150,7 @@ var MailerModule = function () {
 
         deliver(mailOptions,callback);
 
-    }
+    };
 
     this.helpMeMessage = function (options, callback) {
         var templateOptions;
@@ -173,8 +173,37 @@ var MailerModule = function () {
 
         deliver(mailOptions,callback);
 
-    }
-   
+    };
+
+    this.onSendToSingnature = function (options, callback) {
+        var templateOptions;
+        var mailOptions;
+        var document = options.document;
+        var link = process.env.HOST + '/signature/' + document.access_token;
+        var dstUser = options.dstUser;
+        var srcUser = options.srcUser;
+        var company = options.company;
+        var template = options.template;
+
+        templateOptions = {
+            email     : dstUser.email,
+            srcUserName: srcUser.profile.first_name,
+            dstUserName: dstUser.profile.first_name,
+            companyName: company.name,
+            documentName: template.name,
+            signatureLink: link
+        };
+
+        mailOptions = {
+            from: FROM,
+            to: dstUser.email,
+            subject: template.name,
+            generateTextFromHTML: true,
+            html: _.template(fs.readFileSync('public/templates/mailer/sendToSignature.html', "utf8"))(templateOptions)
+        };
+
+        deliver(mailOptions,callback);
+    };
 };
 
 module.exports = new MailerModule();
