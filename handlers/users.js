@@ -752,7 +752,7 @@ var UsersHandler = function (PostGre) {
             withoutCompany: companyId
         };
         var fetchOptions = {
-            withRelated: ['profile', 'avatar']
+            withRelated: ['profile', 'avatar', 'company']
         };
 
         UserModel
