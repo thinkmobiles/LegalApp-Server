@@ -113,8 +113,8 @@ define([
                     lastName.val('');
                     phone.val('');
                     email.val('');
-                    sel_company.val('Select company');
-                    sel_company.attr('data-id',0);
+                    sel_company.text('Select company');
+                    sel_company.attr('data-id', 0);
 
                     self.trigger('redirectList');
                 },
