@@ -9,6 +9,7 @@ var TABLES = require('../constants/tables');
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
 var wkhtmltopdf = require('wkhtmltopdf');
+var AttachmentsHandler = require('./attachments');
 
 var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
@@ -17,6 +18,7 @@ var DocumentsHandler = function (PostGre) {
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
+    var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
     function createDocumentContent(htmlText, fields, values, callback) {
@@ -259,15 +261,15 @@ var DocumentsHandler = function (PostGre) {
 
     this.htmlToPdf = function (req, res, next) {
         var html = '<h1>Test</h1><p>Hello world</p><img src="/public/uploads/development/avatars/1439284918701_97_avatars_1.jpeg" height="150" width="150">';
-        var ticks = new Date().valueOf();
-        var name = 'testPdf_' + ticks + '.pdf';
-        var filePath = 'public/uploads/development/pdfs/' + name;
+        var name = 'testPdf.pdf';
+        var key = attachmentsHandler.computeKey(name);
+        var filePath = 'public/uploads/development/pdfs/' + key;
 
         wkhtmltopdf(html, {output: filePath}, function (err) {
             if (err) {
                 return next(err);
             }
-            res.status(200).send('Pdf with name ' + name + ' was created');
+            res.status(200).send('Pdf with name ' + key + ' was created');
         });
 
     };

@@ -57,7 +57,7 @@ module.exports = function (app) {
     app.use('/templates', templatesRouter);
     //app.use('/uploadFile', attachments);
 
-    app.use('/htmlToPdf', documentsHandler.htmlToPdf);
+    app.get('/htmlToPdf', documentsHandler.htmlToPdf);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error
