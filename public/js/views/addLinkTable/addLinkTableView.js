@@ -29,8 +29,6 @@ define([
             var linkModel;
             var saveData;
             var thisEl = this.$el;
-            //var activeName  = thisEl.find('#addingName').val().trim();
-            //var activeCode  = thisEl.find('#addingCode').val().trim();
             var linksArray  = thisEl.find('.link_row');
             var arrayLength = linksArray.length;
             var tableName   = thisEl.find('#tabName').val().trim();
@@ -39,18 +37,6 @@ define([
             var code;
             var theType;
             var values = [];
-
-            //if (activeName && activeCode) {
-            //    values.push({
-            //        name  : activeName,
-            //        code  : activeCode
-            //    })
-            //} else {
-            //    if (!(!activeName && !activeCode)){
-            //        alert('Please, fill empty fields');
-            //        return;
-            //    }
-            //}
 
             if (arrayLength){
                 for (var i=arrayLength-1; i>=0; i--){
