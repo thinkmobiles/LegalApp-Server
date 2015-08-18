@@ -1,8 +1,9 @@
 ﻿'use strict';
 
-var TABLES = require('../constants/tables');
+var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var STATUSES = require('../constants/statuses');
+var TABLES = require('../constants/tables');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -117,38 +118,43 @@ module.exports = function (db) {
     }];
     var links = [{
         name: 'link 1',
-        company_id: 1
+        company_id: 2
     }, {
         name: 'link 2',
-        company_id: 1
+        company_id: 2
 
     }, {
         name: 'link 3',
-        company_id: 2
+        company_id: 3
     }, {
         name: 'link 4',
-        company_id: 3
+        company_id: 4
     }];
     var links_fields = [
         {
             link_id: 1,
             name: 'first_name',
-            code: '{first_name}'
+            code: '{first_name}',
+            type: FIELD_TYPES.FIRST_NAME
         },
         {
             link_id: 1,
             name: 'last_name',
-            code: '{last_name}'
+            code: '{last_name}',
+            type: FIELD_TYPES.LAST_NAME
         },
         {
             name: 'First test name',
-            code: 'ftname'
+            code: 'ftname',
+            type: FIELD_TYPES.FIRST_NAME
         }, {
             name: 'Last test name',
-            code: 'ltname'
+            code: 'ltname',
+            type: FIELD_TYPES.LAST_NAME
         }, {
             name: '5500 грн.',
-            code: 'tsalary'
+            code: 'tsalary',
+            type: FIELD_TYPES.NUMBER
         }
     ];
 

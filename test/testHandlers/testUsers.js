@@ -1,9 +1,10 @@
 ﻿'use strict';
 
+var CONSTANTS = require('../../constants/index');
 var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
 var PERMISSIONS = require('../../constants/permissions');
-var CONSTANTS = require('../../constants/index');
+var STATUSES = require('../../constants/statuses');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -1086,6 +1087,34 @@ module.exports = function (db, defaults) {
                             return done();
                         }
                         expect(res.status).to.equals(403);
+                        done();
+                    });
+            });
+
+            it('Admin can update the users status to DELETED', function (done) {
+                var userId = 6;
+                var data = {
+                    status: STATUSES.DELETED
+                };
+                var updateUrl = url + '/' + userId;
+
+                adminUserAgent
+                    .put(updateUrl)
+                    .send(data)
+                    .end(function (err, res) {
+                        var userModel;
+
+                        if (err) {
+                            return done();
+                        }
+                        expect(res.status).to.equals(200);
+
+                        userModel = res.body.user;
+                        expect(userModel).to.have.property('id');
+                        expect(userModel).to.have.property('status');
+                        expect(userModel.id).to.equals(userId);
+                        expect(userModel.status).to.equals(data.status);
+
                         done();
                     });
             });
