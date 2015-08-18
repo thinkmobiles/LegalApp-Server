@@ -80,10 +80,7 @@ var UsersHandler = function (PostGre) {
         var profileData = {};
         var userData = {};
         var criteria;
-        var fetchOptions;/* = {
-            require: true
-            //withRelated: ['profile', 'avatar']
-        };*/
+        var fetchOptions;
 
         if (options.profile) {
             profile = options.profile;
@@ -123,10 +120,6 @@ var UsersHandler = function (PostGre) {
             require: true,
             withRelated: ['profile', 'avatar']
         };
-
-        /*if ((Object.keys(profileData).length !== 0)) {
-            fetchOptions.withRelated.push('profile');
-        }*/
 
         //try to find the user:
         UserModel
@@ -520,7 +513,8 @@ var UsersHandler = function (PostGre) {
     this.changeProfile = function (req, res, next) {
         var userId = req.session.userId;
         var options = req.body;
-        var image = {};
+        var imageSrc = options.imageSrc;
+        var avatar = {};
         var permissions;
 
         //check permissions:
@@ -532,35 +526,35 @@ var UsersHandler = function (PostGre) {
             }
         }
 
-        if (options.imageSrc) {
-            image.imageSrc = req.body.imageSrc;
-            image.imageable_id = userId;
-            image.imageable_type = 'users';
+        if (imageSrc) {
+            avatar.imageSrc = imageSrc;
+            avatar.imageable_id = userId;
+            avatar.imageable_type = 'users';
         }
 
         async.waterfall([
 
-            //update user profile
+            //update user:
             function (cb) {
                 updateUserById(userId, options, function (err, userModel) {
                     if (!err) {
-                        image.id = userModel.relations.avatar.attributes.id;
-                        image.oldName = userModel.relations.avatar.attributes.name;
-                        image.oldKey = userModel.relations.avatar.attributes.key;
+                        avatar.id = userModel.relations.avatar.attributes.id;
+                        avatar.oldName = userModel.relations.avatar.attributes.name;
+                        avatar.oldKey = userModel.relations.avatar.attributes.key;
                     }
                     cb(err, userModel);
                 });
             },
 
-            //update users avatar
+            //update users avatar:
             function (userModel, cb) {
-                if (image && image.imageable_id && image.imageable_type && image.imageSrc) {
-                    imageHandler.saveImage(image, function (err) {
-                        cb(err, userModel);
-                    });
-                } else {
-                    cb();
+                if (!avatar) {
+                    return cb();
                 }
+
+                imageHandler.saveImage(avatar, function (err, result) {
+                    cb(err, result);
+                });
             }
 
         ], function (err, userModel) {
@@ -833,7 +827,6 @@ var UsersHandler = function (PostGre) {
     this.updateUser = function (req, res, next) {
         var userId = req.params.id;
         var options = req.body;
-        var currentUserId = req.session.userId;
         var permissions;
 
         //check permissions:
