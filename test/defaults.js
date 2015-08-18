@@ -2,6 +2,7 @@
 
 var TABLES = require('../constants/tables');
 var PERMISSIONS = require('../constants/permissions');
+var STATUSES = require('../constants/statuses');
 
 var async = require('async');
 var crypto = require('crypto');
@@ -30,6 +31,9 @@ module.exports = function (db) {
         email: 'base.user@mail.com'
     }, {
         email: 'admin.user@company1.com'
+    }, {
+        email: 'deleted.user@mail.com',
+        status: STATUSES.DELETED
     }];
 
     var profiles = [{
@@ -55,6 +59,10 @@ module.exports = function (db) {
         first_name: 'admin',
         last_name: 'user',
         permissions: PERMISSIONS.ADMIN
+    }, {
+        first_name: 'deleted',
+        last_name: 'user',
+        permissions: PERMISSIONS.EDITOR
     }];
 
 /*    var userCompanies = [{
@@ -94,6 +102,9 @@ module.exports = function (db) {
         company_id: 2
     }, {
         user_id: 7,
+        company_id: 2
+    }, {
+        user_id: 8,
         company_id: 2
     }];
 
@@ -180,7 +191,7 @@ module.exports = function (db) {
 
             //create users:
             function (cb) {
-                factory.createMany(TABLES.USERS, users, 6, function (err, users) {
+                factory.createMany(TABLES.USERS, users, 7, function (err, users) {
                     defaultData.users = users;
                     cb(err, users);
                 });

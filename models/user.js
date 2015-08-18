@@ -2,6 +2,7 @@
 
 var BUCKETS = require('../constants/buckets');
 var CONSTANTS = require('../constants/index');
+var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 
 module.exports = function (PostGre, ParentModel) {
@@ -74,21 +75,21 @@ module.exports = function (PostGre, ParentModel) {
 
             return this
                 .query(function (qb) {
-                    qb.innerJoin(TABLES.USER_COMPANIES, 'users.id', TABLES.USER_COMPANIES + '.user_id');
+                    qb.innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id');
 
                     if (userId) {
-                        qb.andWhere('users.id', userId);
+                        qb.andWhere(TABLES.USERS + '.id', userId);
                     }
 
                     if (companyId) {
-                        qb.andWhere('user_companies.company_id', companyId);
+                        qb.andWhere(TABLES.USER_COMPANIES + '.company_id', companyId);
                     }
 
                     if (withoutCompany) {
-                        qb.andWhere('user_companies.company_id', '<>', withoutCompany);
+                        qb.andWhere(TABLES.USER_COMPANIES + '.company_id', '<>', withoutCompany);
                     }
 
-                    qb.select('users.*');
+                    qb.select(TABLES.USERS + '.*');
                 });
         },
 

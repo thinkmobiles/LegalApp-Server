@@ -451,6 +451,35 @@ module.exports = function (db, defaults) {
                     });
             });
 
+            it('Can\'t signIn status DELETED', function (done) {
+                var deletedUser = users[6];
+                var data = {
+                    email: deletedUser.attributes.email,
+                    password: defaults.password
+                };
+
+                agent
+                    .post(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        var body;
+
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(403);
+
+                        body = res.body;
+
+                        expect(body).to.be.instanceOf(Object);
+                        expect(body).to.have.property('error');
+                        expect(body.error).to.include(MESSAGES.DELETED_ACCOUNT);
+
+                        done();
+                    });
+            });
+
             it('Can signIn with valid email password', function (done) {
                 agent
                     .post(url)
@@ -894,7 +923,7 @@ module.exports = function (db, defaults) {
                         }
 
                         expect(userModels.models).to.have.property('length');
-                        expect(userModels.models).to.have.length(5);
+                        expect(userModels.models).to.have.length(6);
 
                         done();
                     });
@@ -910,7 +939,7 @@ module.exports = function (db, defaults) {
 
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Array);
-                        expect(res.body).to.have.length(5);
+                        expect(res.body).to.have.length(6);
 
                         done();
                     });
@@ -929,8 +958,8 @@ module.exports = function (db, defaults) {
                     //make query:
                     function (cb) {
                         knex(TABLES.USERS)
-                            .innerJoin(TABLES.USER_COMPANIES, 'users.id', TABLES.USER_COMPANIES + '.user_id')
-                            .where('user_companies.company_id', '<>', superAdminId)
+                            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
+                            .where(TABLES.USER_COMPANIES + '.company_id', '<>', superAdminId)
                             .exec(function (err, rows) {
                                 if (err) {
                                     return cb(err);
