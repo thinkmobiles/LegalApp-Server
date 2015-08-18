@@ -335,6 +335,7 @@ var DocumentsHandler = function (PostGre) {
             var company;
             var template;
             var accessToken;
+            var saveData;
 
             if (err) {
                 return next(err);
@@ -376,8 +377,14 @@ var DocumentsHandler = function (PostGre) {
 
             accessToken = tokenGenerator.generate();
             documentModel.set('access_token', accessToken);
+            saveData = {
+                access_token: accessToken,
+                status: STATUSES.SENT_TO_SIGNATURE_CLIENT,
+                sent_at: new Date()
+            };
+
             documentModel
-                .save()
+                .save(saveData, {patch: true})
                 .exec(function (err, savedDocument) {
                     var mailerParams;
 
