@@ -83,7 +83,8 @@ define([
             var phone = thisEL.find('#addPhone');
             var email = thisEL.find('#addEmail');
             var permissions = thisEL.find("#addRole option:selected");
-            var companyId = thisEL.find("#selectedCompany").attr('data-id');
+            var sel_company = thisEL.find("#selectedCompany");
+            var companyId = sel_company.attr('data-id');
 
             var inviteData = {
                 first_name  : firstName.val().trim(),
@@ -112,6 +113,8 @@ define([
                     lastName.val('');
                     phone.val('');
                     email.val('');
+                    sel_company.val('Select company');
+                    sel_company.attr('data-id',0);
 
                     self.trigger('redirectList');
                 },

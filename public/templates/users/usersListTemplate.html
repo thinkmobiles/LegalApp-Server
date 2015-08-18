@@ -15,8 +15,8 @@
 
 <tr class="userRow" data-id="<%= user.id%>">
     <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-    <% if (!state) {%>
-        <td><%= user.company.name%></td>
+    <% if (!state && user.company[0]) {%>
+        <td><%= user.company[0].name%></td>
     <%}%>
     <td>
         <%if (user.profile.permissions === 3){%>Viewer<%}%>
