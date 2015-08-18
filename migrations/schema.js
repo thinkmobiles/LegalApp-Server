@@ -113,7 +113,7 @@ module.exports = function (knex) {
 
             createTable(TABLES.LINKS_FIELDS, function (row) {
                 row.increments().primary();
-                row.integer('link_id').index();
+                row.integer('link_id').notNullable().index();
                 row.string('name');
                 row.string('code');
                 row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
