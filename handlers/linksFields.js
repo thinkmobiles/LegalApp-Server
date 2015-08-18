@@ -23,6 +23,9 @@ var LinksFieldsHandler = function (PostGre) {
         if (params && params.code) {
             saveData.code = params.code;
         }
+        if (params && params.type) {
+            saveData.type = params.type
+        }
 
         return saveData;
     };
@@ -70,7 +73,34 @@ var LinksFieldsHandler = function (PostGre) {
     };
 
     function addField(data, callback) {
-        var saveData = self.prepareSaveData(data);
+        var name;
+        var code;
+        var type;
+        var saveData; // = self.prepareSaveData(data);
+
+        if (!data) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['data']}));
+            }
+            return false;
+        }
+
+        name = data.name;
+        code = data.code;
+        type = data.type;
+
+        if (!name || !code || !type) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['name', 'code', 'type']}));
+            }
+            return false;
+        }
+
+        saveData = {
+            name: name,
+            code: code,
+            type: type
+        };
 
         LinkFieldsModel
             .forge()

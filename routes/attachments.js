@@ -11,7 +11,7 @@ var SessionHandler = require('../handlers/sessions');
 
 module.exports = function (app) {
     var PostGre = app.get('PostGre');
-    var attachments = new Attachments();
+    var attachments = new Attachments(PostGre);
     var session = new SessionHandler(PostGre);
     /*var storage = multer.diskStorage({
      destination: function (req, file, cb) {

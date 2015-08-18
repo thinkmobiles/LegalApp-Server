@@ -11,8 +11,9 @@ define([
 
     View = Backbone.View.extend({
 
-        id      : "listTable",
-        tagName : "tbody",
+        //id      : "listTable",
+        //tagName : "table",
+        el : '#usersTable',
 
         events: {
 
@@ -20,13 +21,18 @@ define([
 
         initialize: function (options) {
             this.currentUsersList = options.coll;
+            this.state = options.state;
 
             this.render()
         },
 
         render: function () {
 
-            $("#listTable").html(_.template(UsrListTemp)({usrLst : this.currentUsersList.toJSON()}));
+            //$("#listTable").html(_.template(UsrListTemp)({usrLst : this.currentUsersList.toJSON()}));
+            this.$el.html(_.template(UsrListTemp)({
+                usrLst : this.currentUsersList.toJSON(),
+                state  : this.state
+            }));
 
             return this;
         }

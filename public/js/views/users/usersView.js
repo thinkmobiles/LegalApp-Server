@@ -17,48 +17,75 @@ define([
         el : '#wrapper',
 
         events: {
-            "click #addNewUser"  : "showAddTemplate",
+            "click #addNewUser"        : "showAddTemplate",
             "click #adminClient>span " : "changeCurrentState"
         },
 
         initialize: function () {
             this.stateModel = new Backbone.Model();
-            this.stateModel.set('currentState', 0);
+            this.stateModel.set('currentState', true);
             this.render();
 
             this.usersCollection = new UsersCollection();
+            this.clientsCollection = new Backbone.Collection();
+            this.clientsCollection.url = "/clients";
 
             this.listenTo(this.stateModel, 'change:currentState', this.renderTrigger);
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
+            this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
         },
 
         changeCurrentState: function(event){
             var target = $(event.target);
             var container = target.closest('#adminClient');
+            var sel_visible = $('#selectedCompany');
             var theState;
 
             container.find('.active').removeClass('active');
             target.addClass('active');
 
-            theState = target.data('id');
+            theState = !!+target.data('id');
             this.stateModel.set('currentState', theState);
+
+            if (theState){
+                sel_visible.hide();
+            } else {
+                sel_visible.show();
+            }
         },
 
         renderTrigger : function(){
+            var theState = this.stateModel.get('currentState');
+
             if (this.addView){
-                this.addView.currentState=this.stateModel.get('currentState');
+                this.addView.currentState=theState;
             }
 
-            this.usersCollection.fetch({reset : true});
+            if (theState) {
+                this.usersCollection.fetch({reset: true})
+            } else {
+                this.clientsCollection.fetch({reset: true})
+            }
         },
 
         renderUsersList : function(){
+            var theState = this.stateModel.get('currentState');
 
             if (this.tableView){
                 this.tableView.undelegateEvents()
             }
 
-            this.tableView = new UsrListView({coll: this.usersCollection});
+            if (theState) {
+                this.tableView = new UsrListView({
+                    coll : this.usersCollection,
+                    state: true
+                });
+            } else {
+                this.tableView = new UsrListView({
+                    coll: this.clientsCollection,
+                    state : false
+                });
+            }
         },
 
         addTemplate : function(){

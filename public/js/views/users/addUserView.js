@@ -16,7 +16,7 @@ define([
         //el : '#addUserContainer',
         companyTemp : _.template(CompanyName),
 
-        currentState : 0,
+        currentState : true,
 
         events: {
             "click #addInvite"     : "actionUser",
@@ -83,7 +83,8 @@ define([
             var phone = thisEL.find('#addPhone');
             var email = thisEL.find('#addEmail');
             var permissions = thisEL.find("#addRole option:selected");
-            var companyId = thisEL.find("#selectedCompany").attr('data-id');
+            var sel_company = thisEL.find("#selectedCompany");
+            var companyId = sel_company.attr('data-id');
 
             var inviteData = {
                 first_name  : firstName.val().trim(),
@@ -93,11 +94,11 @@ define([
                 permissions : permissions.data('id')
             };
 
-            if (this.currentState === 1 && +companyId === 0){
+            if (!this.currentState && +companyId === 0){
                 return alert("Enter, please, your client's company!");
             }
 
-            if (this.currentState === 1) {
+            if (!this.currentState) {
                 inviteData.companyId = companyId;
             }
 
@@ -112,6 +113,8 @@ define([
                     lastName.val('');
                     phone.val('');
                     email.val('');
+                    sel_company.val('Select company');
+                    sel_company.attr('data-id',0);
 
                     self.trigger('redirectList');
                 },
