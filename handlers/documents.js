@@ -405,6 +405,10 @@ var DocumentsHandler = function (PostGre) {
                 });
         });
     };
+
+    this.getTheDocumentToSign = function (req, res, next) {
+        next(badRequests.AccessError({message: 'Not implemented yet'}));
+    }
 };
 
 module.exports = DocumentsHandler;

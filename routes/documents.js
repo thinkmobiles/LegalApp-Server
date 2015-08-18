@@ -18,6 +18,7 @@ module.exports = function (app) {
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);
+    router.get('/:token/signature', session.authenticatedUser, documentsHandler.getTheDocumentToSign);
 
     return router;
 };
