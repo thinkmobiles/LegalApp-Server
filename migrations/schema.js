@@ -38,6 +38,8 @@ module.exports = function (knex) {
                 row.integer('assigned_id').index();
                 row.text('html_content');
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
+                row.string('access_token');
+                row.timestamp('sent_at');
                 row.timestamp('signed_at');
                 row.timestamps();
             }),
@@ -112,7 +114,7 @@ module.exports = function (knex) {
 
             createTable(TABLES.LINKS_FIELDS, function (row) {
                 row.increments().primary();
-                row.integer('link_id').index();
+                row.integer('link_id').notNullable().index();
                 row.string('name');
                 row.string('code');
                 row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);

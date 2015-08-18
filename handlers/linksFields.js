@@ -73,6 +73,7 @@ var LinksFieldsHandler = function (PostGre) {
     };
 
     function addField(data, callback) {
+        var link_id;
         var name;
         var code;
         var type;
@@ -85,18 +86,20 @@ var LinksFieldsHandler = function (PostGre) {
             return false;
         }
 
+        link_id = data.link_id;
         name = data.name;
         code = data.code;
         type = data.type;
 
-        if (!name || !code || !type) {
+        if (!link_id || !name || !code || !type) {
             if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: ['name', 'code', 'type']}));
+                callback(badRequests.NotEnParams({reqParams: ['link_id', 'name', 'code', 'type']}));
             }
             return false;
         }
 
         saveData = {
+            link_id: link_id,
             name: name,
             code: code,
             type: type
@@ -125,7 +128,7 @@ var LinksFieldsHandler = function (PostGre) {
 
         async.each(linkFields,
             function (fields, cb) {
-                fields.link_id = options.Id;
+                fields.link_id = options.id;
                 addField(fields, function (err, linkFieldModel) {
                     if (err) {
                         return cb(err);

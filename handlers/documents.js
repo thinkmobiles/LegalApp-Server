@@ -9,6 +9,8 @@ var BUCKETS = require('../constants/buckets');
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+var tokenGenerator = require('../helpers/randomPass');
+var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
@@ -80,6 +82,9 @@ var DocumentsHandler = function (PostGre) {
         var values;
         var saveData;
         var companyId = req.session.companyId;
+
+        console.log('create document');
+        console.log(options);
 
         if (!templateId) {
             return next(badRequests.NotEnParams({reqParams: ['template_id']}));
@@ -289,32 +294,148 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.sendDocumentToSign = function (req, res, next) {
-        next(badRequests.AccessError({message: 'Not implemented yet'}));
-
+        //next(badRequests.AccessError({message: 'Not implemented yet'}));
         var documentId = req.params.id;
-        var criteria = {
-            id: documentId
-        };
-        var fetchOptions = {
-            require: true
-        };
 
-        DocumentModel
-            .find(criteria, fetchOptions)
-            .then(function (documentModel) {
-                var userId = documentModel.get('assigned_id');
 
-                if (!userId) {
-                    return next(badRequests.InvalidValue({message: 'There is not assigned user'})); //TODO: ...
-                }
+        async.parallel({
 
-                res.status(200).send({success: 'message was sent'});
+            //find the current user:
+            currentUser: function (cb) {
+                var criteria = {
+                    id: req.session.userId
+                };
+                var fetchOptions = {
+                    require: true,
+                    withRelated: ['profile']
+                };
 
-            })
-            .catch(DocumentModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        cb(null, userModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //find the document:
+            document: function (cb) {
+                var criteria = {
+                    id: documentId
+                };
+                var fetchOptions = {
+                    require: true,
+                    withRelated: ['assignedUser.profile', 'template', 'company']
+                };
+
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        cb(null, documentModel);
+
+                        /*var userId = documentModel.get('assigned_id');
+                        var htmlContent;
+                        var accessToken = tokenGenerator.generate();
+
+                        if (!userId) {
+                            return next(badRequests.InvalidValue({message: 'There is not assigned user'})); //TODO: ...
+                        }
+
+                        htmlContent = documentModel.get('html_content');
+
+                        documentModel.set('access_token', accessToken);
+                        documentModel
+                            .save()
+                            .exec(function (err, savedDocument) {
+                                cb(null, savedDocument);
+                            });*/
+
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            }
+        }, function (err, results) {
+            var documentModel;
+            var document;
+            var srcUser;
+            var dstUser;
+            var company;
+            var template;
+            var accessToken;
+            var saveData;
+
+            if (err) {
+                return next(err);
+            }
+
+            if (results.currentUser && results.currentUser.id) {
+                srcUser = results.currentUser.toJSON();
+            }
+
+            if (results && results.document) {
+                documentModel = results.document;
+            }
+
+            if (documentModel && documentModel.id) {
+                document = results.document.toJSON();
+            }
+
+            if (document && document.assignedUser && document.assignedUser.id) {
+                dstUser = document.assignedUser;
+            }
+
+            if (document && document.company) {
+                company = document.company;
+            }
+
+            if (document && document.template) {
+                template = document.template;
+            }
+
+            if (!srcUser || !dstUser || !document) {
+                return next(badRequests.NotEnParams({message: 'Something was wrong'}));
+            }
+
+            /*console.log(srcUser);
+            console.log(dstUser);
+            console.log(document);
+            console.log(template);
+            console.log(company);*/
+
+            accessToken = tokenGenerator.generate();
+            documentModel.set('access_token', accessToken);
+            saveData = {
+                access_token: accessToken,
+                status: STATUSES.SENT_TO_SIGNATURE_CLIENT,
+                sent_at: new Date()
+            };
+
+            documentModel
+                .save(saveData, {patch: true})
+                .exec(function (err, savedDocument) {
+                    var mailerParams;
+
+                    if (err) {
+                        return next(err);
+                    }
+
+                    mailerParams = {
+                        srcUser: srcUser,
+                        dstUser: dstUser,
+                        company: company,
+                        template: template,
+                        document: savedDocument.toJSON()
+                    };
+
+                    mailer.onSendToSingnature(mailerParams);
+                    res.status(200).send(results);
+                });
+        });
     };
 
     this.convertHtmlToPdf = function (options, callback) {
@@ -337,6 +458,10 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
+
+    this.getTheDocumentToSign = function (req, res, next) {
+        next(badRequests.AccessError({message: 'Not implemented yet'}));
+    }
 };
 
 module.exports = DocumentsHandler;

@@ -1,19 +1,42 @@
 <h3>Add New Link Table</h3>
-<input id="tabName" type="text" placeholder="Table Name"><button id="saveButton">Save</button>
-<div id="addField"><span>Add field</span></div>
+<div>
+    <input id="tabName" type="text" placeholder="Table Name"><button id="saveButton">Save</button>
+</div>
+<div id="addingBlock">
+    <div>
+        <label for="addingName">Link Field</label><br>
+        <input type="text" placeholder="" id="addingName">
+    </div>
+    <div>
+        <label for="addingCode">Code</label><br>
+        <input type="text" placeholder="" id="addingCode">
+    </div>
+    <div>
+        <label for="addingBase">Type</label><br>
+        <input type="text" value="String" data-val="STRING" id="addingBase" disabled>
+    </div>
+    <ul id="baseLink">
+        <!--container-->
+    </ul>
+    <input type="button" value="Add" id="addingBut">
+</div>
+
 <table id="linksTable" border="1">
-    <col width="60%">
+    <col width="40%">
+    <col width="20%">
     <col width="40%">
     <thead>
     <tr>
         <th>Name</th>
         <th>Code</th>
+        <th>inTable</th>
     </tr>
     </thead>
     <tbody id="linksList">
-        <tr class="editableRow">
-            <td><input id="editName" type="text" placeholder="Name"></td>
-            <td><input id="editCode" type="text" placeholder="Code"></td>
-        </tr>
+        <!--<tr class="editableRow">-->
+            <!--<td><input id="editName" type="text" placeholder="Name"></td>-->
+            <!--<td><input id="editCode" type="text" placeholder="Code"></td>-->
+            <!--<td><input id="editTable" type="text" placeholder="in Table"></td>-->
+        <!--</tr>-->
     </tbody>
 </table>

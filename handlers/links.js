@@ -41,7 +41,7 @@ var LinksHandler = function (PostGre) {
 
             //create linkFields
             function (linkModel, cb) {
-                options.Id = linkModel.id;
+                options.id = linkModel.id;
                 if (options.link_fields && options.link_fields.length) {
                     linkFieldsHandler.addLinkFields(options, cb)
                 } else {

@@ -9,6 +9,14 @@ module.exports = function (PostGre, ParentModel) {
 
         template: function () {
             return this.belongsTo(PostGre.Models.Template);
+        },
+
+        company: function () {
+            return this.belongsTo(PostGre.Models.Company);
+        },
+
+        assignedUser: function () {
+            return this.belongsTo(PostGre.Models.User, 'assigned_id');
         }
     });
 
