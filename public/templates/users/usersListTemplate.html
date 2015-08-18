@@ -1,16 +1,37 @@
+<thead>
+<tr>
+    <th class="sortableData" data-sort="name">NAME</th>
+    <% if (!state) {%>
+        <th class="sortableData" data-sort="company">COMPANY</th>
+    <%}%>
+    <th class="sortableData" data-sort="role">ROLE</th>
+    <th data-sort="signing">SIGNING</th>
+    <th></th>
+</tr>
+</thead>
+<tbody id="listTable">
+
 <% usrLst.forEach(function(user){%>
-    <tr class="userRow" data-id="<%= user.id%>">
-        <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-        <td>
-            <%if (user.profile.permissions === 3){%>Viewer<%}%>
-            <%if (user.profile.permissions === 2){%>Editor<%}%>
-            <%if (user.profile.permissions === 1){%>Admin<%}%>
-        </td>
-        <td class="withCheck">
-            <input type="checkbox" checked disabled>
-        </td>
-        <td>
-            <%if (user.profile.permissions === 3){%>Can view but not edit<%}%>
-        </td>
-    </tr>
+
+<tr class="userRow" data-id="<%= user.id%>">
+    <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+    <% if (!state) {%>
+        <td><%= user.profile.company%></td>
+    <%}%>
+    <td>
+        <%if (user.profile.permissions === 3){%>Viewer<%}%>
+        <%if (user.profile.permissions === 2){%>Editor<%}%>
+        <%if (user.profile.permissions === 1){%>Admin<%}%>
+    </td>
+    <td class="withCheck">
+        <input type="checkbox" checked disabled>
+    </td>
+    <td>
+        <%if (user.profile.permissions === 3){%>Can view but not edit<%}%>
+    </td>
+</tr>
+
 <% }) %>
+
+</tbody>
+
