@@ -104,6 +104,9 @@ var UsersHandler = function (PostGre) {
 
                 profileData.permissions = profile.permissions;
             }
+            if (profile.sign_authority !== undefined) {
+                profileData.sign_authority = profile.sign_authority;
+            }
         }
 
         if (options.status !== undefined) {
@@ -519,12 +522,22 @@ var UsersHandler = function (PostGre) {
         var avatar = {};
         var permissions;
 
-        //check permissions:
-        if ((options.profile && (options.profile.permissions !== undefined))) {
-            permissions = options.profile.permissions;
+        if (options.profile) {
 
-            if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
-                return next(badRequests.AccessError());
+            //check permissions:
+            if (options.profile.permissions !== undefined) {
+                permissions = options.profile.permissions;
+
+                if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
+                    return next(badRequests.AccessError());
+                }
+            }
+
+            //check sign_authority:
+            if (options.profile.sign_authority !== undefined) {
+                if (!session.isAdmin(req)) {
+                    return next(badRequests.AccessError({message: 'Can\'t update the sign authority'}));
+                }
             }
         }
 

@@ -18,6 +18,7 @@ module.exports = function (app) {
     router.put('/:id', session.authenticatedUser, templates.updateTemplate); //TODO: check permissions
     router.delete('/:id', session.authenticatedUser, templates.removeTemplate); //TODO: check permissions
     router.get('/:id/preview', session.authenticatedUser, templates.previewTemplate);
+    router.post('/docx2html', session.authenticatedUser, multipartMiddleware, templates.docx2html);
 
     return router;
 };

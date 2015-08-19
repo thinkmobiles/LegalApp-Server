@@ -55,21 +55,60 @@ define([
             });
         },
 
-        render: function () {
+        createOurPage: function(){
             var model = this.linkModel.toJSON()[0];
+            var tempData = {};
+            var self = this;
+            tempData.a_date = [];
+            tempData.a_interactiv = [];
+            tempData.a_basic = [];
 
-            this.undelegateEvents();
+            model.linkFields.forEach(function(link){
+                switch (link.type) {
+                    case 'DATE' : tempData.a_date.push(link);
+                        break;
+                    case 'STRING' : tempData.a_interactiv.push(link);
+                        break;
+                    case 'NUMBER' : tempData.a_interactiv.push(link);
+                        break;
+                    default : tempData.a_basic.push(link);
+                }
+            });
+
             this.$el.html(this.mainTemplate({
-                model : model,
+                links : tempData,
                 tName : this.tempInfo.name
             }));
-            this.delegateEvents();
 
-            this.$el.find('#createTime').datepicker({
-                dateFormat: "d M, yy",
-                changeMonth: true,
-                changeYear: true
-            }).datepicker('setDate', new Date());
+            tempData.a_date.forEach(function(item){
+                self.$el.find('#create_'+item.id).datepicker({
+                    dateFormat: "d M, yy",
+                    changeMonth: true,
+                    changeYear: true
+                })
+            });
+
+            self.$el.find('#createEmployee').autocomplete({
+                source: function(req, res){
+                    var myTerm = req.term;
+                    $.ajax({
+                        url      : "/users/search",
+                        data     : {value : myTerm},
+                        success  : function(response){
+                            res(response);
+                    }
+                    });
+                },
+                minLength : 1
+                });
+        },
+
+        render: function () {
+
+
+            this.undelegateEvents();
+            this.createOurPage();
+            this.delegateEvents();
 
             return this;
         }
