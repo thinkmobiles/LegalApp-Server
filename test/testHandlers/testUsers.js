@@ -5,6 +5,7 @@ var TABLES = require('../../constants/tables');
 var MESSAGES = require('../../constants/messages');
 var PERMISSIONS = require('../../constants/permissions');
 var STATUSES = require('../../constants/statuses');
+var SIGN_AUTHORITY = require('../../constants/signAuthority');
 
 var request = require('supertest');
 var expect = require('chai').expect;
@@ -572,6 +573,37 @@ module.exports = function (db, defaults) {
 
             });
 
+            it('SuperAdmin must have the sign_authority', function (done) {
+
+                superAdminAgent
+                    .get(url)
+                    .end(function (err, res) {
+                        var user;
+
+                        if (err) {
+                            return done(err);
+                        }
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Object);
+
+                        user = res.body;
+
+                        expect(user).to.have.property('id');
+                        expect(user).to.have.property('email');
+                        expect(user).to.have.property('profile');
+                        expect(user).to.have.property('company');
+                        expect(user).to.not.have.property('password');
+                        expect(user.profile).to.have.property('first_name');
+                        expect(user.profile).to.have.property('last_name');
+                        expect(user.profile).to.have.property('permissions');
+                        expect(user.profile).to.have.property('sign_authority');
+                        expect(user.profile.sign_authority).to.equals(SIGN_AUTHORITY.ENABLED);
+
+                        done();
+                    });
+
+            });
+
         });
 
         describe('PUT /profile', function () {
@@ -896,6 +928,27 @@ module.exports = function (db, defaults) {
 
             });
 
+            it('Editor user can\'t update profile with sign_authority', function (done) {
+                var data = {
+                    profile: {
+                        sign_authority: SIGN_AUTHORITY.ENABLED
+                    }
+                };
+
+                editorUserAgent
+                    .put(url)
+                    .send(data)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done();
+                        }
+                        console.log(res.body.error);
+                        expect(res.status).to.equals(403);
+                        done();
+                    });
+
+            });
+
         });
 
         describe('GET /users', function () {
@@ -1016,6 +1069,10 @@ module.exports = function (db, defaults) {
                         expect(res.body).to.be.instanceof(Object);
                         expect(res.body).to.have.property('id');
                         expect(res.body).to.have.property('profile');
+                        expect(res.body.profile).to.have.property('first_name');
+                        expect(res.body.profile).to.have.property('last_name');
+                        expect(res.body.profile).to.have.property('permissions');
+                        expect(res.body.profile).to.have.property('sign_authority');
                         expect(res.body.id).to.equals(userId);
 
                         done();
@@ -1114,6 +1171,78 @@ module.exports = function (db, defaults) {
                         expect(userModel).to.have.property('status');
                         expect(userModel.id).to.equals(userId);
                         expect(userModel.status).to.equals(data.status);
+
+                        done();
+                    });
+            });
+
+            it('Admin can update the signAuthority to ENABLED', function (done) {
+                var userId = 6;
+                var data = {
+                    profile: {
+                        sign_authority: SIGN_AUTHORITY.ENABLED
+                    }
+                };
+                var updateUrl = url + '/' + userId;
+
+                superAdminAgent
+                    .put(updateUrl)
+                    .send(data)
+                    .end(function (err, res) {
+                        var userModel;
+
+                        if (err) {
+                            return done();
+                        }
+                        console.log(res.body.error);
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('success');
+
+                        userModel = res.body.user;
+
+                        expect(userModel).to.have.property('id');
+                        expect(userModel.id).to.equals(userId);
+                        expect(userModel).to.have.property('profile');
+                        expect(userModel.profile).to.have.property('sign_authority');
+                        expect(userModel.profile.sign_authority).to.equals(data.profile.sign_authority);
+
+                        done();
+                    });
+            });
+
+            it('Admin can update the signAuthority to DISABLED', function (done) {
+                var userId = 6;
+                var data = {
+                    profile: {
+                        sign_authority: SIGN_AUTHORITY.DISABLED
+                    }
+                };
+                var updateUrl = url + '/' + userId;
+
+                superAdminAgent
+                    .put(updateUrl)
+                    .send(data)
+                    .end(function (err, res) {
+                        var userModel;
+
+                        if (err) {
+                            return done();
+                        }
+                        console.log(res.body.error);
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Object);
+                        expect(res.body).to.be.have.property('success');
+
+                        userModel = res.body.user;
+
+                        expect(userModel).to.have.property('id');
+                        expect(userModel.id).to.equals(userId);
+                        expect(userModel).to.have.property('profile');
+                        expect(userModel.profile).to.have.property('sign_authority');
+                        expect(userModel.profile.sign_authority).to.equals(data.profile.sign_authority);
 
                         done();
                     });

@@ -25,17 +25,38 @@ var TemplatesHandler = function (PostGre) {
     var attachments = new AttachmentHandler(PostGre);
     var self = this;
 
-    function random(number) {
-        return Math.floor((Math.random() * number));
-    };
+    this.docx2html = function (req, res, next) {
+        var file = req.files.file;
+        var filePath;
+        var converterParams;
 
-    function computeKey(name) {
-        var ticks_ = new Date().valueOf();
-        var key;
+        if (!file) {
+            return next(badRequests.NotEnParams({reqParams: ['file']}));
+        }
 
-        key = ticks_ + '_' + random(1000) + '_' + name;
+        filePath = file.path;
+        console.log('>>>', filePath);
+        converterParams = {
+            path: filePath
+        };
 
-        return key;
+        mammoth
+            .convertToHtml(converterParams)
+            .then(function(result){
+                var messages = result.messages; // Any messages, such as warnings during conversion
+                var htmlContent;
+
+                if (messages && messages.length) {
+                    console.error(messages);
+                }
+
+                htmlContent = result.value; // The generated HTML
+
+                res.send(htmlContent);
+            })
+            .done();
+
+        //res.send('OK');
     };
 
     this.prepareSaveData = function (params) {
@@ -169,67 +190,6 @@ var TemplatesHandler = function (PostGre) {
             res.status(201).send({success: MESSAGES.SUCCESS_CREATED_TEMPLATE, model: templateModel});
         });
     };
-
-    /*this.saveTheTemplateFile = function (file, callback) {
-        var originalFilename = file.originalFilename;
-        var extension = originalFilename.slice(-4);
-
-        async.waterfall([
-
-            //get file from request:
-            function (cb) {
-
-                fs.readFile(file.path, function (err, data) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, data);
-                });
-            },
-
-            //save file to storage:
-            function (buffer, cb) {
-                var bucket = BUCKETS.TEMPLATE_FILES;
-                //var name = BUCKETS.TEMPLATE_FILES;
-                var name = originalFilename;
-                var key = computeKey(name);
-                var fileData;
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.log('--- Upload file ----------------');
-                    console.log('name', name);
-                    console.log('key', key);
-                    console.log('bucket', bucket);
-                    console.log('--------------------------------');
-                }
-
-                fileData = {
-                    data: buffer,
-                    name: key //look like: 1439330842375_121_myFileName.docx
-                };
-
-                uploader.uploadFile(fileData, key, bucket, function (err, fileName) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, key);
-                });
-            }
-
-        ], function (err, result) {
-
-
-            if (err) {
-                if (callback && (typeof callback === 'function')) {
-                    callback(err);
-                }
-            } else {
-                if (callback && (typeof callback === 'function')) {
-                    callback(null, result);
-                }
-            }
-        });
-    };*/
 
     this.getTemplates = function (req, res, next) {
         var companyId = req.session.companyId;
@@ -416,32 +376,6 @@ var TemplatesHandler = function (PostGre) {
             .catch(next);
     };
 
-    this.createDocument = function (htmlText, fields, values, callback) {
-
-        //check input params
-        if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) {
-
-            for (var i in values) {
-                var val = values[i];
-                var code = fields[i];
-
-                //replace fields in input html by values
-                htmlText = htmlText.replace(new RegExp(code, 'g'), val);
-            }
-
-            //return result
-            if (callback && (typeof callback === 'function')) {
-                callback(null, htmlText); //all right
-            }
-            return htmlText;
-
-        } else {
-            if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({required: ['htmlText', 'values', 'fields']}));
-            }
-            return '';
-        }
-    };
 };
 
 module.exports = TemplatesHandler;

@@ -4,6 +4,7 @@ var TABLES = require('../constants/tables');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var STATUSES = require('../constants/statuses');
+var SIGN_AUTHORITY = require('../constants/signAuthority');
 var CONSTANTS = require('../constants/index');
 
 var crypto = require('crypto');
@@ -83,8 +84,9 @@ module.exports = function (knex) {
                 row.string('first_name');
                 row.string('last_name');
                 row.string('company');
-                row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.string('phone');
+                row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
+                row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.ENABLED);
                 row.timestamps();
             }), 
 
