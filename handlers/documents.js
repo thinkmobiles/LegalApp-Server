@@ -27,7 +27,7 @@ var DocumentsHandler = function (PostGre) {
 
     function toUnicode(theString) {
         var unicodeString = '';
-        for (var i=0; i < theString.length; i++) {
+        for (var i = 0; i < theString.length; i++) {
             var theUnicode = theString.charCodeAt(i).toString(16).toUpperCase();
             while (theUnicode.length < 4) {
                 theUnicode = '0' + theUnicode;
@@ -337,21 +337,21 @@ var DocumentsHandler = function (PostGre) {
                         cb(null, documentModel);
 
                         /*var userId = documentModel.get('assigned_id');
-                        var htmlContent;
-                        var accessToken = tokenGenerator.generate();
+                         var htmlContent;
+                         var accessToken = tokenGenerator.generate();
 
-                        if (!userId) {
-                            return next(badRequests.InvalidValue({message: 'There is not assigned user'})); //TODO: ...
-                        }
+                         if (!userId) {
+                         return next(badRequests.InvalidValue({message: 'There is not assigned user'})); //TODO: ...
+                         }
 
-                        htmlContent = documentModel.get('html_content');
+                         htmlContent = documentModel.get('html_content');
 
-                        documentModel.set('access_token', accessToken);
-                        documentModel
-                            .save()
-                            .exec(function (err, savedDocument) {
-                                cb(null, savedDocument);
-                            });*/
+                         documentModel.set('access_token', accessToken);
+                         documentModel
+                         .save()
+                         .exec(function (err, savedDocument) {
+                         cb(null, savedDocument);
+                         });*/
 
                     })
                     .catch(DocumentModel.NotFoundError, function (err) {
@@ -402,10 +402,10 @@ var DocumentsHandler = function (PostGre) {
             }
 
             /*console.log(srcUser);
-            console.log(dstUser);
-            console.log(document);
-            console.log(template);
-            console.log(company);*/
+             console.log(dstUser);
+             console.log(document);
+             console.log(template);
+             console.log(company);*/
 
             accessToken = tokenGenerator.generate();
             documentModel.set('access_token', accessToken);
@@ -458,10 +458,232 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-
     this.getTheDocumentToSign = function (req, res, next) {
-        next(badRequests.AccessError({message: 'Not implemented yet'}));
-    }
+        var token = req.params.token;
+        var companyId = req.session.companyId;
+        var criteria = {
+            access_token: token,
+            status: STATUSES.SENT_TO_SIGNATURE_CLIENT,
+            company_id: companyId
+        };
+        var fetchOptions = {
+            require: true
+        };
+
+        DocumentModel
+            .find(criteria, fetchOptions)
+            .then(function (documentModel) {
+                var html = documentModel.get('html_content');
+                res.status(200).send(html);
+            })
+            .catch(DocumentModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
+    this.addSignatureToDocument = function (req, res, next) {
+        var userId = req.session.userId;
+        var companyId = req.session.companyId;
+        var token = req.params.token;
+        var signImage = req.body.signature;    //base64  need to check params
+        var criteria = {
+            access_token: token,
+            company_id: companyId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['template.link.linkFields']
+        };
+
+        async.waterfall([
+
+            //find document
+            function (callback) {
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        callback(null, documentModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        callback(err);
+                    })
+                    .catch(callback);
+            },
+
+            //add sing
+            function (documentModel, callback) {
+                addImageSign(documentModel, userId, companyId, signImage, callback);
+            }
+
+            /*function (documentModel, callback) {
+             var htmlContent = documentModel.get('html_content');
+             var status = documentModel.get('status'); // 2
+             var assignedId = documentModel.get('assigned_id');
+             var documentCompany = documentModel.get('company_id');
+             var templateModel = documentModel.related('template');
+             var linkModel = templateModel.related('link');
+             var linkFieldsModel = linkModel.related('linkFields');
+             var linkId = templateModel.get('link_id');
+             var searchValue;
+             var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
+
+
+             if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
+             async.waterfall([
+
+             function (cb) {
+             var forgeCriteria = {
+             link_id: linkId,
+             type: FIELD_TYPES.CLIENT_SIGNATURE
+             };
+             var fetchCriteria = {
+             require: true
+             };
+
+             linkFieldsModel
+             .find(forgeCriteria, fetchCriteria)
+             .then(function (fieldModel) {
+             searchValue = toUnicode(fieldModel.get('code'));
+
+             htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+             cb(null, htmlContent);
+             })
+             .catch(DocumentModel.NotFoundError, function (err) {
+             cb(err);
+             })
+             .catch(cb);
+             }],
+
+             function (err, htmlContent) {
+             documentModel
+             .save({
+             html_content: htmlContent,
+             status: STATUSES.SENT_TO_SIGNATURE_COMPANY
+             }, {patch: true})
+             .exec(function (err, savedDocument) {
+             if (err) {
+             return cb(err);
+             }
+             callback(null, savedDocument);
+             }
+             );
+             });
+
+             } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentCompany === companyId)) {
+             async.waterfall([
+
+             function (cb) {
+             var forgeCriteria = {
+             link_id: linkId,
+             type: FIELD_TYPES.COMPANY_SIGNATURE
+             };
+             var fetchCriteria = {
+             require: true
+             };
+
+             linkFieldsModel
+             .find(forgeCriteria, fetchCriteria)
+             .then(function (fieldModel) {
+             searchValue = toUnicode(fieldModel.get('code'));
+
+             htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+             cb(null, htmlContent);
+             })
+             .catch(DocumentModel.NotFoundError, function (err) {
+             cb(err);
+             })
+             .catch(cb);
+             }],
+
+             function (err, htmlContent) {
+             documentModel
+             .save({html_content: htmlContent, status: STATUSES.SIGNED_BY_COMPANY}, {patch: true})
+             .exec(function (err, savedDocument) {
+             if (err) {
+             return cb(err);
+             }
+             callback(null, savedDocument);
+             }
+             );
+             });
+
+             }
+             }*/
+
+        ], function (err, savedDocument) {
+            if (err) {
+                return next(err)
+            }
+            res.status(200).send({success: 'Document was signed'});
+        });
+
+    };
+
+    function addImageSign(documentModel, userId, companyId, signImage, callback) {
+        var htmlContent = documentModel.get('html_content');
+        var status = documentModel.get('status');
+        var assignedId = documentModel.get('assigned_id');
+        var documentOfCompany = documentModel.get('company_id');
+        var templateModel = documentModel.related('template');
+        var linkModel = templateModel.related('link');
+        var linkFieldsModel = linkModel.related('linkFields');
+        var linkId = templateModel.get('link_id');
+        var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
+        var searchValue;
+        var type;
+        var newStatus;
+
+        if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
+            type = FIELD_TYPES.CLIENT_SIGNATURE;
+            newStatus = STATUSES.SENT_TO_SIGNATURE_COMPANY;
+        } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentOfCompany === companyId)) {
+            type = FIELD_TYPES.COMPANY_SIGNATURE;
+            newStatus = STATUSES.SIGNED_BY_COMPANY;
+        } else {
+            return callback(badRequests.AccessError());
+        }
+
+        async.waterfall([
+
+                function (cb) {
+                    var forgeCriteria = {
+                        link_id: linkId,
+                        type: type
+                    };
+                    var fetchCriteria = {
+                        require: true
+                    };
+
+                    linkFieldsModel
+                        .find(forgeCriteria, fetchCriteria)
+                        .then(function (fieldModel) {
+                            searchValue = toUnicode(fieldModel.get('code'));
+
+                            htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+                            cb(null, htmlContent);
+                        })
+                        .catch(DocumentModel.NotFoundError, function (err) {
+                            cb(err);
+                        })
+                        .catch(cb);
+                }],
+
+            function (err, htmlContent) {
+                documentModel
+                    .save({
+                        html_content: htmlContent,
+                        status: newStatus
+                    }, {patch: true})
+                    .exec(function (err, savedDocument) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        callback(null, savedDocument);
+                    }
+                );
+            });
+    };
 };
 
 module.exports = DocumentsHandler;
