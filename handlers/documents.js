@@ -22,6 +22,7 @@ var DocumentsHandler = function (PostGre) {
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
+    var LinkFieldsModel = Models.LinkFields;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
@@ -36,6 +37,69 @@ var DocumentsHandler = function (PostGre) {
             unicodeString += theUnicode;
         }
         return unicodeString;
+    }
+
+    function addImageSign(documentModel, userId, companyId, signImage, callback) {
+        var htmlContent = documentModel.get('html_content');
+        var status = documentModel.get('status');
+        var assignedId = documentModel.get('assigned_id');
+        var documentOfCompany = documentModel.get('company_id');
+        var templateModel = documentModel.related('template');
+        var linkId = templateModel.get('link_id');
+        var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
+        var searchValue;
+        var type;
+        var newStatus;
+
+        if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
+            type = FIELD_TYPES.CLIENT_SIGNATURE;
+            newStatus = STATUSES.SENT_TO_SIGNATURE_COMPANY;
+        } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentOfCompany === companyId)) {
+            type = FIELD_TYPES.COMPANY_SIGNATURE;
+            newStatus = STATUSES.SIGNED_BY_COMPANY;
+        } else {
+            return callback(badRequests.AccessError());
+        }
+
+        async.waterfall([
+
+                function (cb) {
+                    var forgeCriteria = {
+                        link_id: linkId,
+                        name: type
+                    };
+                    var fetchCriteria = {
+                        require: true
+                    };
+
+                    LinkFieldsModel
+                        .find(forgeCriteria, fetchCriteria)
+                        .then(function (fieldModel) {
+                            searchValue = toUnicode(fieldModel.get('code'));
+
+                            htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+                            cb(null, htmlContent);
+                        })
+                        .catch(LinkFieldsModel.NotFoundError, function (err) {
+                            cb(err);
+                        })
+                        .catch(cb);
+                }],
+
+            function (err, htmlContent) {
+                documentModel
+                    .save({
+                        html_content: htmlContent,
+                        status: newStatus
+                    }, {patch: true})
+                    .exec(function (err, savedDocument) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, savedDocument);
+                    }
+                );
+            });
     }
 
     function createDocumentContent(htmlText, fields, values, callback) {
@@ -496,6 +560,10 @@ var DocumentsHandler = function (PostGre) {
             withRelated: ['template.link.linkFields']
         };
 
+        if (!CONSTANTS.BASE64_REGEXP.test(signImage)){
+            return next(badRequests.NotEnParams({required:'signature'}));
+        }
+
         async.waterfall([
 
             //find document
@@ -511,105 +579,10 @@ var DocumentsHandler = function (PostGre) {
                     .catch(callback);
             },
 
-            //add sing
+            //add Sign client or company
             function (documentModel, callback) {
                 addImageSign(documentModel, userId, companyId, signImage, callback);
             }
-
-            /*function (documentModel, callback) {
-             var htmlContent = documentModel.get('html_content');
-             var status = documentModel.get('status'); // 2
-             var assignedId = documentModel.get('assigned_id');
-             var documentCompany = documentModel.get('company_id');
-             var templateModel = documentModel.related('template');
-             var linkModel = templateModel.related('link');
-             var linkFieldsModel = linkModel.related('linkFields');
-             var linkId = templateModel.get('link_id');
-             var searchValue;
-             var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
-
-
-             if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
-             async.waterfall([
-
-             function (cb) {
-             var forgeCriteria = {
-             link_id: linkId,
-             type: FIELD_TYPES.CLIENT_SIGNATURE
-             };
-             var fetchCriteria = {
-             require: true
-             };
-
-             linkFieldsModel
-             .find(forgeCriteria, fetchCriteria)
-             .then(function (fieldModel) {
-             searchValue = toUnicode(fieldModel.get('code'));
-
-             htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-             cb(null, htmlContent);
-             })
-             .catch(DocumentModel.NotFoundError, function (err) {
-             cb(err);
-             })
-             .catch(cb);
-             }],
-
-             function (err, htmlContent) {
-             documentModel
-             .save({
-             html_content: htmlContent,
-             status: STATUSES.SENT_TO_SIGNATURE_COMPANY
-             }, {patch: true})
-             .exec(function (err, savedDocument) {
-             if (err) {
-             return cb(err);
-             }
-             callback(null, savedDocument);
-             }
-             );
-             });
-
-             } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentCompany === companyId)) {
-             async.waterfall([
-
-             function (cb) {
-             var forgeCriteria = {
-             link_id: linkId,
-             type: FIELD_TYPES.COMPANY_SIGNATURE
-             };
-             var fetchCriteria = {
-             require: true
-             };
-
-             linkFieldsModel
-             .find(forgeCriteria, fetchCriteria)
-             .then(function (fieldModel) {
-             searchValue = toUnicode(fieldModel.get('code'));
-
-             htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-             cb(null, htmlContent);
-             })
-             .catch(DocumentModel.NotFoundError, function (err) {
-             cb(err);
-             })
-             .catch(cb);
-             }],
-
-             function (err, htmlContent) {
-             documentModel
-             .save({html_content: htmlContent, status: STATUSES.SIGNED_BY_COMPANY}, {patch: true})
-             .exec(function (err, savedDocument) {
-             if (err) {
-             return cb(err);
-             }
-             callback(null, savedDocument);
-             }
-             );
-             });
-
-             }
-             }*/
 
         ], function (err, savedDocument) {
             if (err) {
@@ -618,71 +591,6 @@ var DocumentsHandler = function (PostGre) {
             res.status(200).send({success: 'Document was signed'});
         });
 
-    };
-
-    function addImageSign(documentModel, userId, companyId, signImage, callback) {
-        var htmlContent = documentModel.get('html_content');
-        var status = documentModel.get('status');
-        var assignedId = documentModel.get('assigned_id');
-        var documentOfCompany = documentModel.get('company_id');
-        var templateModel = documentModel.related('template');
-        var linkModel = templateModel.related('link');
-        var linkFieldsModel = linkModel.related('linkFields');
-        var linkId = templateModel.get('link_id');
-        var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
-        var searchValue;
-        var type;
-        var newStatus;
-
-        if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
-            type = FIELD_TYPES.CLIENT_SIGNATURE;
-            newStatus = STATUSES.SENT_TO_SIGNATURE_COMPANY;
-        } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentOfCompany === companyId)) {
-            type = FIELD_TYPES.COMPANY_SIGNATURE;
-            newStatus = STATUSES.SIGNED_BY_COMPANY;
-        } else {
-            return callback(badRequests.AccessError());
-        }
-
-        async.waterfall([
-
-                function (cb) {
-                    var forgeCriteria = {
-                        link_id: linkId,
-                        type: type
-                    };
-                    var fetchCriteria = {
-                        require: true
-                    };
-
-                    linkFieldsModel
-                        .find(forgeCriteria, fetchCriteria)
-                        .then(function (fieldModel) {
-                            searchValue = toUnicode(fieldModel.get('code'));
-
-                            htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-                            cb(null, htmlContent);
-                        })
-                        .catch(DocumentModel.NotFoundError, function (err) {
-                            cb(err);
-                        })
-                        .catch(cb);
-                }],
-
-            function (err, htmlContent) {
-                documentModel
-                    .save({
-                        html_content: htmlContent,
-                        status: newStatus
-                    }, {patch: true})
-                    .exec(function (err, savedDocument) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        callback(null, savedDocument);
-                    }
-                );
-            });
     };
 };
 
