@@ -1,18 +1,36 @@
 <h2><%= tName%></h2>
 
 <div>
-    <label for="createTime">Document Date</label><br>
-    <input type="text" id="createTime">
+    <label for="createEmployee">Employee</label><br>
+    <input id="createEmployee">
 </div>
 
-<% model.linkFields.forEach(function(field){%>
-    <%var id=field.id;%>
-    <%var name=field.name;%>
-    <div>
-        <label for="create_<%=id%>"><%=name%></label><br>
-        <input type="text" id="create_<%=id%>">
-    </div>
+<% if (links.a_basic.length > 0){%>
+<% links.a_basic.forEach(function(field){%>
+<div>
+    <label for="create_<%=field.id%>"><%=field.name%></label><br>
+    <input type="text" id="create_<%=field.id%>">
+</div>
 <%})%>
+<%}%>
+
+<% if (links.a_date.length > 0){%>
+<% links.a_date.forEach(function(field){%>
+<div>
+    <label for="create_<%=field.id%>"><%=field.name%></label><br>
+    <input type="text" id="create_<%=field.id%>">
+</div>
+<%})%>
+<%}%>
+
+<% if (links.a_interactiv.length > 0){%>
+<% links.a_interactiv.forEach(function(field){%>
+<div>
+    <label for="create_<%=field.id%>"><%=field.name%></label><br>
+    <input type="text" id="create_<%=field.id%>">
+</div>
+<%})%>
+<%}%>
 
 <div>
     <input type="button" id="createButton" value="Next">
