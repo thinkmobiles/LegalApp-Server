@@ -8,6 +8,7 @@ var UserHandler = require('../handlers/users');
 var LinksHandler = require('../handlers/links');
 var ImageHandler = require('../handlers/images');
 var MammothHandler = require('../handlers/mammoth');
+var DocumentsHandler = require('../handlers/documents');
 
 module.exports = function (app) {
     var logWriter = require('../helpers/logWriter')();
@@ -17,6 +18,7 @@ module.exports = function (app) {
     var links = new LinksHandler(PostGre);
     var images = new ImageHandler(PostGre);
     var mammothHandler = new MammothHandler(PostGre);
+    var documentsHandler = new DocumentsHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
     var companiesRouter = require('./companies')(app);
@@ -54,6 +56,8 @@ module.exports = function (app) {
     app.use('/users', usersRouter);
     app.use('/templates', templatesRouter);
     //app.use('/uploadFile', attachments);
+
+    app.get('/htmlToPdf', documentsHandler.htmlToPdf);
 
     app.get('/error', function (req, res, next) {
         res.render('errorTemplate'); //Internal Server Error

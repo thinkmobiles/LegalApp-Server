@@ -26,7 +26,7 @@ var MammothHandler = function (PostGre) {
             phone: '{phone}'
         };
         var values = {
-            //name:value
+            //name:value (data from chosen Employee)
             first_name: 'Petro',            //keys and values that contains in template
             last_name: 'Petrovich'
         };
