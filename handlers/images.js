@@ -29,25 +29,6 @@ var imagesHandler = function (PostGre) {
         var fetchOptions = {
             require: true
         };
-        /*var saveModel;
-
-         if (data && data.imageable_id) {
-         saveModel = ImageModel.forge({imageable_id: data.imageable_id}).save(data, {patch: true});
-         } else {
-         saveModel = ImageModel.forge().save(data);
-         }
-
-         saveModel
-         .then(function (imageModel) {
-         if (callback && ( typeof( callback ) === "function" )) {
-         callback(null, imageModel);
-         }
-         })
-         .otherwise(function (err) {
-         if (callback && ( typeof( callback ) === "function" )) {
-         callback(err);
-         }
-         });*/
 
         if (data && data.imageable_id && data.imageable_type) {
             ImageModel
@@ -124,20 +105,6 @@ var imagesHandler = function (PostGre) {
         var oldImageName;
         var newImageName;
 
-        /*if (!image || !image.imageable_id || !image.imageable_type || !image.imageSrc) {
-         if (callback && (typeof callback === 'function')) {
-         callback(badRequests.NotEnParams({reqParams: ['image', 'image.imageable_id', 'image.imageable_type', 'image.imageSrc']}));
-         }
-         return;
-
-         } else if (image.id && !image.name && !image.key) { //we most know the image's name which will updated
-         if (callback && (typeof callback === 'function')) {
-         callback(badRequests.NotEnParams({reqParams: ['image.name', 'image.key']}));
-         }
-         return;
-
-         } else {*/
-
         if (image.imageable_type === 'users') {
             bucket = BUCKETS.AVATARS;
         }
@@ -146,9 +113,8 @@ var imagesHandler = function (PostGre) {
             bucket = BUCKETS.LOGOS;
         }
 
-        // delete old file
+        // remove the old file
         if (image && image.oldName && image.oldKey) {
-            //update (we must remove the old image);
             oldImageName = ImageModel.getFileName(image.oldName, image.oldKey);
             imageUploader.removeImage(oldImageName, bucket, function (err) {
                 if (err) {
@@ -162,7 +128,6 @@ var imagesHandler = function (PostGre) {
 
         ticks = new Date().valueOf();
         imageableId = image.imageable_id;
-        //imageableType = image.imageable_type;
         fileName = bucket + '_' + imageableId;
         image.key = computeKey(fileName, ticks);
         image.name = fileName;
@@ -180,7 +145,6 @@ var imagesHandler = function (PostGre) {
             saveImageToDb(saveParams, callback);
 
         });
-        //}
     };
 
     this.removeImage = function (imageModel, callback) {

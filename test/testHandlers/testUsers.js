@@ -1120,5 +1120,65 @@ module.exports = function (db, defaults) {
             });
 
         });
+
+        describe('GET /users/search', function () {
+            var url = '/users/search';
+
+            it('SuperAdmin can search users by searchTerm', function (done) {
+                var getUrl = url + '?value=unconfirmed';
+
+                superAdminAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body.length).to.equals(1);
+
+                        done();
+                    });
+            });
+
+
+            it('SuperAdmin can search users by email', function (done) {
+                var getUrl = url + '?field=email&value=' + CONSTANTS.DEFAULT_SUPERADMIN_EMAIL;
+
+                superAdminAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body.length).to.equals(1);
+
+                        done();
+                    });
+            });
+
+            it('User can\'t be found by first_name if search by email', function (done) {
+                var getUrl = url + '?field=email&value=' + CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME;
+
+                superAdminAgent
+                    .get(getUrl)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        expect(res.status).to.equals(200);
+                        expect(res.body).to.be.instanceof(Array);
+                        expect(res.body.length).to.equals(0);
+
+                        done();
+                    });
+            });
+
+        });
     });
 };
