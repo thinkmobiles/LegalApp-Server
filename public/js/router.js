@@ -69,10 +69,10 @@ define([
                     self.wrapperView.undelegateEvents();
                 }
 
-                this.wrapperView = self[nameView];
+                self.wrapperView = self[nameView];
 
-                if (self[nameView].afterRender) {
-                    self[nameView].afterRender();
+                if (self.wrapperView.afterRender) {
+                    self.wrapperView.afterRender();
                 }
             });
         },

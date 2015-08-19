@@ -73,20 +73,21 @@ define([
             var profNameFirst = this_el.find('#profFName').val().trim();
             var profNameLast  = this_el.find('#profLName').val().trim();
             var profPhone = this_el.find('#profPhone').val().trim();
-            var imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
+            var photoInput = this_el.find('#inputImg')[0].files.length;
+            var imageSRC;
             var logoContainer = $('#topBarLogo');
-            var profile;
+            var saveData={};
 
-            profile = {
+            saveData.profile = {
                 first_name : profNameFirst,
                 last_name  : profNameLast,
                 phone      : profPhone
             };
 
-            var saveData = {
-                profile  : profile,
-                imageSrc : imageSRC
-            };
+            if (photoInput){
+                imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
+                saveData.imageSrc = imageSRC;
+            }
 
             $.ajax({
                 url         : "/profile",
