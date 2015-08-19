@@ -75,18 +75,25 @@ define([
             var profPhone = this_el.find('#profPhone').val().trim();
             var imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');
             var logoContainer = $('#topBarLogo');
+            var profile;
 
-            var saveData = {
+            profile = {
                 first_name : profNameFirst,
                 last_name  : profNameLast,
-                phone      : profPhone,
-                imageSrc   : imageSRC
+                phone      : profPhone
+            };
+
+            var saveData = {
+                profile  : profile,
+                imageSrc : imageSRC
             };
 
             $.ajax({
-                url    : "/profile",
-                type   : "PUT",
-                data   : saveData,
+                url         : "/profile",
+                type        : "PUT",
+                contentType : "application/json; charset=utf-8",
+                dataType    : "json",
+                data        : JSON.stringify(saveData),
 
                 success: function () {
                     logoContainer.attr('src',imageSRC);

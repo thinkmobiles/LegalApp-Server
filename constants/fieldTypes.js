@@ -10,5 +10,7 @@ module.exports = {
     PHONE: 'phone',
     CURRENT_DATE: 'current_date',
     CURRENT_TYME: 'current_time',
-    CURRENT_DATE_TYME: 'current_date_time'
+    CURRENT_DATE_TYME: 'current_date_time',
+    CLIENT_SIGNATURE: 'client_signature',
+    COMPANY_SIGNATURE: 'company_signature'
 };
