@@ -862,9 +862,10 @@ var UsersHandler = function (PostGre) {
     };
 
     this.searchUsers = function (req, res, next) {
+        var companyId = req.session.companyId;
         var params = req.query;
         var searchTerm = params.value;
-        var field = params.field;
+        //var field = params.field;
         var page = params.page || 1;
         var limit = params.count || 10;
         var orderBy = params.orderBy || TABLES.PROFILES + '.first_name';
@@ -873,29 +874,28 @@ var UsersHandler = function (PostGre) {
             TABLES.USERS + '.*',
             TABLES.PROFILES + '.*',
             TABLES.USERS + '.id as id',
-            TABLES.PROFILES + '.id as profile_id'
+            TABLES.PROFILES + '.id as profile_id',
+            TABLES.USER_COMPANIES + '.id as user_company_id',
+            TABLES.COMPANIES + '.id as company_id',
+            TABLES.COMPANIES + '.name as company_name'
         ];
 
         var query = knex(TABLES.USERS)
-            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id');
+            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
+            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
 
         query.where(function (qb) {
 
-            qb.where('status', '<>', STATUSES.DELETED);
+            qb.where('status', '<>', STATUSES.DELETED)
+                .andWhere(TABLES.COMPANIES + '.id', companyId);
 
-            if (searchTerm && field) {
-                searchTerm = searchTerm.toLowerCase();
-                qb.whereRaw(
-                    "LOWER(" + field + ") LIKE '%" + searchTerm + "%' "
-                );
-
-            } else if (searchTerm && !field) {
+            if (searchTerm) {
                 searchTerm = searchTerm.toLowerCase();
                 qb.whereRaw(
                     "LOWER(first_name) LIKE '%" + searchTerm + "%' "
                     + "OR LOWER(last_name) LIKE '%" + searchTerm + "%' "
-                    + "OR LOWER(phone) LIKE '%" + searchTerm + "%'"
-                    + "OR LOWER(email) LIKE '%" + searchTerm + "%'"
+                    + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + searchTerm + "%' "
                 );
             }
 
@@ -913,14 +913,18 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
-                rows.forEach(function (user) {
+                rows.forEach(function (row) {
                     var userData = {
-                        id: user.id,
-                        email: user.email,
+                        id: row.id,
+                        email: row.email,
                         profile: {
-                            first_name: user.first_name,
-                            last_name: user.last_name,
-                            phone: user.phone
+                            first_name: row.first_name,
+                            last_name: row.last_name,
+                            phone: row.phone
+                        },
+                        company: {
+                            id: row.company_id,
+                            name: row.company_name
                         }
                     };
 
