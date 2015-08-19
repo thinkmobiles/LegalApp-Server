@@ -527,7 +527,6 @@ var DocumentsHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var criteria = {
             access_token: token,
-            status: STATUSES.SENT_TO_SIGNATURE_CLIENT,
             company_id: companyId
         };
         var fetchOptions = {
@@ -560,7 +559,7 @@ var DocumentsHandler = function (PostGre) {
             withRelated: ['template.link.linkFields']
         };
 
-        if (!CONSTANTS.BASE64_REGEXP.test(signImage)){
+        if (!signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)){
             return next(badRequests.NotEnParams({required:'signature'}));
         }
 
