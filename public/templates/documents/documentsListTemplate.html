@@ -1,7 +1,7 @@
 <div class="addItemLeft" id="searchContainer">
     <h2>Documents Search Filters</h2>
 
-        <label><input type="checkbox">By Creation Date</label><br>
+        <!--<label><input type="checkbox">By Creation Date</label><br>
 
         <label><input type="checkbox">Last Opened</label><br>
 
@@ -15,19 +15,35 @@
 
         <label><input type="checkbox">Newest</label><br>
 
-        <label><input type="checkbox">By Title</label><br>
-</div>
-<div id="listWrap">
-    <ul>
-    <%templates.forEach(function(temp){%>
-        <li class="docsContainer">
-            <div class="nameForDoc" data-id="<%=temp.id%>">
-                <%=temp.name%> (<%=temp.count%>)
-            </div>
-            <div id="groupedDoc_<%=temp.id%>">
+        <label><input type="checkbox">By Title</label><br>-->
 
-            </div>
-        </li>
-    <%})%>
-    </ul>
+    <div class="search">
+        <p>Search</p>
+        <label>Title<input type="text" id="title"></label><br>
+        Created<br>
+        <label>From<input type="text"></label>
+        <label>To<input type="text"></label><br><br>
+    </div>
+    <div class="filter">
+        <p>Status</p>
+        <label><input type="radio" name="status" value="all" checked="checked" >All</label><br>
+        <label><input type="radio" name="status" value="1">Created</label><br>
+        <label><input type="radio" name="status" value="2">Un signed</label><br>
+        <label><input type="radio" name="status" value="3">Signed by user</label><br>
+        <label><input type="radio" name="status" value="4">Signed by company</label><br>
+    </div>
+    <div class="sort">
+        <p>Sort</p>
+        <label><input type="radio" name="sort" value="templates.name" checked="checked">Title</label><br>
+        <label><input type="radio" name="sort" value="created_at">Date creation</label><br>
+        <!--<label><input type="radio" name="sort" value="documents.created_at">Last opened</label><br>-->
+        <!--<label><input type="radio" name="sort" >Assigned to</label><br>-->
+        <p>Order</p>
+        <label><input type="radio" name="order" value="ASC" checked="checked">A-Z</label><br>
+        <label><input type="radio" name="order" value="DESC">Z-A</label><br>
+    </div>
+
+    <input class="searchBtn" type="submit" value="Search"/>
 </div>
+
+<div id="listWrap"></div>

@@ -8,6 +8,7 @@ var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
 
 var async = require('async');
+var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
@@ -218,6 +219,7 @@ var DocumentsHandler = function (PostGre) {
     this.newDocument = function (req, res, next) {
         var options = req.body;
         var templateId = options.template_id;
+        var assignedId = options.assigned_id;
         var values;
         var saveData;
         var companyId = req.session.companyId;
@@ -225,8 +227,8 @@ var DocumentsHandler = function (PostGre) {
         console.log('create document');
         console.log(options);
 
-        if (!templateId) {
-            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
+        if (!templateId || !assignedId) {
+            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id']}));
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -235,7 +237,8 @@ var DocumentsHandler = function (PostGre) {
 
         saveData = {
             status: STATUSES.CREATED,
-            template_id: templateId
+            template_id: templateId,
+            assigned_id: assignedId
         };
 
         async.waterfall([
@@ -378,16 +381,39 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocumentsByTemplates = function (req, res, next) {
+        var params = req.query;
         var fields = [
             TABLES.TEMPLATES + '.id',
-            TABLES.TEMPLATES + '.name'
+            TABLES.TEMPLATES + '.name'/*,
+            'documents.created_at'*/
         ];
+        var status = params.status;
+        var orderBy;
+        var order;
+        var query = knex(TABLES.TEMPLATES)
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
 
-        knex(TABLES.TEMPLATES)
-            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+        if ((status !== undefined) && (status !== 'all')) {
+            query.where(TABLES.DOCUMENTS + '.status', status);
+        }
+
+        if (params.orderBy) {
+            orderBy = params.orderBy;
+
+            if (orderBy === 'created_at') {
+                orderBy = TABLES.TEMPLATES + '.created_at';
+            }
+
+        } else {
+            orderBy = TABLES.TEMPLATES + '.name';
+        }
+        order = params.order || 'ASC';
+
+        query
             .select(fields)
             .groupBy(fields)
             .count(TABLES.TEMPLATES + '.id')
+            .orderBy(orderBy, order)
             .exec(function (err, rows) {
                 if (err) {
                     return next(err);
@@ -402,14 +428,60 @@ var DocumentsHandler = function (PostGre) {
             id: templateId
         };
         var fetchOptions = {
-            require: true,
-            withRelated: ['documents']
+            require: true//,
+            //withRelated: ['documents']
         };
+        var fields = [
+            TABLES.DOCUMENTS + '.created_at'
+        ];
+        var params = req.query;
+        var status = params.status;
+        var orderBy;
+        var order;
+
+        if (params.orderBy && (fields.indexOf(params.orderBy) !== -1)) {
+            orderBy = params.orderBy;
+        } else {
+            orderBy = TABLES.DOCUMENTS + '.created_at';
+        }
+
+        order = params.order || 'ASC';
 
         TemplateModel
             .find(criteria, fetchOptions)
             .then(function (templateModel) {
-                res.status(200).send(templateModel);
+                var documents = templateModel.related('documents').model;
+
+                documents
+                    .query(function (qb) {
+                        qb.where('template_id', templateId); //TODO: ???
+
+                        if ((status !== undefined) && (status !== 'all')) {
+                            status = parseInt(status);
+                            qb.where('status', status);
+                        }
+                        qb.orderBy(orderBy, order);
+                    })
+                    .fetchAll({
+                        withRelated: ['assignedUser']
+                    })
+                    .exec(function (err, documentModels) {
+                        var documentsJSON = [];
+                        var json;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        documentModels.forEach(function (model) {
+                            documentsJSON.push(model.toJSON());
+                        });
+
+                        json = templateModel.toJSON();
+                        json.documents = documentsJSON;
+
+                        res.status(200).send(json);
+                    });
             })
             .catch(TemplateModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());

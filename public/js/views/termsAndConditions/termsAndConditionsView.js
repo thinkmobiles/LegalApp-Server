@@ -4,7 +4,7 @@
 
 define([
     'text!templates/termsAndConditions/termsAndConditionsTemplate.html',
-    'views/castom/signatureView'
+    'views/custom/signatureBoxView'
 ], function (template , SigView) {
 
     var View;

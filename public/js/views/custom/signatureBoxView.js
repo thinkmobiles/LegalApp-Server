@@ -3,7 +3,7 @@
  */
 
 define([
-    'text!templates/castom/signatureTemplate.html'
+    'text!templates/custom/signatureBoxTemplate.html'
 ], function (SignatureTemplate) {
 
     var SignatureView;
@@ -77,18 +77,7 @@ define([
         /*save current signature*/
         saveCanvas : function(){
             var mySignature = this.canvas.toDataURL("image/png");
-
-            $.ajax({
-                url   :  "/signature",
-                type  :  "POST",
-                data  :  {signature : mySignature},
-                success : function(){
-                    alert('Success')
-                },
-                error   : function(){
-                    alert('Error')
-                }
-            });
+            this.trigger('iAccept', mySignature);
         },
 
         render: function () {
