@@ -15,21 +15,22 @@ define([
         view        : null,
 
         routes: {
-            "login(/:token)"        :  "login",
-            "signup"                :  "signup",
-            "users"                 :  "users",
-            "settings"              :  "settings",
-            "templates/preview/:id" :  "tempPre",
-            "templates/:viewType"   :  "templates",
-            "documents/:viewType"   :  "documents",
-            "taskList"              :  "taskList",
-            "userProfile"           :  "userProfile",
-            "forgotPassword"        :  "forgotPassword",
-            "resetPassword/:token"  :  "resetPassword",
-            "termsAndConditions"    :  "termsAndConditions",
-            "confirmEmail(/:token)" :  "confirmEmail",
-            "help"                  :  "help",
-            "*any"                  :  "any"
+            "login(/:token)"             :  "login",
+            "signup"                     :  "signup",
+            "users"                      :  "users",
+            "settings"                   :  "settings",
+            "templates/preview/:id"      :  "tempPre",
+            "templates/:viewType"        :  "templates",
+            "documents/:token/signature" :  "signature",
+            "documents/:viewType"        :  "documents",
+            "taskList"                   :  "taskList",
+            "userProfile"                :  "userProfile",
+            "forgotPassword"             :  "forgotPassword",
+            "resetPassword/:token"       :  "resetPassword",
+            "termsAndConditions"         :  "termsAndConditions",
+            "confirmEmail(/:token)"      :  "confirmEmail",
+            "help"                       :  "help",
+            "*any"                       :  "any"
         },
 
         initialize: function () {
@@ -91,6 +92,10 @@ define([
 
         userProfile: function () {
             this.loadWrapperView('userProfile', null, REDIRECT.whenNOTAuthorized);
+        },
+
+        signature : function (token) {
+            this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized);
         },
 
         termsAndConditions: function () {

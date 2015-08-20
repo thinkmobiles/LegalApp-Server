@@ -4,9 +4,9 @@
 
 define(function () {
     return {
-        FIRST_NAME: 'profile.first_name',
-        LAST_NAME: 'profile.last_name',
+        FIRST_NAME: 'first_name',
+        LAST_NAME: 'last_name',
         EMAIL: 'email',
-        PHONE: 'profile.phone'
+        PHONE: 'phone'
     }
 });
