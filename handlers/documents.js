@@ -8,6 +8,7 @@ var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
 
 var async = require('async');
+var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
@@ -341,39 +342,129 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocumentsByTemplates = function (req, res, next) {
+        var params = req.query;
         var fields = [
             TABLES.TEMPLATES + '.id',
-            TABLES.TEMPLATES + '.name'
+            TABLES.TEMPLATES + '.name',
+            'documents.created_at'
         ];
+        var status = params.status;
+        var orderBy;
+        var order;
+        var query = knex(TABLES.TEMPLATES)
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
 
-        knex(TABLES.TEMPLATES)
-            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+        if ((status !== undefined) && (status !== 'all')) {
+            query.where(TABLES.DOCUMENTS + '.status', status);
+        }
+
+        if (params.orderBy) {
+            orderBy = params.orderBy;
+            if (fields.indexOf(orderBy) === -1) {
+                return next(badRequests.InvalidValue({param: 'orderBy', value: orderBy}));
+            }
+        } else {
+            orderBy = TABLES.TEMPLATES + '.name';
+        }
+        order = params.order || 'ASC';
+
+        query
             .select(fields)
-            .groupBy(fields)
-            .count(TABLES.TEMPLATES + '.id')
+            //.groupBy(fields)
+            //.count(TABLES.TEMPLATES + '.id')
+            .orderBy(orderBy, order)
             .exec(function (err, rows) {
+                var templates;
+                var result = [];
+
                 if (err) {
                     return next(err);
                 }
-                res.status(200).send(rows);
+
+                /*templates = _.groupBy(rows, 'id');
+                templates = _.values(templates);
+
+                templates.forEach(function (temp) {
+                    var item = {
+                        id: temp[0].id,
+                        name: temp[0].name,
+                        count: temp.length
+                    };
+                    result.push(item);
+                });*/
+
+                rows.forEach(function (row) {
+                    var item = {
+
+                    };
+                    var id = row.id;
+
+
+                    results.push(item);
+                });
+
+                res.status(200).send(result);
             });
     };
 
     this.getDocumentsByTemplate = function (req, res, next) {
-        //next(badRequests.AccessError({message: 'Not implemented yet'}));
         var templateId = req.params.templateId;
         var criteria = {
             id: templateId
         };
         var fetchOptions = {
-            require: true,
-            withRelated: ['documents']
+            require: true//,
+            //withRelated: ['documents']
         };
+        var fields = [
+            TABLES.DOCUMENTS + '.created_at'
+        ];
+        var params = req.query;
+        var status = params.status;
+        var orderBy;
+        var order;
+
+        if (params.orderBy && (fields.indexOf(params.orderBy) !== -1)) {
+            orderBy = params.orderBy;
+        } else {
+            orderBy = TABLES.DOCUMENTS + '.created_at';
+        }
+
+        order = params.order || 'ASC';
 
         TemplateModel
             .find(criteria, fetchOptions)
             .then(function (templateModel) {
-                res.status(200).send(templateModel);
+                var documents = templateModel.related('documents').model;
+
+                documents
+                    .query(function (qb) {
+                        qb.where('template_id', templateId); //TODO: ???
+
+                        if ((status !== undefined) && (status !== 'all')) {
+                            status = parseInt(status);
+                            qb.where('status', status);
+                        }
+                        qb.orderBy(orderBy, order);
+                    })
+                    .fetchAll()
+                    .exec(function (err, documentModels) {
+                        var documentsJSON = [];
+                        var json;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        documentModels.forEach(function (model) {
+                            documentsJSON.push(model.toJSON());
+                        });
+
+                        json = templateModel.toJSON();
+                        json.documents = documentsJSON;
+
+                        res.status(200).send(json);
+                    });
             })
             .catch(TemplateModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());

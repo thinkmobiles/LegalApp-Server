@@ -1262,7 +1262,7 @@ module.exports = function (db, defaults) {
                         if (err) {
                             return done(err);
                         }
-
+                        console.log(res.body);
                         expect(res.status).to.equals(200);
                         expect(res.body).to.be.instanceof(Array);
                         expect(res.body.length).to.equals(1);
@@ -1272,12 +1272,14 @@ module.exports = function (db, defaults) {
             });
 
 
-            it('SuperAdmin can search users by email', function (done) {
-                var getUrl = url + '?field=email&value=' + CONSTANTS.DEFAULT_SUPERADMIN_EMAIL;
+            it('SuperAdmin can search users by username', function (done) {
+                var getUrl = url + '?value=' + CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME + ' ' + CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME;
 
                 superAdminAgent
                     .get(getUrl)
                     .end(function (err, res) {
+                        var user;
+
                         if (err) {
                             return done(err);
                         }
@@ -1286,23 +1288,23 @@ module.exports = function (db, defaults) {
                         expect(res.body).to.be.instanceof(Array);
                         expect(res.body.length).to.equals(1);
 
-                        done();
-                    });
-            });
+                        user = res.body[0];
 
-            it('User can\'t be found by first_name if search by email', function (done) {
-                var getUrl = url + '?field=email&value=' + CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME;
-
-                superAdminAgent
-                    .get(getUrl)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        expect(res.status).to.equals(200);
-                        expect(res.body).to.be.instanceof(Array);
-                        expect(res.body.length).to.equals(0);
+                        expect(user).to.be.instanceof(Object);
+                        expect(user).to.have.property('id');
+                        expect(user.id).to.equals(CONSTANTS.DEFAULT_SUPERADMIN_ID);
+                        expect(user).to.have.property('email');
+                        expect(user.email).to.equals(CONSTANTS.DEFAULT_SUPERADMIN_EMAIL);
+                        expect(user).to.have.property('profile');
+                        expect(user).to.not.have.property('password');
+                        expect(user.profile).to.have.property('first_name');
+                        expect(user.profile).to.have.property('last_name');
+                        expect(user.profile).to.have.property('phone');
+                        expect(user).to.have.property('company');
+                        expect(user.company).to.have.property('id');
+                        expect(user.company.id).to.equals(CONSTANTS.DEFAULT_COMPANY_ID);
+                        expect(user.company).to.have.property('name');
+                        expect(user.company.name).to.equals(CONSTANTS.DEFAUlT_COMPANY_NAME);
 
                         done();
                     });
