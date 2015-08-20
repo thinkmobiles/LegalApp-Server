@@ -64,28 +64,15 @@ define([
             return this;
         },
 
-        getSearchParamsForList: function () {
-            var searchContainer = this.$el.find('#searchContainer');
-            var status = searchContainer.find("input[name=status]:checked").val();
-            var sort = searchContainer.find("input[name=sort]:checked").val();
-            var params = {
-                status: status
-            };
-
-            if (sort !== 'documents.created_at') {
-                params.orderBy = sort; //can't group templates py documents.created_at;
-            }
-
-            return params;
-        },
-
         getSearchParams: function () {
             var searchContainer = this.$el.find('#searchContainer');
             var status = searchContainer.find("input[name=status]:checked").val();
             var sort = searchContainer.find("input[name=sort]:checked").val();
+            var order = searchContainer.find("input[name=order]:checked").val();
             var params = {
                 status: status,
-                orderBy: sort
+                orderBy: sort,
+                order: order
             };
 
             return params;
@@ -93,7 +80,7 @@ define([
 
         search: function () {
             var self = this;
-            var searchParams = self.getSearchParamsForList();
+            var searchParams = self.getSearchParams();
             var url = '/documents/list';
 
             $.ajax({
