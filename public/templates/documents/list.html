@@ -1,0 +1,14 @@
+<div id="listWrap">
+    <ul>
+    <%items.forEach(function(temp){%>
+        <li class="docsContainer">
+            <div class="nameForDoc" data-id="<%=temp.id%>">
+                <%=temp.name%> (<%=temp.count%>)
+            </div>
+            <div id="groupedDoc_<%=temp.id%>">
+
+            </div>
+        </li>
+    <%})%>
+    </ul>
+</div>

@@ -871,19 +871,28 @@ var UsersHandler = function (PostGre) {
         var orderBy = params.orderBy || TABLES.PROFILES + '.first_name';
         var order = params.order || 'ASC';
         var columns = [
-            TABLES.USERS + '.*',
-            TABLES.PROFILES + '.*',
-            TABLES.USERS + '.id as id',
-            TABLES.PROFILES + '.id as profile_id',
-            TABLES.USER_COMPANIES + '.id as user_company_id',
+            TABLES.USERS + '.id',
+            TABLES.USERS + '.email',
+            TABLES.USERS + '.status',
+            TABLES.PROFILES + '.first_name',
+            TABLES.PROFILES + '.last_name',
+            TABLES.PROFILES + '.phone',
+            TABLES.PROFILES + '.permissions',
+            TABLES.PROFILES + '.sign_authority',
+            //TABLES.USER_COMPANIES + '.id as user_company_id',
             TABLES.COMPANIES + '.id as company_id',
-            TABLES.COMPANIES + '.name as company_name'
+            TABLES.COMPANIES + '.name as company_name',
+            knex.raw(
+                "CONCAT(" + TABLES.PROFILES + ".first_name, ' ', " + TABLES.PROFILES + ".last_name) AS value"
+            )
         ];
 
         var query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
+
+        //console.log(JSON.stringify(columns));
 
         query.where(function (qb) {
 
@@ -913,7 +922,9 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
-                rows.forEach(function (row) {
+                console.log(rows);
+
+                /*rows.forEach(function (row) {
                     var userData = {
                         id: row.id,
                         email: row.email,
@@ -929,9 +940,9 @@ var UsersHandler = function (PostGre) {
                     };
 
                     users.push(userData)
-                });
+                });*/
 
-                res.status(200).send(users);
+                res.status(200).send(rows);
             });
     };
 
