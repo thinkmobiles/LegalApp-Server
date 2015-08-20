@@ -182,6 +182,7 @@ var DocumentsHandler = function (PostGre) {
     this.newDocument = function (req, res, next) {
         var options = req.body;
         var templateId = options.template_id;
+        var assignedId = options.assigned_id;
         var values;
         var saveData;
         var companyId = req.session.companyId;
@@ -189,8 +190,8 @@ var DocumentsHandler = function (PostGre) {
         console.log('create document');
         console.log(options);
 
-        if (!templateId) {
-            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
+        if (!templateId || !assignedId) {
+            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id']}));
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -199,7 +200,8 @@ var DocumentsHandler = function (PostGre) {
 
         saveData = {
             status: STATUSES.CREATED,
-            template_id: templateId
+            template_id: templateId,
+            assigned_id: assignedId
         };
 
         async.waterfall([
@@ -345,8 +347,8 @@ var DocumentsHandler = function (PostGre) {
         var params = req.query;
         var fields = [
             TABLES.TEMPLATES + '.id',
-            TABLES.TEMPLATES + '.name',
-            'documents.created_at'
+            TABLES.TEMPLATES + '.name'/*,
+            'documents.created_at'*/
         ];
         var status = params.status;
         var orderBy;
@@ -360,9 +362,11 @@ var DocumentsHandler = function (PostGre) {
 
         if (params.orderBy) {
             orderBy = params.orderBy;
-            if (fields.indexOf(orderBy) === -1) {
-                return next(badRequests.InvalidValue({param: 'orderBy', value: orderBy}));
+
+            if (orderBy === 'created_at') {
+                orderBy = TABLES.TEMPLATES + '.created_at';
             }
+
         } else {
             orderBy = TABLES.TEMPLATES + '.name';
         }
@@ -370,40 +374,14 @@ var DocumentsHandler = function (PostGre) {
 
         query
             .select(fields)
-            //.groupBy(fields)
-            //.count(TABLES.TEMPLATES + '.id')
+            .groupBy(fields)
+            .count(TABLES.TEMPLATES + '.id')
             .orderBy(orderBy, order)
             .exec(function (err, rows) {
-                var templates;
-                var result = [];
-
                 if (err) {
                     return next(err);
                 }
-
-                /*templates = _.groupBy(rows, 'id');
-                templates = _.values(templates);
-
-                templates.forEach(function (temp) {
-                    var item = {
-                        id: temp[0].id,
-                        name: temp[0].name,
-                        count: temp.length
-                    };
-                    result.push(item);
-                });*/
-
-                rows.forEach(function (row) {
-                    var item = {
-
-                    };
-                    var id = row.id;
-
-
-                    results.push(item);
-                });
-
-                res.status(200).send(result);
+                res.status(200).send(rows);
             });
     };
 
@@ -447,7 +425,9 @@ var DocumentsHandler = function (PostGre) {
                         }
                         qb.orderBy(orderBy, order);
                     })
-                    .fetchAll()
+                    .fetchAll({
+                        withRelated: ['assignedUser']
+                    })
                     .exec(function (err, documentModels) {
                         var documentsJSON = [];
                         var json;
