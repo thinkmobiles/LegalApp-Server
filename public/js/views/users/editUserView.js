@@ -69,17 +69,6 @@ define([
                 }
             });
 
-            //this.$el.html(_.template(EditTemp)).dialog({
-            //    closeOnEscape: false,
-            //    autoOpen: true,
-            //    dialogClass: "editCurrentUser",
-            //    modal: true,
-            //    width: "800px",
-            //    close : function(){
-            //        self.remove()
-            //    }
-            //});
-
             return this;
         }
 

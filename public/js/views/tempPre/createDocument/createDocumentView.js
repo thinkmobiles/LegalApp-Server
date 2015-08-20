@@ -5,9 +5,10 @@
 define([
     'text!templates/tempPreview/createDocumentTemplate.html',
     'models/documentModel',
-    'models/linkModel'
+    'models/linkModel',
+    'constants/forTemplate'
 
-], function (CreateTemplate, DocModel, LinkModel) {
+], function (CreateTemplate, DocModel, LinkModel, CONST) {
 
     var View;
     View = Backbone.View.extend({
@@ -17,8 +18,10 @@ define([
         initialize: function (options) {
             this.tempInfo = options.model;
 
+            this.currentStModel = new Backbone.Model();
             this.linkModel = new LinkModel(this.tempInfo.link_id);
             this.linkModel.on('sync', this.render, this);
+            this.currentStModel.on('change', this.inviteDataToFields, this);
 
             this.linkModel.fetch();
         },
@@ -27,6 +30,20 @@ define([
 
         events : {
             "click #createButton" : "letsCreateDoc"
+        },
+
+        inviteDataToFields: function(){
+            var myFields = this.$el.find('.basicField');
+            var length = myFields.length;
+            var myId;
+            var myTarget;
+            if (length){
+                for (var i=0; i<length; i++){
+                    myTarget = $(myFields[i]);
+                    myId = myTarget.attr('data-id');
+                    myTarget.val(this.currentStModel.get(CONST[myId]));
+                }
+            }
         },
 
         letsCreateDoc: function(){
@@ -59,6 +76,7 @@ define([
             var model = this.linkModel.toJSON()[0];
             var tempData = {};
             var self = this;
+            var employeeField;
             tempData.a_date = [];
             tempData.a_interactiv = [];
             tempData.a_basic = [];
@@ -76,7 +94,7 @@ define([
             });
 
             this.$el.html(this.mainTemplate({
-                links : tempData,
+                links : model.linkFields,
                 tName : this.tempInfo.name
             }));
 
@@ -88,23 +106,34 @@ define([
                 })
             });
 
-            self.$el.find('#createEmployee').autocomplete({
+            tempData.a_basic.forEach(function(item){
+                var el=self.$el.find('#create_'+item.id);
+                el.addClass('basicField');
+                el.attr('data-id',item.type);
+            });
+
+            employeeField = self.$el.find('#createEmployee');
+            employeeField.autocomplete({
                 source: function(req, res){
                     var myTerm = req.term;
+
                     $.ajax({
                         url      : "/users/search",
                         data     : {value : myTerm},
                         success  : function(response){
-                            var theResult = _.map(response, function(item){
-                                return (item.profile.first_name+' '+item.profile.last_name);
+                            var theResult = [];
+                            response.forEach(function(item){
+                                    item.value = (item.profile.first_name+' '+item.profile.last_name);
+                                    theResult.push(item);
                             });
+
                             res(theResult);
-                    }
+                        }
                     });
                 },
                 autoFocus : true,
                 select: function(e, ui){
-                    //yhyh
+                    self.currentStModel.set(ui.item);
                 },
                 minLength : 1
                 });
