@@ -95,9 +95,16 @@ define([
                         url      : "/users/search",
                         data     : {value : myTerm},
                         success  : function(response){
-                            res(response);
+                            var theResult = _.map(response, function(item){
+                                return (item.profile.first_name+' '+item.profile.last_name);
+                            });
+                            res(theResult);
                     }
                     });
+                },
+                autoFocus : true,
+                select: function(e, ui){
+                    //yhyh
                 },
                 minLength : 1
                 });

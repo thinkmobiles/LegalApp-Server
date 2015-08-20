@@ -13,7 +13,6 @@ define([
 
     View = Backbone.View.extend({
 
-        //el : '#addUserContainer',
         companyTemp : _.template(CompanyName),
 
         currentState : true,
@@ -24,16 +23,7 @@ define([
             "click #goSaveCompany" : "goSaveCompany"
         },
 
-        initialize: function (options) {
-
-            this.editThisForm = false;
-            if (options){
-                if (options.userModel) {
-                    this.editThisForm = true;
-                    this.userModel = options.userModel;
-                }
-            }
-
+        initialize: function () {
             this.render();
         },
 
@@ -66,14 +56,6 @@ define([
                 error   : function(){}
             });
         },
-
-        //cleanFormOldInfo: function (){
-        //    var thisEL = this.$el;
-        //    var firstName = thisEL.find('#addFName').val('');
-        //    var lastName  = thisEL.find('#addLName').val('');
-        //    var phone = thisEL.find('#addPhone').val('');
-        //    var email = thisEL.find('#addEmail').val('');
-        //},
 
         inviteUser: function (){
             var thisEL = this.$el;
@@ -135,36 +117,6 @@ define([
                     self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
                 }
             });
-        },
-
-        updateUser : function(){
-            var self = this;
-            var thisEL = this.$el;
-            var firstName = thisEL.find('#addFName').val().trim();
-            var lastName = thisEL.find('#addLName').val().trim();
-            var phone = thisEL.find('#addPhone').val().trim();
-            var permissions = thisEL.find("#addRole option:selected").data('id');
-
-            var updateData = {
-                profile : {
-                    first_name  : firstName,
-                    last_name   : lastName,
-                    phone       : phone,
-                    permissions : permissions
-                }
-            };
-
-            this.userModel.save(updateData,{
-                wait   : true,
-                success: function(){
-                    alert('User updated successfully');
-                    self.trigger('redirectList');
-                },
-                error  : function(){
-                    alert('Error'); // todo message
-                }
-            });
-
         },
 
         actionUser : function(){

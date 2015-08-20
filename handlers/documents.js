@@ -40,6 +40,26 @@ var DocumentsHandler = function (PostGre) {
         return unicodeString;
     }
 
+    function saveHtmlToPdf (options, callback) {
+        var html;
+        var name = 'document.pdf';
+        var key = attachmentsHandler.computeKey(name);
+        var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, key);
+
+        if (!options && !options.html) {
+            return callback(badRequests.NotEnParams({required: 'html'}));
+        }
+
+        html = options.html;
+
+        wkhtmltopdf(html, {output: filePath}, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, key);
+        });
+    }
+
     function addImageSign(documentModel, userId, companyId, signImage, callback) {
         var htmlContent = documentModel.get('html_content');
         var status = documentModel.get('status');
@@ -64,6 +84,7 @@ var DocumentsHandler = function (PostGre) {
 
         async.waterfall([
 
+                //replase values in document to signes/images
                 function (cb) {
                     var forgeCriteria = {
                         link_id: linkId,
@@ -88,6 +109,9 @@ var DocumentsHandler = function (PostGre) {
                 }],
 
             function (err, htmlContent) {
+                var options = {};
+
+                //save changes to document
                 documentModel
                     .save({
                         html_content: htmlContent,
@@ -97,7 +121,21 @@ var DocumentsHandler = function (PostGre) {
                         if (err) {
                             return callback(err);
                         }
-                        callback(null, savedDocument);
+
+                        //need create PDF or not
+                        if (newStatus === STATUSES.SIGNED_BY_COMPANY){
+                            options.html = htmlContent;
+
+                            saveHtmlToPdf(options,function(err, pdfFileName){
+                                if (err){
+                                    return callback(err);
+                                }
+                                callback(null, savedDocument);
+                            })
+                        } else {
+                            callback(null, savedDocument);
+                        }
+
                     }
                 );
             });
@@ -593,32 +631,11 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    this.convertHtmlToPdf = function (options, callback) {
-        var html;
-        var name = 'document.pdf';
-        var key = attachmentsHandler.computeKey(name);
-        var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, key);
-
-        if (!options && !options.html) {
-            return callback(badRequests.NotEnParams({required: 'html'}));
-        }
-
-        html = options.html;
-
-        wkhtmltopdf(html, {output: filePath}, function (err) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, key);
-        });
-    };
-
     this.getTheDocumentToSign = function (req, res, next) {
         var token = req.params.token;
         var companyId = req.session.companyId;
         var criteria = {
             access_token: token,
-            status: STATUSES.SENT_TO_SIGNATURE_CLIENT,
             company_id: companyId
         };
         var fetchOptions = {
@@ -651,7 +668,7 @@ var DocumentsHandler = function (PostGre) {
             withRelated: ['template.link.linkFields']
         };
 
-        if (!CONSTANTS.BASE64_REGEXP.test(signImage)){
+        if (!signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)){
             return next(badRequests.NotEnParams({required:'signature'}));
         }
 

@@ -6,9 +6,10 @@ define([
     'text!templates/users/usersTemplate.html',
     'collections/usersCollection',
     'views/users/addUserView',
+    'views/users/editUserView',
     'views/users/usersListView'
 
-], function (UsersTemplate, UsersCollection , AddUserView , UsrListView) {
+], function (UsersTemplate, UsersCollection , AddUserView , EditUserView, UsrListView) {
 
     var View;
 
@@ -18,6 +19,7 @@ define([
 
         events: {
             "click #addNewUser"        : "showAddTemplate",
+            "click .userRow"           : "showEditTemplate",
             "click #adminClient>span " : "changeCurrentState"
         },
 
@@ -99,25 +101,25 @@ define([
             this.$el.find('#addUserContainer').html(this.addView.el);
         },
 
-        //showEditTemplate : function(event){
-        //    var userRow = $(event.target).closest('.userRow');
-        //    var userID  = userRow.data('id');
-        //    var container = userRow.closest('#listTable');
-        //    var editableUser;
-        //
-        //    container.find('.active').removeClass('active');
-        //    userRow.addClass('active');
-        //
-        //    if (this.addView){
-        //        this.addView.undelegateEvents()
-        //    }
-        //
-        //    editableUser = this.usersCollection.get(userID);
-        //
-        //    this.addView = new AddUserView({userModel : editableUser});
-        //    this.addView.on('redirectList', this.renderTrigger, this);
-        //    this.$el.find('#addUserContainer').html(this.addView.el);
-        //},
+        showEditTemplate : function(event){
+            var userRow = $(event.target).closest('.userRow');
+            var userID  = userRow.data('id');
+            var container = userRow.closest('#listTable');
+            var editableUser;
+
+            container.find('.active').removeClass('active');
+            userRow.addClass('active');
+
+            if (this.editView){
+                this.editView.undelegateEvents()
+            }
+
+            editableUser = this.usersCollection.get(userID);
+
+            this.editView = new EditUserView({userModel : editableUser});
+            this.editView.on('redirectList', this.renderTrigger, this);
+            //this.$el.find('#addUserContainer').html(this.addView.el);
+        },
 
         render: function () {
             this.$el.html(_.template(UsersTemplate));
