@@ -104,17 +104,22 @@ define([
         showEditTemplate : function(event){
             var userRow = $(event.target).closest('.userRow');
             var userID  = userRow.data('id');
-            var container = userRow.closest('#listTable');
+            //var container = userRow.closest('#listTable');
+            var theState = this.stateModel.get('currentState');
             var editableUser;
 
-            container.find('.active').removeClass('active');
-            userRow.addClass('active');
+            //container.find('.active').removeClass('active');
+            //userRow.addClass('active');
 
             if (this.editView){
                 this.editView.undelegateEvents()
             }
 
-            editableUser = this.usersCollection.get(userID);
+            if (theState) {
+                editableUser = this.usersCollection.get(userID);
+            } else {
+                editableUser = this.clientsCollection.get(userID);
+            }
 
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.renderTrigger, this);

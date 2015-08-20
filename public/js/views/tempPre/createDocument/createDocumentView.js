@@ -125,8 +125,6 @@ define([
                             response.forEach(function(item){
                                     item.value = (item.profile.first_name+' '+item.profile.last_name);
                                     theResult.push(item);
-                                    //value      : (item.profile.first_name+' '+item.profile.last_name),
-                                    //first_name : 2
                             });
 
                             res(theResult);
