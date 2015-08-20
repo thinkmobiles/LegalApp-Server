@@ -2,35 +2,15 @@
 
 <div>
     <label for="createEmployee">Employee</label><br>
-    <input id="createEmployee">
+    <input id="createEmployee" autocomplete="on">
 </div>
 
-<% if (links.a_basic.length > 0){%>
-<% links.a_basic.forEach(function(field){%>
+<%links.forEach(function(field){%>
 <div>
     <label for="create_<%=field.id%>"><%=field.name%></label><br>
     <input type="text" id="create_<%=field.id%>">
 </div>
 <%})%>
-<%}%>
-
-<% if (links.a_date.length > 0){%>
-<% links.a_date.forEach(function(field){%>
-<div>
-    <label for="create_<%=field.id%>"><%=field.name%></label><br>
-    <input type="text" id="create_<%=field.id%>">
-</div>
-<%})%>
-<%}%>
-
-<% if (links.a_interactiv.length > 0){%>
-<% links.a_interactiv.forEach(function(field){%>
-<div>
-    <label for="create_<%=field.id%>"><%=field.name%></label><br>
-    <input type="text" id="create_<%=field.id%>">
-</div>
-<%})%>
-<%}%>
 
 <div>
     <input type="button" id="createButton" value="Next">
