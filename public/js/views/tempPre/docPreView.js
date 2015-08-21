@@ -48,9 +48,11 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(DocTemp));
+            this.undelegateEvents();
 
-            this.drawDocument()
+            this.$el.html(_.template(DocTemp));
+            this.drawDocument();
+
             return this;
         }
 
