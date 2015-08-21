@@ -68,21 +68,60 @@ var DocumentsHandler = function (PostGre) {
         var templateModel = documentModel.related('template');
         var linkId = templateModel.get('link_id');
         var replaceValue = '<img src="data:image/png;base64,' + signImage + '">';
+        var clientSignature = '{client_signature}';
+        var companySignature = '{company_signature}';
         var searchValue;
         var type;
         var newStatus;
+        var saveData;
 
         if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
-            type = FIELD_TYPES.CLIENT_SIGNATURE;
+            //type = FIELD_TYPES.CLIENT_SIGNATURE;
+            searchValue = clientSignature;
             newStatus = STATUSES.SENT_TO_SIGNATURE_COMPANY;
         } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentOfCompany === companyId)) {
-            type = FIELD_TYPES.COMPANY_SIGNATURE;
+            //type = FIELD_TYPES.COMPANY_SIGNATURE;
+            searchValue = companySignature;
             newStatus = STATUSES.SIGNED_BY_COMPANY;
         } else {
             return callback(badRequests.AccessError());
         }
 
-        async.waterfall([
+        htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+        saveData = {
+            html_content: htmlContent,
+            status: newStatus
+        };
+
+        //save changes to document
+        documentModel
+            .save(saveData, {patch: true})
+            .exec(function (err, savedDocument) {
+                if (err) {
+                    return callback(err);
+                }
+
+                //need create PDF or not
+                if (newStatus === STATUSES.SIGNED_BY_COMPANY) {
+                    options.html = htmlContent;
+
+                    saveHtmlToPdf(options, function (err, pdfFileName) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, savedDocument);
+                    });
+
+                } else {
+                    callback(null, savedDocument);
+                }
+
+            });
+
+    };
+    //});
+
+        /*async.waterfall([
 
                 //replase values in document to signes/images
                 function (cb) {
@@ -138,8 +177,8 @@ var DocumentsHandler = function (PostGre) {
 
                     }
                 );
-            });
-    }
+            });*/
+    //}
 
     function createDocumentContent(htmlText, fields, values, callback) {
 
@@ -387,6 +426,7 @@ var DocumentsHandler = function (PostGre) {
 
     this.getDocumentsByTemplate = function (req, res, next) {
         var templateId = req.params.templateId;
+        var companyId = req.session.companyId;
         var criteria = {
             id: templateId
         };
@@ -396,6 +436,10 @@ var DocumentsHandler = function (PostGre) {
         };
         var fields = [
             TABLES.DOCUMENTS + '.created_at'
+        ];
+        var columns = [
+            'documents.*',
+            'templates.name'
         ];
         var params = req.query;
         var status = params.status;
@@ -410,7 +454,49 @@ var DocumentsHandler = function (PostGre) {
 
         order = params.order || 'ASC';
 
-        TemplateModel
+        DocumentModel
+            .forge()
+            .query(function (qb) {
+                qb.innerJoin(TABLES.TEMPLATES, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+                qb.where({
+                    template_id: templateId,
+                    'documents.company_id': companyId
+                });
+
+                if ((status !== undefined) && (status !== 'all')) {
+                    status = parseInt(status);
+                    qb.where('status', status);
+                }
+
+                qb.orderBy(orderBy, order)
+                    .select(columns);
+            })
+            .fetchAll({withRelated: ['assignedUser.profile']})
+            .exec(function (err, rows) {
+                var documents;
+                var documentsJSON = [];
+
+                if (err) {
+                    return next(err);
+                }
+
+                documents = rows.models;
+                documents.forEach(function (doc) {
+                    var assignedUser;
+                    var docJSON = doc.toJSON();
+
+                    if (docJSON.assignedUser && docJSON.assignedUser.id) {
+                        assignedUser = docJSON.assignedUser;
+                        docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
+                    }
+                    documentsJSON.push(docJSON);
+                });
+
+
+                res.status(200).send(documentsJSON);
+            });
+
+        /*TemplateModel
             .find(criteria, fetchOptions)
             .then(function (templateModel) {
                 var documents = templateModel.related('documents').model;
@@ -449,7 +535,7 @@ var DocumentsHandler = function (PostGre) {
             .catch(TemplateModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());
             })
-            .catch(next);
+            .catch(next);*/
     };
 
     this.htmlToPdf = function (req, res, next) {
@@ -649,27 +735,27 @@ var DocumentsHandler = function (PostGre) {
         };
 
         if (!signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)){
-            return next(badRequests.NotEnParams({required:'signature'}));
+            return next(badRequests.NotEnParams({reqParams:'signature'}));
         }
 
         async.waterfall([
 
             //find document
-            function (callback) {
+            function (cb) {
                 DocumentModel
                     .find(criteria, fetchOptions)
                     .then(function (documentModel) {
-                        callback(null, documentModel);
+                        cb(null, documentModel);
                     })
                     .catch(DocumentModel.NotFoundError, function (err) {
-                        callback(err);
+                        cb(badRequests.NotFound());
                     })
-                    .catch(callback);
+                    .catch(cb);
             },
 
             //add Sign client or company
-            function (documentModel, callback) {
-                addImageSign(documentModel, userId, companyId, signImage, callback);
+            function (documentModel, cb) {
+                addImageSign(documentModel, userId, companyId, signImage, cb);
             }
 
         ], function (err, savedDocument) {
