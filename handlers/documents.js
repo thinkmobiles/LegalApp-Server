@@ -1,5 +1,6 @@
 'use strict';
 
+
 var CONSTANTS = require('../constants/index');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
