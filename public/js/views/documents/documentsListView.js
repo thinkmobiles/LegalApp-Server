@@ -3,29 +3,25 @@
  */
 
 define([
+    'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
-    'text!templates/documents/documentsList.html',
-    'text!templates/documents/list.html',
-    'text!templates/documents/templateList.html'
+    'text!templates/documents/templatesListTemplate.html'
 
-], function (DocTemp, /*DocList*/DocumentList, ListTemp, TemplateList) {
+], function (MainTemplate, DocumentList, TemplateList) {
 
     var View;
     View = Backbone.View.extend({
 
         el : '#wrapper',
 
-        mainTemp : _.template(DocTemp),
-        //docListTemp : _.template(DocList),
+        mainTemplate : _.template(MainTemplate),
         documentList : _.template(DocumentList),
-        listTemp : _.template(ListTemp),
         templateList: _.template(TemplateList),
 
         activeTemplateId: null,
 
         initialize: function () {
             var self = this;
-
 
             $.ajax({
                 url     : '/documents/list',
@@ -37,43 +33,54 @@ define([
         },
 
         events : {
-            "click .templateName" : "searchDocuments",
+            "click .filters" : "showHideFilters",
+            "click #templateList .templateName" : "searchDocuments", //TODO
             "click .searchBtn" : "search",
-            "click .templateName, .documentItem": "setActive"
+            "click .templateName": "setActive"
         },
 
-        appendDocTable : function(event){
-            var self = this;
-            var target = $(event.target);
-            var temp_id = target.closest('.nameForDoc').data('id');
-            var li_container = target.closest('.docsContainer');
-            var searchParams = self.getSearchParams();
+        render: function () {
+            var items = this.groupCollection;
+            //this.$el.html(this.mainTemp());
+            this.$el.html(this.mainTemplate());
+            this.renderDocumentsList(items);
 
-            $.ajax({
-                url : '/documents/list/'+temp_id,
-                data: searchParams,
-                success : function(response){
-                    li_container.find('#groupedDoc_'+temp_id).html(self.docListTemp({documents : response}));
-                }
+            this.$el.find('.fromDate, .toDate').datepicker({
+                dateFormat  : "d M, yy",
+                changeMonth : true,
+                changeYear  : true
             });
+
+            return this;
+        },
+
+        renderDocumentsList: function (data) {
+            var items = data || this.groupCollection;
+
+            this.$el.find('#templateList').html(this.templateList({templates : items}));
+        },
+
+        showHideFilters: function (event) {
+            var target = $(event.target);
+            var searchContainer = this.$el.find("#searchContainer");
+
+            searchContainer.toggleClass('hidden');
+            target.toggleClass('active');
         },
 
         setActive: function (event) {
-            var target = $(event.target);
-            var container = target.closest('ul')[0];
-            var $ul = $(container);
-            var currentActive = $ul.find('.active');
-            var templateId = target.data('id');
+            var target = $(event.target).closest('.templateItem');
+            var container = target.closest('ul');
 
-            this.activeTemplateId = templateId;
+            this.activeTemplateId = target.data('id');
 
-            currentActive.removeClass('active');
+            container.find('.active').removeClass('active');
             target.addClass('active');
         },
 
         searchDocuments: function (event) {
             var target = $(event.target);
-            var templateId = target.closest('.templateName').data('id');
+            var templateId = target.closest('.templateItem').data('id');
 
             this.getDocumentsByTemplateId(templateId);
         },
@@ -96,29 +103,19 @@ define([
             });
         },
 
-        renderDocumentsList: function (data) {
-            var items = data || this.groupCollection;
-            //this.$el.find('#listWrap').html(this.listTemp({items : items}));
-            this.$el.find('#templateList').html(this.templateList({templates : items}));
-        },
-
-        render: function () {
-            var items = this.groupCollection;
-            this.$el.html(this.mainTemp());
-            this.renderDocumentsList(items);
-
-            return this;
-        },
-
         getSearchParams: function () {
             var searchContainer = this.$el.find('#searchContainer');
-            var status = searchContainer.find("input[name=status]:checked").val();
-            var sort = searchContainer.find("input[name=sort]:checked").val();
-            var order = searchContainer.find("input[name=order]:checked").val();
+            var status = searchContainer.find(".filterStatus:checked").val();
+            var sort = searchContainer.find(".orderBy:checked").val();
+            var order = searchContainer.find(".order:checked").val();
+            var templateName = searchContainer.find(".templateName").val();
+            var userName = searchContainer.find(".userName").val();
             var params = {
                 status: status,
                 orderBy: sort,
-                order: order
+                order: order,
+                templateName: templateName,
+                userName: userName
             };
 
             return params;

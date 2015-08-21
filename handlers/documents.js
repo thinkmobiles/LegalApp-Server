@@ -419,13 +419,32 @@ var DocumentsHandler = function (PostGre) {
             'documents.created_at'*/
         ];
         var status = params.status;
+        var templateName = params.templateName;
+        var userName = params.userName;
         var orderBy;
         var order;
         var query = knex(TABLES.TEMPLATES)
-            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+            .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
 
         if ((status !== undefined) && (status !== 'all')) {
             query.where(TABLES.DOCUMENTS + '.status', status);
+        }
+
+        if (templateName) {
+            templateName = templateName.toLowerCase();
+            query.whereRaw(
+                "LOWER(name) LIKE '%" + templateName + "%' "
+            );
+        }
+
+        if (userName) {
+            userName = userName.toLowerCase();
+            query.whereRaw(
+                "LOWER(first_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+            );
         }
 
         if (params.orderBy) {
@@ -466,16 +485,31 @@ var DocumentsHandler = function (PostGre) {
         var fields = [
             TABLES.DOCUMENTS + '.created_at'
         ];
+
         var columns = [
-            'documents.*',
-            'templates.name'
+            //'documents.*',
+            //'templates.name',
+            'profiles.first_name',
+            'profiles.last_name',
+            knex.raw(
+                "CONCAT(templates.name, ' ', COALESCE(" + TABLES.PROFILES + ".first_name, ''), ' ', " + 'COALESCE(' + TABLES.PROFILES + ".last_name, '')) AS name"
+            )
         ];
         var params = req.query;
+        var name = params.templateName;
+        var userName = params.userName;
         var status = params.status;
         var orderBy;
         var order;
 
-        if (params.orderBy && (fields.indexOf(params.orderBy) !== -1)) {
+        if (templateId) {
+            templateId = parseInt(templateId);
+            if (isNaN(templateId)) {
+                return next(badRequests.InvalidValue({param: 'templateId', value: req.params.templateId}));
+            }
+        }
+
+        if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
             orderBy = TABLES.DOCUMENTS + '.created_at';
@@ -486,11 +520,32 @@ var DocumentsHandler = function (PostGre) {
         DocumentModel
             .forge()
             .query(function (qb) {
-                qb.innerJoin(TABLES.TEMPLATES, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+                qb.innerJoin(TABLES.TEMPLATES, function () {
+                    this.on(TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+                        .on("templates.id", templateId)
+                })
+                    .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+
                 qb.where({
-                    template_id: templateId,
+                    'templates.id': templateId,
                     'documents.company_id': companyId
                 });
+
+                if (name) {
+                    name = name.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(name) LIKE '%" + name + "%' "
+                    );
+                }
+
+                if (userName) {
+                    userName = userName.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(first_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+                    );
+                }
 
                 if ((status !== undefined) && (status !== 'all')) {
                     status = parseInt(status);
@@ -500,9 +555,9 @@ var DocumentsHandler = function (PostGre) {
                 qb.orderBy(orderBy, order)
                     .select(columns);
             })
-            .fetchAll({withRelated: ['assignedUser.profile']})
+            .fetchAll(/*{withRelated: ['assignedUser.profile']}*/)
             .exec(function (err, rows) {
-                var documents;
+                /*var documents;
                 var documentsJSON = [];
 
                 if (err) {
@@ -519,10 +574,10 @@ var DocumentsHandler = function (PostGre) {
                         docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
                     }
                     documentsJSON.push(docJSON);
-                });
+                });*/
 
 
-                res.status(200).send(documentsJSON);
+                res.status(200).send(rows);
             });
 
         /*TemplateModel
