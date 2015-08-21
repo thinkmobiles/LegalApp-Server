@@ -13,5 +13,6 @@ module.exports = {
     DEFAULT_COMPANY_ID: 1,
     DEFAUlT_COMPANY_NAME: 'mcinnes cooper',
     DEFAULT_DOCUMENT_NAME: 'document.pdf',
-    KEY_LENGTH: 10
+    KEY_LENGTH: 122,
+    OPEN_KEY: 'ThisIsOpenKeyTo_OurDigitalSignature_ItsOk2015'
 };
