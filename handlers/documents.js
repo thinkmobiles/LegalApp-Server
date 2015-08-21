@@ -631,6 +631,7 @@ var DocumentsHandler = function (PostGre) {
             if (err){
                 return next(err)
             }
+
             res.status(201).send({success:'D-Signature was added to document'});
         });
     };
