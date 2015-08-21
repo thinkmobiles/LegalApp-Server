@@ -25,11 +25,13 @@ define([
 
         getOurPreview: function () {
             var myUrl = '/documents/'+this.token+'/signature';
+            var self = this;
 
             $.ajax({
                 url : myUrl,
                 success : function(response){
-                    //something
+                    self.currentHtml = response;
+                    self.$el.find('#forDocSigning').html(response);
                 },
                 error : function (){
                     alert('Error');
@@ -43,6 +45,18 @@ define([
         },
 
         iAcceptDocument: function (signatureImg){
+
+            $.ajax({
+                url:  '/documents/'+this.token+'/signature',
+                type : 'POST',
+                data : {signature : signatureImg},
+                success : function(){
+                    alert('Success');
+                },
+                errror: function(){
+                    alert('Error');
+                }
+            });
 
         },
 
