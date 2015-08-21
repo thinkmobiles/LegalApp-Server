@@ -45,7 +45,7 @@ var DocumentsHandler = function (PostGre) {
     function writeKeyToDocument(filePath, key, callback) {
         var dataBuffer = fs.readFileSync(filePath);
         var data = dataBuffer.toString();
-        var startIndex = data.indexOf('SecretKey/'); //'SecretKey'.length=10
+        var startIndex = data.indexOf('SecretKey/');
         var secretKey = 'SecretKey/' + key + '/\n';
         var newBuffer = new Buffer(secretKey, 'utf8');
 
@@ -65,14 +65,14 @@ var DocumentsHandler = function (PostGre) {
 
     function readKeyFromDocument(filePath, callback) {
         var data = fs.readFileSync(filePath, 'utf8');
-        var startIndex = data.indexOf('SecretKey/'); //'SecretKey'.length=10
-        var keyLength = startIndex + 10 + CONSTANTS.KEY_LENGTH;
+        var startIndex = data.indexOf('SecretKey/') + 10; // 'SecretKey/'.length=10
+        var keyLength = startIndex + CONSTANTS.KEY_LENGTH;
         var key;
 
         if (startIndex === -1) {
             callback(badRequests.NotFound({required: 'key'}));
         } else {
-            key = data.substring(startIndex + 10, keyLength);
+            key = data.substring(startIndex, keyLength);
             callback(null, key);
         }
     }
