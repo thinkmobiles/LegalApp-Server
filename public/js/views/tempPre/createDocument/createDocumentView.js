@@ -6,9 +6,10 @@ define([
     'text!templates/tempPreview/createDocumentTemplate.html',
     'models/documentModel',
     'models/linkModel',
-    'constants/forTemplate'
+    'constants/forTemplate',
+    'views/tempPre/docPreView'
 
-], function (CreateTemplate, DocModel, LinkModel, CONST) {
+], function (CreateTemplate, DocModel, LinkModel, CONST, DocPreView) {
 
     var View;
     View = Backbone.View.extend({
@@ -67,8 +68,9 @@ define([
             };
 
             myModel.save(data,{
-                success: function(){
-                    alert('success');
+                success: function(response){
+                    var curId = response.get('model').id;
+                    new DocPreView({modelId : curId});
                 },
                 error: function(){
                     alert('error'); //todo -error-
@@ -133,7 +135,7 @@ define([
                 select: function(e, ui){
                     self.inviteDataToFields(ui.item);
                 },
-                minLength : 1
+                minLength : 0
                 });
         },
 
