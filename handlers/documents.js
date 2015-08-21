@@ -122,8 +122,6 @@ var DocumentsHandler = function (PostGre) {
             return callback(badRequests.AccessError());
         }
 
-        async.waterfall([
-
         //save changes to document
         documentModel
             .save(saveData, {patch: true})
