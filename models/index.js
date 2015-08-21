@@ -44,5 +44,6 @@ var Models = function ( PostGre ) {
     this.LinksFields =  require('./linksFields')( PostGre, Model ); //TODO: remove LinksFields and use Link
     this.Template =  require('./templates')( PostGre, Model );
     this.Message =  require('./message')( PostGre, Model );
+    this.SecretKey =  require('./secretKey')( PostGre, Model );
 };
 module.exports = Models;

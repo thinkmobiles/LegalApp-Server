@@ -9,6 +9,7 @@ var CONSTANTS = require('../constants/index');
 
 var crypto = require('crypto');
 var async = require('async');
+var tokenGenerator = require('../helpers/randomPass');
 
 module.exports = function (knex) {
 
@@ -130,6 +131,13 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('html_content');
                 row.timestamps();
+            }),
+
+            createTable(TABLES.USERS_SECRET_KEY, function (row) {
+                row.increments().primary();
+                row.integer('user_id').notNullable().unique();
+                row.string('secret_key').notNullable().unique();
+                row.timestamps();
             })
 
         ], function (err, results) {
@@ -196,6 +204,15 @@ module.exports = function (knex) {
                 };
 
                 insertData(TABLES.USER_COMPANIES, data, cb);
+            },
+
+            function (cb) {
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    secret_key: tokenGenerator.generate(20)
+                };
+
+                insertData(TABLES.USERS_SECRET_KEY, data, cb);
             },
 
             /*//create default fields:
@@ -353,7 +370,8 @@ module.exports = function (knex) {
             dropTable(TABLES.PROFILES),
             dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS),
-            dropTable(TABLES.TEMPLATES)
+            dropTable(TABLES.TEMPLATES),
+            dropTable(TABLES.USERS_SECRET_KEY)
         ], function (err) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {
