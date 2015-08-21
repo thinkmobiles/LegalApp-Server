@@ -175,6 +175,14 @@ var DocumentsHandler = function (PostGre) {
         }
 
         //save changes to document
+        htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+        saveData = {
+            status: newStatus,
+            html_content: htmlContent,
+            signed_at: new Date(),
+            access_token: tokenGenerator.generate()
+        };
+
         documentModel
             .save(saveData, {patch: true})
             .exec(function (err, savedDocument) {
