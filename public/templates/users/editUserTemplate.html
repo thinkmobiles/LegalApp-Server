@@ -27,9 +27,6 @@
     </select>
 </div>
 <div>
-    <% if (usrMdl.status === '0'){%>
-
-    <%}%>
     <input type="button" id="editStatus" data-id="<%= usrMdl.status === '0' ? '1' : '0'%>" value="<%= usrMdl.status === '0' ? 'Enable' : 'Disable'%>">
 </div>
 <input type="button" id="editBtn" value="Edit">

@@ -68,7 +68,7 @@ app.get('/', function (req, res) {
 app.get('/databases/create', function (req, res) {
     schema.create(function (err) {
         if (err) {
-            return res.status(500).send({error: err});
+            return res.status(500).send({error: err, stack: err.stack});
         }
         res.send('<b>Crate Take Success</b>');
     });

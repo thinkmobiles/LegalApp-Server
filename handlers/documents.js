@@ -259,69 +259,8 @@ var DocumentsHandler = function (PostGre) {
 
             });
 
-    }
-
-    //});
-
-    /*async.waterfall([
-
-     //replase values in document to signes/images
-     function (cb) {
-     var forgeCriteria = {
-     link_id: linkId,
-     name: type
-     };
-     var fetchCriteria = {
-     require: true
-     };
-
-     LinkFieldsModel
-     .find(forgeCriteria, fetchCriteria)
-     .then(function (fieldModel) {
-     searchValue = toUnicode(fieldModel.get('code'));
-
-     htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-     cb(null, htmlContent);
-     })
-     .catch(LinkFieldsModel.NotFoundError, function (err) {
-     cb(err);
-     })
-     .catch(cb);
-     }],
-
-     function (err, htmlContent) {
-     var options = {};
-
-     //save changes to document
-     documentModel
-     .save({
-     html_content: htmlContent,
-     status: newStatus
-     }, {patch: true})
-     .exec(function (err, savedDocument) {
-     if (err) {
-     return callback(err);
-     }
-
-     //need create PDF or not
-     if (newStatus === STATUSES.SIGNED_BY_COMPANY) {
-     options.html = htmlContent;
-
-     saveHtmlToPdf(options, function (err, pdfFileName) {
-     if (err) {
-     return callback(err);
-     }
-     callback(null, savedDocument);
-     })
-     } else {
-     callback(null, savedDocument);
-     }
-
-     }
-     );
-     });*/
-    //}
-
+    };
+    
     function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
@@ -532,13 +471,32 @@ var DocumentsHandler = function (PostGre) {
              'documents.created_at'*/
         ];
         var status = params.status;
+        var templateName = params.templateName;
+        var userName = params.userName;
         var orderBy;
         var order;
         var query = knex(TABLES.TEMPLATES)
-            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+            .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
 
         if ((status !== undefined) && (status !== 'all')) {
             query.where(TABLES.DOCUMENTS + '.status', status);
+        }
+
+        if (templateName) {
+            templateName = templateName.toLowerCase();
+            query.whereRaw(
+                "LOWER(name) LIKE '%" + templateName + "%' "
+            );
+        }
+
+        if (userName) {
+            userName = userName.toLowerCase();
+            query.whereRaw(
+                "LOWER(first_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+            );
         }
 
         if (params.orderBy) {
@@ -579,16 +537,31 @@ var DocumentsHandler = function (PostGre) {
         var fields = [
             TABLES.DOCUMENTS + '.created_at'
         ];
+
         var columns = [
-            'documents.*',
-            'templates.name'
+            //'documents.*',
+            //'templates.name',
+            'profiles.first_name',
+            'profiles.last_name',
+            knex.raw(
+                "CONCAT(templates.name, ' ', COALESCE(" + TABLES.PROFILES + ".first_name, ''), ' ', " + 'COALESCE(' + TABLES.PROFILES + ".last_name, '')) AS name"
+            )
         ];
         var params = req.query;
+        var name = params.templateName;
+        var userName = params.userName;
         var status = params.status;
         var orderBy;
         var order;
 
-        if (params.orderBy && (fields.indexOf(params.orderBy) !== -1)) {
+        if (templateId) {
+            templateId = parseInt(templateId);
+            if (isNaN(templateId)) {
+                return next(badRequests.InvalidValue({param: 'templateId', value: req.params.templateId}));
+            }
+        }
+
+        if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
             orderBy = TABLES.DOCUMENTS + '.created_at';
@@ -599,11 +572,32 @@ var DocumentsHandler = function (PostGre) {
         DocumentModel
             .forge()
             .query(function (qb) {
-                qb.innerJoin(TABLES.TEMPLATES, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+                qb.innerJoin(TABLES.TEMPLATES, function () {
+                    this.on(TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+                        .on("templates.id", templateId)
+                })
+                    .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+
                 qb.where({
-                    template_id: templateId,
+                    'templates.id': templateId,
                     'documents.company_id': companyId
                 });
+
+                if (name) {
+                    name = name.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(name) LIKE '%" + name + "%' "
+                    );
+                }
+
+                if (userName) {
+                    userName = userName.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(first_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+                    );
+                }
 
                 if ((status !== undefined) && (status !== 'all')) {
                     status = parseInt(status);
@@ -613,9 +607,9 @@ var DocumentsHandler = function (PostGre) {
                 qb.orderBy(orderBy, order)
                     .select(columns);
             })
-            .fetchAll({withRelated: ['assignedUser.profile']})
+            .fetchAll(/*{withRelated: ['assignedUser.profile']}*/)
             .exec(function (err, rows) {
-                var documents;
+                /*var documents;
                 var documentsJSON = [];
 
                 if (err) {
@@ -629,55 +623,55 @@ var DocumentsHandler = function (PostGre) {
 
                     if (docJSON.assignedUser && docJSON.assignedUser.id) {
                         assignedUser = docJSON.assignedUser;
-                        docJSON.name += ' (' + assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
+                        docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
                     }
                     documentsJSON.push(docJSON);
-                });
+                });*/
 
 
-                res.status(200).send(documentsJSON);
+                res.status(200).send(rows);
             });
 
         /*TemplateModel
-         .find(criteria, fetchOptions)
-         .then(function (templateModel) {
-         var documents = templateModel.related('documents').model;
+            .find(criteria, fetchOptions)
+            .then(function (templateModel) {
+                var documents = templateModel.related('documents').model;
 
-         documents
-         .query(function (qb) {
-         qb.where('template_id', templateId); //TODO: ???
+                documents
+                    .query(function (qb) {
+                        qb.where('template_id', templateId); //TODO: ???
 
-         if ((status !== undefined) && (status !== 'all')) {
-         status = parseInt(status);
-         qb.where('status', status);
-         }
-         qb.orderBy(orderBy, order);
-         })
-         .fetchAll({
-         withRelated: ['assignedUser']
-         })
-         .exec(function (err, documentModels) {
-         var documentsJSON = [];
-         var json;
+                        if ((status !== undefined) && (status !== 'all')) {
+                            status = parseInt(status);
+                            qb.where('status', status);
+                        }
+                        qb.orderBy(orderBy, order);
+                    })
+                    .fetchAll({
+                        withRelated: ['assignedUser']
+                    })
+                    .exec(function (err, documentModels) {
+                        var documentsJSON = [];
+                        var json;
 
-         if (err) {
-         return next(err);
-         }
+                        if (err) {
+                            return next(err);
+                        }
 
-         documentModels.forEach(function (model) {
-         documentsJSON.push(model.toJSON());
-         });
+                        documentModels.forEach(function (model) {
+                            documentsJSON.push(model.toJSON());
+                        });
 
-         json = templateModel.toJSON();
-         json.documents = documentsJSON;
+                        json = templateModel.toJSON();
+                        json.documents = documentsJSON;
 
-         res.status(200).send(json);
-         });
-         })
-         .catch(TemplateModel.NotFoundError, function (err) {
-         next(badRequests.NotFound());
-         })
-         .catch(next);*/
+                        res.status(200).send(json);
+                    });
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);*/
     };
 
     this.htmlToPdf = function (req, res, next) {  //for testing, DELETE this method when done

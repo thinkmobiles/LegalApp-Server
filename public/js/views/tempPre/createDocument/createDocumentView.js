@@ -33,7 +33,7 @@ define([
 
         inviteDataToFields: function(contentObject){
             var this_el = this.$el;
-            var myFields = this_el.find('.basicField');
+            var myFields = this_el.find('.field_base');
             var employeeInput = this_el.find('#createEmployee');
             var length = myFields.length;
             var myId;
@@ -80,42 +80,37 @@ define([
 
         createOurPage: function(){
             var model = this.linkModel.toJSON()[0];
-            var tempData = {};
             var self = this;
             var employeeField;
-            tempData.a_date  = [];
-            tempData.a_interactiv = [];
-            tempData.a_basic = [];
 
-            model.linkFields.forEach(function(link){
-                switch (link.type) {
-                    case 'DATE'  : tempData.a_date.push(link);
-                        break;
-                    case 'STRING': tempData.a_interactiv.push(link);
-                        break;
-                    case 'NUMBER': tempData.a_interactiv.push(link);
-                        break;
-                    default      : tempData.a_basic.push(link);
+            var for_template = _.map(model.linkFields, function(item){
+                var result = {};
+                var type = item.type;
+                result.id_ = 'create_'+item.id;
+                result.name_ = item.name;
+                if (type === 'DATE') {
+                    result.class_ = 'field_date';
+                    return result;
                 }
+                if (type === 'STRING' || type === 'NUMBER'){
+                    result.class_ = 'field_text';
+                    return result;
+                }
+
+                result.class_ = 'field_base';
+                result.type_ = item.type;
+                return result;
             });
 
             this.$el.html(this.mainTemplate({
-                links : model.linkFields,
+                links : for_template,
                 tName : this.tempInfo.name
             }));
 
-            tempData.a_date.forEach(function(item){
-                self.$el.find('#create_'+item.id).datepicker({
-                    dateFormat  : "d M, yy",
-                    changeMonth : true,
-                    changeYear  : true
-                })
-            });
-
-            tempData.a_basic.forEach(function(item){
-                var el=self.$el.find('#create_'+item.id);
-                el.addClass('basicField');
-                el.attr('data-id',item.type);
+            self.$el.find('.field_date').datepicker({
+                dateFormat  : "d M, yy",
+                changeMonth : true,
+                changeYear  : true
             });
 
             employeeField = self.$el.find('#createEmployee');
