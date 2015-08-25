@@ -196,24 +196,17 @@ var DocumentsHandler = function (PostGre) {
     function addImageSign(documentModel, userId, signImage, callback) {
         var htmlContent = documentModel.get('html_content');
         var status = documentModel.get('status');
-        //var assignedId = documentModel.get('assigned_id');
-        //var documentOfCompany = documentModel.get('company_id');
-        //var templateModel = documentModel.related('template');
-        //var linkId = templateModel.get('link_id');
         var clientSignature = '{client_signature}';
         var companySignature = '{company_signature}';
         var replaceValue = '<img src=' + signImage + '>';
         var searchValue;
-        //var type;
         var newStatus;
         var saveData;
 
         if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
-            //type = FIELD_TYPES.CLIENT_SIGNATURE;
             searchValue = companySignature;
             newStatus = STATUSES.SENT_TO_SIGNATURE_CLIENT;
         } else if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
-            //type = FIELD_TYPES.COMPANY_SIGNATURE;
             searchValue = clientSignature;
             newStatus = STATUSES.SIGNED_BY_CLIENT;
         } else {
@@ -983,7 +976,6 @@ var DocumentsHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var token = req.params.token;
         var signImage = req.body.signature;    //base64  need to check params
-        var filePath;
         var criteria = {
             access_token: token,
             company_id: companyId
@@ -1016,7 +1008,7 @@ var DocumentsHandler = function (PostGre) {
             function (documentModel, cb) {
                 var status = documentModel.get('status');
                 var assignedId = documentModel.get('assigned_id');
-                var docUserId = document.get('user_id');
+                var docUserId = documentModel.get('user_id');
 
                 if (((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (assignedId === userId)) ||
                     ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (docUserId === userId))) {

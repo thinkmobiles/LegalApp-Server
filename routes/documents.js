@@ -16,7 +16,7 @@ module.exports = function (app) {
     router.get('/list/:templateId', session.authenticatedUser, documentsHandler.getDocumentsByTemplate);
 
     router.get('/signature', documentsHandler.validateDocumentBySecretKey);
-    router.post('/signature', documentsHandler.saveEncryptedDataToDocument);
+    router.post('/signature', documentsHandler.saveEncryptedDataToDocument); //TODO: delete this in future, for testing
 
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
