@@ -208,67 +208,7 @@ var DocumentsHandler = function (PostGre) {
             });
 
     };
-    //});
-
-        /*async.waterfall([
-
-                //replase values in document to signes/images
-                function (cb) {
-                    var forgeCriteria = {
-                        link_id: linkId,
-                        name: type
-                    };
-                    var fetchCriteria = {
-                        require: true
-                    };
-
-                    LinkFieldsModel
-                        .find(forgeCriteria, fetchCriteria)
-                        .then(function (fieldModel) {
-                            searchValue = toUnicode(fieldModel.get('code'));
-
-                            htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-                            cb(null, htmlContent);
-                        })
-                        .catch(LinkFieldsModel.NotFoundError, function (err) {
-                            cb(err);
-                        })
-                        .catch(cb);
-                }],
-
-            function (err, htmlContent) {
-                var options = {};
-
-                //save changes to document
-                documentModel
-                    .save({
-                        html_content: htmlContent,
-                        status: newStatus
-                    }, {patch: true})
-                    .exec(function (err, savedDocument) {
-                        if (err) {
-                            return callback(err);
-                        }
-
-                        //need create PDF or not
-                        if (newStatus === STATUSES.SIGNED_BY_COMPANY) {
-                            options.html = htmlContent;
-
-                            saveHtmlToPdf(options, function (err, pdfFileName) {
-                                if (err) {
-                                    return callback(err);
-                                }
-                                callback(null, savedDocument);
-                            })
-                        } else {
-                            callback(null, savedDocument);
-                        }
-
-                    }
-                );
-            });*/
-    //}
-
+    
     function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
