@@ -11,5 +11,6 @@ module.exports = {
     USERS: 'users',
     LINKS: 'links',
     LINKS_FIELDS: 'links_fields',
-    TEMPLATES: 'templates'
+    TEMPLATES: 'templates',
+    USERS_SECRET_KEY: 'users_secret_keys'
 };

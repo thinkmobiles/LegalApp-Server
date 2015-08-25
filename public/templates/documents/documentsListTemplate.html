@@ -1,67 +1,7 @@
-<div id="documents">
-    <div class="buttons">
-        <button class="filters">Filter</button>
-        <button class="listView">List View</button>
-        <button class="tileView">Tile View</button>
-    </div>
-
-    <div class="addItemLeft" id="searchContainer">
-        <h2>Documents Search Filters</h2>
-
-            <!--<label><input type="checkbox">By Creation Date</label><br>
-
-            <label><input type="checkbox">Last Opened</label><br>
-
-            <label><input type="checkbox">WIP</label><br>
-
-            <label><input type="checkbox">Signed</label><br>
-
-            <label><input type="checkbox">Not Signed</label><br>
-
-            <label><input type="checkbox">Saved</label><br>
-
-            <label><input type="checkbox">Newest</label><br>
-
-            <label><input type="checkbox">By Title</label><br>-->
-
-        <div class="search">
-            <p>Search</p>
-            <label>Title<input type="text" id="title"></label><br>
-            Created<br>
-            <label>From<input type="text"></label>
-            <label>To<input type="text"></label><br><br>
-        </div>
-        <div class="filter">
-            <p>Status</p>
-            <label><input type="radio" name="status" value="all" checked="checked" >All</label><br>
-            <label><input type="radio" name="status" value="1">Created</label><br>
-            <label><input type="radio" name="status" value="2">Un signed</label><br>
-            <label><input type="radio" name="status" value="3">Signed by user</label><br>
-            <label><input type="radio" name="status" value="4">Signed by company</label><br>
-        </div>
-        <div class="sort">
-            <p>Sort</p>
-            <label><input type="radio" name="sort" value="templates.name" checked="checked">Title</label><br>
-            <label><input type="radio" name="sort" value="created_at">Date creation</label><br>
-            <!--<label><input type="radio" name="sort" value="documents.created_at">Last opened</label><br>-->
-            <!--<label><input type="radio" name="sort" >Assigned to</label><br>-->
-            <p>Order</p>
-            <label><input type="radio" name="order" value="ASC" checked="checked">A-Z</label><br>
-            <label><input type="radio" name="order" value="DESC">Z-A</label><br>
-        </div>
-
-        <input class="searchBtn" type="submit" value="Search"/>
-    </div>
-
-    <div id="listWrap">
-        <div id="templateList"></div>
-        <div id="documentList"></div>
-        <!--<table>
-            <tr>
-                <td style="display:inline-block"><div id="templateList"></div></td>
-                <td style="display:inline-block"><div id="documentList"></div></td>
-            </tr>-->
-        </table>
-    </div>
-
-</div>
+<ul>
+    <%documents.forEach(function(doc){%>
+        <li class="documentItem" data-id="<%=doc.id%>">
+            <%= doc.name%> <%= doc.created_at%>
+        </li>
+    <%})%>
+</ul>

@@ -9,6 +9,7 @@ var CONSTANTS = require('../constants/index');
 
 var crypto = require('crypto');
 var async = require('async');
+var tokenGenerator = require('../helpers/randomPass');
 
 module.exports = function (knex) {
 
@@ -34,11 +35,15 @@ module.exports = function (knex) {
 
             createTable(TABLES.DOCUMENTS, function (row) {
                 row.increments().primary();
+                row.string('name');
+                row.text('html_content');
                 row.integer('template_id').notNullable().index();
                 row.integer('company_id').notNullable().index();
+                row.integer('user_id').index();
                 row.integer('assigned_id').index();
-                row.text('html_content');
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
+                row.integer('created_by').index();
+                row.integer('sent_by').index();
                 row.string('access_token');
                 row.timestamp('sent_at');
                 row.timestamp('signed_at');
@@ -130,6 +135,13 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('html_content');
                 row.timestamps();
+            }),
+
+            createTable(TABLES.USERS_SECRET_KEY, function (row) {
+                row.increments().primary();
+                row.integer('user_id').notNullable().unique();
+                row.string('secret_key').notNullable().unique();
+                row.timestamps();
             })
 
         ], function (err, results) {
@@ -198,23 +210,14 @@ module.exports = function (knex) {
                 insertData(TABLES.USER_COMPANIES, data, cb);
             },
 
-            /*//create default fields:
             function (cb) {
-                var fields = [{
-                    name: 'email',
-                    type: FIELD_TYPES.STRING
-                }, {
-                    name: 'first_name',
-                    type: FIELD_TYPES.STRING
-                },{
-                    name: 'last_name',
-                    type: FIELD_TYPES.STRING
-                }];
+                var data = {
+                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    secret_key: tokenGenerator.generate(20)
+                };
 
-                async.eachSeries(fields, function (data, eachCb) {
-                    insertData(TABLES.FIELDS, data, eachCb);
-                }, cb);
-            }*/
+                insertData(TABLES.USERS_SECRET_KEY, data, cb);
+            }
 
         ], function (err, result) {
             if (callback && (typeof callback === 'function')) {
@@ -353,7 +356,8 @@ module.exports = function (knex) {
             dropTable(TABLES.PROFILES),
             dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS),
-            dropTable(TABLES.TEMPLATES)
+            dropTable(TABLES.TEMPLATES),
+            dropTable(TABLES.USERS_SECRET_KEY)
         ], function (err) {
             if (err) {
                 if (callback && (typeof callback === 'function')) {

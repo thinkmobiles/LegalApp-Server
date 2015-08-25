@@ -1,5 +1,6 @@
 'use strict';
 
+
 var CONSTANTS = require('../constants/index');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
@@ -15,6 +16,9 @@ var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
+var fs = require('fs');
+var Buffer = require('buffer').Buffer;
+var crypto = require('crypto');
 
 var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
@@ -24,8 +28,50 @@ var DocumentsHandler = function (PostGre) {
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
     var LinkFieldsModel = Models.LinkFields;
+    var SecretKeyModel = Models.SecretKey;
+    var ProfileModel = Models.Profile;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
+
+    function encryptHash(text, userSecretKey) {
+        var algorithm = 'aes-256-ctr';
+        var password = userSecretKey || 'd6F3Efeq';
+        var cipher = crypto.createCipher(algorithm, password);
+        var crypted = cipher.update(text, 'utf8', 'hex');
+
+        crypted += cipher.final('hex');
+
+        return crypted;
+    }
+
+    function decryptHash(text, userSecretKey) {
+        var algorithm = 'aes-256-ctr';
+        var password = userSecretKey || 'd6F3Efeq';
+        var decipher = crypto.createDecipher(algorithm, password);
+        var dec = decipher.update(text, 'hex', 'utf8');
+
+        dec += decipher.final('utf8');
+
+        return dec;
+    }
+
+    function getDocumentHash(filePath) {
+        var shasum = crypto.createHash('sha1');
+        var fileData = fs.readFileSync(filePath);
+        var data = fileData.toString();
+        var startIndex = data.indexOf('SecretKey/');
+        var message;
+
+        if (startIndex !== -1) {
+            message = data.substring(12 + CONSTANTS.KEY_LENGTH, fileData.length);
+        } else {
+            message = data;
+        }
+
+        shasum.update(message);
+
+        return shasum.digest('hex');
+    }
 
     function toUnicode(theString) {
         var unicodeString = '';
@@ -37,6 +83,7 @@ var DocumentsHandler = function (PostGre) {
             theUnicode = '\\u' + theUnicode;
             unicodeString += theUnicode;
         }
+
         return unicodeString;
     }
 
@@ -52,7 +99,12 @@ var DocumentsHandler = function (PostGre) {
             dataBuffer = dataBuffer.slice(newBuffer.length, dataBuffer.length);
         }
 
-        newBuffer = Buffer.concat([newBuffer, dataBuffer]);
+        if (key === null) {
+            newBuffer = dataBuffer;
+        } else {
+            newBuffer = Buffer.concat([newBuffer, dataBuffer]);
+        }
+
         fs.writeFile(filePath, newBuffer, function (err) {
             if (err) {
                 return callback(err);
@@ -123,6 +175,14 @@ var DocumentsHandler = function (PostGre) {
         }
 
         //save changes to document
+        htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
+        saveData = {
+            status: newStatus,
+            html_content: htmlContent,
+            signed_at: new Date(),
+            access_token: tokenGenerator.generate()
+        };
+
         documentModel
             .save(saveData, {patch: true})
             .exec(function (err, savedDocument) {
@@ -148,67 +208,7 @@ var DocumentsHandler = function (PostGre) {
             });
 
     };
-    //});
-
-        /*async.waterfall([
-
-                //replase values in document to signes/images
-                function (cb) {
-                    var forgeCriteria = {
-                        link_id: linkId,
-                        name: type
-                    };
-                    var fetchCriteria = {
-                        require: true
-                    };
-
-                    LinkFieldsModel
-                        .find(forgeCriteria, fetchCriteria)
-                        .then(function (fieldModel) {
-                            searchValue = toUnicode(fieldModel.get('code'));
-
-                            htmlContent = htmlContent.replace(new RegExp(searchValue, 'g'), replaceValue);
-                            cb(null, htmlContent);
-                        })
-                        .catch(LinkFieldsModel.NotFoundError, function (err) {
-                            cb(err);
-                        })
-                        .catch(cb);
-                }],
-
-            function (err, htmlContent) {
-                var options = {};
-
-                //save changes to document
-                documentModel
-                    .save({
-                        html_content: htmlContent,
-                        status: newStatus
-                    }, {patch: true})
-                    .exec(function (err, savedDocument) {
-                        if (err) {
-                            return callback(err);
-                        }
-
-                        //need create PDF or not
-                        if (newStatus === STATUSES.SIGNED_BY_COMPANY) {
-                            options.html = htmlContent;
-
-                            saveHtmlToPdf(options, function (err, pdfFileName) {
-                                if (err) {
-                                    return callback(err);
-                                }
-                                callback(null, savedDocument);
-                            })
-                        } else {
-                            callback(null, savedDocument);
-                        }
-
-                    }
-                );
-            });*/
-    //}
-
+    
     function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
@@ -416,16 +416,35 @@ var DocumentsHandler = function (PostGre) {
         var fields = [
             TABLES.TEMPLATES + '.id',
             TABLES.TEMPLATES + '.name'/*,
-            'documents.created_at'*/
+             'documents.created_at'*/
         ];
         var status = params.status;
+        var templateName = params.templateName;
+        var userName = params.userName;
         var orderBy;
         var order;
         var query = knex(TABLES.TEMPLATES)
-            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+            .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+            .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
 
         if ((status !== undefined) && (status !== 'all')) {
             query.where(TABLES.DOCUMENTS + '.status', status);
+        }
+
+        if (templateName) {
+            templateName = templateName.toLowerCase();
+            query.whereRaw(
+                "LOWER(name) LIKE '%" + templateName + "%' "
+            );
+        }
+
+        if (userName) {
+            userName = userName.toLowerCase();
+            query.whereRaw(
+                "LOWER(first_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+            );
         }
 
         if (params.orderBy) {
@@ -466,16 +485,31 @@ var DocumentsHandler = function (PostGre) {
         var fields = [
             TABLES.DOCUMENTS + '.created_at'
         ];
+
         var columns = [
-            'documents.*',
-            'templates.name'
+            //'documents.*',
+            //'templates.name',
+            'profiles.first_name',
+            'profiles.last_name',
+            knex.raw(
+                "CONCAT(templates.name, ' ', COALESCE(" + TABLES.PROFILES + ".first_name, ''), ' ', " + 'COALESCE(' + TABLES.PROFILES + ".last_name, '')) AS name"
+            )
         ];
         var params = req.query;
+        var name = params.templateName;
+        var userName = params.userName;
         var status = params.status;
         var orderBy;
         var order;
 
-        if (params.orderBy && (fields.indexOf(params.orderBy) !== -1)) {
+        if (templateId) {
+            templateId = parseInt(templateId);
+            if (isNaN(templateId)) {
+                return next(badRequests.InvalidValue({param: 'templateId', value: req.params.templateId}));
+            }
+        }
+
+        if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
             orderBy = TABLES.DOCUMENTS + '.created_at';
@@ -486,11 +520,32 @@ var DocumentsHandler = function (PostGre) {
         DocumentModel
             .forge()
             .query(function (qb) {
-                qb.innerJoin(TABLES.TEMPLATES, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
+                qb.innerJoin(TABLES.TEMPLATES, function () {
+                    this.on(TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
+                        .on("templates.id", templateId)
+                })
+                    .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+
                 qb.where({
-                    template_id: templateId,
+                    'templates.id': templateId,
                     'documents.company_id': companyId
                 });
+
+                if (name) {
+                    name = name.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(name) LIKE '%" + name + "%' "
+                    );
+                }
+
+                if (userName) {
+                    userName = userName.toLowerCase();
+                    qb.whereRaw(
+                        "LOWER(first_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(last_name) LIKE '%" + userName + "%' "
+                        + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + userName + "%' "
+                    );
+                }
 
                 if ((status !== undefined) && (status !== 'all')) {
                     status = parseInt(status);
@@ -500,9 +555,9 @@ var DocumentsHandler = function (PostGre) {
                 qb.orderBy(orderBy, order)
                     .select(columns);
             })
-            .fetchAll({withRelated: ['assignedUser.profile']})
+            .fetchAll(/*{withRelated: ['assignedUser.profile']}*/)
             .exec(function (err, rows) {
-                var documents;
+                /*var documents;
                 var documentsJSON = [];
 
                 if (err) {
@@ -519,10 +574,10 @@ var DocumentsHandler = function (PostGre) {
                         docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
                     }
                     documentsJSON.push(docJSON);
-                });
+                });*/
 
 
-                res.status(200).send(documentsJSON);
+                res.status(200).send(rows);
             });
 
         /*TemplateModel
@@ -572,28 +627,133 @@ var DocumentsHandler = function (PostGre) {
         var name = 'testPdf.pdf';
         var key = attachmentsHandler.computeKey(name);
         var filePath = 'public/uploads/development/pdf/' + key;
-        var sK = '9876543210';
+        var sK = '987654321012345678995fvhjefklefklef';
 
         wkhtmltopdf(html, {output: filePath}, function (err) {
             if (err) {
                 return next(err);
             }
 
-            writeKeyToDocument(filePath, sK, function (err) {
+            async.waterfall([
+
+                //create file
+                function (cb) {
+                    writeKeyToDocument(filePath, null, function (err) {
+                        cb(err, filePath);
+                    });
+                },
+
+                //write encrypted Hash with SecretKey
+                function (filePath, cb) {
+                    var hash = getDocumentHash(filePath);
+                    var encryptedHash = encryptHash(hash, sK);
+                    console.log('1Hash length = ' + hash.length);
+                    console.log('1Encrypted length = ' + encryptedHash.length);
+
+                    console.log('Document Hash = ' + hash);
+                    console.log('Encrypted Hash = ' + encryptedHash);
+
+                    writeKeyToDocument(filePath, encryptedHash, function (err) {
+                        cb(err, true);
+                    });
+                }
+            ], function (err, result) {
                 if (err) {
                     return next(err);
                 }
-                readKeyFromDocument(filePath, function (err, secretKey) {
-                    if (err) {
-                        return next(err);
-                    }
-                    console.log(secretKey);
-                    res.status(200).send('Pdf with name ' + key + ' was created');
+
+                readKeyFromDocument(filePath, function (err, key) {
+                    var decryptedHash = decryptHash(key, sK);
+                    console.log('2Hash length = ' + key.length);
+
+                    console.log('Decrypted Hash (read from file) = ' + decryptedHash);
+
+                    res.status(200).send('Pdf with name was created');
                 });
+
             });
+        });
+    };
 
+    this.saveEncryptedDataToDocument = function (req, res, next) {
+        var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var userId = req.session.userId;
+        var openKey = CONSTANTS.OPEN_KEY;
+        var hash = getDocumentHash(filePath);
+        var hashPlusKey;
+        var encryptedHash;
+        var secretKey;
 
-            //res.status(200).send('Pdf with name ' + key + ' was created');
+        async.waterfall([
+
+            function(cb){
+                SecretKeyModel
+                    .find({user_id:userId}, {require:true})
+                    .then(function (secretKeyModel) {
+                        secretKey = secretKeyModel.get('secret_key');
+                        cb(null, secretKey);
+                    })
+                    .catch(SecretKeyModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            function(secretKey, cb){
+                hashPlusKey = hash + secretKey;
+                encryptedHash = encryptHash(hashPlusKey, openKey);
+
+                writeKeyToDocument(filePath, encryptedHash, function (err) {
+                    if (err) {
+                        return cb(err)
+                    }
+                    cb();
+                });
+            }
+
+        ], function(err, result){
+            if (err){
+                return next(err)
+            }
+
+            res.status(201).send({success:'D-Signature was added to document'});
+        });
+    };
+
+    this.validateDocumentBySecretKey = function (req, res, next){
+        var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var userId = req.session.userId;
+        var openKey = CONSTANTS.OPEN_KEY;
+        var hash = getDocumentHash(filePath);
+        var decryptedHashPlusKey;
+        var decryptedHash;
+        var decryptedSecretKey;
+        var userName;
+
+        readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
+            if (err){
+                return next(err);
+            }
+
+            decryptedHashPlusKey = decryptHash(encryptedHashPlusKey, openKey);
+            decryptedHash = decryptedHashPlusKey.substring(0, 40);
+            decryptedSecretKey = decryptedHashPlusKey.substring(40, decryptedHashPlusKey.length);
+
+            ProfileModel
+                .find({user_id:userId},{require:true})
+                .then(function (profileModel) {
+                    userName = profileModel.get('first_name') + ' ' + profileModel.get('last_name');
+
+                    if (hash === decryptedHash){
+                        res.status(200).send({success: 'Document not modyfied and signed by ' + userName});
+                    } else {
+                        res.status(200).send({message: 'Document was modifyed after signing'});
+                    }
+                })
+                .catch(ProfileModel.NotFoundError, function (err) {
+                    next(badRequests.NotFound());
+                })
+                .catch(next);
         });
     };
 
@@ -807,7 +967,7 @@ var DocumentsHandler = function (PostGre) {
             if (err) {
                 return next(err)
             }
-            res.status(200).send({success: 'Document was signed'});
+            res.status(201).send({success: 'Document was signed'});
         });
 
     };

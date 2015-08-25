@@ -27,6 +27,7 @@ var UsersHandler = function (PostGre) {
     var UserModel = Models.User;
     var ProfileModel = Models.Profile;
     var MessageModel = Models.Message;
+    var SecretKeyModel = Models.SecretKey;
     var session = new SessionHandler(PostGre);
     var profilesHandler = new ProfilesHandler(PostGre);
     var companiesHandler = new CompaniesHandler(PostGre);
@@ -285,6 +286,23 @@ var UsersHandler = function (PostGre) {
                     }
                     cb(null, userModel);
                 });
+            },
+
+            function(userModel, cb){
+                var saveSecretKeyData = {
+                    user_id: userModel.id,
+                    secret_key: tokenGenerator.generate(20)
+                };
+
+                SecretKeyModel
+                    .save(saveSecretKeyData, {patch:true})
+                    .exec(function (err, secretKeyModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, userModel);
+                    });
+
             }
 
         ], function (err, userModel) {
