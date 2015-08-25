@@ -10,8 +10,6 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id: "iWantTo",
-
         initialize: function () {
             this.render();
         },
@@ -25,9 +23,17 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(WantTemp));
-
-            this.$el.find('#wantSearch').focus();
+            this.$el.html(_.template(WantTemp))
+                .dialog({
+                    closeOnEscape: false,
+                    autoOpen: true,
+                    dialogClass: "iWantDialog",
+                    modal: true,
+                    width: "600px",
+                    close : function(){
+                        self.remove()
+                    }
+                });
 
             return this;
         }

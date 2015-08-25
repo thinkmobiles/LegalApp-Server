@@ -83,7 +83,7 @@ define([
             var self = this;
             var employeeField;
 
-            var for_template = _.map(model.linkFields, function(item){
+            var for_template = _.map(model.linkFields, function(item){  //todo map-forEach
                 var result = {};
                 var type = item.type;
                 result.id_ = 'create_'+item.id;

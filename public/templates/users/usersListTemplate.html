@@ -16,7 +16,7 @@
 
 <% usrLst.forEach(function(user){%>
 
-<tr class="userRow" data-id="<%= user.id%>">
+<tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
     <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
     <% if (!state && user.company[0]) {%>
         <td><%= user.company[0].name%></td>
@@ -27,7 +27,7 @@
         <%if (user.profile.permissions === 1){%>Admin<%}%>
     </td>
     <td class="withCheck">
-        <input type="checkbox" checked disabled>
+        <input type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled>
     </td>
     <td>
         <%if (user.profile.permissions === 3){%>Can view but not edit<%}%>

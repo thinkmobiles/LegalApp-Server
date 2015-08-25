@@ -17,25 +17,45 @@ define([
         },
 
         events : {
-            "click #editBtn" : "updateUser"
+            "click #editBtn"    : "saveUser",
+            "click #editStatus" : "changeStatus"
         },
 
-        updateUser : function(){
+        changeStatus: function(event){
+            var theId = $(event.target).data('id');
+            this.updateUser(theId);
+        },
+
+        saveUser: function(){
+            this.updateUser();
+        },
+
+        updateUser : function(statusId){
             var self = this;
             var thisEL = this.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
             var phone = thisEL.find('#editPhone').val().trim();
             var permissions = thisEL.find("#editRole option:selected").data('id');
+            var signing = thisEL.find('#editSign').prop('checked');
+            var status;
+            var profile;
+
+            profile = {
+                first_name  : firstName,
+                last_name      : lastName,
+                phone          : phone,
+                permissions    : permissions,
+                sign_authority : signing
+            };
 
             var updateData = {
-                profile : {
-                    first_name  : firstName,
-                    last_name   : lastName,
-                    phone       : phone,
-                    permissions : permissions
-                }
+                profile : profile
             };
+
+            if (statusId !== undefined){
+                updateData.status = statusId;
+            }
 
             this.userModel.save(updateData,{
                 wait   : true,
@@ -52,22 +72,11 @@ define([
 
         render: function () {
             var role = App.sessionData.get('role');
-            var self = this;
 
             this.$el.html(_.template(EditTemp)({
                 usrMdl : this.userModel.toJSON(),
                 role   : role
             }));
-            //    .dialog({
-            //    closeOnEscape: false,
-            //    autoOpen: true,
-            //    dialogClass: "editCurrentUser",
-            //    modal: true,
-            //    width: "800px",
-            //    close : function(){
-            //        self.remove()
-            //    }
-            //});
 
             return this;
         }
