@@ -18,6 +18,10 @@
     <input type="text" id="editPhone" value="<%= usrMdl.phone%>">
 </div>
 <div>
+    <label for="editSign">Signing authority</label>
+    <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
+</div>
+<div>
     <select id="editRole">
         <option data-id="3" <%= (permiss === 3) ? 'selected' : ''%> >Viewer</option>
         <option data-id="2" <%= (permiss === 2) ? 'selected' : ''%> >Editor</option>
@@ -27,6 +31,6 @@
     </select>
 </div>
 <div>
-    <input type="button" id="editStatus" data-id="<%= usrMdl.status === '0' ? '1' : '0'%>" value="<%= usrMdl.status === '0' ? 'Enable' : 'Disable'%>">
+    <input type="button" id="editStatus" data-id="<%= usrMdl.status === 0 ? '1' : '0'%>" value="<%= usrMdl.status === 0 ? 'Enable' : 'Disable'%>">
 </div>
 <input type="button" id="editBtn" value="Edit">
