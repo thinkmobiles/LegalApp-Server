@@ -104,15 +104,16 @@ define([
         showEditTemplate : function(event){
             var userRow = $(event.target).closest('.userRow');
             var userID  = userRow.data('id');
-            //var container = userRow.closest('#listTable');
+            var container = userRow.closest('#listTable');
             var theState = this.stateModel.get('currentState');
             var editableUser;
 
-            //container.find('.active').removeClass('active');
-            //userRow.addClass('active');
+            container.find('.hideRow').removeClass('hideRow');
+            userRow.addClass('hideRow');
 
             if (this.editView){
-                this.editView.undelegateEvents()
+                //this.editView.undelegateEvents()
+                this.editView.remove()
             }
 
             if (theState) {
@@ -124,6 +125,7 @@ define([
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.renderTrigger, this);
             //this.$el.find('#addUserContainer').html(this.addView.el);
+            userRow.after(this.editView.el);
         },
 
         render: function () {

@@ -7,8 +7,8 @@
 
 <%links.forEach(function(field){%>
 <div>
-    <label for="create_<%=field.id%>"><%=field.name%></label><br>
-    <input type="text" id="create_<%=field.id%>">
+    <label for="<%=field.id_%>"><%=field.name_%></label><br>
+    <input type="text" id="<%=field.id_%>" class="<%=field.class_%>" data-id="<%= field.type_ ? field.type_ : ''%>">
 </div>
 <%})%>
 

@@ -57,17 +57,17 @@ define([
             this.$el.html(_.template(EditTemp)({
                 usrMdl : this.userModel.toJSON(),
                 role   : role
-            }))
-                .dialog({
-                closeOnEscape: false,
-                autoOpen: true,
-                dialogClass: "editCurrentUser",
-                modal: true,
-                width: "800px",
-                close : function(){
-                    self.remove()
-                }
-            });
+            }));
+            //    .dialog({
+            //    closeOnEscape: false,
+            //    autoOpen: true,
+            //    dialogClass: "editCurrentUser",
+            //    modal: true,
+            //    width: "800px",
+            //    close : function(){
+            //        self.remove()
+            //    }
+            //});
 
             return this;
         }
