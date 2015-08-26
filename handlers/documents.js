@@ -2,6 +2,7 @@
 
 
 var CONSTANTS = require('../constants/index');
+var SIGN_AUTHORITY = require('../constants/signAuthority');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var MESSAGES = require('../constants/messages');
@@ -146,35 +147,73 @@ var DocumentsHandler = function (PostGre) {
             if (err) {
                 return callback(err);
             }
-            callback(null, key);
+            callback(null, filePath);
         });
     }
 
-    function addImageSign(documentModel, userId, companyId, signImage, callback) {
+    function addEncryptedDataToDocument(filePath, userId, callback) {
+        //var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        //var userId = req.session.userId;
+        var openKey = CONSTANTS.OPEN_KEY;
+        var hash = getDocumentHash(filePath);
+        var hashPlusKey;
+        var encryptedHash;
+        var secretKey;
+
+        async.waterfall([
+
+            function (cb) {
+                SecretKeyModel
+                    .find({user_id: userId}, {require: true})
+                    .then(function (secretKeyModel) {
+                        secretKey = secretKeyModel.get('secret_key');
+                        cb(null, secretKey);
+                    })
+                    .catch(SecretKeyModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            function (secretKey, cb) {
+                hashPlusKey = hash + secretKey;
+                encryptedHash = encryptHash(hashPlusKey, openKey);
+
+                writeKeyToDocument(filePath, encryptedHash, function (err) {
+                    if (err) {
+                        return cb(err)
+                    }
+                    cb();
+                });
+            }
+
+        ], function (err, result) {
+            if (err) {
+                return callback(err)
+            }
+
+            callback(null, {success: 'D-Signature was added to document'});
+        });
+    }
+
+    function addImageSign(documentModel, userId, signImage, callback) {
         var htmlContent = documentModel.get('html_content');
         var status = documentModel.get('status');
-        var assignedId = documentModel.get('assigned_id');
-        var documentOfCompany = documentModel.get('company_id');
-        var templateModel = documentModel.related('template');
-        var linkId = templateModel.get('link_id');
         var clientSignature = '{client_signature}';
         var companySignature = '{company_signature}';
         var replaceValue = '<img src=' + signImage + '>';
         var searchValue;
-        var type;
         var newStatus;
         var saveData;
 
-        if ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (assignedId === userId)) {
-            //type = FIELD_TYPES.CLIENT_SIGNATURE;
-            searchValue = clientSignature;
-            newStatus = STATUSES.SENT_TO_SIGNATURE_COMPANY;
-        } else if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (documentOfCompany === companyId)) {
-            //type = FIELD_TYPES.COMPANY_SIGNATURE;
+        if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
             searchValue = companySignature;
-            newStatus = STATUSES.SIGNED_BY_COMPANY;
+            newStatus = STATUSES.SENT_TO_SIGNATURE_CLIENT;
+        } else if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+            searchValue = clientSignature;
+            newStatus = STATUSES.SIGNED_BY_CLIENT;
         } else {
-            return callback(badRequests.AccessError());
+            return callback(badRequests.AccessError()); //never enter this code (need some fix)
         }
 
         //save changes to document
@@ -188,24 +227,30 @@ var DocumentsHandler = function (PostGre) {
 
         documentModel
             .save(saveData, {patch: true})
-            .exec(function (err, savedDocument) {
+            .exec(function (err, savedDocumentModel) {
                 if (err) {
                     return callback(err);
                 }
 
                 //need create PDF or not
-                if (newStatus === STATUSES.SIGNED_BY_COMPANY) {
+                if (newStatus === STATUSES.SIGNED_BY_CLIENT) {
                     options.html = htmlContent;
 
-                    saveHtmlToPdf(options, function (err, pdfFileName) {
+                    saveHtmlToPdf(options, function (err, pdfFilePath) {
                         if (err) {
                             return callback(err);
                         }
-                        callback(null, savedDocument);
+
+                        addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            callback(null, savedDocumentModel);
+                        });
                     });
 
                 } else {
-                    callback(null, savedDocument);
+                    callback(null, savedDocumentModel);
                 }
 
             });
@@ -784,6 +829,7 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
+    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION addEncryptedDataToDocument
     this.saveEncryptedDataToDocument = function (req, res, next) {
         var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
         var userId = req.session.userId;
@@ -795,9 +841,9 @@ var DocumentsHandler = function (PostGre) {
 
         async.waterfall([
 
-            function(cb){
+            function (cb) {
                 SecretKeyModel
-                    .find({user_id:userId}, {require:true})
+                    .find({user_id: userId}, {require: true})
                     .then(function (secretKeyModel) {
                         secretKey = secretKeyModel.get('secret_key');
                         cb(null, secretKey);
@@ -808,7 +854,7 @@ var DocumentsHandler = function (PostGre) {
                     .catch(cb);
             },
 
-            function(secretKey, cb){
+            function (secretKey, cb) {
                 hashPlusKey = hash + secretKey;
                 encryptedHash = encryptHash(hashPlusKey, openKey);
 
@@ -820,16 +866,16 @@ var DocumentsHandler = function (PostGre) {
                 });
             }
 
-        ], function(err, result){
-            if (err){
+        ], function (err, result) {
+            if (err) {
                 return next(err)
             }
 
-            res.status(201).send({success:'D-Signature was added to document'});
+            res.status(201).send({success: 'D-Signature was added to document'});
         });
     };
 
-    this.validateDocumentBySecretKey = function (req, res, next){
+    this.validateDocumentBySecretKey = function (req, res, next) {
         var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
@@ -840,7 +886,7 @@ var DocumentsHandler = function (PostGre) {
         var userName;
 
         readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
-            if (err){
+            if (err) {
                 return next(err);
             }
 
@@ -849,11 +895,11 @@ var DocumentsHandler = function (PostGre) {
             decryptedSecretKey = decryptedHashPlusKey.substring(40, decryptedHashPlusKey.length);
 
             ProfileModel
-                .find({user_id:userId},{require:true})
+                .find({user_id: userId}, {require: true})
                 .then(function (profileModel) {
                     userName = profileModel.get('first_name') + ' ' + profileModel.get('last_name');
 
-                    if (hash === decryptedHash){
+                    if (hash === decryptedHash) {
                         res.status(200).send({success: 'Document not modyfied and signed by ' + userName});
                     } else {
                         res.status(200).send({message: 'Document was modifyed after signing'});
@@ -1067,12 +1113,27 @@ var DocumentsHandler = function (PostGre) {
                     .catch(cb);
             },
 
+            //check: need to add signature or not
+            function (documentModel, cb) {
+                var status = documentModel.get('status');
+                var assignedId = documentModel.get('assigned_id');
+                var docUserId = documentModel.get('user_id');
+
+                if (((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (assignedId === userId)) ||
+                    ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (docUserId === userId))) {
+                    cb(null, documentModel);
+                }
+                else {
+                    return cb(badRequests.AccessError());
+                }
+            },
+
             //add Sign client or company
             function (documentModel, cb) {
-                addImageSign(documentModel, userId, companyId, signImage, cb);
+                addImageSign(documentModel, userId, signImage, cb);
             }
 
-        ], function (err, savedDocument) {
+        ], function (err, savedDocumentModel) {
             if (err) {
                 return next(err)
             }

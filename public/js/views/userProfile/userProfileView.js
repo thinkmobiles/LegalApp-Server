@@ -74,15 +74,29 @@ define([
             var profNameLast  = this_el.find('#profLName').val().trim();
             var profPhone = this_el.find('#profPhone').val().trim();
             var photoInput = this_el.find('#inputImg')[0].files.length;
+            var newPass = this_el.find('#profPass').val().trim();
             var imageSRC;
             var logoContainer = $('#topBarLogo');
             var saveData={};
+            var pass;
+            var confirmPass;
 
             saveData.profile = {
                 first_name : profNameFirst,
                 last_name  : profNameLast,
                 phone      : profPhone
             };
+
+            if (newPass) {
+                pass = this_el.find('#profCurPass').val().trim();
+                confirmPass = this_el.find('#profConfPass').val().trim();
+                if (newPass === confirmPass){
+                    saveData.password = pass;
+                    saveData.newPassword = newPass;
+                } else {
+                    return alert ('Please confirm password');
+                }
+            }
 
             if (photoInput){
                 imageSRC = this_el.find('#avatar')[0].toDataURL('image/jpeg');

@@ -15,8 +15,9 @@ define([
 
         events: {
             'click #buttonLogout'   : 'logout',
-            'click #profileTop'     : 'showPofile'
-            //'click #middleTopBar'   : 'showWantForm'
+            'click #profileTop'     : 'showPofile',
+            'click #middleTopBar'   : 'showWantForm',
+            'click #leftTopBar'     : 'showWantForm'
         },
 
         initialize: function () {
@@ -32,7 +33,6 @@ define([
             }
 
             this.iWantView = new WantView();
-            this.$el.find('#iWantContainer').html(this.iWantView.el);
         },
 
         getAvatar : function (){
