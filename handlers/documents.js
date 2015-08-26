@@ -381,6 +381,8 @@ var DocumentsHandler = function (PostGre) {
         var values;
         var htmlContent;
 
+        console.log(userModel);
+
         if (documentModel && documentModel.id) {
             saveData.id = documentModel.id; //update
         } //else create
@@ -428,7 +430,7 @@ var DocumentsHandler = function (PostGre) {
     this.saveNewDocument = function (req, res, next) {
         var options = req.body;
         var templateId = options.template_id;
-        var userId = options.user_id;
+        var userId = options.user_id || options.assigned_id; //TODO: !!!
         var values;
 
         console.log('create document');
@@ -472,7 +474,7 @@ var DocumentsHandler = function (PostGre) {
                 };
                 var fetchOptions = {
                     require: true,
-                    withRelated: ['profile']
+                    withRelated: ['profile', 'company']
                 };
 
                 if (!userId) {
@@ -689,7 +691,7 @@ var DocumentsHandler = function (PostGre) {
                         };
                         var fetchOptions = {
                             require: true,
-                            withRelated: ['profile']
+                            withRelated: ['profile', 'company']
                         };
 
                         if (!userId) {
