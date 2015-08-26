@@ -10,7 +10,8 @@ module.exports = function (app) {
     var documentsHandler= new DocumentsHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
+    //router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
+    router.post('/', session.authenticatedEditor, documentsHandler.saveNewDocument);
     router.get('/', session.authenticatedUser, documentsHandler.getDocuments);
     router.get('/list', session.authenticatedUser, documentsHandler.getDocumentsByTemplates);
     router.get('/list/:templateId', session.authenticatedUser, documentsHandler.getDocumentsByTemplate);
@@ -20,6 +21,7 @@ module.exports = function (app) {
 
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
+    router.patch('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);
     router.get('/:token/signature', session.authenticatedUser, documentsHandler.getTheDocumentToSign);

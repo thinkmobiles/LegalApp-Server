@@ -38,7 +38,7 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('html_content');
                 row.integer('template_id').notNullable().index();
-                row.integer('company_id').notNullable().index();
+                row.integer('company_id').index();
                 row.integer('user_id').index();
                 row.integer('assigned_id').index();
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
@@ -47,6 +47,7 @@ module.exports = function (knex) {
                 row.string('access_token');
                 row.timestamp('sent_at');
                 row.timestamp('signed_at');
+                row.json('values');
                 row.timestamps();
             }),
 
