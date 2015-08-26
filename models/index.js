@@ -45,5 +45,6 @@ var Models = function ( PostGre ) {
     this.Template =  require('./templates')( PostGre, Model );
     this.Message =  require('./message')( PostGre, Model );
     this.SecretKey =  require('./secretKey')( PostGre, Model );
+    this.LinkedTemplates =  require('./linkedTemplates')( PostGre, Model );
 };
 module.exports = Models;

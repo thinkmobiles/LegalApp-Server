@@ -293,7 +293,9 @@ var DocumentsHandler = function (PostGre) {
         }
         return htmlText;
 
-    };
+    }
+
+    this.createDocumentContent = createDocumentContent;
     
     function generateDocumentName(templateModel, userModel) {
         var name = templateModel.get('name');
