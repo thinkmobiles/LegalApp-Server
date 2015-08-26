@@ -15,15 +15,28 @@ var badRequests = require('../helpers/badRequests');
 
 var SessionHandler = require('../handlers/sessions');
 var AttachmentHandler = require('../handlers/attachments');
+var DocumentsHandler = require('../handlers/documents');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
     var uploader = PostGre.Models.Image.uploader;
     var TemplateModel = Models.Template;
     var AttachmentModel = Models.Attachment;
+    var LinkedTemplatesModel = Models.LinkedTemplates;
     var session = new SessionHandler(PostGre);
     var attachments = new AttachmentHandler(PostGre);
+    var documentsHandler = new DocumentsHandler(PostGre);
     var self = this;
+
+    function saveLinkedTemplates(saveData, cb) {
+        LinkedTemplatesModel
+            .upsert(saveData, function (err, linkedTemplatesModel) {
+                if (err) {
+                    return cb(err);
+                }
+                cb();
+            });
+    }
 
     this.docx2html = function (req, res, next) {
         var file = req.files.file;
@@ -42,7 +55,7 @@ var TemplatesHandler = function (PostGre) {
 
         mammoth
             .convertToHtml(converterParams)
-            .then(function(result){
+            .then(function (result) {
                 var messages = result.messages; // Any messages, such as warnings during conversion
                 var htmlContent;
 
@@ -81,9 +94,17 @@ var TemplatesHandler = function (PostGre) {
         var linkId = options.link_id;
         var originalFilename;
         var extension;
+        var hasLinkedTemplate = false;
+        var linkedTemplatesArray;
+        var description;
 
         if (!name || !linkId || !templateFile) {
             return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
+        }
+
+        if (options.linked_templates && options.linked_templates.length) {
+            hasLinkedTemplate = true;
+            linkedTemplatesArray = options.linked_templates;
         }
 
         originalFilename = templateFile.originalFilename;
@@ -118,7 +139,7 @@ var TemplatesHandler = function (PostGre) {
 
                 mammoth
                     .convertToHtml(converterParams)
-                    .then(function(result){
+                    .then(function (result) {
                         var messages = result.messages; // Any messages, such as warnings during conversion
 
                         if (messages && messages.length) {
@@ -138,7 +159,8 @@ var TemplatesHandler = function (PostGre) {
                     name: name,
                     link_id: linkId,
                     company_id: companyId,
-                    html_content: htmlContent
+                    html_content: htmlContent,
+                    has_linked_template: hasLinkedTemplate
                 };
 
                 TemplateModel
@@ -167,19 +189,45 @@ var TemplatesHandler = function (PostGre) {
                 });
 
                 /*var saveData = {
-                    attacheable_type: TABLES.TEMPLATES,
-                    attacheable_id: templateModel.id,
-                    name: BUCKETS.TEMPLATE_FILES,
-                    key: key
-                };
+                 attacheable_type: TABLES.TEMPLATES,
+                 attacheable_id: templateModel.id,
+                 name: BUCKETS.TEMPLATE_FILES,
+                 key: key
+                 };
 
-                AttachmentModel
-                    .upsert(saveData, function (err, attachmentModel) {
+                 AttachmentModel
+                 .upsert(saveData, function (err, attachmentModel) {
+                 if (err) {
+                 return cb(err);
+                 }
+                 cb(null, templateModel);
+                 });*/
+
+            },
+
+            //save linkedTemplates
+            function (templateModel, cb) {
+
+                if (!linkedTemplatesArray && !linkedTemplatesArray.length) {
+                    return cb(null, templateModel);
+                }
+
+                async.each(linkedTemplatesArray,
+                    function (linkedTemplateId, eachCb) {
+                        var saveData = {
+                            template_id: templateModel.id,
+                            linked_id: linkedTemplateId
+                        };
+
+                        saveLinkedTemplates(saveData, eachCb);
+                    },
+
+                    function (err) {
                         if (err) {
                             return cb(err);
                         }
                         cb(null, templateModel);
-                    });*/
+                    })
 
             }
 
@@ -377,7 +425,51 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.previewDocument = function (req, res, next) {
+        var templateId = req.params.id;
+        var options = req.body;
+        var values;
+        var criteria = {
+            id: templateId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['link.linkFields']
+        };
 
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        } else {
+            return next(badRequests.NotEnParams('values'));
+        }
+
+        TemplateModel
+            .find(criteria, fetchOptions)
+            .then(function (templateModel) {
+                var templateHtmlContent = templateModel.get('html_content');
+                var linkModel = templateModel.related('link');
+                var fields = [];
+                var htmlContent;
+                var linkFieldsModels;
+
+                if (linkModel && linkModel.related('linkFields')) {
+                    linkFieldsModels = linkModel.related('linkFields');
+                    linkFieldsModels.models.forEach(function (model) {
+                        fields.push(model.toJSON());
+                    });
+                }
+
+                if (values && templateHtmlContent) {
+                    htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
+                } else {
+                    htmlContent = '';
+                }
+
+                res.status(200).send(htmlContent);
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
     };
 
 };
