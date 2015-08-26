@@ -5,9 +5,11 @@ var CONSTANTS = require('../constants/index');
 var SIGN_AUTHORITY = require('../constants/signAuthority');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
+var MESSAGES = require('../constants/messages');
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
+var SIGN_AUTHORITY = require('../constants/signAuthority');
 
 var async = require('async');
 var _ = require('lodash');
@@ -25,6 +27,7 @@ var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
+    var ProfileModel = Models.Profile;
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
@@ -290,48 +293,164 @@ var DocumentsHandler = function (PostGre) {
         }
         return htmlText;
 
+    };
+    
+    function generateDocumentName(templateModel, userModel) {
+        var name = templateModel.get('name');
+        var profileModel = userModel.related('profile');
+        
+        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name')  + ')';
+
+        return name;
+    };
+
+    function insertIntoDocuments(options, callback) {
+        var userModel = options.userModel;
+        var assignedUserModel = options.assignedUserModel;
+        var templateModel = options.templateModel;
+        var linkModel = options.linkModel;
+        var currentUserId = options.currentUserId;
+        var linkFieldsModels = options.linkFieldsModel;
+        var values = options.values;
+        var linkModel = templateModel.related('link');
+        var templateHtmlContent = templateModel.get('html_content');
+        var documentName = generateDocumentName(templateModel, userModel);
+        var companyId;
+        var companyModel;
+        var htmlContent;
+        var fields = [];
+        var saveData;
+        
+        if (userModel && userModel.related('company') && userModel.related('company').length) {
+            companyId = userModel.related('company').models[0].id;
+        }
+        
+        if (linkModel && linkModel.related('linkFields')) {
+            linkFieldsModels = linkModel.related('linkFields');
+            linkFieldsModels.models.forEach(function (model) {
+                fields.push(model.toJSON());
+            });
+        }
+        
+        if (values && templateHtmlContent) {
+            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+        } else {
+            htmlContent = '';
+        }
+        
+        saveData = {
+            name: documentName,
+            html_content: htmlContent,
+            template_id: templateModel.id,
+            company_id: companyId,
+            status: STATUSES.CREATED,
+            user_id: userModel.id,
+            assigned_id: assignedUserModel.id,
+            created_by: currentUserId
+        };
+
+        DocumentModel
+            .upsert(saveData)
+            .exec(function (err, documentModel) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, documentModel);
+            });
     }
 
     this.newDocument = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var currentUserId = req.session.userId;
         var options = req.body;
         var templateId = options.template_id;
-        var assignedId = options.assigned_id;
+        var assignedId = options.assigned_id || req.session.userId;
+        var userId = options.user_id;
+        var signImage = options.signature;
         var values;
-        var saveData;
-        var companyId = req.session.companyId;
-
+        
         console.log('create document');
         console.log(options);
-
-        if (!templateId || !assignedId) {
-            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id']}));
+        
+        if (!templateId || !assignedId || !userId) {
+            return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id'] }));
         }
-
+        
+        if ((assignedId == currentUserId)) {
+            if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
+            } 
+        }
+        
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
         }
+        
+        async.parallel({
+                    
+            //try to find the user:
+            userModel: function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile', 'company']
+                };
+                        
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        (badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+            
+            //try to find the assigned user: (access to email, check sign_authority)
+            assignedUserModel: function (cb) {
+                var criteria = {
+                    id: assignedId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile']
+                };
+                
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        //TODO: check
+                        var profileModel = userModel.related('profile');
+                        var signAuthority = profileModel.get('sign_authority');
+                    
+                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) { 
+                            return cb(badRequests.AccessError({message: MESSAGES.SIGN_AUTHORITY_ERROR}));
+                        }
 
-        saveData = {
-            status: STATUSES.CREATED,
-            template_id: templateId,
-            assigned_id: assignedId
-        };
-
-        async.waterfall([
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
 
             //try to find the template:
-            function (cb) {
+            templateModel: function (cb) {
                 var criteria = {
                     id: templateId
                 };
                 var fetchOptions = {
                     require: true
                 };
-
+                        
                 if (values) {
                     fetchOptions.withRelated = ['link.linkFields'];
                 }
-
+                        
                 TemplateModel
                     .find(criteria, fetchOptions)
                     .then(function (templateModel) {
@@ -341,47 +460,37 @@ var DocumentsHandler = function (PostGre) {
                         cb(badRequests.NotFound());
                     })
                     .catch(cb);
-            },
-
-            //insert into documents:
-            function (templateModel, cb) {
-                var htmlContent;
-                var templateHtmlContent = templateModel.get('html_content');
-                var linkModel = templateModel.related('link');
-                var linkFieldsModels;
-                var fields = [];
-
-                if (linkModel && linkModel.related('linkFields')) {
-                    linkFieldsModels = linkModel.related('linkFields');
-                    linkFieldsModels.models.forEach(function (model) {
-                        fields.push(model.toJSON());
-                    });
-                }
-
-                if (values && templateHtmlContent) {
-                    htmlContent = createDocumentContent(templateHtmlContent, fields, values);
-                } else {
-                    htmlContent = '';
-                }
-
-                saveData.company_id = templateModel.get('company_id');
-                saveData.html_content = htmlContent;
-
-                DocumentModel
-                    .upsert(saveData)
-                    .exec(function (err, documentModel) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, documentModel)
-                    });
             }
+                    
+        }, function (err, results) {
+            var userModel;
+            var templateModel;
+            var assignedUserModel;
+            var insertOptions;
 
-        ], function (err, documentModel) {
             if (err) {
                 return next(err);
             }
-            res.status(201).send({success: 'success created', model: documentModel});
+        
+            userModel = results.userModel;
+            templateModel = results.templateModel;
+            assignedUserModel = results.assignedUserModel;
+            
+            insertOptions = {
+                currentUserId: currentUserId, //created_by
+                userModel: userModel,
+                templateModel: templateModel,
+                assignedUserModel: assignedUserModel,
+                values: values
+            };
+
+            insertIntoDocuments(insertOptions, function (err, documentModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({ success: 'success created', model: documentModel });
+            });
+
         });
     };
 

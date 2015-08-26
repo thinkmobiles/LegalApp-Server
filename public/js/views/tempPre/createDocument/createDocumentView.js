@@ -41,7 +41,7 @@ define([
 
             employeeInput.attr('data-sig',contentObject.id);
             if (length){
-                for (var i=0; i<length; i++){
+                for (var i=0; i<length; i+=1){
                     myTarget = $(myFields[i]);
                     myId = myTarget.attr('data-id');
                     myTarget.val(contentObject[CONST[myId]]);
@@ -79,6 +79,7 @@ define([
         },
 
         createOurPage: function(){
+            var thisEl = this.$el;
             var model = this.linkModel.toJSON()[0];
             var self = this;
             var employeeField;
@@ -102,12 +103,12 @@ define([
                 return result;
             });
 
-            this.$el.html(this.mainTemplate({
+            thisEl.html(this.mainTemplate({
                 links : for_template,
                 tName : this.tempInfo.name
             }));
 
-            self.$el.find('.field_date').datepicker({
+            thisEl.find('.field_date').datepicker({
                 dateFormat  : "d M, yy",
                 changeMonth : true,
                 changeYear  : true
@@ -135,7 +136,6 @@ define([
         },
 
         render: function () {
-
 
             this.undelegateEvents();
             this.createOurPage();
