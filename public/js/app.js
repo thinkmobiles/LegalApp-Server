@@ -17,6 +17,8 @@ define([
             role        : null
         });
 
+        App.templateInfo = new Backbone.Model();
+
         appRouter = new Router();
         App.router = appRouter;
 
