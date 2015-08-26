@@ -6,5 +6,6 @@ module.exports = {
     SUCCESS_SIGN_IN: 'success signIn',
     SUCCESS_EMAIL_CONFIRM: 'Verification completed. Your e-mail address has been verified. You can now log-in into the application.',
     SUCCESS_CREATED_TEMPLATE: 'Template was created success',
-    DELETED_ACCOUNT: 'Your Account was deleted'
+    DELETED_ACCOUNT: 'Your Account was deleted',
+    SIGN_AUTHORITY_ERROR: 'Access Error. You can\'t have permissions for signing documents',
 };

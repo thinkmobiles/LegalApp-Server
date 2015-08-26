@@ -13,7 +13,7 @@ process.env.mailerUserName = 'istvan.nazarovits';
 process.env.mailerPassword = 'sendGridpassw365';
 
 process.env.REDIS_HOST = '134.249.164.53';
-//process.env.REDIS_HOST = '192.168.1.4';
+//process.env.REDIS_HOST = '192.168.88.75';
 process.env.REDIS_PORT = '6379';
 process.env.REDIS_DB_KEY = '11';
 

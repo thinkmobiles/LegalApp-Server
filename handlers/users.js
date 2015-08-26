@@ -861,6 +861,8 @@ var UsersHandler = function (PostGre) {
         var userId = req.params.id;
         var options = req.body;
         var permissions;
+        
+        //TODO: superAdmin can update other companies users data;
 
         //check permissions:
         if ((options.profile && (options.profile.permissions !== undefined))) {

@@ -38,7 +38,7 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('html_content');
                 row.integer('template_id').notNullable().index();
-                row.integer('company_id').notNullable().index();
+                row.integer('company_id').index();
                 row.integer('user_id').index();
                 row.integer('assigned_id').index();
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
@@ -47,6 +47,7 @@ module.exports = function (knex) {
                 row.string('access_token');
                 row.timestamp('sent_at');
                 row.timestamp('signed_at');
+                row.json('values');
                 row.timestamps();
             }),
 
@@ -91,7 +92,7 @@ module.exports = function (knex) {
                 row.string('company');
                 row.string('phone');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
-                row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.ENABLED);
+                row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.DISABLED);
                 row.timestamps();
             }), 
 
@@ -128,12 +129,21 @@ module.exports = function (knex) {
                 row.timestamps();
             }),
 
+            createTable(TABLES.LINKED_TEMPLATES, function (row) {
+                row.increments().primary();
+                row.integer('template_id').notNullable().index();
+                row.integer('linked_id').notNullable().index();
+                row.timestamps();
+            }),
+
             createTable(TABLES.TEMPLATES, function (row) {
                 row.increments().primary();
                 row.integer('company_id').index();
                 row.integer('link_id').index();
                 row.string('name');
+                row.text('description');
                 row.text('html_content');
+                row.boolean('has_linked_template').notNullable().defaultTo(false);
                 row.timestamps();
             }),
 
@@ -351,6 +361,7 @@ module.exports = function (knex) {
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
             dropTable(TABLES.MESSAGES),
+            dropTable(TABLES.LINKED_TEMPLATES),
             dropTable(TABLES.LINKS_FIELDS),
             dropTable(TABLES.LINKS),
             dropTable(TABLES.PROFILES),

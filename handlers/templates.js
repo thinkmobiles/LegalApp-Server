@@ -376,6 +376,10 @@ var TemplatesHandler = function (PostGre) {
             .catch(next);
     };
 
+    this.previewDocument = function (req, res, next) {
+
+    };
+
 };
 
 module.exports = TemplatesHandler;
