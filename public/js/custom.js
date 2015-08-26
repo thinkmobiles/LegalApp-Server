@@ -20,7 +20,8 @@ define([],function () {
             App.sessionData.set({
                 authorized : true,
                 user       : data.profile.first_name+' '+data.profile.last_name,
-                role       : data.profile.permissions
+                role       : data.profile.permissions,
+                company    : data.company[0].id
             });
             $('#topMenu').show();
             $('#leftMenu').show();
@@ -29,7 +30,8 @@ define([],function () {
             App.sessionData.set({
                 authorized : false,
                 user       : null,
-                role       : null
+                role       : null,
+                company    : null
             });
             $('#topMenu').hide();
             $('#leftMenu').hide();
