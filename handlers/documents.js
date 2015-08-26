@@ -308,7 +308,6 @@ var DocumentsHandler = function (PostGre) {
         var userModel = options.userModel;
         var assignedUserModel = options.assignedUserModel;
         var templateModel = options.templateModel;
-        var linkModel = options.linkModel;
         var currentUserId = options.currentUserId;
         var linkFieldsModels = options.linkFieldsModel;
         var values = options.values;
