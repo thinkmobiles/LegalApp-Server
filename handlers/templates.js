@@ -28,6 +28,16 @@ var TemplatesHandler = function (PostGre) {
     var documentsHandler = new DocumentsHandler(PostGre);
     var self = this;
 
+    function saveLinkedTemplates(saveData, cb) {
+        LinkedTemplatesModel
+            .upsert(saveData, function (err, linkedTemplatesModel) {
+                if (err) {
+                    return cb(err);
+                }
+                cb();
+            });
+    }
+
     this.docx2html = function (req, res, next) {
         var file = req.files.file;
         var filePath;
@@ -45,7 +55,7 @@ var TemplatesHandler = function (PostGre) {
 
         mammoth
             .convertToHtml(converterParams)
-            .then(function(result){
+            .then(function (result) {
                 var messages = result.messages; // Any messages, such as warnings during conversion
                 var htmlContent;
 
@@ -129,7 +139,7 @@ var TemplatesHandler = function (PostGre) {
 
                 mammoth
                     .convertToHtml(converterParams)
-                    .then(function(result){
+                    .then(function (result) {
                         var messages = result.messages; // Any messages, such as warnings during conversion
 
                         if (messages && messages.length) {
@@ -179,51 +189,46 @@ var TemplatesHandler = function (PostGre) {
                 });
 
                 /*var saveData = {
-                    attacheable_type: TABLES.TEMPLATES,
-                    attacheable_id: templateModel.id,
-                    name: BUCKETS.TEMPLATE_FILES,
-                    key: key
-                };
+                 attacheable_type: TABLES.TEMPLATES,
+                 attacheable_id: templateModel.id,
+                 name: BUCKETS.TEMPLATE_FILES,
+                 key: key
+                 };
 
-                AttachmentModel
-                    .upsert(saveData, function (err, attachmentModel) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, templateModel);
-                    });*/
+                 AttachmentModel
+                 .upsert(saveData, function (err, attachmentModel) {
+                 if (err) {
+                 return cb(err);
+                 }
+                 cb(null, templateModel);
+                 });*/
 
             },
 
             //save linkedTemplates
-            function(templateModel, cb){
+            function (templateModel, cb) {
 
-                if (linkedTemplatesArray && linkedTemplatesArray.length){
-
-                    async.each(linkedTemplatesArray,
-                        function(linkedTemplateId, cb){
-                            var saveData = {
-                                template_id: templateModel.id,
-                                linked_id: linkedTemplateId
-                            };
-
-                            LinkedTemplatesModel
-                                .upsert(saveData, function (err, linkedTemplatesModel) {
-                                    if (err) {
-                                        return cb(err);
-                                    }
-                                    cb();
-                                });
-                        },
-                        function(err){
-                            if (err){
-                                return cb(err);
-                            }
-                            cb(null, templateModel);
-                        })
-                } else {
-                    cb(null, templateModel);
+                if (!linkedTemplatesArray && !linkedTemplatesArray.length) {
+                    return cb(null, templateModel);
                 }
+
+                async.each(linkedTemplatesArray,
+                    function (linkedTemplateId, eachCb) {
+                        var saveData = {
+                            template_id: templateModel.id,
+                            linked_id: linkedTemplateId
+                        };
+
+                        saveLinkedTemplates(saveData, eachCb);
+                    },
+
+                    function (err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, templateModel);
+                    })
+
             }
 
         ], function (err, templateModel) {
@@ -428,7 +433,7 @@ var TemplatesHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated : ['link.linkFields']
+            withRelated: ['link.linkFields']
         };
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
