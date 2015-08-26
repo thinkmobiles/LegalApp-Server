@@ -140,6 +140,7 @@ module.exports = function (knex) {
                 row.integer('company_id').index();
                 row.integer('link_id').index();
                 row.string('name');
+                row.text('description');
                 row.text('html_content');
                 row.boolean('has_linked_template').notNullable().defaultTo(false);
                 row.timestamps();
