@@ -19,12 +19,12 @@ define([
             "signup"                       :  "signup",
             "users"                        :  "users",
             "settings"                     :  "settings",
-            "templates/preview/:id/create" :  "tempPre",
+            //"templates/preview/:id/create":  "tempPre",
             "templates/preview/:id"        :  "tempPre",
             "templates/:viewType"          :  "templates",
             "documents/:token/signature"   :  "signature",
             "documents/:viewType"          :  "documents",
-            "document/preview/:id"         :  "documentItem",
+            //"document/preview/:id"       :  "documentItem",
             "taskList"                     :  "taskList",
             "userProfile"                  :  "userProfile",
             "forgotPassword"               :  "forgotPassword",
@@ -125,7 +125,7 @@ define([
         },
 
         documents: function (viewType) {
-            this.loadWrapperView('documents', null, REDIRECT.whenNOTAuthorized, viewType);
+            this.loadWrapperView('documents', {viewType : viewType}, REDIRECT.whenNOTAuthorized);
         },
 
         tempPre: function (id){

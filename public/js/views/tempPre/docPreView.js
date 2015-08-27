@@ -35,14 +35,17 @@ define([
         },
 
         sendMyDoc: function(){
+            var self = this;
+
             $.ajax({
                 url : "/documents/"+this.docId+"/send",
                 success : function(){
                     alert('A document was sent successfully');
                     Backbone.history.navigate('/documents/list', {trigger : true});
                 },
-                error : function(){
+                error : function(model){
                     alert('Error on sending');
+                    //self.errorNotification(model);
                 }
             });
         },
