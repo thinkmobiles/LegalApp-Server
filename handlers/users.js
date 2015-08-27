@@ -581,7 +581,7 @@ var UsersHandler = function (PostGre) {
 
             //update users avatar:
             function (userModel, cb) {
-                if (!avatar) {
+                if (!avatar.imageSrc) {
                     return cb();
                 }
 

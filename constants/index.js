@@ -5,6 +5,7 @@ module.exports = {
     BASE64_REGEXP:/^data:([A-Za-z-+\/]+);base64,(.+)$/,
     PAGE_NOT_FOUND: 'Page Not Found',
     DEFAULT_AVATAR_URL: 'default.png',
+    DEFAULT_LOGO_URL: 'default.png',
     DEFAULT_SUPERADMIN_ID: 1,
     DEFAULT_SUPERADMIN_EMAIL: 'mcinnescooper@legalapp.com',
     DEFAULT_SUPERADMIN_PASSWORD: '1q2w3e4r',
