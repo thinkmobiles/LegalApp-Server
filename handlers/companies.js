@@ -13,15 +13,37 @@ var CompaniesHandler = function (PostGre) {
     var CompanyModel = Models.Company;
     var UserCompanies = Models.UserCompanies;
     var self = this;
-    
+
+    function prepareData(saveData) {
+        var saveOptions = {};
+
+        if (saveData && saveData.name) {
+            saveOptions.name = saveData.name;
+        }
+        if (saveData && saveData.email) {
+            saveOptions.email = saveData.email;
+        }
+        if (saveData && saveData.country) {
+            saveOptions.country = saveData.country;
+        }
+        if (saveData && saveData.city) {
+            saveOptions.city = saveData.city;
+        }
+        if (saveData && saveData.address) {
+            saveOptions.address = saveData.address;
+        }
+
+        return saveOptions;
+    }
+
     this.createCompanyWithOwner = function (options, callback) {
         var userId = options.userId;
         var name = options.name || options.company; //TODO: !!!;
-        
+
         //TODO: validate incom. params
-        
+
         async.waterfall([
-        
+
             //create a new company:
             function (cb) {
                 var createData = {
@@ -37,7 +59,7 @@ var CompaniesHandler = function (PostGre) {
                             return cb(err);
                         }
                         cb(null, companyModel);
-                     }); 
+                    });
             },
 
             //insert into user_companies:
@@ -48,11 +70,11 @@ var CompaniesHandler = function (PostGre) {
                 };
 
                 self.insertIntoUserCompanies(createData, function (err, model) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, companyModel);
-                    }); 
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, companyModel);
+                });
             }
 
         ], function (err, companyModel) {
@@ -95,11 +117,9 @@ var CompaniesHandler = function (PostGre) {
     this.newCompany = function (req, res, next) {
         var userId = req.session.userId || 1; //TODO: !!!
         var options = req.body;
-        var name = options.name;
-        var createOptions = {
-            //userId: userId,
-            name: name
-        };
+        var createOptions;
+
+        createOptions = prepareData(options);
 
         if (!name) {
             return next(badRequests.NotEnParams({reqParams: ['name']}));
@@ -139,6 +159,59 @@ var CompaniesHandler = function (PostGre) {
                 res.status(200).send(rows);
             })
             .catch(next);
+    };
+
+    this.getAllCompanies = function (req, res, next) {
+        var permissions = req.session.permissions;
+        var companyId = req.session.companyId;
+        var queryOptions;
+
+        if (!((permissions === PERMISSIONS.SUPER_ADMIN) || (permissions === PERMISSIONS.ADMIN))) {
+            queryOptions = {
+                id: companyId
+            };
+        }
+
+        CompanyModel
+            .forge()
+            .query(function (qb) {
+                if (queryOptions) {
+                    qb.where(queryOptions);
+                }
+            })
+            .fetchAll()
+            .then(function (companiesModels) {
+                res.status(200).send(companiesModels);
+            })
+            .catch(next)
+    };
+
+    this.updateCompany = function (req, res, next) {
+        var updateCompanyId = req.params.id;
+        var permissions = req.session.permissions;
+        var companyId = req.session.companyId;
+        var options = req.boby;
+        var saveData;
+
+        if ((permissions === PERMISSIONS.SUPER_ADMIN) ||
+            (permissions === PERMISSIONS.ADMIN) ||
+            ((permissions === PERMISSIONS.CLIENT_ADMIN) && (updateCompanyId === companyId))) {
+
+            options.id = updateCompanyId;
+            saveData = prepareData(options);
+        } else {
+            return next(badRequests.AccessError());
+        }
+
+        CompanyModel
+            .forge(saveData)
+            .save({patch: true})
+            .exec(function (err, companyModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({success: 'updated', model: companyModel});
+            });
     };
 };
 

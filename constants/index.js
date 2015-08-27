@@ -12,6 +12,10 @@ module.exports = {
     DEFAULT_SUPERADMIN_LAST_NAME: 'admin',
     DEFAULT_COMPANY_ID: 1,
     DEFAUlT_COMPANY_NAME: 'mcinnes cooper',
+    DEFAULT_COMPANY_EMAIL: 'mcinnescooper@legalapp.com',
+    DEFAULT_COMPANY_COUNTRY: 'USA',
+    DEFAULT_COMPANY_CITY: 'New York',
+    DEFAULT_COMPANY_ADDRESS: '31th Alley st.',
     DEFAULT_DOCUMENT_NAME: 'document.pdf',
     KEY_LENGTH: 122, //depends from user secret key and open key
     OPEN_KEY: 'ThisIsOpenKeyTo_OurDigitalSignature_ItsOk2015'

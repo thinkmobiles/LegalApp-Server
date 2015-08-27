@@ -30,6 +30,10 @@ module.exports = function (knex) {
                 row.increments().primary();
                 row.integer('owner_id').index();
                 row.string('name');
+                row.string('email').unique();
+                row.string('country');
+                row.string('city');
+                row.string('address');
                 row.timestamps();
             }),
 
@@ -204,7 +208,11 @@ module.exports = function (knex) {
                 var data = {
                     //id: CONSTANTS.DEFAULT_COMPANY_ID,
                     name: CONSTANTS.DEFAUlT_COMPANY_NAME,
-                    owner_id: CONSTANTS.DEFAULT_SUPERADMIN_ID
+                    owner_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    email: CONSTANTS.DEFAULT_COMPANY_EMAIL,
+                    country: CONSTANTS.DEFAULT_COMPANY_COUNTRY,
+                    city: CONSTANTS.DEFAULT_COMPANY_CITY,
+                    address: CONSTANTS.DEFAULT_COMPANY_ADDRESS
                 };
 
                 insertData(TABLES.COMPANIES, data, cb);
