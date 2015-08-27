@@ -19,12 +19,10 @@ define([
             "signup"                       :  "signup",
             "users"                        :  "users",
             "settings"                     :  "settings",
-            //"templates/preview/:id/create":  "tempPre",
-            "templates/preview/:id"        :  "tempPre",
+            ":docType/preview/:id"         :  "forPreview",
             "templates/:viewType"          :  "templates",
             "documents/:token/signature"   :  "signature",
             "documents/:viewType"          :  "documents",
-            //"document/preview/:id"       :  "documentItem",
             "taskList"                     :  "taskList",
             "userProfile"                  :  "userProfile",
             "forgotPassword"               :  "forgotPassword",
@@ -128,8 +126,12 @@ define([
             this.loadWrapperView('documents', {viewType : viewType}, REDIRECT.whenNOTAuthorized);
         },
 
-        tempPre: function (id){
-            this.loadWrapperView('tempPre', {id : id}, REDIRECT.whenNOTAuthorized);
+        forPreview: function (docType, id){
+            if (docType === 'templates' || docType === 'documents') {
+                this.loadWrapperView('templatesPre', {docType: docType, id: id}, REDIRECT.whenNOTAuthorized);
+            } else {
+                Backbone.history.navigate("users", {trigger: true});
+            }
         },
 
         templates: function (viewType) {

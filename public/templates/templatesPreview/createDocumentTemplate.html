@@ -8,7 +8,7 @@
 <%links.forEach(function(field){%>
 <div>
     <label for="<%=field.id_%>"><%=field.name_%></label><br>
-    <input type="text" id="<%=field.id_%>" class="<%=field.class_%>" data-id="<%= field.type_ ? field.type_ : ''%>">
+    <input type="text" id="<%=field.id_%>" class="<%=field.class_%>" data-id="<%= field.type_ ? field.type_ : ''%>" value="<%= field.value_ ? field.value_ : ''%>">
 </div>
 <%})%>
 
