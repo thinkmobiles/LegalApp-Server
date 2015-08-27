@@ -71,8 +71,6 @@ var Session = function (postGre) {
         }
     };
 
-    this.is
-
     this.authenticatedAdmin = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.SUPER_ADMIN) || (req.session.permissions === PERMISSIONS.ADMIN))) {
             next();
