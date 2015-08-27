@@ -190,22 +190,21 @@ var CompaniesHandler = function (PostGre) {
         var updateCompanyId = req.params.id;
         var permissions = req.session.permissions;
         var companyId = req.session.companyId;
-        var options = req.boby;
+        var options = req.body;
         var saveData;
 
         if ((permissions === PERMISSIONS.SUPER_ADMIN) ||
             (permissions === PERMISSIONS.ADMIN) ||
             ((permissions === PERMISSIONS.CLIENT_ADMIN) && (updateCompanyId === companyId))) {
 
-            options.id = updateCompanyId;
             saveData = prepareData(options);
         } else {
             return next(badRequests.AccessError());
         }
 
         CompanyModel
-            .forge(saveData)
-            .save({patch: true})
+            .forge({id: updateCompanyId})
+            .save(saveData, {patch: true})
             .exec(function (err, companyModel) {
                 if (err) {
                     return next(err);
