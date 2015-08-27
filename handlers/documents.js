@@ -9,19 +9,16 @@ var MESSAGES = require('../constants/messages');
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
-var SIGN_AUTHORITY = require('../constants/signAuthority');
 
 var async = require('async');
 var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
+var dSignature = require('../helpers/dSignature')(PostGre);
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
-var fs = require('fs');
-var Buffer = require('buffer').Buffer;
-var crypto = require('crypto');
 
 var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
@@ -37,46 +34,6 @@ var DocumentsHandler = function (PostGre) {
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
-    function encryptHash(text, userSecretKey) {
-        var algorithm = 'aes-256-ctr';
-        var password = userSecretKey || 'd6F3Efeq';
-        var cipher = crypto.createCipher(algorithm, password);
-        var crypted = cipher.update(text, 'utf8', 'hex');
-
-        crypted += cipher.final('hex');
-
-        return crypted;
-    }
-
-    function decryptHash(text, userSecretKey) {
-        var algorithm = 'aes-256-ctr';
-        var password = userSecretKey || 'd6F3Efeq';
-        var decipher = crypto.createDecipher(algorithm, password);
-        var dec = decipher.update(text, 'hex', 'utf8');
-
-        dec += decipher.final('utf8');
-
-        return dec;
-    }
-
-    function getDocumentHash(filePath) {
-        var shasum = crypto.createHash('sha1');
-        var fileData = fs.readFileSync(filePath);
-        var data = fileData.toString();
-        var startIndex = data.indexOf('SecretKey/');
-        var message;
-
-        if (startIndex !== -1) {
-            message = data.substring(12 + CONSTANTS.KEY_LENGTH, fileData.length);
-        } else {
-            message = data;
-        }
-
-        shasum.update(message);
-
-        return shasum.digest('hex');
-    }
-
     function toUnicode(theString) {
         var unicodeString = '';
         for (var i = 0; i < theString.length; i++) {
@@ -89,46 +46,6 @@ var DocumentsHandler = function (PostGre) {
         }
 
         return unicodeString;
-    }
-
-    function writeKeyToDocument(filePath, key, callback) {
-        var dataBuffer = fs.readFileSync(filePath);
-        var data = dataBuffer.toString();
-        var startIndex = data.indexOf('SecretKey/');
-        var secretKey = 'SecretKey/' + key + '/\n';
-        var newBuffer = new Buffer(secretKey, 'utf8');
-
-        //check if need to replace old value
-        if (startIndex !== -1) {
-            dataBuffer = dataBuffer.slice(newBuffer.length, dataBuffer.length);
-        }
-
-        if (key === null) {
-            newBuffer = dataBuffer;
-        } else {
-            newBuffer = Buffer.concat([newBuffer, dataBuffer]);
-        }
-
-        fs.writeFile(filePath, newBuffer, function (err) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, true);
-        });
-    }
-
-    function readKeyFromDocument(filePath, callback) {
-        var data = fs.readFileSync(filePath, 'utf8');
-        var startIndex = data.indexOf('SecretKey/') + 10; // 'SecretKey/'.length=10
-        var keyLength = startIndex + CONSTANTS.KEY_LENGTH;
-        var key;
-
-        if (startIndex === -1) {
-            callback(badRequests.NotFound({required: 'key'}));
-        } else {
-            key = data.substring(startIndex, keyLength);
-            callback(null, key);
-        }
     }
 
     function saveHtmlToPdf(options, callback) {
@@ -148,51 +65,6 @@ var DocumentsHandler = function (PostGre) {
                 return callback(err);
             }
             callback(null, filePath);
-        });
-    }
-
-    function addEncryptedDataToDocument(filePath, userId, callback) {
-        //var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
-        //var userId = req.session.userId;
-        var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
-        var hashPlusKey;
-        var encryptedHash;
-        var secretKey;
-
-        async.waterfall([
-
-            function (cb) {
-                SecretKeyModel
-                    .find({user_id: userId}, {require: true})
-                    .then(function (secretKeyModel) {
-                        secretKey = secretKeyModel.get('secret_key');
-                        cb(null, secretKey);
-                    })
-                    .catch(SecretKeyModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            function (secretKey, cb) {
-                hashPlusKey = hash + secretKey;
-                encryptedHash = encryptHash(hashPlusKey, openKey);
-
-                writeKeyToDocument(filePath, encryptedHash, function (err) {
-                    if (err) {
-                        return cb(err)
-                    }
-                    cb();
-                });
-            }
-
-        ], function (err, result) {
-            if (err) {
-                return callback(err)
-            }
-
-            callback(null, {success: 'D-Signature was added to document'});
         });
     }
 
@@ -241,7 +113,7 @@ var DocumentsHandler = function (PostGre) {
                             return callback(err);
                         }
 
-                        addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
+                        dSignature.addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
                             if (err) {
                                 return callback(err);
                             }
@@ -255,7 +127,7 @@ var DocumentsHandler = function (PostGre) {
 
             });
 
-    };
+    }
     
     function createDocumentContent(htmlText, fields, values, callback) {
 
@@ -1020,22 +892,22 @@ var DocumentsHandler = function (PostGre) {
 
                 //create file
                 function (cb) {
-                    writeKeyToDocument(filePath, null, function (err) {
+                    dSignature.writeKeyToDocument(filePath, null, function (err) {
                         cb(err, filePath);
                     });
                 },
 
                 //write encrypted Hash with SecretKey
                 function (filePath, cb) {
-                    var hash = getDocumentHash(filePath);
-                    var encryptedHash = encryptHash(hash, sK);
+                    var hash = dSignature.getDocumentHash(filePath);
+                    var encryptedHash = dSignature.encryptHash(hash, sK);
                     console.log('1Hash length = ' + hash.length);
                     console.log('1Encrypted length = ' + encryptedHash.length);
 
                     console.log('Document Hash = ' + hash);
                     console.log('Encrypted Hash = ' + encryptedHash);
 
-                    writeKeyToDocument(filePath, encryptedHash, function (err) {
+                    dSignature.writeKeyToDocument(filePath, encryptedHash, function (err) {
                         cb(err, true);
                     });
                 }
@@ -1044,8 +916,8 @@ var DocumentsHandler = function (PostGre) {
                     return next(err);
                 }
 
-                readKeyFromDocument(filePath, function (err, key) {
-                    var decryptedHash = decryptHash(key, sK);
+                dSignature.readKeyFromDocument(filePath, function (err, key) {
+                    var decryptedHash = dSignature.decryptHash(key, sK);
                     console.log('2Hash length = ' + key.length);
 
                     console.log('Decrypted Hash (read from file) = ' + decryptedHash);
@@ -1057,12 +929,12 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION addEncryptedDataToDocument
+    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument
     this.saveEncryptedDataToDocument = function (req, res, next) {
         var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
+        var hash = dSignature.getDocumentHash(filePath);
         var hashPlusKey;
         var encryptedHash;
         var secretKey;
@@ -1084,9 +956,9 @@ var DocumentsHandler = function (PostGre) {
 
             function (secretKey, cb) {
                 hashPlusKey = hash + secretKey;
-                encryptedHash = encryptHash(hashPlusKey, openKey);
+                encryptedHash = dSignature.encryptHash(hashPlusKey, openKey);
 
-                writeKeyToDocument(filePath, encryptedHash, function (err) {
+                dSignature.writeKeyToDocument(filePath, encryptedHash, function (err) {
                     if (err) {
                         return cb(err)
                     }
@@ -1107,18 +979,18 @@ var DocumentsHandler = function (PostGre) {
         var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
+        var hash = dSignature.getDocumentHash(filePath);
         var decryptedHashPlusKey;
         var decryptedHash;
         var decryptedSecretKey;
         var userName;
 
-        readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
+        dSignature.readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
             if (err) {
                 return next(err);
             }
 
-            decryptedHashPlusKey = decryptHash(encryptedHashPlusKey, openKey);
+            decryptedHashPlusKey = dSignature.decryptHash(encryptedHashPlusKey, openKey);
             decryptedHash = decryptedHashPlusKey.substring(0, 40);
             decryptedSecretKey = decryptedHashPlusKey.substring(40, decryptedHashPlusKey.length);
 

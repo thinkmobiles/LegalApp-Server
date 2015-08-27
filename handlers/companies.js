@@ -195,8 +195,8 @@ var CompaniesHandler = function (PostGre) {
 
     this.updateCompany = function (req, res, next) {
         var updateCompanyId = req.params.id;
-        var permissions = req.session.permissions || 0;
-        var companyId = req.session.companyId || 1;
+        var permissions = req.session.permissions;
+        var companyId = req.session.companyId;
         var options = req.body;
         var imageSrc = options.imageSrc;
         var saveData;
