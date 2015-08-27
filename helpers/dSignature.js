@@ -8,7 +8,8 @@ var Buffer = require('buffer').Buffer;
 var crypto = require('crypto');
 
 var DSignatureModule = function (PostGre) {
-    var SecretKeyModel = PostGre.Models.SecretKey;
+    var Models = PostGre.Models;
+    var SecretKeyModel = Models.SecretKey;
     var self = this;
     
     this.encryptHash = function (text, userSecretKey) {
@@ -137,4 +138,4 @@ var DSignatureModule = function (PostGre) {
     
 };
 
-module.exports = new DSignatureModule();
+module.exports = DSignatureModule;
