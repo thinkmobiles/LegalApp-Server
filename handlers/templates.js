@@ -107,6 +107,10 @@ var TemplatesHandler = function (PostGre) {
             linkedTemplatesArray = options.linked_templates;
         }
 
+        if (options.description && options.description.length) {
+            description = options.description;
+        }
+
         originalFilename = templateFile.originalFilename;
         extension = originalFilename.slice(-4);
 
@@ -160,7 +164,8 @@ var TemplatesHandler = function (PostGre) {
                     link_id: linkId,
                     company_id: companyId,
                     html_content: htmlContent,
-                    has_linked_template: hasLinkedTemplate
+                    has_linked_template: hasLinkedTemplate,
+                    description: description
                 };
 
                 TemplateModel
@@ -208,7 +213,7 @@ var TemplatesHandler = function (PostGre) {
             //save linkedTemplates
             function (templateModel, cb) {
 
-                if (!linkedTemplatesArray && !linkedTemplatesArray.length) {
+                if (!linkedTemplatesArray) {
                     return cb(null, templateModel);
                 }
 
@@ -278,7 +283,7 @@ var TemplatesHandler = function (PostGre) {
         };
         var fetchParams = {
             require: true,
-            withRelated: ['link', 'templateFile']
+            withRelated: ['link', 'templateFile', 'linkedTemplates']
         };
 
         TemplateModel

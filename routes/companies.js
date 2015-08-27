@@ -12,6 +12,9 @@ module.exports = function (app) {
 
     router.post('/', /*session.authenticatedUser,*/ companiesHandler.newCompany); //todo check permissions...
     router.get('/', session.authenticatedAdmin, companiesHandler.getCompanies);
+    router.get('/getList',session.authenticatedUser, companiesHandler.getAllCompanies);
+    router.put('/:id', session.authenticatedUser, companiesHandler.updateCompany);
+
 
     return router;
 };
