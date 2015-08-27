@@ -3,15 +3,19 @@
 var CONSTANTS = require('../constants/index');
 var PERMISSIONS = require('../constants/permissions');
 var TABLES = require('../constants/tables');
+var BUCKETS = require('../constants/buckets');
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+
+var ImagesHandler = require('../handlers/images');
 
 var CompaniesHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var CompanyModel = Models.Company;
     var UserCompanies = Models.UserCompanies;
+    var imageHandler = new ImagesHandler(PostGre);
     var self = this;
 
     function prepareData(saveData) {
@@ -165,6 +169,9 @@ var CompaniesHandler = function (PostGre) {
         var permissions = req.session.permissions;
         var companyId = req.session.companyId;
         var queryOptions;
+        var fetchOptions = {
+            withRelated: 'logo'
+        };
 
         if (!((permissions === PERMISSIONS.SUPER_ADMIN) || (permissions === PERMISSIONS.ADMIN))) {
             queryOptions = {
@@ -179,7 +186,7 @@ var CompaniesHandler = function (PostGre) {
                     qb.where(queryOptions);
                 }
             })
-            .fetchAll()
+            .fetchAll(fetchOptions)
             .then(function (companiesModels) {
                 res.status(200).send(companiesModels);
             })
@@ -188,28 +195,86 @@ var CompaniesHandler = function (PostGre) {
 
     this.updateCompany = function (req, res, next) {
         var updateCompanyId = req.params.id;
-        var permissions = req.session.permissions;
-        var companyId = req.session.companyId;
+        var permissions = req.session.permissions || 0;
+        var companyId = req.session.companyId || 1;
         var options = req.body;
+        var imageSrc = options.imageSrc;
         var saveData;
+        var logo = {};
 
         if ((permissions === PERMISSIONS.SUPER_ADMIN) ||
             (permissions === PERMISSIONS.ADMIN) ||
             ((permissions === PERMISSIONS.CLIENT_ADMIN) && (updateCompanyId === companyId))) {
 
             saveData = prepareData(options);
+            saveData.id = updateCompanyId;
         } else {
             return next(badRequests.AccessError());
         }
 
+        if (imageSrc) {
+            logo.imageSrc = imageSrc;
+            logo.imageable_id = updateCompanyId;
+            logo.imageable_type = 'companies';
+        }
+
+        if ((Object.keys(saveData).length === 1) && !imageSrc) {
+            return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
+        }
+
+        //try to modify company
         CompanyModel
-            .forge({id: updateCompanyId})
-            .save(saveData, {patch: true})
-            .exec(function (err, companyModel) {
+            .upsert(saveData, function (err, companyModel) {
+                var LogoModel;
+                var fetchOptions = {
+                    imageable_id: updateCompanyId,
+                    imageable_type: 'companies'
+                };
+
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({success: 'updated', model: companyModel});
+
+                if (!logo.imageSrc) {
+                    return res.status(200).send({success: 'success updated', company: companyModel});
+                }
+
+                LogoModel = companyModel.related('logo');
+
+                LogoModel
+                    .fetch(fetchOptions)
+                    .exec(function (err, logoModel) {
+                        var jsonLogoModel;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        jsonLogoModel = logoModel.toJSON();
+
+                        logo.id = jsonLogoModel.id;
+                        logo.oldName = jsonLogoModel.name;
+                        logo.oldKey = jsonLogoModel.key;
+
+                        imageHandler.saveImage(logo, function (err, imageModel) {
+                            var logoUrl;
+                            var logoName;
+                            var logoKey;
+                            var bucket = BUCKETS.LOGOS;
+                            var jsonCompanyModel = companyModel.toJSON();
+
+                            if (err) {
+                                return next(err);
+                            }
+
+                            logoName = imageModel.attributes.name;
+                            logoKey = imageModel.attributes.key;
+                            logoUrl = Models.Image.getImageUrl(logoName, logoKey, bucket);
+                            jsonCompanyModel.logo.url = logoUrl;
+
+                            res.status(200).send({success: 'success updated', company: jsonCompanyModel});
+                        });
+                    });
             });
     };
 };
