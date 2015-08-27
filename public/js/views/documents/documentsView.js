@@ -44,7 +44,8 @@ define([
             "click #templateList .templateName" : "searchDocuments", //TODO
             "click .searchBtn"   : "search",
             "click .templateName": "setActive",
-            "click .btnViewType" : "changeViewType"
+            "click .btnViewType" : "changeViewType",
+            "click .documentItem": "goToPreview"
         },
 
         render: function () {
@@ -60,6 +61,11 @@ define([
             });
 
             return this;
+        },
+
+        goToPreview: function(event){
+            var targetId = $(event.target).data('id');
+            Backbone.history.navigate('documents/preview/'+targetId, {trigger : true});
         },
 
         renderDocumentsList: function (data) {

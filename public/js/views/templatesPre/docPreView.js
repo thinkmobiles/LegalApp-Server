@@ -3,7 +3,7 @@
  */
 
 define([
-    'text!templates/tempPreview/docPreviewTemplate.html'
+    'text!templates/templatesPreview/docPreviewTemplate.html'
 
 ], function (DocTemp) {
 
