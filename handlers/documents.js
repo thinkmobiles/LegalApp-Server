@@ -13,7 +13,7 @@ var BUCKETS = require('../constants/buckets');
 var async = require('async');
 var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
-var dSignature = require('../helpers/dSignature')(PostGre);
+var DSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
@@ -21,6 +21,7 @@ var AttachmentsHandler = require('./attachments');
 var path = require('path');
 
 var DocumentsHandler = function (PostGre) {
+    var dSignature = new DSignature(PostGre);
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
