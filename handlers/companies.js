@@ -125,7 +125,7 @@ var CompaniesHandler = function (PostGre) {
 
         createOptions = prepareData(options);
 
-        if (!name) {
+        if (!options.name) {
             return next(badRequests.NotEnParams({reqParams: ['name']}));
         }
 
