@@ -63,7 +63,7 @@ define([
 
             data = {
                 template_id : this.tempInfo.id,
-                assigned_id : assignedId,
+                user_id     : assignedId,
                 values      : values
             };
 

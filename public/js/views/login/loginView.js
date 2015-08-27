@@ -104,7 +104,8 @@ define([
                     App.sessionData.set({
                         authorized : true,
                         user       : profile.first_name+" "+profile.last_name,
-                        role       : profile.permissions
+                        role       : profile.permissions,
+                        company    : res.user.company[0].id
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
@@ -117,7 +118,9 @@ define([
                 error: function (err) {
                     App.sessionData.set({
                         authorized : false,
-                        user       : null
+                        user       : null,
+                        role       : null,
+                        company    : null
                     });
 
                     self.stateModel.set({
