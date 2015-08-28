@@ -13,7 +13,7 @@ var BUCKETS = require('../constants/buckets');
 var async = require('async');
 var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
-var DSignature = require('../helpers/dSignature');
+var dSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
@@ -21,11 +21,9 @@ var AttachmentsHandler = require('./attachments');
 var path = require('path');
 
 var DocumentsHandler = function (PostGre) {
-    var dSignature = new DSignature(PostGre);
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
-    var ProfileModel = Models.Profile;
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
@@ -78,6 +76,8 @@ var DocumentsHandler = function (PostGre) {
         var searchValue;
         var newStatus;
         var saveData;
+        var secretKey;
+        var options = {};
 
         if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
             searchValue = companySignature;
@@ -109,18 +109,47 @@ var DocumentsHandler = function (PostGre) {
                 if (newStatus === STATUSES.SIGNED_BY_CLIENT) {
                     options.html = htmlContent;
 
-                    saveHtmlToPdf(options, function (err, pdfFilePath) {
-                        if (err) {
-                            return callback(err);
-                        }
 
-                        dSignature.addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
+                    async.waterfall([
+
+                            //find secretKey of our user
+                            function (cb) {
+                                SecretKeyModel
+                                    .find({user_id: userId}, {require: true})
+                                    .then(function (secretKeyModel) {
+                                        secretKey = secretKeyModel.get('secret_key');
+                                        cb(null, secretKey);
+                                    })
+                                    .catch(SecretKeyModel.NotFoundError, function (err) {
+                                        cb(badRequests.NotFound());
+                                    })
+                                    .catch(cb);
+                            },
+
+                            //create PDF and save secretKey to PDF
+                            function (secretKey, cb) {
+                                saveHtmlToPdf(options, function (err, pdfFilePath) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+
+                                    dSignature.addEncryptedDataToDocument(pdfFilePath, secretKey, function (err) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        cb(null, savedDocumentModel);
+                                    });
+                                });
+                            }
+                        ],
+
+                        function (err, savedDocumentModel) {
                             if (err) {
-                                return callback(err);
+                                return callback(err)
                             }
                             callback(null, savedDocumentModel);
-                        });
-                    });
+                        }
+                    );
 
                 } else {
                     callback(null, savedDocumentModel);
@@ -129,55 +158,15 @@ var DocumentsHandler = function (PostGre) {
             });
 
     }
-    
-    function createDocumentContent(htmlText, fields, values, callback) {
 
-        //check input params:
-        if (!htmlText || !htmlText.length || !fields || !values) {
-            if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
-            }
-            return false;
-        }
-
-        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
-
-        /*for (var i in values) {
-         var val = values[i];
-         var code = fields[i];
-
-         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
-         }*/
-
-        fields.forEach(function (field) {
-            var fieldName = field.name;
-            var searchValue = toUnicode(field.code);
-            var replaceValue;
-
-            if (fieldName in values) {
-                replaceValue = values[fieldName];
-                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
-            }
-        });
-
-        //return result
-        if (callback && (typeof callback === 'function')) {
-            callback(null, htmlText); //all right
-        }
-        return htmlText;
-
-    }
-
-    this.createDocumentContent = createDocumentContent;
-    
     function generateDocumentName(templateModel, userModel) {
         var name = templateModel.get('name');
         var profileModel = userModel.related('profile');
-        
-        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name')  + ')';
+
+        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name') + ')';
 
         return name;
-    };
+    }
 
     function insertIntoDocuments(options, callback) {
         var userModel = options.userModel;
@@ -194,24 +183,24 @@ var DocumentsHandler = function (PostGre) {
         var htmlContent;
         var fields = [];
         var saveData;
-        
+
         if (userModel && userModel.related('company') && userModel.related('company').length) {
             companyId = userModel.related('company').models[0].id;
         }
-        
+
         if (linkModel && linkModel.related('linkFields')) {
             linkFieldsModels = linkModel.related('linkFields');
             linkFieldsModels.models.forEach(function (model) {
                 fields.push(model.toJSON());
             });
         }
-        
+
         if (values && templateHtmlContent) {
-            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+            htmlContent = self.createDocumentContent(templateHtmlContent, fields, values);
         } else {
             htmlContent = '';
         }
-        
+
         saveData = {
             name: documentName,
             html_content: htmlContent,
@@ -233,9 +222,11 @@ var DocumentsHandler = function (PostGre) {
             });
     }
 
-    function createDocument(options, callback) {};
+    function createDocument(options, callback) {
+    };
 
-    function updateDocument(id, options, callback) {};
+    function updateDocument(id, options, callback) {
+    };
 
     function prepareSaveData(options, models, callback) {
         var templateModel = models.templateModel;
@@ -284,7 +275,7 @@ var DocumentsHandler = function (PostGre) {
         }
 
         if (values && templateHtmlContent) {
-            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+            htmlContent = self.createDocumentContent(templateHtmlContent, fields, values);
             saveData.html_content = htmlContent;
         }
 
@@ -298,6 +289,43 @@ var DocumentsHandler = function (PostGre) {
                 callback(null, documentModel);
             });
 
+    }
+
+    this.createDocumentContent = function (htmlText, fields, values, callback) {
+
+        //check input params:
+        if (!htmlText || !htmlText.length || !fields || !values) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
+            }
+            return false;
+        }
+
+        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
+
+        /*for (var i in values) {
+         var val = values[i];
+         var code = fields[i];
+
+         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
+         }*/
+
+        fields.forEach(function (field) {
+            var fieldName = field.name;
+            var searchValue = toUnicode(field.code);
+            var replaceValue;
+
+            if (fieldName in values) {
+                replaceValue = values[fieldName];
+                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+            }
+        });
+
+        //return result
+        if (callback && (typeof callback === 'function')) {
+            callback(null, htmlText); //all right
+        }
+        return htmlText;
     };
 
     this.saveNewDocument = function (req, res, next) {
@@ -310,7 +338,7 @@ var DocumentsHandler = function (PostGre) {
         console.log(options);
 
         if (!templateId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id'] }));
+            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -373,7 +401,7 @@ var DocumentsHandler = function (PostGre) {
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({ success: 'success created', model: documentModel });
+                res.status(201).send({success: 'success created', model: documentModel});
             });
         });
     };
@@ -387,26 +415,26 @@ var DocumentsHandler = function (PostGre) {
         var userId = options.user_id;
         var signImage = options.signature;
         var values;
-        
+
         console.log('create document');
         console.log(options);
-        
+
         if (!templateId || !assignedId || !userId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id'] }));
+            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id']}));
         }
-        
+
         if ((assignedId == currentUserId)) {
             if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
-            } 
+                return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
+            }
         }
-        
+
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
         }
-        
+
         async.parallel({
-                    
+
             //try to find the user:
             userModel: function (cb) {
                 var criteria = {
@@ -416,7 +444,7 @@ var DocumentsHandler = function (PostGre) {
                     required: true,
                     withRelated: ['profile', 'company']
                 };
-                        
+
                 UserModel
                     .find(criteria, fetchOptions)
                     .then(function (userModel) {
@@ -427,7 +455,7 @@ var DocumentsHandler = function (PostGre) {
                     })
                     .catch(cb);
             },
-            
+
             //try to find the assigned user: (access to email, check sign_authority)
             assignedUserModel: function (cb) {
                 var criteria = {
@@ -437,15 +465,15 @@ var DocumentsHandler = function (PostGre) {
                     required: true,
                     withRelated: ['profile']
                 };
-                
+
                 UserModel
                     .find(criteria, fetchOptions)
                     .then(function (userModel) {
                         //TODO: check
                         var profileModel = userModel.related('profile');
                         var signAuthority = profileModel.get('sign_authority');
-                    
-                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) { 
+
+                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) {
                             return cb(badRequests.AccessError({message: MESSAGES.SIGN_AUTHORITY_ERROR}));
                         }
 
@@ -465,11 +493,11 @@ var DocumentsHandler = function (PostGre) {
                 var fetchOptions = {
                     require: true
                 };
-                        
+
                 if (values) {
                     fetchOptions.withRelated = ['link.linkFields'];
                 }
-                        
+
                 TemplateModel
                     .find(criteria, fetchOptions)
                     .then(function (templateModel) {
@@ -480,7 +508,7 @@ var DocumentsHandler = function (PostGre) {
                     })
                     .catch(cb);
             }
-                    
+
         }, function (err, results) {
             var userModel;
             var templateModel;
@@ -490,11 +518,11 @@ var DocumentsHandler = function (PostGre) {
             if (err) {
                 return next(err);
             }
-        
+
             userModel = results.userModel;
             templateModel = results.templateModel;
             assignedUserModel = results.assignedUserModel;
-            
+
             insertOptions = {
                 currentUserId: currentUserId, //created_by
                 userModel: userModel,
@@ -507,7 +535,7 @@ var DocumentsHandler = function (PostGre) {
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({ success: 'success created', model: documentModel });
+                res.status(201).send({success: 'success created', model: documentModel});
             });
 
         });
@@ -591,9 +619,9 @@ var DocumentsHandler = function (PostGre) {
                         if (err) {
                             return next(err);
                         }
-                        res.status(200).send({ success: 'success updated', model: documentModel });
+                        res.status(200).send({success: 'success updated', model: documentModel});
                     });
-                }) ;
+                });
             })
             .catch(DocumentModel.NotFoundError, function (err) {
                 next(badRequests.NotFound({message: 'Document was not found'}));
@@ -813,68 +841,68 @@ var DocumentsHandler = function (PostGre) {
             .fetchAll(/*{withRelated: ['assignedUser.profile']}*/)
             .exec(function (err, rows) {
                 /*var documents;
-                var documentsJSON = [];
+                 var documentsJSON = [];
 
-                if (err) {
-                    return next(err);
-                }
+                 if (err) {
+                 return next(err);
+                 }
 
-                documents = rows.models;
-                documents.forEach(function (doc) {
-                    var assignedUser;
-                    var docJSON = doc.toJSON();
+                 documents = rows.models;
+                 documents.forEach(function (doc) {
+                 var assignedUser;
+                 var docJSON = doc.toJSON();
 
-                    if (docJSON.assignedUser && docJSON.assignedUser.id) {
-                        assignedUser = docJSON.assignedUser;
-                        docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
-                    }
-                    documentsJSON.push(docJSON);
-                });*/
+                 if (docJSON.assignedUser && docJSON.assignedUser.id) {
+                 assignedUser = docJSON.assignedUser;
+                 docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
+                 }
+                 documentsJSON.push(docJSON);
+                 });*/
 
 
                 res.status(200).send(rows);
             });
 
         /*TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var documents = templateModel.related('documents').model;
+         .find(criteria, fetchOptions)
+         .then(function (templateModel) {
+         var documents = templateModel.related('documents').model;
 
-                documents
-                    .query(function (qb) {
-                        qb.where('template_id', templateId); //TODO: ???
+         documents
+         .query(function (qb) {
+         qb.where('template_id', templateId); //TODO: ???
 
-                        if ((status !== undefined) && (status !== 'all')) {
-                            status = parseInt(status);
-                            qb.where('status', status);
-                        }
-                        qb.orderBy(orderBy, order);
-                    })
-                    .fetchAll({
-                        withRelated: ['assignedUser']
-                    })
-                    .exec(function (err, documentModels) {
-                        var documentsJSON = [];
-                        var json;
+         if ((status !== undefined) && (status !== 'all')) {
+         status = parseInt(status);
+         qb.where('status', status);
+         }
+         qb.orderBy(orderBy, order);
+         })
+         .fetchAll({
+         withRelated: ['assignedUser']
+         })
+         .exec(function (err, documentModels) {
+         var documentsJSON = [];
+         var json;
 
-                        if (err) {
-                            return next(err);
-                        }
+         if (err) {
+         return next(err);
+         }
 
-                        documentModels.forEach(function (model) {
-                            documentsJSON.push(model.toJSON());
-                        });
+         documentModels.forEach(function (model) {
+         documentsJSON.push(model.toJSON());
+         });
 
-                        json = templateModel.toJSON();
-                        json.documents = documentsJSON;
+         json = templateModel.toJSON();
+         json.documents = documentsJSON;
 
-                        res.status(200).send(json);
-                    });
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);*/
+         res.status(200).send(json);
+         });
+         })
+         .catch(TemplateModel.NotFoundError, function (err) {
+         next(badRequests.NotFound());
+         })
+         .catch(next);*/
     };
 
     this.htmlToPdf = function (req, res, next) {  //for testing, DELETE this method when done
@@ -930,9 +958,9 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument
+    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument delete this function later
     this.saveEncryptedDataToDocument = function (req, res, next) {
-        var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.body.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
         var hash = dSignature.getDocumentHash(filePath);
@@ -977,7 +1005,7 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.validateDocumentBySecretKey = function (req, res, next) {
-        var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.query.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
         var hash = dSignature.getDocumentHash(filePath);

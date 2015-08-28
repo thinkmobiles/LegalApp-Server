@@ -123,11 +123,11 @@ var CompaniesHandler = function (PostGre) {
         var options = req.body;
         var createOptions;
 
-        createOptions = prepareData(options);
-
         if (!options.name) {
             return next(badRequests.NotEnParams({reqParams: ['name']}));
         }
+
+        createOptions = prepareData(options);
 
         CompanyModel
             .forge()
