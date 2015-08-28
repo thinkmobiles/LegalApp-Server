@@ -97,7 +97,7 @@ var MailerModule = function () {
             console.log(service, user, pass);
         }
         
-        smtpTransport.sendMail(mailOptions, function (err, responseResult) {
+        /*smtpTransport.sendMail(mailOptions, function (err, responseResult) {
             if (err) {
                 console.log(err);
                 if (callback && typeof callback === 'function') {
@@ -109,7 +109,7 @@ var MailerModule = function () {
                     callback(null, responseResult);
                 }
             }
-        });
+        });*/
     }
 
     this.onForgotPassword = function(options, callback) {
@@ -190,14 +190,14 @@ var MailerModule = function () {
             srcUserName: srcUser.profile.last_name,
             dstUserName: dstUser.profile.last_name,
             companyName: company.name,
-            documentName: template.name,
+            documentName: document.name || template.name, //TODO
             signatureLink: link
         };
 
         mailOptions = {
             from: FROM,
             to: dstUser.email,
-            subject: template.name,
+            subject: document.name || template.name, //TODO
             generateTextFromHTML: true,
             html: _.template(fs.readFileSync('public/templates/mailer/sendToSignature.html', "utf8"))(templateOptions)
         };
