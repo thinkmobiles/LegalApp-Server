@@ -155,6 +155,7 @@ module.exports = function (knex) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
                 row.string('secret_key').notNullable().unique();
+                row.text('sign_image');
                 row.timestamps();
             })
 
