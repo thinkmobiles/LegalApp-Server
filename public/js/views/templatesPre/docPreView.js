@@ -20,7 +20,8 @@ define([
         events : {
             //"click #sendAndSignBtn" : "sendMyDoc",
             "click #modalBack" : "closeDialog",
-            "click #modalSave" : "saveFromDialog"
+            "click #modalSave" : "saveFromDialog",
+            "click #modalSend" : "saveFromDialog"
         },
 
         drawDocument: function(){
