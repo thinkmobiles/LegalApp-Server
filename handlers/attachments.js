@@ -1,6 +1,3 @@
-/**
- * Created by kille on 23.07.2015.
- */
 'use strict';
 
 var TABLES = require('../constants/tables');

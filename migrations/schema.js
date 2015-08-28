@@ -44,13 +44,14 @@ module.exports = function (knex) {
                 row.integer('template_id').notNullable().index();
                 row.integer('company_id').index();
                 row.integer('user_id').index();
+                row.string('access_token');
                 row.integer('assigned_id').index();
                 row.integer('status').notNullable().defaultTo(STATUSES.CREATED);
                 row.integer('created_by').index();
-                row.integer('sent_by').index();
-                row.string('access_token');
-                row.timestamp('sent_at');
-                row.timestamp('signed_at');
+                row.timestamp('sent_to_company_at');
+                row.timestamp('sent_to_client_at');
+                row.timestamp('company_signed_at');
+                row.timestamp('client_signed_at');
                 row.json('values');
                 row.timestamps();
             }),
@@ -155,6 +156,7 @@ module.exports = function (knex) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
                 row.string('secret_key').notNullable().unique();
+                row.text('sign_image');
                 row.timestamps();
             })
 
@@ -197,7 +199,8 @@ module.exports = function (knex) {
                     user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
                     first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
                     last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
-                    permissions: PERMISSIONS.SUPER_ADMIN
+                    permissions: PERMISSIONS.SUPER_ADMIN,
+                    sign_authority: SIGN_AUTHORITY.ENABLED
                 };
 
                 insertData(TABLES.PROFILES, data, cb);

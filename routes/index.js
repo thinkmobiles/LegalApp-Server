@@ -67,14 +67,16 @@ module.exports = function (app) {
     });
 
     function notFound(req, res, next) {
+        var accepts = req.headers['accept'];
+
         res.status(404);
+
+        if (accepts.indexOf('json') !== -1) {
+            return res.json({error: MESSAGES.PAGE_NOT_FOUND});
+        }
 
         if (req.accepts('html')) {
             return res.send(MESSAGES.PAGE_NOT_FOUND);
-        }
-
-        if (req.accepts('json')) {
-            return res.json({error: MESSAGES.PAGE_NOT_FOUND});
         }
 
         res.type('txt');

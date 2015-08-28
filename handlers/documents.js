@@ -2,18 +2,18 @@
 
 
 var CONSTANTS = require('../constants/index');
-var SIGN_AUTHORITY = require('../constants/signAuthority');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var MESSAGES = require('../constants/messages');
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
+var SIGN_AUTHORITY = require('../constants/signAuthority')
 
 var async = require('async');
 var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
-var DSignature = require('../helpers/dSignature');
+var dSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
@@ -21,17 +21,14 @@ var AttachmentsHandler = require('./attachments');
 var path = require('path');
 
 var DocumentsHandler = function (PostGre) {
-    var dSignature = new DSignature(PostGre);
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
-    var ProfileModel = Models.Profile;
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
     var LinkFieldsModel = Models.LinkFields;
     var SecretKeyModel = Models.SecretKey;
-    var ProfileModel = Models.Profile;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
@@ -78,6 +75,8 @@ var DocumentsHandler = function (PostGre) {
         var searchValue;
         var newStatus;
         var saveData;
+        var secretKey;
+        var options = {};
 
         if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
             searchValue = companySignature;
@@ -109,18 +108,47 @@ var DocumentsHandler = function (PostGre) {
                 if (newStatus === STATUSES.SIGNED_BY_CLIENT) {
                     options.html = htmlContent;
 
-                    saveHtmlToPdf(options, function (err, pdfFilePath) {
-                        if (err) {
-                            return callback(err);
-                        }
 
-                        dSignature.addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
+                    async.waterfall([
+
+                            //find secretKey of our user
+                            function (cb) {
+                                SecretKeyModel
+                                    .find({user_id: userId}, {require: true})
+                                    .then(function (secretKeyModel) {
+                                        secretKey = secretKeyModel.get('secret_key');
+                                        cb(null, secretKey);
+                                    })
+                                    .catch(SecretKeyModel.NotFoundError, function (err) {
+                                        cb(badRequests.NotFound());
+                                    })
+                                    .catch(cb);
+                            },
+
+                            //create PDF and save secretKey to PDF
+                            function (secretKey, cb) {
+                                saveHtmlToPdf(options, function (err, pdfFilePath) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+
+                                    dSignature.addEncryptedDataToDocument(pdfFilePath, secretKey, function (err) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        cb(null, savedDocumentModel);
+                                    });
+                                });
+                            }
+                        ],
+
+                        function (err, savedDocumentModel) {
                             if (err) {
-                                return callback(err);
+                                return callback(err)
                             }
                             callback(null, savedDocumentModel);
-                        });
-                    });
+                        }
+                    );
 
                 } else {
                     callback(null, savedDocumentModel);
@@ -128,8 +156,8 @@ var DocumentsHandler = function (PostGre) {
 
             });
 
-    }
-    
+    };
+
     function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
@@ -169,12 +197,20 @@ var DocumentsHandler = function (PostGre) {
     }
 
     this.createDocumentContent = createDocumentContent;
-    
+
     function generateDocumentName(templateModel, userModel) {
         var name = templateModel.get('name');
         var profileModel = userModel.related('profile');
-        
-        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name')  + ')';
+        var username;
+
+        if (userModel && userModel.id && userModel.related('profile')) {
+            profileModel = userModel.related('profile');
+            username = profileModel.get('first_name') + ' ' + profileModel.get('last_name');
+        } else {
+            username = 'unknown';
+        }
+
+        name += ' (' + username + ')';
 
         return name;
     };
@@ -194,24 +230,24 @@ var DocumentsHandler = function (PostGre) {
         var htmlContent;
         var fields = [];
         var saveData;
-        
+
         if (userModel && userModel.related('company') && userModel.related('company').length) {
             companyId = userModel.related('company').models[0].id;
         }
-        
+
         if (linkModel && linkModel.related('linkFields')) {
             linkFieldsModels = linkModel.related('linkFields');
             linkFieldsModels.models.forEach(function (model) {
                 fields.push(model.toJSON());
             });
         }
-        
+
         if (values && templateHtmlContent) {
             htmlContent = createDocumentContent(templateHtmlContent, fields, values);
         } else {
             htmlContent = '';
         }
-        
+
         saveData = {
             name: documentName,
             html_content: htmlContent,
@@ -233,289 +269,11 @@ var DocumentsHandler = function (PostGre) {
             });
     }
 
-    function createDocument(options, callback) {};
-
-    function updateDocument(id, options, callback) {};
-
-    function prepareSaveData(options, models, callback) {
-        var templateModel = models.templateModel;
-        var userModel = models.userModel;
-        var documentModel = models.documentModel;
-        var templateHtmlContent = templateModel.get('html_content');
-        var linkModel = templateModel.related('link');
-        var linkFieldsModels;
-        var fields = [];
-        var companyId;
-        var saveData = {
-            template_id: templateModel.id,
-            status: STATUSES.CREATED
-        };
-        var documentName;
-        var values;
-        var htmlContent;
-
-        console.log(userModel);
-
-        if (documentModel && documentModel.id) {
-            saveData.id = documentModel.id; //update
-        } //else create
-
-        if (userModel && userModel.id) {
-            documentName = generateDocumentName(templateModel, userModel);
-            saveData.user_id = userModel.id;
-            saveData.name = documentName;
-
-            if (userModel.related('company') && userModel.related('company').length) {
-                companyId = userModel.related('company').models[0].id;
-                saveData.company_id = companyId;
-            }
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-            saveData.values = values;
-        }
-
-        if (linkModel && linkModel.related('linkFields')) {
-            linkFieldsModels = linkModel.related('linkFields');
-            linkFieldsModels.models.forEach(function (model) {
-                fields.push(model.toJSON());
-            });
-        }
-
-        if (values && templateHtmlContent) {
-            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
-            saveData.html_content = htmlContent;
-        }
-
-        //console.log('htmlContent', htmlContent);
-
-        DocumentModel
-            .upsert(saveData, function (err, documentModel) {
-                if (err) {
-                    return callback(err);
-                }
-                callback(null, documentModel);
-            });
-
+    function createDocument(options, callback) {
     };
 
-    this.saveNewDocument = function (req, res, next) {
-        var options = req.body;
-        var templateId = options.template_id;
-        var userId = options.user_id || options.assigned_id; //TODO: !!!
-        var values;
-
-        console.log('create document');
-        console.log(options);
-
-        if (!templateId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id'] }));
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        }
-
-        async.parallel({
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-
-            },
-            userModel: function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    require: true,
-                    withRelated: ['profile', 'company']
-                };
-
-                if (!userId) {
-                    return cb();
-                }
-
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'The User was not found'}));
-                    })
-                    .catch(cb);
-            }
-        }, function (err, models) {
-            if (err) {
-                return next(err);
-            }
-
-            prepareSaveData(options, models, function (err, documentModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({ success: 'success created', model: documentModel });
-            });
-        });
-    };
-
-    this.newDocument = function (req, res, next) {
-        var companyId = req.session.companyId;
-        var currentUserId = req.session.userId;
-        var options = req.body;
-        var templateId = options.template_id;
-        var assignedId = options.assigned_id || req.session.userId;
-        var userId = options.user_id;
-        var signImage = options.signature;
-        var values;
-        
-        console.log('create document');
-        console.log(options);
-        
-        if (!templateId || !assignedId || !userId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id'] }));
-        }
-        
-        if ((assignedId == currentUserId)) {
-            if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
-            } 
-        }
-        
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        }
-        
-        async.parallel({
-                    
-            //try to find the user:
-            userModel: function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile', 'company']
-                };
-                        
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        (badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-            
-            //try to find the assigned user: (access to email, check sign_authority)
-            assignedUserModel: function (cb) {
-                var criteria = {
-                    id: assignedId
-                };
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile']
-                };
-                
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        //TODO: check
-                        var profileModel = userModel.related('profile');
-                        var signAuthority = profileModel.get('sign_authority');
-                    
-                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) { 
-                            return cb(badRequests.AccessError({message: MESSAGES.SIGN_AUTHORITY_ERROR}));
-                        }
-
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            //try to find the template:
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-                        
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-                        
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            }
-                    
-        }, function (err, results) {
-            var userModel;
-            var templateModel;
-            var assignedUserModel;
-            var insertOptions;
-
-            if (err) {
-                return next(err);
-            }
-        
-            userModel = results.userModel;
-            templateModel = results.templateModel;
-            assignedUserModel = results.assignedUserModel;
-            
-            insertOptions = {
-                currentUserId: currentUserId, //created_by
-                userModel: userModel,
-                templateModel: templateModel,
-                assignedUserModel: assignedUserModel,
-                values: values
-            };
-
-            insertIntoDocuments(insertOptions, function (err, documentModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({ success: 'success created', model: documentModel });
-            });
-
-        });
-    };
-
-    this.updateDocument = function (req, res, next) {
-        var options = req.body;
-        var documentId = req.params.id;
+    function updateDocument(id, options, callback) {
+        var documentId = id;
         var criteria = {
             id: documentId
         };
@@ -583,20 +341,525 @@ var DocumentsHandler = function (PostGre) {
                     }
                 }, function (err, models) {
                     if (err) {
-                        return next(err);
+                        return callback(err);
                     }
 
                     models.documentModel = documentModel;
                     prepareSaveData(options, models, function (err, documentModel) {
                         if (err) {
-                            return next(err);
+                            return callback(err);
                         }
-                        res.status(200).send({ success: 'success updated', model: documentModel });
+                        callback(null, documentModel, models);
                     });
-                }) ;
+                });
             })
             .catch(DocumentModel.NotFoundError, function (err) {
-                next(badRequests.NotFound({message: 'Document was not found'}));
+                callback(badRequests.NotFound({message: 'Document was not found'}));
+            })
+            .catch(callback);
+    };
+
+    function prepareSaveData(options, models, callback) {
+        var templateModel = models.templateModel;
+        var userModel = models.userModel;
+        var documentModel = models.documentModel;
+        var templateHtmlContent = templateModel.get('html_content');
+        var linkModel = templateModel.related('link');
+        var linkFieldsModels;
+        var fields = [];
+        var companyId;
+        var saveData = {
+            template_id: templateModel.id,
+            status: STATUSES.CREATED
+        };
+        var documentName;
+        var values;
+        var htmlContent;
+
+        documentName = generateDocumentName(templateModel, userModel);
+        saveData.name = documentName;
+
+        if (documentModel && documentModel.id) {
+            saveData.id = documentModel.id; //update
+        } //else create
+
+        if (userModel && userModel.id) {
+            saveData.user_id = userModel.id;
+            if (userModel.related('company') && userModel.related('company').length) {
+                companyId = userModel.related('company').models[0].id;
+                saveData.company_id = companyId;
+            }
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+            saveData.values = values;
+        }
+
+        if (linkModel && linkModel.related('linkFields')) {
+            linkFieldsModels = linkModel.related('linkFields');
+            linkFieldsModels.models.forEach(function (model) {
+                fields.push(model.toJSON());
+            });
+        }
+
+        if (values && templateHtmlContent) {
+            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+            saveData.html_content = htmlContent;
+        }
+
+        //console.log('htmlContent', htmlContent);
+
+        DocumentModel
+            .upsert(saveData, function (err, documentModel) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, documentModel);
+            });
+
+    }
+
+    this.createDocumentContent = function (htmlText, fields, values, callback) {
+
+        //check input params:
+        if (!htmlText || !htmlText.length || !fields || !values) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
+            }
+            return false;
+        }
+
+        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
+
+        /*for (var i in values) {
+         var val = values[i];
+         var code = fields[i];
+
+         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
+         }*/
+
+        fields.forEach(function (field) {
+            var fieldName = field.name;
+            var searchValue = toUnicode(field.code);
+            var replaceValue;
+
+            if (fieldName in values) {
+                replaceValue = values[fieldName];
+                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+            }
+        });
+
+        //return result
+        if (callback && (typeof callback === 'function')) {
+            callback(null, htmlText); //all right
+        }
+        return htmlText;
+    };
+
+    this.saveNewDocument = function (req, res, next) {
+        var options = req.body;
+        var templateId = options.template_id;
+        var userId = options.user_id || options.assigned_id; //TODO: !!!
+        var values;
+
+        console.log('create document');
+        console.log(options);
+
+        if (!templateId) {
+            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        }
+
+        async.parallel({
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+
+            },
+            userModel: function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    require: true,
+                    withRelated: ['profile', 'company']
+                };
+
+                if (!userId) {
+                    return cb();
+                }
+
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'The User was not found'}));
+                    })
+                    .catch(cb);
+            }
+        }, function (err, models) {
+            if (err) {
+                return next(err);
+            }
+
+            prepareSaveData(options, models, function (err, documentModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({success: 'success created', model: documentModel});
+            });
+        });
+    };
+
+    this.newDocument = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var currentUserId = req.session.userId;
+        var options = req.body;
+        var templateId = options.template_id;
+        var assignedId = options.assigned_id || req.session.userId;
+        var userId = options.user_id;
+        var signImage = options.signature;
+        var values;
+
+        console.log('create document');
+        console.log(options);
+
+        if (!templateId || !assignedId || !userId) {
+            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id']}));
+        }
+
+        if ((assignedId == currentUserId)) {
+            if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
+            }
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        }
+
+        async.parallel({
+
+            //try to find the user:
+            userModel: function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile', 'company']
+                };
+
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        (badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //try to find the assigned user: (access to email, check sign_authority)
+            assignedUserModel: function (cb) {
+                var criteria = {
+                    id: assignedId
+                };
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile']
+                };
+
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        //TODO: check
+                        var profileModel = userModel.related('profile');
+                        var signAuthority = profileModel.get('sign_authority');
+
+                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) {
+                            return cb(badRequests.AccessError({message: MESSAGES.SIGN_AUTHORITY_ERROR}));
+                        }
+
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            //try to find the template:
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            }
+
+        }, function (err, results) {
+            var userModel;
+            var templateModel;
+            var assignedUserModel;
+            var insertOptions;
+
+            if (err) {
+                return next(err);
+            }
+
+            userModel = results.userModel;
+            templateModel = results.templateModel;
+            assignedUserModel = results.assignedUserModel;
+
+            insertOptions = {
+                currentUserId: currentUserId, //created_by
+                userModel: userModel,
+                templateModel: templateModel,
+                assignedUserModel: assignedUserModel,
+                values: values
+            };
+
+            insertIntoDocuments(insertOptions, function (err, documentModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(201).send({success: 'success created', model: documentModel});
+            });
+
+        });
+    };
+
+    this.updateDocument = function (req, res, next) {
+        var documentId = req.params.id;
+        var options = req.body;
+
+        updateDocument(documentId, options, function (err, documentModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'success update', model: documentModel});
+        });
+    };
+
+    function signAndSend (documentModel, options) {
+
+    };
+
+    function sendToSignature(params, callback) {
+
+    };
+
+    this.signAndSend = function (req, res, next) {
+        var currentUserId = req.session.userId;
+        var documentId = req.params.id;
+        var options = req.body;
+        var signImage = options.signature;
+        var assignedId = options.assigned_id;
+        var willBeSignedNow;
+        var userIds = [];
+
+        if (!assignedId) {
+            return next(badRequests.NotEnParams({reqParams: ['assigned_id']}));
+        }
+
+        if (currentUserId == assignedId) {
+            if (!signImage) {
+                return next(badRequests.NotEnParams({reqParams: ['assigned_id', 'signature']}));
+            }
+
+            if (!CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                return next(badRequests.InvalidValue({param: 'signature'}));
+            }
+
+            userIds = [assignedId];
+            willBeSignedNow = true;
+
+        } else {
+            userIds = [currentUserId, assignedId];
+            willBeSignedNow = false;
+        }
+
+        var criteria = {
+            id: documentId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['company']
+        };
+
+        DocumentModel
+            .find(criteria, fetchOptions)
+            .then(function (documentModel) {
+                var userId = documentModel.get('user_id');
+
+                userIds.push(userId);
+
+                async.parallel({
+
+                    //check assigned users permissions:
+                    users: function (cb) {
+                        var criteria = {
+                            id: assignedId
+                        };
+                        var fetchOptions = {
+                            required: true,
+                            withRelated: ['profile']
+                        };
+
+                        UserModel
+                            .forge()
+                            .query(function (qb) {
+                                qb.whereIn('id', userIds);
+                            })
+                            .fetchAll(fetchOptions)
+                            .then(function (users) {
+                                cb(null, users.models);
+                            })
+                            .catch(UserModel.NotFoundError, function (err) {
+                                cb(badRequests.NotFound({message: 'The assigned user was not found'}));
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                                console.log(err.stack);
+                                cb(err);
+                            });
+                    }
+
+                }, function (err, results) {
+                    //var documentModel;
+                    var users;
+                    var assignedUserModel;
+                    var currentUserModel;
+                    var userModel;
+                    var documentStatus;
+
+                    if (err) {
+                        return next(err);
+                    }
+
+                    //documentModel = results.documentModel;
+                    users = results.users;
+                    //assignedUserModel = results.assignedUserModel;
+
+                    currentUserModel = _.find(users, {id: currentUserId});
+                    assignedUserModel = _.find(users, {id: assignedId});
+                    userModel = _.find(users, {id: userId});
+                    documentStatus = documentModel.get('status');
+
+                    //res.status(200).send({doc: documentModel, currentUser: currentUserModel, assigned: assignedUserModel, userModel: userModel, users: users});
+
+                    if (documentStatus !== STATUSES.CREATED) {
+                        return next(badRequests.AccessError({message: 'The document was signed by company'}));
+                    }
+
+                    async.waterfall([
+
+                        //save signature and prepare to send:
+                        function (cb) {
+
+                            if (willBeSignedNow) {
+                                documentModel.saveSignature(assignedId, signImage, function (err, signedDocumentModel) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+                                    cb(null, signedDocumentModel);
+                                });
+                            } else {
+                                documentModel.prepareToSend(assignedId, function (err, updatedDocument) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+                                    cb(null, updatedDocument);
+                                });
+                            }
+                        },
+
+                        //send document to signature:
+                        function (documentModel, cb) {
+                            var documentJSON = documentModel.toJSON();
+                            var company = documentJSON.company;
+                            var srcUser = currentUserModel.toJSON();
+                            var dstUser;
+                            var status = documentJSON.status;
+                            var mailerParams;
+
+                            if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
+                                dstUser = assignedUserModel.toJSON();
+                            } else if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+                                dstUser = userModel.toJSON();
+                            } else {
+                                console.log('>>> status', status);
+                                console.log(documentJSON);
+                                return cb(badRequests.InvalidValue({param: 'documents.status', value: status}));
+                            }
+
+                            mailerParams = {
+                                srcUser: srcUser,
+                                dstUser: dstUser,
+                                company: company,
+                                //template: template,
+                                document: documentJSON
+                            };
+
+                            console.log(mailerParams.dstUser);
+                            mailer.onSendToSingnature(mailerParams);
+                            cb(null, documentModel);
+
+                        }
+
+                    ], function (err, signedDocumentModel) {
+                        if (err) {
+                            return next(err);
+                        }
+                        res.status(200).send({success: 'success', model: signedDocumentModel});
+                    });
+
+                });
+
+            })
+            .catch(DocumentModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
             })
             .catch(next);
     };
@@ -680,7 +943,8 @@ var DocumentsHandler = function (PostGre) {
         var order;
         var query = knex(TABLES.TEMPLATES)
             .innerJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
-            .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+            .leftJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.user_id');
+            //.innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
 
         if ((status !== undefined) && (status !== 'all')) {
             query.where(TABLES.DOCUMENTS + '.status', status);
@@ -779,7 +1043,8 @@ var DocumentsHandler = function (PostGre) {
                     this.on(TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id')
                         .on("templates.id", templateId)
                 })
-                    .innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+                    .leftJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.user_id');
+                    //.innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
 
                 qb.where({
                     'templates.id': templateId,
@@ -813,68 +1078,68 @@ var DocumentsHandler = function (PostGre) {
             .fetchAll(/*{withRelated: ['assignedUser.profile']}*/)
             .exec(function (err, rows) {
                 /*var documents;
-                var documentsJSON = [];
+                 var documentsJSON = [];
 
-                if (err) {
-                    return next(err);
-                }
+                 if (err) {
+                 return next(err);
+                 }
 
-                documents = rows.models;
-                documents.forEach(function (doc) {
-                    var assignedUser;
-                    var docJSON = doc.toJSON();
+                 documents = rows.models;
+                 documents.forEach(function (doc) {
+                 var assignedUser;
+                 var docJSON = doc.toJSON();
 
-                    if (docJSON.assignedUser && docJSON.assignedUser.id) {
-                        assignedUser = docJSON.assignedUser;
-                        docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
-                    }
-                    documentsJSON.push(docJSON);
-                });*/
+                 if (docJSON.assignedUser && docJSON.assignedUser.id) {
+                 assignedUser = docJSON.assignedUser;
+                 docJSON.name += ' ('+ assignedUser.profile.first_name + ' ' + assignedUser.profile.last_name + ')';
+                 }
+                 documentsJSON.push(docJSON);
+                 });*/
 
 
                 res.status(200).send(rows);
             });
 
         /*TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var documents = templateModel.related('documents').model;
+         .find(criteria, fetchOptions)
+         .then(function (templateModel) {
+         var documents = templateModel.related('documents').model;
 
-                documents
-                    .query(function (qb) {
-                        qb.where('template_id', templateId); //TODO: ???
+         documents
+         .query(function (qb) {
+         qb.where('template_id', templateId); //TODO: ???
 
-                        if ((status !== undefined) && (status !== 'all')) {
-                            status = parseInt(status);
-                            qb.where('status', status);
-                        }
-                        qb.orderBy(orderBy, order);
-                    })
-                    .fetchAll({
-                        withRelated: ['assignedUser']
-                    })
-                    .exec(function (err, documentModels) {
-                        var documentsJSON = [];
-                        var json;
+         if ((status !== undefined) && (status !== 'all')) {
+         status = parseInt(status);
+         qb.where('status', status);
+         }
+         qb.orderBy(orderBy, order);
+         })
+         .fetchAll({
+         withRelated: ['assignedUser']
+         })
+         .exec(function (err, documentModels) {
+         var documentsJSON = [];
+         var json;
 
-                        if (err) {
-                            return next(err);
-                        }
+         if (err) {
+         return next(err);
+         }
 
-                        documentModels.forEach(function (model) {
-                            documentsJSON.push(model.toJSON());
-                        });
+         documentModels.forEach(function (model) {
+         documentsJSON.push(model.toJSON());
+         });
 
-                        json = templateModel.toJSON();
-                        json.documents = documentsJSON;
+         json = templateModel.toJSON();
+         json.documents = documentsJSON;
 
-                        res.status(200).send(json);
-                    });
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);*/
+         res.status(200).send(json);
+         });
+         })
+         .catch(TemplateModel.NotFoundError, function (err) {
+         next(badRequests.NotFound());
+         })
+         .catch(next);*/
     };
 
     this.htmlToPdf = function (req, res, next) {  //for testing, DELETE this method when done
@@ -930,9 +1195,9 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument
+    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument delete this function later
     this.saveEncryptedDataToDocument = function (req, res, next) {
-        var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.body.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
         var hash = dSignature.getDocumentHash(filePath);
@@ -977,7 +1242,7 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.validateDocumentBySecretKey = function (req, res, next) {
-        var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.query.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
         var hash = dSignature.getDocumentHash(filePath);
@@ -1182,7 +1447,8 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.addSignatureToDocument = function (req, res, next) {
-        var userId = req.session.userId;
+        //var userId = req.session.userId;
+        var currentUserId = req.session.userId;
         var companyId = req.session.companyId;
         var token = req.params.token;
         var signImage = req.body.signature;    //base64  need to check params
@@ -1192,7 +1458,7 @@ var DocumentsHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated: ['template.link.linkFields']
+            withRelated: ['template.link.linkFields', 'company']
         };
 
         if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
@@ -1220,8 +1486,8 @@ var DocumentsHandler = function (PostGre) {
                 var assignedId = documentModel.get('assigned_id');
                 var docUserId = documentModel.get('user_id');
 
-                if (((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (assignedId === userId)) ||
-                    ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (docUserId === userId))) {
+                if (((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (assignedId === currentUserId)) ||
+                    ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (docUserId === currentUserId))) {
                     cb(null, documentModel);
                 }
                 else {
@@ -1231,7 +1497,63 @@ var DocumentsHandler = function (PostGre) {
 
             //add Sign client or company
             function (documentModel, cb) {
-                addImageSign(documentModel, userId, signImage, cb);
+                //addImageSign(documentModel, currentUserId, signImage, cb);
+                documentModel.saveSignature(currentUserId, signImage, cb);
+            },
+
+            //send to client (if need)
+            function (documentModel, cb) {
+                var status = documentModel.get('status');
+                var userId = documentModel.get('user_id');
+                var userIds = [
+                    currentUserId,
+                    userId
+                ];
+                var fetchOptions = {
+                    required: true,
+                    withRelated: ['profile']
+                };
+
+                if (status !== STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+                    return cb(null, documentModel);
+                }
+
+                UserModel
+                    .forge()
+                    .query(function (qb) {
+                        qb.whereIn('id', userIds);
+                    })
+                    .fetchAll(fetchOptions)
+                    .then(function (userModels) {
+                        var users = userModels.models;
+                        var currentUserModel = _.find(users, {id: currentUserId});
+                        var userModel = _.find(users, {id: userId});
+                        var srcUser = currentUserModel.toJSON();
+                        var dstUser = userModel.toJSON();
+                        var document = documentModel.toJSON();
+                        var company = document.company;
+
+                        var mailerParams = {
+                            srcUser: srcUser,
+                            dstUser: dstUser,
+                            company: company,
+                            //template: template,
+                            document: document
+                        };
+
+                        mailer.onSendToSingnature(mailerParams);
+                        cb(null, users.models);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'The assigned user was not found'}));
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                        console.log(err.stack);
+                        cb(err);
+                    });
+
+
             }
 
         ], function (err, savedDocumentModel) {

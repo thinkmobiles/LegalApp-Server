@@ -7,11 +7,9 @@ var fs = require('fs');
 var Buffer = require('buffer').Buffer;
 var crypto = require('crypto');
 
-var DSignatureModule = function (PostGre) {
-    var Models = PostGre.Models;
-    var SecretKeyModel = Models.SecretKey;
+var DSignatureModule = function () {
     var self = this;
-    
+
     this.encryptHash = function (text, userSecretKey) {
         var algorithm = 'aes-256-ctr';
         var password = userSecretKey;
@@ -23,7 +21,7 @@ var DSignatureModule = function (PostGre) {
         return crypted;
     };
 
-    this.decryptHash = function(text, userSecretKey) {
+    this.decryptHash = function (text, userSecretKey) {
         var algorithm = 'aes-256-ctr';
         var password = userSecretKey;
         var decipher = crypto.createDecipher(algorithm, password);
@@ -34,7 +32,7 @@ var DSignatureModule = function (PostGre) {
         return dec;
     };
 
-    this.getDocumentHash = function(filePath) {
+    this.getDocumentHash = function (filePath) {
         var shasum = crypto.createHash('sha1');
         var fileData = fs.readFileSync(filePath);
         var data = fileData.toString();
@@ -52,7 +50,7 @@ var DSignatureModule = function (PostGre) {
         return shasum.digest('hex');
     };
 
-    this.writeKeyToDocument = function(filePath, key, callback) {
+    this.writeKeyToDocument = function (filePath, key, callback) {
         var dataBuffer = fs.readFileSync(filePath);
         var data = dataBuffer.toString();
         var startIndex = data.indexOf('SecretKey/');
@@ -78,7 +76,7 @@ var DSignatureModule = function (PostGre) {
         });
     };
 
-    this.readKeyFromDocument = function(filePath, callback) {
+    this.readKeyFromDocument = function (filePath, callback) {
         var data = fs.readFileSync(filePath, 'utf8');
         var startIndex = data.indexOf('SecretKey/') + 10; // 'SecretKey/'.length=10
         var keyLength = startIndex + CONSTANTS.KEY_LENGTH;
@@ -92,50 +90,22 @@ var DSignatureModule = function (PostGre) {
         }
     };
 
-    this.addEncryptedDataToDocument = function(filePath, userId, callback) {
+    this.addEncryptedDataToDocument = function (filePath, secretKey, callback) {
         var openKey = CONSTANTS.OPEN_KEY;
         var hash = self.getDocumentHash(filePath);
         var hashPlusKey;
         var encryptedHash;
-        var secretKey;
 
-        async.waterfall([
+        hashPlusKey = hash + secretKey;
+        encryptedHash = self.encryptHash(hashPlusKey, openKey);
 
-            function (cb) {
-                SecretKeyModel
-                    .find({user_id: userId}, {require: true})
-                    .then(function (secretKeyModel) {
-                        secretKey = secretKeyModel.get('secret_key');
-                        cb(null, secretKey);
-                    })
-                    .catch(SecretKeyModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            function (secretKey, cb) {
-                hashPlusKey = hash + secretKey;
-                encryptedHash = self.encryptHash(hashPlusKey, openKey);
-
-                self.writeKeyToDocument(filePath, encryptedHash, function (err) {
-                    if (err) {
-                        return cb(err)
-                    }
-                    cb();
-                });
-            }
-
-        ], function (err, result) {
+        self.writeKeyToDocument(filePath, encryptedHash, function (err) {
             if (err) {
                 return callback(err)
             }
-
             callback(null, {success: 'D-Signature was added to document'});
         });
     };
-    
-    
 };
 
-module.exports = DSignatureModule;
+module.exports = new DSignatureModule ();
