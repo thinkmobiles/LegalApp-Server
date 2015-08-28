@@ -376,11 +376,11 @@ var DocumentsHandler = function (PostGre) {
         var values;
         var htmlContent;
 
-        documentName = generateDocumentName(templateModel, userModel);
-        saveData.name = documentName;
-
         if (documentModel && documentModel.id) {
             saveData.id = documentModel.id; //update
+        } else {
+            documentName = generateDocumentName(templateModel, userModel);
+            saveData.name = documentName;
         } //else create
 
         if (userModel && userModel.id) {
