@@ -72,7 +72,7 @@ var Session = function (postGre) {
     };
 
     this.authenticatedAdmin = function (req, res, next) {
-        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.OWNER) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+        if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.SUPER_ADMIN) || (req.session.permissions === PERMISSIONS.ADMIN))) {
             next();
         } else {
             next(badRequests.AccessError());

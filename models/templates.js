@@ -28,6 +28,11 @@ module.exports = function (PostGre, ParentModel) {
             return this.hasMany(PostGre.Models.Document);
         },
 
+        linkedTemplates: function () {
+            return this.belongsToMany(PostGre.Models.Template, 'template_id')
+                .through(PostGre.Models.LinkedTemplates, 'template_id', 'linked_id');
+        },
+
         toJSON: function () {
             var attributes;
             var templateFile;
@@ -51,6 +56,7 @@ module.exports = function (PostGre, ParentModel) {
                     url: url
                 };
             }
+
             return attributes;
         },
 

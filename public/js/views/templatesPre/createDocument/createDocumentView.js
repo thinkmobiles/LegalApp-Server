@@ -3,11 +3,11 @@
  */
 
 define([
-    'text!templates/tempPreview/createDocumentTemplate.html',
+    'text!templates/templatesPreview/createDocumentTemplate.html',
     'models/documentModel',
     'models/linkModel',
     'constants/forTemplate',
-    'views/tempPre/docPreView'
+    'views/templatesPre/docPreView'
 
 ], function (CreateTemplate, DocModel, LinkModel, CONST, DocPreView) {
 
@@ -18,6 +18,12 @@ define([
 
         initialize: function (options) {
             this.tempInfo = options.model;
+            this.fillFields = false;
+
+            if (options.modelDoc){
+                this.docModel = options.modelDoc;
+                this.fillFields = true;
+            }
 
             this.linkModel = new LinkModel(this.tempInfo.link_id);
             this.linkModel.on('sync', this.render, this);
@@ -55,7 +61,7 @@ define([
             var data;
             var this_el = this.$el;
             var assignedId = this_el.find('#createEmployee').attr('data-sig');
-            var myModel = new DocModel();
+            var myModel = this.fillFields ? this.docModel : new DocModel();
 
             links.linkFields.forEach(function(field){
                 values[field.name] = this_el.find('#create_'+field.id).val().trim();
@@ -63,7 +69,7 @@ define([
 
             data = {
                 template_id : this.tempInfo.id,
-                assigned_id : assignedId,
+                user_id     : assignedId,
                 values      : values
             };
 
@@ -83,12 +89,18 @@ define([
             var model = this.linkModel.toJSON()[0];
             var self = this;
             var employeeField;
+            var filledValues = {};
+
+            if (this.fillFields){
+                filledValues = this.docModel.get('values');
+            }
 
             var for_template = _.map(model.linkFields, function(item){  //todo map-forEach
                 var result = {};
                 var type = item.type;
                 result.id_ = 'create_'+item.id;
                 result.name_ = item.name;
+                result.value_ = filledValues[item.name] ? filledValues[item.name] : '';
                 if (type === 'DATE') {
                     result.class_ = 'field_date';
                     return result;

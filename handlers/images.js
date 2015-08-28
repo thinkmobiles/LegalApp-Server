@@ -217,25 +217,23 @@ var imagesHandler = function (PostGre) {
         var bucket = BUCKETS.LOGOS;
 
 
-        if (imageableId && imageableType) {
-            ImageModel
-                .find(criteria, fetchOptions)
-                .then(function (imageModel) {
-                    imageName = imageModel.attributes.name;
-                    key = imageModel.attributes.key;
-                    imageUrl = ImageModel.getImageUrl(imageName, key, bucket);
-
-                    res.status(200).send(imageUrl);
-                })
-                .catch(ImageModel.NotFoundError, function (err) {
-                    res.status(200).send(''); //send default image (when company dont have logo)
-                })
-                .catch(next);
-
-
-        } else {
-            next(badRequests.NotEnParams({required: 'company_id'}))
+        if (!imageableId || !imageableType) {
+            return next(badRequests.NotEnParams({required: 'company_id'}))
         }
+
+        ImageModel
+            .find(criteria, fetchOptions)
+            .then(function (imageModel) {
+                imageName = imageModel.attributes.name;
+                key = imageModel.attributes.key;
+                imageUrl = ImageModel.getImageUrl(imageName, key, bucket);
+
+                res.status(200).send(imageUrl);
+            })
+            .catch(ImageModel.NotFoundError, function (err) {
+                res.status(200).send(''); //send default image (when company dont have logo)
+            })
+            .catch(next);
     };
 
     /*this.whoLikesPhoto = function (req, res, next) {

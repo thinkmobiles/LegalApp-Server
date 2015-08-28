@@ -129,19 +129,13 @@ define([
 
         render: function () {
             var role = App.sessionData.get('role');
+            var company = App.sessionData.get('company');
 
-            if (!this.editThisForm) {
-                this.$el.html(_.template(AddUserTemplate)({
-                    edit   : false,
-                    role   : role
-                }));
-            } else {
-                this.$el.html(_.template(AddUserTemplate)({
-                    edit   : true,
-                    usrMdl : this.userModel.toJSON(),
-                    role   : role
-                }));
-            }
+            this.$el.html(_.template(AddUserTemplate)({
+                edit   : false,
+                role   : role,
+                company: company
+            }));
 
             this.renderCompanies();
 

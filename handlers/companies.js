@@ -3,25 +3,51 @@
 var CONSTANTS = require('../constants/index');
 var PERMISSIONS = require('../constants/permissions');
 var TABLES = require('../constants/tables');
+var BUCKETS = require('../constants/buckets');
 
 var async = require('async');
 var badRequests = require('../helpers/badRequests');
+
+var ImagesHandler = require('../handlers/images');
 
 var CompaniesHandler = function (PostGre) {
     var Models = PostGre.Models;
     var UserModel = Models.User;
     var CompanyModel = Models.Company;
     var UserCompanies = Models.UserCompanies;
+    var imageHandler = new ImagesHandler(PostGre);
     var self = this;
-    
+
+    function prepareData(saveData) {
+        var saveOptions = {};
+
+        if (saveData && saveData.name) {
+            saveOptions.name = saveData.name;
+        }
+        if (saveData && saveData.email) {
+            saveOptions.email = saveData.email;
+        }
+        if (saveData && saveData.country) {
+            saveOptions.country = saveData.country;
+        }
+        if (saveData && saveData.city) {
+            saveOptions.city = saveData.city;
+        }
+        if (saveData && saveData.address) {
+            saveOptions.address = saveData.address;
+        }
+
+        return saveOptions;
+    }
+
     this.createCompanyWithOwner = function (options, callback) {
         var userId = options.userId;
         var name = options.name || options.company; //TODO: !!!;
-        
+
         //TODO: validate incom. params
-        
+
         async.waterfall([
-        
+
             //create a new company:
             function (cb) {
                 var createData = {
@@ -37,7 +63,7 @@ var CompaniesHandler = function (PostGre) {
                             return cb(err);
                         }
                         cb(null, companyModel);
-                     }); 
+                    });
             },
 
             //insert into user_companies:
@@ -48,11 +74,11 @@ var CompaniesHandler = function (PostGre) {
                 };
 
                 self.insertIntoUserCompanies(createData, function (err, model) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, companyModel);
-                    }); 
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, companyModel);
+                });
             }
 
         ], function (err, companyModel) {
@@ -95,15 +121,13 @@ var CompaniesHandler = function (PostGre) {
     this.newCompany = function (req, res, next) {
         var userId = req.session.userId || 1; //TODO: !!!
         var options = req.body;
-        var name = options.name;
-        var createOptions = {
-            //userId: userId,
-            name: name
-        };
+        var createOptions;
 
-        if (!name) {
+        if (!options.name) {
             return next(badRequests.NotEnParams({reqParams: ['name']}));
         }
+
+        createOptions = prepareData(options);
 
         CompanyModel
             .forge()
@@ -139,6 +163,119 @@ var CompaniesHandler = function (PostGre) {
                 res.status(200).send(rows);
             })
             .catch(next);
+    };
+
+    this.getAllCompanies = function (req, res, next) {
+        var permissions = req.session.permissions;
+        var companyId = req.session.companyId;
+        var queryOptions;
+        var fetchOptions = {
+            withRelated: 'logo'
+        };
+
+        if (!((permissions === PERMISSIONS.SUPER_ADMIN) || (permissions === PERMISSIONS.ADMIN))) {
+            queryOptions = {
+                id: companyId
+            };
+        }
+
+        CompanyModel
+            .forge()
+            .query(function (qb) {
+                if (queryOptions) {
+                    qb.where(queryOptions);
+                }
+            })
+            .fetchAll(fetchOptions)
+            .then(function (companiesModels) {
+                res.status(200).send(companiesModels);
+            })
+            .catch(next)
+    };
+
+    this.updateCompany = function (req, res, next) {
+        var updateCompanyId = req.params.id;
+        var permissions = req.session.permissions;
+        var companyId = req.session.companyId;
+        var options = req.body;
+        var imageSrc = options.imageSrc;
+        var saveData;
+        var logo = {};
+
+        if ((permissions === PERMISSIONS.SUPER_ADMIN) ||
+            (permissions === PERMISSIONS.ADMIN) ||
+            ((permissions === PERMISSIONS.CLIENT_ADMIN) && (updateCompanyId === companyId))) {
+
+            saveData = prepareData(options);
+            saveData.id = updateCompanyId;
+        } else {
+            return next(badRequests.AccessError());
+        }
+
+        if (imageSrc) {
+            logo.imageSrc = imageSrc;
+            logo.imageable_id = updateCompanyId;
+            logo.imageable_type = 'companies';
+        }
+
+        if ((Object.keys(saveData).length === 1) && !imageSrc) {
+            return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
+        }
+
+        //try to modify company
+        CompanyModel
+            .upsert(saveData, function (err, companyModel) {
+                var LogoModel;
+                var fetchOptions = {
+                    imageable_id: updateCompanyId,
+                    imageable_type: 'companies'
+                };
+
+                if (err) {
+                    return next(err);
+                }
+
+                if (!logo.imageSrc) {
+                    return res.status(200).send({success: 'success updated', company: companyModel});
+                }
+
+                LogoModel = companyModel.related('logo');
+
+                LogoModel
+                    .fetch(fetchOptions)
+                    .exec(function (err, logoModel) {
+                        var jsonLogoModel;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        jsonLogoModel = logoModel.toJSON();
+
+                        logo.id = jsonLogoModel.id;
+                        logo.oldName = jsonLogoModel.name;
+                        logo.oldKey = jsonLogoModel.key;
+
+                        imageHandler.saveImage(logo, function (err, imageModel) {
+                            var logoUrl;
+                            var logoName;
+                            var logoKey;
+                            var bucket = BUCKETS.LOGOS;
+                            var jsonCompanyModel = companyModel.toJSON();
+
+                            if (err) {
+                                return next(err);
+                            }
+
+                            logoName = imageModel.attributes.name;
+                            logoKey = imageModel.attributes.key;
+                            logoUrl = Models.Image.getImageUrl(logoName, logoKey, bucket);
+                            jsonCompanyModel.logo.url = logoUrl;
+
+                            res.status(200).send({success: 'success updated', company: jsonCompanyModel});
+                        });
+                    });
+            });
     };
 };
 

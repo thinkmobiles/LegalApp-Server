@@ -8,25 +8,22 @@ var MESSAGES = require('../constants/messages');
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
-var SIGN_AUTHORITY = require('../constants/signAuthority');
+var SIGN_AUTHORITY = require('../constants/signAuthority')
 
 var async = require('async');
 var _ = require('lodash');
 var badRequests = require('../helpers/badRequests');
+var dSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
-var fs = require('fs');
-var Buffer = require('buffer').Buffer;
-var crypto = require('crypto');
 
 var DocumentsHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
-    var ProfileModel = Models.Profile;
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
@@ -34,46 +31,6 @@ var DocumentsHandler = function (PostGre) {
     var SecretKeyModel = Models.SecretKey;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
-
-    function encryptHash(text, userSecretKey) {
-        var algorithm = 'aes-256-ctr';
-        var password = userSecretKey || 'd6F3Efeq';
-        var cipher = crypto.createCipher(algorithm, password);
-        var crypted = cipher.update(text, 'utf8', 'hex');
-
-        crypted += cipher.final('hex');
-
-        return crypted;
-    }
-
-    function decryptHash(text, userSecretKey) {
-        var algorithm = 'aes-256-ctr';
-        var password = userSecretKey || 'd6F3Efeq';
-        var decipher = crypto.createDecipher(algorithm, password);
-        var dec = decipher.update(text, 'hex', 'utf8');
-
-        dec += decipher.final('utf8');
-
-        return dec;
-    }
-
-    function getDocumentHash(filePath) {
-        var shasum = crypto.createHash('sha1');
-        var fileData = fs.readFileSync(filePath);
-        var data = fileData.toString();
-        var startIndex = data.indexOf('SecretKey/');
-        var message;
-
-        if (startIndex !== -1) {
-            message = data.substring(12 + CONSTANTS.KEY_LENGTH, fileData.length);
-        } else {
-            message = data;
-        }
-
-        shasum.update(message);
-
-        return shasum.digest('hex');
-    }
 
     function toUnicode(theString) {
         var unicodeString = '';
@@ -87,46 +44,6 @@ var DocumentsHandler = function (PostGre) {
         }
 
         return unicodeString;
-    }
-
-    function writeKeyToDocument(filePath, key, callback) {
-        var dataBuffer = fs.readFileSync(filePath);
-        var data = dataBuffer.toString();
-        var startIndex = data.indexOf('SecretKey/');
-        var secretKey = 'SecretKey/' + key + '/\n';
-        var newBuffer = new Buffer(secretKey, 'utf8');
-
-        //check if need to replace old value
-        if (startIndex !== -1) {
-            dataBuffer = dataBuffer.slice(newBuffer.length, dataBuffer.length);
-        }
-
-        if (key === null) {
-            newBuffer = dataBuffer;
-        } else {
-            newBuffer = Buffer.concat([newBuffer, dataBuffer]);
-        }
-
-        fs.writeFile(filePath, newBuffer, function (err) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, true);
-        });
-    }
-
-    function readKeyFromDocument(filePath, callback) {
-        var data = fs.readFileSync(filePath, 'utf8');
-        var startIndex = data.indexOf('SecretKey/') + 10; // 'SecretKey/'.length=10
-        var keyLength = startIndex + CONSTANTS.KEY_LENGTH;
-        var key;
-
-        if (startIndex === -1) {
-            callback(badRequests.NotFound({required: 'key'}));
-        } else {
-            key = data.substring(startIndex, keyLength);
-            callback(null, key);
-        }
     }
 
     function saveHtmlToPdf(options, callback) {
@@ -149,51 +66,6 @@ var DocumentsHandler = function (PostGre) {
         });
     }
 
-    function addEncryptedDataToDocument(filePath, userId, callback) {
-        //var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
-        //var userId = req.session.userId;
-        var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
-        var hashPlusKey;
-        var encryptedHash;
-        var secretKey;
-
-        async.waterfall([
-
-            function (cb) {
-                SecretKeyModel
-                    .find({user_id: userId}, {require: true})
-                    .then(function (secretKeyModel) {
-                        secretKey = secretKeyModel.get('secret_key');
-                        cb(null, secretKey);
-                    })
-                    .catch(SecretKeyModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            function (secretKey, cb) {
-                hashPlusKey = hash + secretKey;
-                encryptedHash = encryptHash(hashPlusKey, openKey);
-
-                writeKeyToDocument(filePath, encryptedHash, function (err) {
-                    if (err) {
-                        return cb(err)
-                    }
-                    cb();
-                });
-            }
-
-        ], function (err, result) {
-            if (err) {
-                return callback(err)
-            }
-
-            callback(null, {success: 'D-Signature was added to document'});
-        });
-    }
-
     function addImageSign(documentModel, userId, signImage, callback) {
         var htmlContent = documentModel.get('html_content');
         var status = documentModel.get('status');
@@ -203,6 +75,8 @@ var DocumentsHandler = function (PostGre) {
         var searchValue;
         var newStatus;
         var saveData;
+        var secretKey;
+        var options = {};
 
         if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
             searchValue = companySignature;
@@ -234,18 +108,47 @@ var DocumentsHandler = function (PostGre) {
                 if (newStatus === STATUSES.SIGNED_BY_CLIENT) {
                     options.html = htmlContent;
 
-                    saveHtmlToPdf(options, function (err, pdfFilePath) {
-                        if (err) {
-                            return callback(err);
-                        }
 
-                        addEncryptedDataToDocument(pdfFilePath, userId, function (err) {
+                    async.waterfall([
+
+                            //find secretKey of our user
+                            function (cb) {
+                                SecretKeyModel
+                                    .find({user_id: userId}, {require: true})
+                                    .then(function (secretKeyModel) {
+                                        secretKey = secretKeyModel.get('secret_key');
+                                        cb(null, secretKey);
+                                    })
+                                    .catch(SecretKeyModel.NotFoundError, function (err) {
+                                        cb(badRequests.NotFound());
+                                    })
+                                    .catch(cb);
+                            },
+
+                            //create PDF and save secretKey to PDF
+                            function (secretKey, cb) {
+                                saveHtmlToPdf(options, function (err, pdfFilePath) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+
+                                    dSignature.addEncryptedDataToDocument(pdfFilePath, secretKey, function (err) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        cb(null, savedDocumentModel);
+                                    });
+                                });
+                            }
+                        ],
+
+                        function (err, savedDocumentModel) {
                             if (err) {
-                                return callback(err);
+                                return callback(err)
                             }
                             callback(null, savedDocumentModel);
-                        });
-                    });
+                        }
+                    );
 
                 } else {
                     callback(null, savedDocumentModel);
@@ -297,8 +200,11 @@ var DocumentsHandler = function (PostGre) {
 
     function generateDocumentName(templateModel, userModel) {
         var name = templateModel.get('name');
+        var profileModel = userModel.related('profile');
         var profileModel;
         var username;
+
+        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name') + ')';
 
         if (userModel && userModel.id && userModel.related('profile')) {
             profileModel = userModel.related('profile');
@@ -366,7 +272,8 @@ var DocumentsHandler = function (PostGre) {
             });
     }
 
-    function createDocument(options, callback) {};
+    function createDocument(options, callback) {
+    };
 
     function updateDocument(id, options, callback) {
         var documentId = id;
@@ -514,6 +421,43 @@ var DocumentsHandler = function (PostGre) {
                 callback(null, documentModel);
             });
 
+    }
+
+    this.createDocumentContent = function (htmlText, fields, values, callback) {
+
+        //check input params:
+        if (!htmlText || !htmlText.length || !fields || !values) {
+            if (callback && (typeof callback === 'function')) {
+                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
+            }
+            return false;
+        }
+
+        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
+
+        /*for (var i in values) {
+         var val = values[i];
+         var code = fields[i];
+
+         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
+         }*/
+
+        fields.forEach(function (field) {
+            var fieldName = field.name;
+            var searchValue = toUnicode(field.code);
+            var replaceValue;
+
+            if (fieldName in values) {
+                replaceValue = values[fieldName];
+                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+            }
+        });
+
+        //return result
+        if (callback && (typeof callback === 'function')) {
+            callback(null, htmlText); //all right
+        }
+        return htmlText;
     };
 
     this.saveNewDocument = function (req, res, next) {
@@ -526,7 +470,7 @@ var DocumentsHandler = function (PostGre) {
         console.log(options);
 
         if (!templateId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id'] }));
+            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -589,7 +533,7 @@ var DocumentsHandler = function (PostGre) {
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({ success: 'success created', model: documentModel });
+                res.status(201).send({success: 'success created', model: documentModel});
             });
         });
     };
@@ -608,7 +552,7 @@ var DocumentsHandler = function (PostGre) {
         console.log(options);
 
         if (!templateId || !assignedId || !userId) {
-            return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id'] }));
+            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id']}));
         }
 
         if ((assignedId == currentUserId)) {
@@ -723,7 +667,7 @@ var DocumentsHandler = function (PostGre) {
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({ success: 'success created', model: documentModel });
+                res.status(201).send({success: 'success created', model: documentModel});
             });
 
         });
@@ -1217,22 +1161,22 @@ var DocumentsHandler = function (PostGre) {
 
                 //create file
                 function (cb) {
-                    writeKeyToDocument(filePath, null, function (err) {
+                    dSignature.writeKeyToDocument(filePath, null, function (err) {
                         cb(err, filePath);
                     });
                 },
 
                 //write encrypted Hash with SecretKey
                 function (filePath, cb) {
-                    var hash = getDocumentHash(filePath);
-                    var encryptedHash = encryptHash(hash, sK);
+                    var hash = dSignature.getDocumentHash(filePath);
+                    var encryptedHash = dSignature.encryptHash(hash, sK);
                     console.log('1Hash length = ' + hash.length);
                     console.log('1Encrypted length = ' + encryptedHash.length);
 
                     console.log('Document Hash = ' + hash);
                     console.log('Encrypted Hash = ' + encryptedHash);
 
-                    writeKeyToDocument(filePath, encryptedHash, function (err) {
+                    dSignature.writeKeyToDocument(filePath, encryptedHash, function (err) {
                         cb(err, true);
                     });
                 }
@@ -1241,8 +1185,8 @@ var DocumentsHandler = function (PostGre) {
                     return next(err);
                 }
 
-                readKeyFromDocument(filePath, function (err, key) {
-                    var decryptedHash = decryptHash(key, sK);
+                dSignature.readKeyFromDocument(filePath, function (err, key) {
+                    var decryptedHash = dSignature.decryptHash(key, sK);
                     console.log('2Hash length = ' + key.length);
 
                     console.log('Decrypted Hash (read from file) = ' + decryptedHash);
@@ -1254,12 +1198,12 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION addEncryptedDataToDocument
+    //save Encrypted data to pdf file HAVE IDENTICAL FUNCTION dSignature.addEncryptedDataToDocument delete this function later
     this.saveEncryptedDataToDocument = function (req, res, next) {
-        var filePath = req.body.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.body.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
+        var hash = dSignature.getDocumentHash(filePath);
         var hashPlusKey;
         var encryptedHash;
         var secretKey;
@@ -1281,9 +1225,9 @@ var DocumentsHandler = function (PostGre) {
 
             function (secretKey, cb) {
                 hashPlusKey = hash + secretKey;
-                encryptedHash = encryptHash(hashPlusKey, openKey);
+                encryptedHash = dSignature.encryptHash(hashPlusKey, openKey);
 
-                writeKeyToDocument(filePath, encryptedHash, function (err) {
+                dSignature.writeKeyToDocument(filePath, encryptedHash, function (err) {
                     if (err) {
                         return cb(err)
                     }
@@ -1301,21 +1245,21 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.validateDocumentBySecretKey = function (req, res, next) {
-        var filePath = req.query.path || 'public/uploads/development/pdf/1440153258967_120_testPdf.pdf';
+        var filePath = req.query.path;
         var userId = req.session.userId;
         var openKey = CONSTANTS.OPEN_KEY;
-        var hash = getDocumentHash(filePath);
+        var hash = dSignature.getDocumentHash(filePath);
         var decryptedHashPlusKey;
         var decryptedHash;
         var decryptedSecretKey;
         var userName;
 
-        readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
+        dSignature.readKeyFromDocument(filePath, function (err, encryptedHashPlusKey) {
             if (err) {
                 return next(err);
             }
 
-            decryptedHashPlusKey = decryptHash(encryptedHashPlusKey, openKey);
+            decryptedHashPlusKey = dSignature.decryptHash(encryptedHashPlusKey, openKey);
             decryptedHash = decryptedHashPlusKey.substring(0, 40);
             decryptedSecretKey = decryptedHashPlusKey.substring(40, decryptedHashPlusKey.length);
 

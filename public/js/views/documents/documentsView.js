@@ -5,9 +5,11 @@
 define([
     'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
+    'text!templates/documents/documentsGridTemplate.html',
     'text!templates/documents/templatesListTemplate.html'
 
-], function (MainTemplate, DocumentList, TemplateList) {
+
+], function (MainTemplate, DocumentList, DocumentGrid, TemplateList) {
 
     var View;
     View = Backbone.View.extend({
@@ -16,12 +18,17 @@ define([
 
         mainTemplate : _.template(MainTemplate),
         documentList : _.template(DocumentList),
-        templateList: _.template(TemplateList),
+        documentGrid : _.template(DocumentGrid),
+        templateList : _.template(TemplateList),
 
         activeTemplateId: null,
 
-        initialize: function () {
+        initialize: function (options) {
             var self = this;
+
+            this.stateModel = new Backbone.Model();
+            this.stateModel.set('viewType', options.viewType);
+            this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
 
             $.ajax({
                 url     : '/documents/list',
@@ -33,10 +40,12 @@ define([
         },
 
         events : {
-            "click .filters" : "showHideFilters",
+            "click .filters"     : "showHideFilters",
             "click #templateList .templateName" : "searchDocuments", //TODO
-            "click .searchBtn" : "search",
-            "click .templateName": "setActive"
+            "click .searchBtn"   : "search",
+            "click .templateName": "setActive",
+            "click .btnViewType" : "changeViewType",
+            "click .documentItem": "goToPreview"
         },
 
         render: function () {
@@ -52,6 +61,11 @@ define([
             });
 
             return this;
+        },
+
+        goToPreview: function(event){
+            var targetId = $(event.target).data('id');
+            Backbone.history.navigate('documents/preview/'+targetId, {trigger : true});
         },
 
         renderDocumentsList: function (data) {
@@ -85,22 +99,44 @@ define([
             this.getDocumentsByTemplateId(templateId);
         },
 
-        getDocumentsByTemplateId: function (templateId) {
+        getDocumentsByTemplateId: function (argTemplateId) {
             var self = this;
+            var templateId = this.activeTemplateId || argTemplateId;
             var searchParams = self.getSearchParams();
-            var documentsContainer = self.$el.find("#documentList");
 
             $.ajax({
                 url : '/documents/list/'+templateId,
                 data: searchParams,
                 success : function(response){
-                    documentsContainer.html(self.documentList({documents : response}));
+                    self.currentCollByIds = response;
+                    self.createOurView();
                 },
                 error : function (response){
                     alert(response.responseJSON.error);
                     console.log(response);
                 }
             });
+        },
+
+        createOurView: function(){
+            var documentsContainer = this.$el.find("#documentList");
+            var curColl = this.currentCollByIds;
+            var viewType = this.stateModel.get('viewType');
+
+            if (curColl.length > 0){
+                if (viewType === 'list') {
+                    documentsContainer.html(this.documentList({documents: curColl}));
+                } else {
+                    documentsContainer.html(this.documentGrid({documents: curColl}));
+                }
+                Backbone.history.navigate("documents/"+viewType);
+            }
+        },
+
+        changeViewType: function(event){
+            var targetView = $(event.target).data('id');
+            this.stateModel.set('viewType',targetView);
+
         },
 
         getSearchParams: function () {

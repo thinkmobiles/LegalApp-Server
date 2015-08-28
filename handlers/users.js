@@ -84,6 +84,7 @@ var UsersHandler = function (PostGre) {
         var userData = {};
         var criteria;
         var fetchOptions;
+        var signatureData = {};
 
         if (options.profile) {
             profile = options.profile;
@@ -114,7 +115,12 @@ var UsersHandler = function (PostGre) {
             userData.status = options.status;
         }
 
-        if ((Object.keys(profileData).length === 0) && (Object.keys(userData).length === 0)) {
+        if (options.signature && options.signature.sign_image) {
+            signatureData.sign_image = options.signature.sign_image;
+        }
+
+        if ((Object.keys(profileData).length === 0) &&
+            (Object.keys(userData).length === 0) && (Object.keys(signatureData).length === 0)) {
             return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
         }
 
@@ -124,7 +130,7 @@ var UsersHandler = function (PostGre) {
 
         fetchOptions = {
             require: true,
-            withRelated: ['profile', 'avatar']
+            withRelated: ['profile', 'avatar', 'signature']
         };
 
         //try to find the user:
@@ -162,6 +168,24 @@ var UsersHandler = function (PostGre) {
 
                         profileModel
                             .save(profileData, {patch: true})
+                            .exec(function (err, model) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                cb(null, model);
+                            });
+                    },
+
+                    //save the signature
+                    updatedSignature: function (cb) {
+                        var signatureModel = userModel.related('signature');
+
+                        if (Object.keys(signatureData).length === 0) {
+                            return cb(null, signatureModel); //nothing to update
+                        }
+
+                        signatureModel
+                            .save(signatureData, {patch: true})
                             .exec(function (err, model) {
                                 if (err) {
                                     return cb(err);
@@ -288,14 +312,14 @@ var UsersHandler = function (PostGre) {
                 });
             },
 
-            function(userModel, cb){
+            function (userModel, cb) {
                 var saveSecretKeyData = {
                     user_id: userModel.id,
                     secret_key: tokenGenerator.generate(20)
                 };
 
                 SecretKeyModel
-                    .save(saveSecretKeyData, {patch:true})
+                    .save(saveSecretKeyData, {patch: true})
                     .exec(function (err, secretKeyModel) {
                         if (err) {
                             return cb(err);
@@ -581,7 +605,7 @@ var UsersHandler = function (PostGre) {
 
             //update users avatar:
             function (userModel, cb) {
-                if (!avatar) {
+                if (!avatar.imageSrc) {
                     return cb();
                 }
 
@@ -843,7 +867,7 @@ var UsersHandler = function (PostGre) {
         };
         var fetchOptions = {
             require: true,
-            withRelated: ['profile', 'avatar']
+            withRelated: ['profile', 'avatar', 'signature']
         };
 
         UserModel
@@ -861,7 +885,7 @@ var UsersHandler = function (PostGre) {
         var userId = req.params.id;
         var options = req.body;
         var permissions;
-        
+
         //TODO: superAdmin can update other companies users data;
 
         //check permissions:
@@ -870,6 +894,17 @@ var UsersHandler = function (PostGre) {
 
             if (!session.isAdmin(req) || (permissions < req.session.permissions)) {
                 return next(badRequests.AccessError());
+            }
+        }
+
+        if (options.signature && options.signature.sign_image){
+
+            if (req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
+                return next(badRequests.AccessError());
+            }
+
+            if (!CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)){
+                return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
             }
         }
 
@@ -945,22 +980,22 @@ var UsersHandler = function (PostGre) {
                 console.log(rows);
 
                 /*rows.forEach(function (row) {
-                    var userData = {
-                        id: row.id,
-                        email: row.email,
-                        profile: {
-                            first_name: row.first_name,
-                            last_name: row.last_name,
-                            phone: row.phone
-                        },
-                        company: {
-                            id: row.company_id,
-                            name: row.company_name
-                        }
-                    };
+                 var userData = {
+                 id: row.id,
+                 email: row.email,
+                 profile: {
+                 first_name: row.first_name,
+                 last_name: row.last_name,
+                 phone: row.phone
+                 },
+                 company: {
+                 id: row.company_id,
+                 name: row.company_name
+                 }
+                 };
 
-                    users.push(userData)
-                });*/
+                 users.push(userData)
+                 });*/
 
                 res.status(200).send(rows);
             });

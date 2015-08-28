@@ -23,6 +23,10 @@ module.exports = function (PostGre, ParentModel) {
             return this.morphOne(PostGre.Models.Image, 'imageable');
         },
 
+        signature: function () {
+            return this.hasOne(PostGre.Models.SecretKey, 'user_id');
+        },
+
         toJSON: function () {
             var attributes;
             var avatar;

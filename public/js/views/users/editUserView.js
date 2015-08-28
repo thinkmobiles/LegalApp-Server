@@ -64,8 +64,9 @@ define([
                     self.trigger('redirectList');
                     self.remove();
                 },
-                error  : function(){
+                error  : function(model, xhr, options){
                     alert('Error'); // todo message
+                    //self.errorNotification(xhr);
                 }
             });
         },
