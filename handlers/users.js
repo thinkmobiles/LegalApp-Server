@@ -85,6 +85,7 @@ var UsersHandler = function (PostGre) {
         var criteria;
         var fetchOptions;
         var signatureData = {};
+        var passwordData = {};
 
         if (options.profile) {
             profile = options.profile;
@@ -119,8 +120,13 @@ var UsersHandler = function (PostGre) {
             signatureData.sign_image = options.signature.sign_image;
         }
 
-        if ((Object.keys(profileData).length === 0) &&
-            (Object.keys(userData).length === 0) && (Object.keys(signatureData).length === 0)) {
+        if (options.password && options.newPassword) {
+            passwordData.password = options.password;
+            passwordData.newPassword = options.newPassword;
+        }
+
+        if ((Object.keys(profileData).length === 0) && (Object.keys(userData).length === 0) &&
+            (Object.keys(signatureData).length === 0) && (Object.keys(passwordData).length === 0)) {
             return callback(badRequests.NotEnParams({message: 'There are no params for update'}));
         }
 
@@ -138,6 +144,19 @@ var UsersHandler = function (PostGre) {
             .find(criteria, fetchOptions)
             .then(function (userModel) {
 
+                //want to change password / look can we do this or not
+                if (passwordData && passwordData.password && passwordData.newPassword) {
+                    var oldPassword = passwordData.password;
+                    var newPassword = passwordData.newPassword;
+                    var userPassword = userModel.get('password');
+                    var oldEncryptedPassword = getEncryptedPass(oldPassword);
+
+                    if (userPassword === oldEncryptedPassword) {
+                        userData.password = getEncryptedPass(newPassword);
+                    } else {
+                        return callback(badRequests.InvalidValue({message: 'Invalid password'}))
+                    }
+                }
                 //try to update parallel the users and the profiles table:
                 async.parallel({
 
@@ -209,8 +228,10 @@ var UsersHandler = function (PostGre) {
                     }
                 });
 
-            })
-            .catch(UserModel.NotFoundError, function (err) {
+            }
+        )
+            .
+            catch(UserModel.NotFoundError, function (err) {
                 if (callback && (typeof callback === 'function')) {
                     callback(badRequests.NotFound());
                 }
@@ -610,7 +631,7 @@ var UsersHandler = function (PostGre) {
                 }
 
                 imageHandler.saveImage(avatar, function (err, result) {
-                    cb(err, result);
+                    cb(err, userModel);
                 });
             }
 
@@ -897,13 +918,13 @@ var UsersHandler = function (PostGre) {
             }
         }
 
-        if (options.signature && options.signature.sign_image){
+        if (options.signature && options.signature.sign_image) {
 
             if (req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
                 return next(badRequests.AccessError());
             }
 
-            if (!CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)){
+            if (!CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)) {
                 return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
             }
         }

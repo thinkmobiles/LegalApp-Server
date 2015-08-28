@@ -25,7 +25,7 @@ define([
                 this.fillFields = true;
             }
 
-            this.linkModel = new LinkModel(this.tempInfo.link_id);
+            this.linkModel = new LinkModel({id : this.tempInfo.link_id});
             this.linkModel.on('sync', this.render, this);
 
             this.linkModel.fetch();
@@ -34,7 +34,8 @@ define([
         mainTemplate  : _.template(CreateTemplate),
 
         events : {
-            "click #createButton" : "letsCreateDoc"
+            "click #createBtnNext" : "goToPreview",
+            "click #createBtnSave" : "letsSaveDoc"
         },
 
         inviteDataToFields: function(contentObject){
@@ -55,17 +56,35 @@ define([
             }
         },
 
-        letsCreateDoc: function(){
-            var links = this.linkModel.toJSON()[0];
+        collectValues : function(context){
+            var links = this.linkModel.toJSON();
             var values = {};
-            var data;
             var this_el = this.$el;
-            var assignedId = this_el.find('#createEmployee').attr('data-sig');
-            var myModel = this.fillFields ? this.docModel : new DocModel();
+
 
             links.linkFields.forEach(function(field){
                 values[field.name] = this_el.find('#create_'+field.id).val().trim();
             });
+
+            return values;
+        },
+
+        goToPreview: function(){
+            var values = this.collectValues();
+
+            var myView = new DocPreView({
+                modelId     : this.tempInfo.id,
+                modelValues : values
+            });
+
+            myView.on('saveInParent', this.letsSaveDoc, this);
+        },
+
+        letsSaveDoc: function(){
+            var assignedId = this.$el.find('#createEmployee').attr('data-sig');
+            var myModel = this.fillFields ? this.docModel : new DocModel();
+            var data;
+            var values = this.collectValues();
 
             data = {
                 template_id : this.tempInfo.id,
@@ -75,8 +94,10 @@ define([
 
             myModel.save(data,{
                 success: function(response){
-                    var curId = response.get('model').id;
-                    new DocPreView({modelId : curId});
+                    //var curId = response.get('model').id;
+                    // ------- new DocPreView({modelId : curId});
+                    alert('Document was saved successfully');
+                    Backbone.history.navigate('documents/list', {trigger : true});
                 },
                 error: function(){
                     alert('error'); //todo -error-
@@ -86,16 +107,18 @@ define([
 
         createOurPage: function(){
             var thisEl = this.$el;
-            var model = this.linkModel.toJSON()[0];
+            var model = this.linkModel.toJSON();
             var self = this;
             var employeeField;
             var filledValues = {};
+            var headName = this.tempInfo.name;
 
             if (this.fillFields){
                 filledValues = this.docModel.get('values');
+                headName = this.docModel.get('name');
             }
 
-            var for_template = _.map(model.linkFields, function(item){  //todo map-forEach
+            var for_template = _.map(model.linkFields, function(item){
                 var result = {};
                 var type = item.type;
                 result.id_ = 'create_'+item.id;
@@ -117,7 +140,7 @@ define([
 
             thisEl.html(this.mainTemplate({
                 links : for_template,
-                tName : this.tempInfo.name
+                tName : headName
             }));
 
             thisEl.find('.field_date').datepicker({

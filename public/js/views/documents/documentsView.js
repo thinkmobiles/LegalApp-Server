@@ -41,9 +41,9 @@ define([
 
         events : {
             "click .filters"     : "showHideFilters",
-            "click #templateList .templateName" : "searchDocuments", //TODO
+            //"click .templateListName": "searchDocuments", //TODO
             "click .searchBtn"   : "search",
-            "click .templateName": "setActive",
+            "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
             "click .documentItem": "goToPreview"
         },
@@ -53,6 +53,7 @@ define([
             //this.$el.html(this.mainTemp());
             this.$el.html(this.mainTemplate());
             this.renderDocumentsList(items);
+            this.getDocumentsByTemplateId();
 
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",
@@ -90,17 +91,24 @@ define([
 
             container.find('.active').removeClass('active');
             target.addClass('active');
+
+            this.getDocumentsByTemplateId();
         },
 
-        searchDocuments: function (event) {
-            var target = $(event.target);
-            var templateId = target.closest('.templateItem').data('id');
-
-            this.getDocumentsByTemplateId(templateId);
-        },
+        //searchDocuments: function (event) {
+        //    var target = $(event.target);
+        //    var templateId = target.closest('.templateItem').data('id');
+        //
+        //    this.getDocumentsByTemplateId(templateId);
+        //},
 
         getDocumentsByTemplateId: function (argTemplateId) {
             var self = this;
+
+            if(!this.activeTemplateId){
+                this.activeTemplateId = this.$el.find('.templateItem').first().data('id');
+            }
+
             var templateId = this.activeTemplateId || argTemplateId;
             var searchParams = self.getSearchParams();
 
@@ -114,6 +122,7 @@ define([
                 error : function (response){
                     alert(response.responseJSON.error);
                     console.log(response);
+                    self.clearOurView();
                 }
             });
         },
@@ -123,14 +132,20 @@ define([
             var curColl = this.currentCollByIds;
             var viewType = this.stateModel.get('viewType');
 
-            if (curColl.length > 0){
-                if (viewType === 'list') {
-                    documentsContainer.html(this.documentList({documents: curColl}));
-                } else {
-                    documentsContainer.html(this.documentGrid({documents: curColl}));
-                }
-                Backbone.history.navigate("documents/"+viewType);
+            if (viewType === 'list') {
+                documentsContainer.html(this.documentList({documents: curColl}));
+            } else {
+                documentsContainer.html(this.documentGrid({documents: curColl}));
             }
+
+            Backbone.history.navigate("documents/"+viewType);
+
+        },
+
+        clearOurView: function(){
+            var documentsContainer = this.$el.find("#documentList");
+
+            documentsContainer.html('');
         },
 
         changeViewType: function(event){
@@ -147,11 +162,11 @@ define([
             var templateName = searchContainer.find(".templateName").val();
             var userName = searchContainer.find(".userName").val();
             var params = {
-                status: status,
-                orderBy: sort,
-                order: order,
+                status   : status,
+                orderBy  : sort,
+                order    : order,
                 templateName: templateName,
-                userName: userName
+                userName : userName
             };
 
             return params;
