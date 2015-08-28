@@ -897,9 +897,15 @@ var UsersHandler = function (PostGre) {
             }
         }
 
-        if (options.signature &&
-            options.signature.sign_image && !CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)) {
-            return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
+        if (options.signature && options.signature.sign_image){
+
+            if (req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
+                return next(badRequests.AccessError());
+            }
+
+            if (!CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)){
+                return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
+            }
         }
 
         updateUserById(userId, options, function (err, userModel) {
