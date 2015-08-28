@@ -201,10 +201,7 @@ var DocumentsHandler = function (PostGre) {
     function generateDocumentName(templateModel, userModel) {
         var name = templateModel.get('name');
         var profileModel = userModel.related('profile');
-        var profileModel;
         var username;
-
-        name += ' (' + profileModel.get('first_name') + ' ' + profileModel.get('last_name') + ')';
 
         if (userModel && userModel.id && userModel.related('profile')) {
             profileModel = userModel.related('profile');

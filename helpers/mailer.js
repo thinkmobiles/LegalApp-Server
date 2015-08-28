@@ -97,7 +97,7 @@ var MailerModule = function () {
             console.log(service, user, pass);
         }
         
-        /*smtpTransport.sendMail(mailOptions, function (err, responseResult) {
+        smtpTransport.sendMail(mailOptions, function (err, responseResult) {
             if (err) {
                 console.log(err);
                 if (callback && typeof callback === 'function') {
@@ -109,7 +109,7 @@ var MailerModule = function () {
                     callback(null, responseResult);
                 }
             }
-        });*/
+        });
     }
 
     this.onForgotPassword = function(options, callback) {
