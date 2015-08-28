@@ -72,15 +72,16 @@ define([
         goToPreview: function(){
             var values = this.collectValues();
 
-            var myView = new DocPreView({
+            this.dialogView = new DocPreView({
                 modelId     : this.tempInfo.id,
                 modelValues : values
             });
 
-            myView.on('saveInParent', this.letsSaveDoc, this);
+            this.dialogView.on('saveInParent', this.letsSaveDoc, this);
         },
 
         letsSaveDoc: function(){
+            var self = this;
             var assignedId = this.$el.find('#createEmployee').attr('data-sig');
             var myModel = this.fillFields ? this.docModel : new DocModel();
             var data;
@@ -96,6 +97,10 @@ define([
                 success: function(response){
                     //var curId = response.get('model').id;
                     // ------- new DocPreView({modelId : curId});
+                    if (self.dialogView){
+                        self.dialogView.remove();
+                    }
+
                     alert('Document was saved successfully');
                     Backbone.history.navigate('documents/list', {trigger : true});
                 },
