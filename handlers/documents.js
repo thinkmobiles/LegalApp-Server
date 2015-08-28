@@ -313,7 +313,11 @@ var DocumentsHandler = function (PostGre) {
                             .catch(TemplateModel.NotFoundError, function (err) {
                                 cb(badRequests.NotFound({message: 'Template was not found'}));
                             })
-                            .catch(cb);
+                            .catch(function (err) {
+                                console.log(err);
+                                console.log(err.stack);
+                                cb(err);
+                            });
 
                     },
                     userModel: function (cb) {
