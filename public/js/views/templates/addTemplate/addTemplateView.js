@@ -6,7 +6,7 @@ define([
     'text!templates/templates/addTemplate/addTemplateTemplate.html',
     'text!templates/templates/addTemplate/linkFieldsTemplate.html',
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
-    'views/addLinkTable/addLinkTableView',
+    'views/templates/addTemplate/addLinkTableView',
     'models/templateModel',
     'collections/linksCollection'
 
@@ -57,6 +57,11 @@ define([
         },
 
         showLinksTable: function(){
+
+            if (this.addDialogView){
+                this.addDialogView.remove()
+            }
+
             this.addDialogView = new AddLinkView();
             this.addDialogView.on('renderParentLinks', this.appendLinksNames, this);
             $('#addTemplateContainer').append(this.addDialogView.el);

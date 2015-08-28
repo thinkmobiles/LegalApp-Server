@@ -469,7 +469,7 @@ var TemplatesHandler = function (PostGre) {
                     htmlContent = '';
                 }
 
-                res.status(200).send(htmlContent);
+                res.status(200).send({htmlContent : htmlContent});
             })
             .catch(TemplateModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());

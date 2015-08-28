@@ -10,27 +10,38 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        el : '#wrapper',
-
         initialize: function (options) {
-            this.docId = options.modelId;
+            this.tempId = options.modelId;
+            this.temporaryValues = options.modelValues;
 
             this.render();
         },
 
         events : {
-            "click #sendAndSignBtn" : "sendMyDoc"
+            //"click #sendAndSignBtn" : "sendMyDoc",
+            "click #modalBack" : "closeDialog",
+            "click #modalSave" : "saveFromDialog"
         },
 
         drawDocument: function(){
             var self = this;
+            var saveData;
+
+            saveData = {values : this.temporaryValues};
 
             $.ajax({
-                url : "/documents/"+this.docId+"/preview",
+                url         : "/templates/"+this.tempId+"/previewDocument",
+                type        : "POST",
+                contentType : "application/json; charset=utf-8",
+                dataType    : "json",
+                data        : JSON.stringify(saveData),
+
                 success : function(response){
-                    self.$el.find('#forDocSigning').html(response);
+                    self.$el.find('#forDocSigning').html(response.htmlContent);
                 },
-                error   : function(){}
+                error   : function(model, xhr){
+                    alert('Error');
+                }
             });
         },
 
@@ -38,7 +49,7 @@ define([
             var self = this;
 
             $.ajax({
-                url : "/documents/"+this.docId+"/send",
+                url : "/documents/"+this.tempId+"/send",
                 success : function(){
                     alert('A document was sent successfully');
                     Backbone.history.navigate('/documents/list', {trigger : true});
@@ -50,10 +61,29 @@ define([
             });
         },
 
+        closeDialog: function(){
+            this.remove();
+        },
+
+        saveFromDialog: function(){
+            this.trigger('saveInParent');
+        },
+
         render: function () {
+            var self = this;
 
             this.undelegateEvents();
-            this.$el.html(_.template(DocTemp));
+            this.$el.html(_.template(DocTemp))
+                .dialog({
+                    closeOnEscape: false,
+                    autoOpen: true,
+                    dialogClass: "modalDocPreview",
+                    modal: true,
+                    width: "800px",
+                    close : function(){
+                        self.remove()
+                    }
+                });
             this.delegateEvents();
             this.drawDocument();
 

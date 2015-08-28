@@ -3,7 +3,7 @@
  */
 
 define([
-    'text!templates/addLinkTable/addLinkTableTemplate.html',
+    'text!templates/templates/addTemplate/addLinkTableTemplate.html',
     'text!templates/forSelect/baseLinksTemplate.html',
     'models/linkModel'
 ], function (AddTemplate, TypesList, LinkModel) {
