@@ -180,21 +180,31 @@ a {
       border: 1px solid #d0d0d0;
       border-top: none;
       padding: 30px 44px 17px;
-      input[type="email"],
-      input[type="password"]{
-        width: 331px;
-        background-color: rgb(234, 234, 234);
-        border: none;
-        height: 50px;
-        color: #c4c4c4;
-        padding: 0 15px;
-        .font-oss;
+      .form-field{
+        position: relative;
         &:first-child{
           margin-bottom: 45px;
         }
-      }
-      input{
-
+        input[type="email"],
+        input[type="password"]{
+          width: 331px;
+          background-color: rgb(234, 234, 234);
+          border: 1px solid #eaeaea;
+          height: 50px;
+          color: #c4c4c4;
+          padding: 0 15px;
+          .font-oss;
+          &.error_input{
+            border-color: #e31937;
+          }
+        }
+        .error_msg{
+          position: absolute;
+          color: #e31937;
+          .font-osr;
+          font-size: 14px;
+          top: 61px;
+        }
       }
       input[type="checkbox"]{
         display: none;

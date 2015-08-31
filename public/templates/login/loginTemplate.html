@@ -4,11 +4,20 @@
         <h1>Sign in</h1>
         <div class="form-body">
             <%if(!isInvite){%>
-                <input type="email" id="loginEmail" placeholder="Email Address">
+            <div class="form-field">
+                <input type="email" id="loginEmail" class="error_input" placeholder="Email Address">
+                <span class="error_msg" style="display: block;">Email is invalid</span>
+            </div>
             <%}%>
-            <input type="password" id="loginPass" placeholder="Password">
+            <div class="form-field">
+                <input type="password" id="loginPass" placeholder="Password">
+                <span class="error_msg" style="display: none;">Password is invalid</span>
+            </div>
             <%if(isInvite){%>
+            <div class="form-field">
                 <input type="password" id="confLoginPass" placeholder="Confirm password">
+                <span class="error_msg" style="display: none;">Password is invalid</span>
+            </div>
             <%}%>
             <div class="remember_check"><input type="checkbox" id="rememberMe"><label for="rememberMe"></label><span>Remember me</span></div>
             <input type="button" id="loginButton" value="Sign in">
