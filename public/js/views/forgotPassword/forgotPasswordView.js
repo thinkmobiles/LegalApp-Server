@@ -26,7 +26,8 @@ define([
         },
 
         sendPass : function(){
-            var currentEmail = this.$el.find('#currentEmail').val().trim();
+            var thisEl = this.$el;
+            var currentEmail = thisEl.find('#currentEmail').val().trim();
             $.ajax({
                 url: "/forgotPassword",
                 type: "POST",
@@ -34,8 +35,8 @@ define([
                     email: currentEmail
                 },
                 success: function () {
-                    alert('Email send');
-
+                    thisEl.find('#innerForgot').html("<p>Recovery password has been sent to "+currentEmail+" </p>");
+                    thisEl.find('.hideRow').show();
                 },
                 error: function (err) {
                    // todo
