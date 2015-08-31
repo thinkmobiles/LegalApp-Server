@@ -161,12 +161,17 @@ define([
             var order = searchContainer.find(".order:checked").val();
             var templateName = searchContainer.find(".templateName").val();
             var userName = searchContainer.find(".userName").val();
+            var fromDate = searchContainer.find('.fromDate').val();
+            var toDate = searchContainer.find('.toDate').val();
             var params = {
                 status   : status,
                 orderBy  : sort,
                 order    : order,
-                templateName: templateName,
-                userName : userName
+                //templateName: templateName,
+                name: templateName,
+                userName : userName,
+                from: fromDate,
+                to: toDate
             };
 
             return params;
