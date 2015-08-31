@@ -1,9 +1,56 @@
-body,html {
-  margin: 0;
+@font-face {
+  font-family: 'OSR';
+  src: url('fonts/opensans-regular-webfont.eot');
+  src: url('fonts/opensans-regular-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-regular-webfont.woff2') format('woff2'),
+  url('fonts/opensans-regular-webfont.woff') format('woff'),
+  url('fonts/opensans-regular-webfont.ttf') format('truetype'),
+  url('fonts/opensans-regular-webfont.svg#open_sansregular') format('svg');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'OSS';
+  src: url('fonts/opensans-semibold-webfont.eot');
+  src: url('fonts/opensans-semibold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-semibold-webfont.woff2') format('woff2'),
+  url('fonts/opensans-semibold-webfont.woff') format('woff'),
+  url('fonts/opensans-semibold-webfont.ttf') format('truetype'),
+  url('fonts/opensans-semibold-webfont.svg#open_sanssemibold') format('svg');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'OSE';
+  src: url('fonts/opensans-extrabold-webfont.eot');
+  src: url('fonts/opensans-extrabold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-extrabold-webfont.woff2') format('woff2'),
+  url('fonts/opensans-extrabold-webfont.woff') format('woff'),
+  url('fonts/opensans-extrabold-webfont.ttf') format('truetype'),
+  url('fonts/opensans-extrabold-webfont.svg#open_sansextrabold') format('svg');
+  font-weight: 900;
 }
 
+.font-osr{
+  font-family: 'OSR';
+}
+.font-oss{
+  font-family: 'OSS';
+}
+.font-ose{
+  font-family: 'OSE';
+}
+.transition{
+  -webkit-transition: all 0.8s ease 0s;
+  -moz-transition: all 0.8s ease 0s;
+  -ms-transition: all 0.8s ease 0s;
+  -o-transition: all 0.8s ease 0s;
+  transition: all 0.8s ease 0s;
+}
+a:hover, input[type="button"]{
+  .transition;
+}
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: url("../images/welcome-bgr.png") no-repeat center #eeeeee;
 }
 a {
   color: #00B7FF;
@@ -63,19 +110,6 @@ a {
   display: block;
   float: left;
 }
-#loginDiv {
-  top: 50%;
-  left: 50%;
-  height: 440px;
-  width: 460px;
-  position: absolute;
-  margin-top: -170px;
-  margin-left: -230px;
-}
-#logInForm {
-  padding: 20px;
-  border: 4px double black;
-}
 #signUpDiv {
   width: 600px;
   height: 300px;
@@ -107,7 +141,110 @@ a {
 }
 
 #wrapper {
+}
+#loginDiv {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -300px 0 0 -225px;
+  height: 600px;
+  width: 450px;
+  a{
+    display: block;
+    text-align: center;
+  }
+  #logInForm {
+    margin-top: 65px;
+    background-color: #fff;
+    h1{
+      background-color: #e31937;
+      line-height: 62px;
+      .font-osr;
+      font-size: 24px;
+      color: #fff;
+      padding: 0 20px;
+    }
+    .form-body{
+      border: 1px solid #d0d0d0;
+      border-top: none;
+      padding: 30px 44px 17px;
+      input[type="email"],
+      input[type="password"]{
+        width: 331px;
+        background-color: rgb(234, 234, 234);
+        border: none;
+        height: 50px;
+        color: #c4c4c4;
+        padding: 0 15px;
+        .font-oss;
+        &:first-child{
+          margin-bottom: 45px;
+        }
+      }
+      input{
 
+      }
+      input[type="checkbox"]{
+        display: none;
+      }
+      .remember_check{
+        margin: 37px 0 17px;
+        label {
+          display: inline-block;
+          width: 22px;
+          height: 22px;
+          border: 1px solid #909090;
+          position: relative;
+          float: left;
+          cursor: pointer;
+          margin-right: 6px;
+        }
+        input[type="checkbox"]:checked + label:after {
+          content: '';
+          background: url("../images/check.png") no-repeat center;
+          height: 13px;
+          width: 17px;
+          position: absolute;
+          top: 5px;
+          left: 3px;
+        }
+        span{
+          display: block;
+          .font-oss;
+          font-size: 14px;
+          line-height: 24px;
+          color: #909090;
+        }
+      }
+      .link{
+        margin-top: 51px;
+        display: block;
+        text-align: center;
+        .font-osr;
+        font-size: 14px;
+        color: #909090;
+        text-decoration: none;
+        &:hover{
+          color: #e31937;
+        }
+      }
+      input[type="button"]{
+        background-color: #c4c4c4;
+        border: none;
+        margin: 0 auto;
+        width: 162px;
+        height: 48px;
+        line-height: 48px;
+        display: block;
+        .font-ose;
+        font-size: 18px;
+        color: #fff;
+        &:hover{
+          color: #e31937;
+        }
+      }
+    }
+  }
 }
 
 //#addItemLeft {
