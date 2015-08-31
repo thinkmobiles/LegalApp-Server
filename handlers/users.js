@@ -941,6 +941,8 @@ var UsersHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var params = req.query;
         var searchTerm = params.value;
+        var status = params.status;
+        var signAuthority = params.signAuthority;
         //var field = params.field;
         var page = params.page || 1;
         var limit = params.count || 10;
@@ -963,7 +965,16 @@ var UsersHandler = function (PostGre) {
             )
         ];
 
-        var query = knex(TABLES.USERS)
+        var query;
+
+        if (status) {
+            status = parseInt(status);
+            if (isNaN(status)) {
+                return next(badRequests.InvalidValue({param: 'status', value: status}));
+            }
+        }
+
+        query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
@@ -972,16 +983,25 @@ var UsersHandler = function (PostGre) {
 
         query.where(function (qb) {
 
-            qb.where('status', '<>', STATUSES.DELETED)
-                .andWhere(TABLES.COMPANIES + '.id', companyId);
+            if (status !== undefined) {
+                this.where('status', status);
+            } else {
+                this.where('status', '<>', STATUSES.DELETED);
+            }
+
+            this.where(TABLES.COMPANIES + '.id', companyId);
 
             if (searchTerm) {
                 searchTerm = searchTerm.toLowerCase();
-                qb.whereRaw(
+                this.whereRaw(
                     "LOWER(first_name) LIKE '%" + searchTerm + "%' "
                     + "OR LOWER(last_name) LIKE '%" + searchTerm + "%' "
                     + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + searchTerm + "%' "
                 );
+            }
+
+            if (signAuthority === 'true') {
+                this.where('sign_authority', true);
             }
 
         });
