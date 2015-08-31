@@ -8,7 +8,7 @@ var MESSAGES = require('../constants/messages');
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
 var BUCKETS = require('../constants/buckets');
-var SIGN_AUTHORITY = require('../constants/signAuthority')
+var SIGN_AUTHORITY = require('../constants/signAuthority');
 
 var async = require('async');
 var _ = require('lodash');
@@ -933,50 +933,59 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
-    this.getDocumentsByTemplates = function (req, res, next) {
-        var params = req.query;
-        var fields = [
-            TABLES.TEMPLATES + '.id',
-            TABLES.TEMPLATES + '.name'/*,
-             'documents.created_at'*/
-        ];
+    function setDocumentsCountQuery(params) {
+        var DOCUMENTS = TABLES.DOCUMENTS;
+        var TEMPLATES = TABLES.TEMPLATES;
+        var name = params.name;
         var status = params.status;
-        var name = params.templateName;
-        var userName = params.userName;
-        var orderBy;
-        var order;
-        var query = knex(TABLES.TEMPLATES)
-            .leftJoin(TABLES.DOCUMENTS, TABLES.TEMPLATES + '.id', TABLES.DOCUMENTS + '.template_id');
-            //.leftJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.user_id');
-            //.innerJoin(TABLES.PROFILES, TABLES.PROFILES + '.user_id', TABLES.DOCUMENTS + '.assigned_id');
+        var from = params.from;
+        var to = params.to;
+        var fromDate;
+        var toDate;
+        var query = knex(DOCUMENTS)
+            .count('id')
+            .whereRaw(DOCUMENTS + '.template_id=' + TEMPLATES + '.id');
 
         if ((status !== undefined) && (status !== 'all')) {
-            query.where(TABLES.DOCUMENTS + '.status', status);
+            query.andWhere(DOCUMENTS + '.status', status);
         }
 
         if (name) {
             name = name.toLowerCase();
             query.whereRaw(
-                "LOWER(documents.name) LIKE '%" + name + "%' "
+                "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
             );
         }
 
-        if (params.orderBy) {
-            orderBy = params.orderBy;
-
-            if (orderBy === 'created_at') {
-                orderBy = TABLES.TEMPLATES + '.created_at';
-            }
-        } else {
-            orderBy = TABLES.TEMPLATES + '.name';
+        if (from) {
+            fromDate = new Date(from);
+            query.andWhere(DOCUMENTS + '.created_at', '>=', fromDate);
         }
-        order = params.order || 'ASC';
+
+        if (to) {
+            toDate = new Date(to);
+            query.andWhere(DOCUMENTS + '.created_at', '<=', toDate);
+        }
+
+        return query;
+
+    };
+
+    this.getDocumentsByTemplates = function (req, res, next) {
+        var TEMPLATES = TABLES.TEMPLATES;
+        var params = req.query;
+        var subQuery = setDocumentsCountQuery(params);
+        var subQueryString = knex.raw("(" + subQuery.toString() + ") as count");
+        var fields = [
+            TEMPLATES + '.id',
+            TEMPLATES + '.name',
+            knex.raw(subQueryString)
+        ];
+        var query = knex(TEMPLATES);
 
         query
             .select(fields)
-            .groupBy(fields)
-            .count(TABLES.TEMPLATES + '.id')
-            .orderBy(orderBy, order)
+            .orderBy(TEMPLATES + '.name')
             .exec(function (err, rows) {
                 if (err) {
                     return next(err);
@@ -986,45 +995,29 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocumentsByTemplate = function (req, res, next) {
+        var DOCUMENTS = TABLES.DOCUMENTS;
         var templateId = req.params.templateId;
-        var companyId = req.session.companyId;
-        var criteria = {
-            id: templateId
-        };
-        var fetchOptions = {
-            require: true//,
-            //withRelated: ['documents']
-        };
-        var fields = [
-            TABLES.DOCUMENTS + '.created_at'
-        ];
-
-        var columns = [
-            'documents.*'
-            //'templates.name',
-            //'profiles.first_name',
-            //'profiles.last_name',
-            //knex.raw(
-            //    "CONCAT(templates.name, ' ', COALESCE(" + TABLES.PROFILES + ".first_name, ''), ' ', " + 'COALESCE(' + TABLES.PROFILES + ".last_name, '')) AS name"
-            //)
-        ];
         var params = req.query;
-        var name = params.templateName;
+        var name = params.name;
         var status = params.status;
+        var from = params.from;
+        var to = params.to;
+        var fromDate;
+        var toDate;
         var orderBy;
         var order;
 
         if (templateId) {
             templateId = parseInt(templateId);
             if (isNaN(templateId)) {
-                return next(badRequests.InvalidValue({param: 'templateId', value: req.params.templateId}));
+                return next(badRequests.InvalidValue({param: 'templateId', value: templateId}));
             }
         }
 
         if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
-            orderBy = TABLES.DOCUMENTS + '.created_at';
+            orderBy = DOCUMENTS + '.created_at';
         }
 
         order = params.order || 'ASC';
@@ -1033,20 +1026,34 @@ var DocumentsHandler = function (PostGre) {
             .forge()
             .query(function (qb) {
 
-                if (name) {
-                    name = name.toLowerCase();
-                    qb.whereRaw(
-                        "LOWER(name) LIKE '%" + name + "%' "
-                    );
-                }
+                qb.andWhere(function () {
 
-                if ((status !== undefined) && (status !== 'all')) {
-                    status = parseInt(status);
-                    qb.where('status', status);
-                }
+                    if (name) {
+                        name = name.toLowerCase();
+                        this.whereRaw(
+                            "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
+                        );
+                    }
 
-                qb.orderBy(orderBy, order)
-                    .select(columns);
+                    if ((status !== undefined) && (status !== 'all')) {
+                        status = parseInt(status);
+                        this.where('status', status);
+                    }
+
+                    if (from) {
+                        fromDate = new Date(from);
+                        this.where(DOCUMENTS + '.created_at', '>=', fromDate);
+                    }
+
+                    if (to) {
+                        toDate = new Date(to);
+                        this.where(DOCUMENTS + '.created_at', '<=', toDate);
+                    }
+
+                    this.where('template_id', templateId);
+                });
+
+                qb.orderBy(orderBy, order);
             })
             .fetchAll()
             .exec(function (err, rows) {
