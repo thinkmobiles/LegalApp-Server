@@ -420,7 +420,8 @@ var UsersHandler = function (PostGre) {
 
                 sessionOptions = {
                     permissions: profile.get('permissions'),
-                    companyId: companyId
+                    companyId: companyId,
+                    rememberMe: options.rememberMe
                 };
                 session.register(req, res, userModel, sessionOptions);
             });
@@ -499,7 +500,8 @@ var UsersHandler = function (PostGre) {
 
             sessionOptions = {
                 permissions: profile.get('permissions'),
-                companyId: companyId
+                companyId: companyId,
+                rememberMe: options.rememberMe
             };
 
             session.register(req, res, userModel, sessionOptions);
