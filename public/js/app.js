@@ -14,7 +14,8 @@ define([
         App.sessionData = new Backbone.Model({
             authorized  : false,
             user        : null,
-            role        : null
+            role        : null,
+            company     : null
         });
 
         App.templateInfo = new Backbone.Model();
