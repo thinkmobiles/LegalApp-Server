@@ -19,5 +19,6 @@ module.exports = {
     DEFAULT_COMPANY_ADDRESS: '31th Alley st.',
     DEFAULT_DOCUMENT_NAME: 'document.pdf',
     KEY_LENGTH: 122, //depends from user secret key and open key
-    OPEN_KEY: 'ThisIsOpenKeyTo_OurDigitalSignature_ItsOk2015'
+    OPEN_KEY: 'ThisIsOpenKeyTo_OurDigitalSignature_ItsOk2015',
+    SESSION_MAX_AGE: 3600000 //1 hour
 };
