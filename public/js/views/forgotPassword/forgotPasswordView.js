@@ -10,19 +10,13 @@ define([
     View = Backbone.View.extend({
 
         el : '#wrapper',
-        //id : 'addUserForm',
 
         initialize: function () {
             this.render();
         },
 
         events : {
-            'click #backLogin' : 'backToLogin',
             'click #sendPass'  : 'sendPass'
-        },
-
-        backToLogin : function(){
-            Backbone.history.navigate('login',{trigger : true});
         },
 
         sendPass : function(){

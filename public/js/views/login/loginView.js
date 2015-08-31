@@ -65,13 +65,15 @@ define([
             if (!this.token){
                 stateModelUpdate.email = thisEl.find("#loginEmail").val().trim();
                 data = {
-                    email    : stateModelUpdate.email,
-                    password : stateModelUpdate.password
+                    email      : stateModelUpdate.email,
+                    password   : stateModelUpdate.password,
+                    rememberMe : stateModelUpdate.rememberMe
                 }
             } else {
                 currentUrl += "/"+this.token;
                 data = {
-                    password : stateModelUpdate.password
+                    password   : stateModelUpdate.password,
+                    rememberMe : stateModelUpdate.rememberMe
                 }
             }
 
