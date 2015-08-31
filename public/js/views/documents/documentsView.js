@@ -41,7 +41,6 @@ define([
 
         events : {
             "click .filters"     : "showHideFilters",
-            //"click .templateListName": "searchDocuments", //TODO
             "click .searchBtn"   : "search",
             "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
@@ -65,7 +64,7 @@ define([
         },
 
         goToPreview: function(event){
-            var targetId = $(event.target).data('id');
+            var targetId = $(event.target).closest('.documentItem').data('id');
             Backbone.history.navigate('documents/preview/'+targetId, {trigger : true});
         },
 

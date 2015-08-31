@@ -56,7 +56,7 @@ define([
             }
         },
 
-        collectValues : function(context){
+        collectValues : function(){
             var links = this.linkModel.toJSON();
             var values = {};
             var this_el = this.$el;
@@ -130,7 +130,7 @@ define([
             $.ajax({
                 url  : "/documents/"+docId+"/signAndSend",
                 type : "POST",
-                data : {assigned_id : assignId},
+                //data : {assigned_id : assignId},
 
                 success : function(){
                     alert('A document was sent successfully');

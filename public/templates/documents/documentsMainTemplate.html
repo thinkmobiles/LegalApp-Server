@@ -1,30 +1,8 @@
 <div id="documents">
 
-    <div class="buttons">
-        <button class="filters">Filter</button>
-        <button data-id="list" class="btnViewType">List View</button>
-        <button data-id="grid" class="btnViewType">Grid View</button>
-    </div>
 
-  <!--  <div id="searchContainer" class="addItemLeft hidden">-->
     <div id="searchContainer" class="addItemLeft">
         <h2>Documents Search Filters</h2>
-
-        <!--<label><input type="checkbox">By Creation Date</label><br>
-
-        <label><input type="checkbox">Last Opened</label><br>
-
-        <label><input type="checkbox">WIP</label><br>
-
-        <label><input type="checkbox">Signed</label><br>
-
-        <label><input type="checkbox">Not Signed</label><br>
-
-        <label><input type="checkbox">Saved</label><br>
-
-        <label><input type="checkbox">Newest</label><br>
-
-        <label><input type="checkbox">By Title</label><br>-->
 
         <div class="search">
             <p>Search</p>
@@ -36,29 +14,33 @@
         </div>
         <div class="filter">
             <p>Status</p>
-            <label><input type="radio" name="status" class="filterStatus" value="all" checked="checked" >All</label><br>
-            <label><input type="radio" name="status" class="filterStatus" value="1">Created</label><br>
-            <label><input type="radio" name="status" class="filterStatus" value="2">Un signed</label><br>
-            <label><input type="radio" name="status" class="filterStatus" value="3">Signed by user</label><br>
-            <label><input type="radio" name="status" class="filterStatus" value="4">Signed by company</label><br>
+            <input id="f0" type="radio" name="status" class="filterStatus" value="all" checked="checked" ><label for="f0">All</label><br>
+            <input id="f1" type="radio" name="status" class="filterStatus" value="1"><label for="f1">Created</label><br>
+            <input id="f2" type="radio" name="status" class="filterStatus" value="2"><label for="f2">Un signed</label><br>
+            <input id="f3" type="radio" name="status" class="filterStatus" value="3"><label for="f3">Signed by user</label><br>
+            <input id="f4" type="radio" name="status" class="filterStatus" value="4"><label for="f4">Signed by company</label><br>
         </div>
         <div class="sort">
             <p>Sort</p>
-            <label><input type="radio" name="sort" value="name" class="orderBy">Title</label><br>
-            <label><input type="radio" name="sort" value="created_at" class="orderBy" checked="checked">Date creation</label><br>
-            <!--<label><input type="radio" name="sort" value="documents.created_at">Last opened</label><br>-->
-            <!--<label><input type="radio" name="sort" >Assigned to</label><br>-->
+            <input id="s1" type="radio" name="sort" value="name" class="orderBy"><label for="s1">Title</label><br>
+            <input id="s2" type="radio" name="sort" value="created_at" class="orderBy" checked="checked"><label for="s2">Date creation</label><br>
+
             <p>Order</p>
-            <label><input type="radio" name="order" value="ASC" checked="checked" class="order">A-Z</label><br>
-            <label><input type="radio" name="order" value="DESC" class="order">Z-A</label><br>
+            <input id="s3" type="radio" name="order" value="ASC" checked="checked" class="order"><label for="s3">A-Z</label><br>
+            <input id="s4" type="radio" name="order" value="DESC" class="order"><label for="s4">Z-A</label><br>
         </div>
 
         <input class="searchBtn" type="submit" value="Search"/>
     </div>
 
-    <div id="listWrap">
-        <div id="templateList"></div>
-        <div id="documentList"></div>
+    <div class="buttons">
+        <button class="filters">Filter</button>
+        <button data-id="list" class="btnViewType">List View</button>
+        <button data-id="grid" class="btnViewType">Grid View</button>
     </div>
+
+    <div id="templateList" class="addItemRight"></div>
+    <div id="documentList"></div>
+
 
 </div>
