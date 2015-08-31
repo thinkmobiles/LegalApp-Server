@@ -60,7 +60,9 @@ define([
                     $('#leftMenu').hide();
                     App.sessionData.set({
                         authorized : false,
-                        user       : null
+                        user       : null,
+                        role       : null,
+                        company    : null
                     });
                     App.router.navigate("login", {trigger: true});
                 },

@@ -4,24 +4,11 @@
 <div>
     <label for="editFName">First name</label><br>
     <input type="text" id="editFName" value="<%= usrMdl.profile.first_name%>">
-</div>
-<div>
     <label for="editLName">Last name</label><br>
     <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
 </div>
 <div>
-    <label for="editEmail">Email Address*</label><br>
-    <input type="email" id="editEmail" value="<%= usrMdl.email%>">
-</div>
-<div>
-    <label for="editPhone">Phone</label><br>
-    <input type="text" id="editPhone" value="<%= usrMdl.phone%>">
-</div>
-<div>
-    <label for="editSign">Signing authority</label>
-    <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
-</div>
-<div>
+    <label for="editRole">Role</label>
     <select id="editRole">
         <option data-id="3" <%= (permiss === 3) ? 'selected' : ''%> >Viewer</option>
         <option data-id="2" <%= (permiss === 2) ? 'selected' : ''%> >Editor</option>
@@ -29,8 +16,14 @@
         <option data-id="1" <%= (permiss === 1) ? 'selected' : ''%> >Admin</option>
         <%}%>
     </select>
+    <input type="checkbox" id="editStatus" value="<%= usrMdl.status ? 0 : 1%>">
+    <label for="editStatus"><%= usrMdl.status ? 'Delete User' : 'Activate User'%></label>
 </div>
 <div>
-    <input type="button" id="editStatus" data-id="<%= usrMdl.status === 0 ? '1' : '0'%>" value="<%= usrMdl.status === 0 ? 'Enable' : 'Disable'%>">
+    <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
+    <label for="editSign">Authorization to signing</label>
 </div>
-<input type="button" id="editBtn" value="Edit">
+<!--<div>-->
+    <!--<input type="button" id="editStatus" data-id="<%= usrMdl.status === 0 ? '1' : '0'%>" value="<%= usrMdl.status === 0 ? 'Enable' : 'Disable'%>">-->
+<!--</div>-->
+<input type="button" id="editBtn" value="Save Changes">

@@ -18,33 +18,38 @@ define([
 
         events : {
             "click #editBtn"    : "saveUser",
-            "click #editStatus" : "changeStatus"
+            //"click #editStatus" : "changeStatus"
         },
 
-        changeStatus: function(event){
-            var theId = $(event.target).data('id');
-            this.updateUser(theId);
-        },
+        //changeStatus: function(event){
+        //    var theId = $(event.target).data('id');
+        //    this.updateUser(theId);
+        //},
 
         saveUser: function(){
             this.updateUser();
         },
 
-        updateUser : function(statusId){
+        updateUser : function(){
             var self = this;
             var thisEL = this.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
-            var phone = thisEL.find('#editPhone').val().trim();
+            //var phone = thisEL.find('#editPhone').val().trim();
             var permissions = thisEL.find("#editRole option:selected").data('id');
             var signing = thisEL.find('#editSign').prop('checked');
-            var status;
+            var status = thisEL.find('#editStatus');
+            var status_ch = status.prop('checked');
             var profile;
+
+            if (signing) {
+
+            }
 
             profile = {
                 first_name  : firstName,
                 last_name      : lastName,
-                phone          : phone,
+                //phone          : phone,
                 permissions    : permissions,
                 sign_authority : signing
             };
@@ -53,8 +58,8 @@ define([
                 profile : profile
             };
 
-            if (statusId !== undefined){
-                updateData.status = statusId;
+            if (status_ch){
+                updateData.status = status.val();
             }
 
             this.userModel.save(updateData,{
