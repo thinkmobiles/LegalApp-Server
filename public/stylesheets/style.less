@@ -28,6 +28,15 @@
   url('fonts/opensans-extrabold-webfont.svg#open_sansextrabold') format('svg');
   font-weight: 900;
 }
+@font-face {
+  font-family: 'PLR';
+  src: url('fonts/PalatinoLTStd-Roman.eot?#iefix') format('embedded-opentype'),
+  url('fonts/PalatinoLTStd-Roman.otf')  format('opentype'),
+  url('fonts/PalatinoLTStd-Roman.woff') format('woff'),
+  url('fonts/PalatinoLTStd-Roman.ttf')  format('truetype'),
+  url('fonts/PalatinoLTStd-Roman.svg#PalatinoLTStd-Roman') format('svg');
+  font-weight: 400;
+}
 
 .font-osr{
   font-family: 'OSR';
@@ -37,6 +46,9 @@
 }
 .font-ose{
   font-family: 'OSE';
+}
+.font-plr{
+  font-family: 'PLR';
 }
 .transition{
   -webkit-transition: all 0.8s ease 0s;
@@ -199,14 +211,17 @@ a {
           cursor: pointer;
           margin-right: 6px;
         }
+        input[type="checkbox"]:checked + label{
+          border-color: #e31937;
+        }
         input[type="checkbox"]:checked + label:after {
           content: '';
-          background: url("../images/check.png") no-repeat center;
+          background: url("../images/check-red.png") no-repeat center;
           height: 13px;
           width: 17px;
           position: absolute;
           top: 5px;
-          left: 3px;
+          left: 2px;
         }
         span{
           display: block;
