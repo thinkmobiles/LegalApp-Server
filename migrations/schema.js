@@ -98,6 +98,7 @@ module.exports = function (knex) {
                 row.string('phone');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.DISABLED);
+                row.boolean('has_sign_image').notNullable().defaultTo(false);
                 row.timestamps();
             }), 
 
@@ -200,7 +201,8 @@ module.exports = function (knex) {
                     first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
                     last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
                     permissions: PERMISSIONS.SUPER_ADMIN,
-                    sign_authority: SIGN_AUTHORITY.ENABLED
+                    sign_authority: SIGN_AUTHORITY.ENABLED,
+                    has_sign_image: true
                 };
 
                 insertData(TABLES.PROFILES, data, cb);
