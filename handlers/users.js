@@ -1044,6 +1044,33 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    this.getUserSignature = function (req, res, next) {
+        var userId = req.params.id;
+        var criteria = {
+            user_id: userId
+        };
+
+        SecretKeyModel
+            .find(criteria)
+            .exec(function (err, secret) {
+                var signImage;
+
+                if (err) {
+                    return next(err);
+                }
+
+                if (secret && secret.id) {
+                    signImage = secret.attributes.sign_image;
+                } else {
+                    signImage = null;
+                }
+                res.status(200).send(signImage);
+            });
+
+
+
+    };
+
     this.renderError = function (err, req, res, next) {
         res.render('errorTemplate', {error: err});
     };
