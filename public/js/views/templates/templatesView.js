@@ -3,19 +3,21 @@
  */
 
 define([
-    'text!templates/templates/templatesGridTemplate.html',
+    'text!templates/templates/templatesTemplate.html',
     'text!templates/templates/templatesGrid.html',
+    'text!templates/templates/templatesList.html',
     'views/templates/addTemplate/addTemplateView',
     'collections/templatesCollection'
 
-], function (TempTemplate, TempItem, AddTemplate, TempCollection) {
+], function (TempTemplate, TempGridItem, TempListItem, AddTemplate, TempCollection) {
 
     var View;
     View = Backbone.View.extend({
 
         el : '#wrapper',
 
-        templateItem : _.template(TempItem),
+        templateGridItem : _.template(TempGridItem),
+        templateListItem : _.template(TempListItem),
 
         initialize: function (options) {
             this.render();
@@ -25,6 +27,7 @@ define([
             this.stateModel.set('viewType', options.viewType);
 
             this.listenTo(this.tempCollection, 'reset', this.renderAlltemplates);
+            this.listenTo(this.stateModel, 'change:viewType', this.renderAlltemplates);
         },
 
         events : {
@@ -54,15 +57,22 @@ define([
 
             if (viewTp === 'grid') {
                 currentCollection.forEach(function (template) {
-                    innerContext = self.templateItem(template) + innerContext;
+                    innerContext = self.templateGridItem(template) + innerContext;
                 });
             }
+
+            if (viewTp === 'list') {
+                currentCollection.forEach(function (template) {
+                    innerContext = self.templateListItem(template) + innerContext;
+                });
+            }
+
 
             this.$el.append(innerContext);
         },
 
         addOneGrid: function(model){
-            this.$el.append(this.templateItem(model));
+            this.$el.append(this.templateGridItem(model));
         },
 
         render: function () {

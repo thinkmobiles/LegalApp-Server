@@ -1,5 +1,10 @@
-<div id="addTemplateContainer"><!--addTempTemplate--></div>
 <div class="tempGrid" id="addDiv">
     <img src=".././images/bbb.png">
     <span>Add Template</span>
 </div>
+<%tempList.forEach(function(template){%>
+    <div class="tempGrid" data-id="<%= template.id%>">
+        <img src=".././images/bb.png">
+        <span><%= template.name%></span>
+    </div>
+<%})%>

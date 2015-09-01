@@ -161,8 +161,6 @@ define([
             };
 
             this.stateModel.set('searchParams', params);
-
-            //return params;
         },
 
         search: function () {
