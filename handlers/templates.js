@@ -26,7 +26,49 @@ var TemplatesHandler = function (PostGre) {
     var session = new SessionHandler(PostGre);
     var attachments = new AttachmentHandler(PostGre);
     var documentsHandler = new DocumentsHandler(PostGre);
+    var mammothOptions = {
+        styleMap: [
+            "p.Center => p.center:fresh",
+            "p.Both => p.both:fresh",
+            "p.Left => p.left:fresh",
+            "p.Right => p.right:fresh",
+            "p.BreakPage => p.breakPage:fresh"
+        ],
+        transformDocument: transformElement
+    };
     var self = this;
+
+    function transformElement(element) {
+        if (element.children) {
+            element.children.forEach(transformElement);
+        }
+        if (element.type === "paragraph") {
+            if (element.alignment === "center" && !element.styleId) {
+                element.styleId = "Center";
+            }
+        }
+        if (element.type === "paragraph") {
+            if (element.alignment === "both" && !element.styleId) {
+                element.styleId = "Both";
+            }
+        }
+        if (element.type === "paragraph") {
+            if (element.alignment === "left" && !element.styleId) {
+                element.styleId = "Left";
+            }
+        }
+        if (element.type === "paragraph") {
+            if (element.alignment === "right" && !element.styleId) {
+                element.styleId = "Right";
+            }
+        }
+        if (element.type === "paragraph" && !element.styleId) {
+            if (element.children[0] && element.children[0].children[0].type === "pageBreak") {
+                element.styleId = "BreakPage";
+            }
+        }
+        return element;
+    }
 
     function saveLinkedTemplates(saveData, cb) {
         LinkedTemplatesModel
@@ -54,7 +96,7 @@ var TemplatesHandler = function (PostGre) {
         };
 
         mammoth
-            .convertToHtml(converterParams)
+            .convertToHtml(converterParams, mammothOptions)
             .then(function (result) {
                 var messages = result.messages; // Any messages, such as warnings during conversion
                 var htmlContent;
@@ -142,7 +184,7 @@ var TemplatesHandler = function (PostGre) {
                 };
 
                 mammoth
-                    .convertToHtml(converterParams)
+                    .convertToHtml(converterParams, mammothOptions)
                     .then(function (result) {
                         var messages = result.messages; // Any messages, such as warnings during conversion
 
