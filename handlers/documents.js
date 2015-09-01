@@ -694,7 +694,7 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
-    this.signAndSend = function (req, res, next) {
+    this.signAndSendOld = function (req, res, next) {
         var currentUserId = req.session.userId;
         var documentId = req.params.id;
         var options = req.body;
@@ -866,6 +866,156 @@ var DocumentsHandler = function (PostGre) {
                 next(badRequests.NotFound());
             })
             .catch(next);
+    };
+
+    this.signAndSend = function (req, res, next) {
+        var defaultSignature = "data:image/png;base64,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";
+        var currentUserId = req.session.userId;
+        var documentId = req.params.id;
+        var options = req.body;
+        var signImage = options.signature || defaultSignature;
+        var assignedId = options.assigned_id || req.session.userId;
+        var willBeSignedNow;
+        var criteria = {
+            id: documentId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['company']
+        };
+        var userIds = [];
+        var assignedUserModel;
+        var currentUserModel;
+        var userModel;
+
+        if (!assignedId) {
+            return next(badRequests.NotEnParams({reqParams: ['assigned_id']}));
+        }
+
+        if (currentUserId == assignedId) {
+            if (!signImage) {
+                return next(badRequests.NotEnParams({reqParams: ['assigned_id', 'signature']}));
+            }
+
+            if (!CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                return next(badRequests.InvalidValue({param: 'signature'}));
+            }
+
+            userIds = [assignedId];
+            willBeSignedNow = true;
+
+        } else {
+            userIds = [currentUserId, assignedId];
+            willBeSignedNow = false;
+        }
+
+        async.waterfall([
+
+            //find the documentModel:
+            function (cb) {
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        if (documentModel.get('status') !== STATUSES.CREATED) {
+                            return next(badRequests.AccessError({message: 'The document was signed by company'}));
+                        }
+                        console.log(documentModel);
+                        cb(null, documentModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        next(badRequests.NotFound());
+                    })
+                    .catch(next);
+            },
+
+            //save the document:
+            function (documentModel, cb) {
+                if (willBeSignedNow) {
+                    documentModel.saveSignature(assignedId, signImage, function (err, signedDocumentModel) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, signedDocumentModel);
+                    });
+                } else {
+                    documentModel.prepareToSend(assignedId, function (err, updatedDocument) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, updatedDocument);
+                    });
+                }
+            },
+
+            //find the users:
+            function (documentModel, cb) {
+                var userId = documentModel.get('user_id');
+                var fetchOptions = {
+                    withRelated: ['profile']
+                };
+
+                userIds.push(userId);
+
+                UserModel
+                    .forge()
+                    .query(function (qb) {
+                        qb.whereIn('id', userIds);
+                    })
+                    .fetchAll(fetchOptions)
+                    .then(function (users) {
+                        var userModels = users.models;
+
+                        currentUserModel = _.find(userModels, {id: currentUserId});
+                        assignedUserModel = _.find(userModels, {id: assignedId});
+                        userModel = _.find(userModels, {id: userId});
+
+                        cb(null, documentModel, userModels);
+                    })
+                    .catch(function (err) {
+                        cb(err);
+                    });
+            },
+
+            //send mail notification:
+            function (documentModel, users, cb) {
+                var documentJSON = documentModel.toJSON();
+                var company = documentJSON.company;
+                var status = documentJSON.status;
+                var srcUser = currentUserModel.toJSON();
+                var dstUser;
+                var mailerParams;
+
+                if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
+                    dstUser = assignedUserModel.toJSON();
+                } else if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+                    dstUser = userModel.toJSON();
+                } else {
+                    console.log('>>> status', status);
+                    console.log(documentJSON);
+                    return cb(badRequests.InvalidValue({param: 'documents.status', value: status}));
+                }
+
+                mailerParams = {
+                    srcUser: srcUser,
+                    dstUser: dstUser,
+                    company: company,
+                    document: documentJSON
+                };
+
+                console.log(mailerParams.dstUser);
+
+                mailer.onSendToSingnature(mailerParams);
+
+                cb(null, documentModel);
+            }
+
+        ], function (err, signedDocumentModel) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({success: 'success', model: signedDocumentModel});
+        });
+
     };
 
     this.getDocuments = function (req, res, next) {
