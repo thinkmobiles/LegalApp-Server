@@ -9,7 +9,7 @@ var BUCKETS = require('../constants/buckets');
 var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
-var mammoth = require('mammoth');
+var mammoth = require('../helpers/mammoth');
 
 var badRequests = require('../helpers/badRequests');
 
