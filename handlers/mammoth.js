@@ -108,7 +108,9 @@ var MammothHandler = function () {
                 var html = result.value; // The generated HTML
                 var messages = result.messages; // Any messages, such as warnings during conversion
 
-                console.log(messages);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(messages);
+                }
 
                 res.status(200).send(html);
 
