@@ -1,7 +1,5 @@
 'use strict';
 var express = require('express');
-//var multer  = require('multer');
-
 var http = require('http');
 var consolidate = require('consolidate');
 var compression = require('compression');
@@ -34,24 +32,7 @@ if (process.env.NODE_ENV === 'production') {
     require('./config/development');
 }
 
-/*Configure the multer.*/
-
-/*app.use(multer({ dest: process.env.AMAZON_S3_BUCKET,
-    rename: function (fieldname, filename) {
-        //return filename+Date.now();
-        return filename;
-    },
-    onFileUploadStart: function (file) {
-        console.log(file.originalname + ' is starting ...');
-    },
-    onFileUploadComplete: function (file) {
-        console.log(file.fieldname + ' uploaded to  ' + file.path);
-        global.done=true;
-    }
-}));*/
-
 var httpServer = http.createServer(app);
-
 app.set('port', process.env.PORT || 8850);
 
 //<editor-fold desc="PostGre">
