@@ -122,7 +122,6 @@ var TemplatesHandler = function (PostGre) {
 
             //save the docx file:
             function (cb) {
-                //self.saveTheTemplateFile(templateFile, function (err, key) {
                 attachments.saveTheTemplateFile(templateFile, function (err, key) {
                     if (err) {
                         console.error(err);
@@ -252,9 +251,7 @@ var TemplatesHandler = function (PostGre) {
             .query(function (qb) {
                 qb.where({company_id: companyId});
             })
-            //.fetchAll({withRelated: ['link.linkFields']})
-            //.fetchAll()
-            .fetchAll({withRelated: ['templateFile']})
+            .fetchAll()
             .exec(function (err, result) {
                 var templateModels;
 
@@ -271,7 +268,6 @@ var TemplatesHandler = function (PostGre) {
                 res.status(200).send(templateModels);
 
             });
-
     };
 
     this.getTemplate = function (req, res, next) {

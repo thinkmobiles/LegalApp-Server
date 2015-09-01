@@ -86,6 +86,12 @@ var UsersHandler = function (PostGre) {
         var fetchOptions;
         var signatureData = {};
         var passwordData = {};
+        var signImage;
+
+        if (options.sign_image !== undefined) {
+            signImage = options.sign_image;
+            signatureData.sign_image = signImage;
+        }
 
         if (options.profile) {
             profile = options.profile;
@@ -110,14 +116,16 @@ var UsersHandler = function (PostGre) {
             if (profile.sign_authority !== undefined) {
                 profileData.sign_authority = profile.sign_authority;
             }
+            if (signImage) {
+                profileData.has_sign_image = true;
+            }
+            if (signImage === null) {
+                profileData.has_sign_image = false;
+            }
         }
 
         if (options.status !== undefined) {
             userData.status = options.status;
-        }
-
-        if (options.signature && options.signature.sign_image) {
-            signatureData.sign_image = options.signature.sign_image;
         }
 
         if (options.password && options.newPassword) {
@@ -136,7 +144,7 @@ var UsersHandler = function (PostGre) {
 
         fetchOptions = {
             require: true,
-            withRelated: ['profile', 'avatar', 'signature']
+            withRelated: ['profile', 'avatar']
         };
 
         //try to find the user:
@@ -197,19 +205,37 @@ var UsersHandler = function (PostGre) {
 
                     //save the signature
                     updatedSignature: function (cb) {
-                        var signatureModel = userModel.related('signature');
+                        var criteria = {
+                            user_id: userId
+                        };
 
                         if (Object.keys(signatureData).length === 0) {
-                            return cb(null, signatureModel); //nothing to update
+                            return cb(null, null); //nothing to update
                         }
 
-                        signatureModel
-                            .save(signatureData, {patch: true})
-                            .exec(function (err, model) {
+                        SecretKeyModel
+                            .find(criteria)
+                            .exec(function (err, secretKeyModel) {
+                                var model;
+
                                 if (err) {
                                     return cb(err);
                                 }
-                                cb(null, model);
+
+                                if (secretKeyModel && secretKeyModel.id) {
+                                    model = secretKeyModel;
+                                } else {
+                                    model = SecretKeyModel.forge({user_id: userId, secret_key: tokenGenerator.generate(20)})
+                                }
+
+                                model
+                                    .save(signatureData, {patch: true})
+                                    .exec(function (err, savedModel) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        cb(null, savedModel);
+                                    });
                             });
                     }
 
@@ -333,6 +359,7 @@ var UsersHandler = function (PostGre) {
                 });
             },
 
+            //create a secret key:
             function (userModel, cb) {
                 var saveSecretKeyData = {
                     user_id: userModel.id,
@@ -907,6 +934,7 @@ var UsersHandler = function (PostGre) {
     this.updateUser = function (req, res, next) {
         var userId = req.params.id;
         var options = req.body;
+        var signImage = options.sign_image;
         var permissions;
 
         //TODO: superAdmin can update other companies users data;
@@ -920,13 +948,13 @@ var UsersHandler = function (PostGre) {
             }
         }
 
-        if (options.signature && options.signature.sign_image) {
+        if (signImage !== undefined) {
 
             if (req.session.permissions === PERMISSIONS.CLIENT_ADMIN) {
                 return next(badRequests.AccessError());
             }
 
-            if (!CONSTANTS.BASE64_REGEXP.test(options.signature.sign_image)) {
+            if (!CONSTANTS.BASE64_REGEXP.test(signImage)) {
                 return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
             }
         }
@@ -1064,7 +1092,7 @@ var UsersHandler = function (PostGre) {
                 } else {
                     signImage = null;
                 }
-                res.status(200).send(signImage);
+                res.status(200).send({signImage: signImage});
             });
 
 
