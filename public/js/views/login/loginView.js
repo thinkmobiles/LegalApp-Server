@@ -3,15 +3,15 @@
  */
 
 define([
-    'text!templates/login/loginTemplate.html'
+    'text!templates/login/loginTemplate.html',
+    'validation'
 
-], function (LoginTemplate) {
+], function (LoginTemplate, validation) {
 
     var View;
     View = Backbone.View.extend({
 
         el : '#wrapper',
-        //id        :"loginDiv",
 
         typicalLogin : _.template(LoginTemplate),
 
@@ -25,16 +25,16 @@ define([
         },
 
         events: {
-            "click #loginButton"  : "login"
+            "click #loginButton"        : "login",
+            "focusin .form-field>input" : "clearField"
         },
 
         setDefaultData: function () {
             var defaultData = {
-                rememberMe  :false,
+                rememberMe  : false,
                 email       : '',
                 password    : '',
-                errors      : false,
-                messages    : false
+                errorObject : false
             };
 
             if (this.stateModel) {
@@ -52,44 +52,40 @@ define([
             var thisEl = this.$el;
             var data;
             var currentUrl = "/signIn";
-            var errors = [];
-            var messages = [];
+            var errorObject = {};
 
             var stateModelUpdate = {
-                errors     : false,
-                messages   : false,
+                errorObject: false,
                 password   : thisEl.find("#loginPass").val().trim(),
                 rememberMe : thisEl.find('#rememberMe').prop('checked')
             };
 
             if (!this.token){
                 stateModelUpdate.email = thisEl.find("#loginEmail").val().trim();
+                validation.checkEmailField(errorObject, stateModelUpdate.email, 'email');
                 data = {
-                    email    : stateModelUpdate.email,
-                    password : stateModelUpdate.password
+                    email      : stateModelUpdate.email,
+                    password   : stateModelUpdate.password,
+                    rememberMe : stateModelUpdate.rememberMe
                 }
             } else {
                 currentUrl += "/"+this.token;
                 data = {
-                    password : stateModelUpdate.password
+                    password   : stateModelUpdate.password,
+                    rememberMe : stateModelUpdate.rememberMe
                 }
             }
 
-            this.stateModel.set(stateModelUpdate);
+            validation.checkPasswordField(errorObject, stateModelUpdate.password, 'password');
 
-            //validation.checkEmailField(messages, true, stateModelUpdate.email, 'Email');
-            //validation.checkPasswordField(errObj, true, stateModelUpdate.password, 'Password');
+            //this.stateModel.set(stateModelUpdate);
 
-            if (errors.length > 0 || messages.length > 0) {
-                if (errors.length > 0) {
-                    stateModelUpdate.errors = errors;
-                }
-                if (messages.length > 0) {
-                    stateModelUpdate.messages = messages;
-                }
+            if (errorObject.email || errorObject.password) {
+                stateModelUpdate.errorObject = errorObject;
                 this.stateModel.set(stateModelUpdate);
                 return this;
             }
+
             $.ajax({
                 url      : currentUrl,
                 type     : "POST",
@@ -98,9 +94,10 @@ define([
                 success: function (res) {
                     var profile = res.user.profile;
 
-                    $('#topMenu').show();
-                    $('#leftMenu').show();
-                    console.log(res);
+                    //$('#topMenu').show();
+                    //$('#leftMenu').show();
+                    $('body').addClass('loggedState');
+                    //console.log(res);
                     App.sessionData.set({
                         authorized : true,
                         user       : profile.first_name+" "+profile.last_name,
@@ -109,10 +106,9 @@ define([
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
-                        password  : '',
-                        errors    : false,
-                        messages  : false,
-                        email     : ''
+                        password    : '',
+                        email       : '',
+                        errorObject : false
                     });
                 },
                 error: function (err) {
@@ -124,7 +120,7 @@ define([
                     });
 
                     self.stateModel.set({
-                        errors     : [err.responseJSON.error],
+                        //errors     : [err.responseJSON.error],
                         password   : null
                     });
                 }
@@ -133,18 +129,26 @@ define([
             return this;
         },
 
+        clearField: function(event){
+            var targetContainer = $(event.target).closest('.form-field');
+            targetContainer.find('input').removeClass('error_input');
+            targetContainer.find('.error_msg').hide();
+        },
+
         render: function () {
             var this_el = this.$el;
-            var isInvite = false;
+            //var isInvite = false;
             var tempModel = this.stateModel.toJSON();
-            tempModel.isInvite = isInvite;
+            tempModel.isInvite = false;
 
-            if (this.token){
-                isInvite = true;
-                this_el.html(this.typicalLogin({isInvite : isInvite}));
-            } else {
-                this_el.html(this.typicalLogin(tempModel));
+            if (this.token) {
+                tempModel.isInvite = true;
             }
+            this_el.html(this.typicalLogin(tempModel));
+                //this_el.html(this.typicalLogin({isInvite : isInvite}));
+            //} else {
+            //    this_el.html(this.typicalLogin(tempModel));
+            //}
 
             return this;
         }

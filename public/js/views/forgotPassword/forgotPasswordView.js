@@ -10,23 +10,18 @@ define([
     View = Backbone.View.extend({
 
         el : '#wrapper',
-        //id : 'addUserForm',
 
         initialize: function () {
             this.render();
         },
 
         events : {
-            'click #backLogin' : 'backToLogin',
             'click #sendPass'  : 'sendPass'
         },
 
-        backToLogin : function(){
-            Backbone.history.navigate('login',{trigger : true});
-        },
-
         sendPass : function(){
-            var currentEmail = this.$el.find('#currentEmail').val().trim();
+            var thisEl = this.$el;
+            var currentEmail = thisEl.find('#currentEmail').val().trim();
             $.ajax({
                 url: "/forgotPassword",
                 type: "POST",
@@ -34,8 +29,8 @@ define([
                     email: currentEmail
                 },
                 success: function () {
-                    alert('Email send');
-
+                    thisEl.find('#innerForgot').html("<p>Recovery password has been sent to "+currentEmail+" </p>");
+                    thisEl.find('.hideRow').show();
                 },
                 error: function (err) {
                    // todo

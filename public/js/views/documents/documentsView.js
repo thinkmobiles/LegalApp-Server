@@ -29,6 +29,7 @@ define([
             this.stateModel = new Backbone.Model();
             this.stateModel.set('viewType', options.viewType);
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
+            this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
             $.ajax({
                 url     : '/documents/list',
@@ -166,19 +167,21 @@ define([
                 status   : status,
                 orderBy  : sort,
                 order    : order,
-                //templateName: templateName,
-                name: templateName,
+                name     : templateName,
                 userName : userName,
-                from: fromDate,
-                to: toDate
+                from     : fromDate,
+                to       : toDate
             };
 
-            return params;
+            this.stateModel.set('searchParams', params);
+
+            //return params;
         },
 
         search: function () {
             var self = this;
-            var searchParams = self.getSearchParams();
+            //var searchParams = self.getSearchParams();
+            var searchParams = self.stateModel.get('searchParams');
             var url = '/documents/list';
 
             $.ajax({

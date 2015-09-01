@@ -56,11 +56,15 @@ define([
                 type : "POST",
 
                 success: function () {
-                    $('#topMenu').hide();
-                    $('#leftMenu').hide();
+                    //$('#topMenu').hide();
+                    //$('#leftMenu').hide();
+                    $('body').removeClass('loggedState');
+
                     App.sessionData.set({
                         authorized : false,
-                        user       : null
+                        user       : null,
+                        role       : null,
+                        company    : null
                     });
                     App.router.navigate("login", {trigger: true});
                 },
