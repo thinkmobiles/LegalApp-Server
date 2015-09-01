@@ -9,13 +9,13 @@ var BUCKETS = require('../constants/buckets');
 var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
-var mammoth = require('mammoth');
 
 var badRequests = require('../helpers/badRequests');
 
 var SessionHandler = require('../handlers/sessions');
 var AttachmentHandler = require('../handlers/attachments');
 var DocumentsHandler = require('../handlers/documents');
+var MammothHandler = require('../handlers/mammoth');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -26,6 +26,7 @@ var TemplatesHandler = function (PostGre) {
     var session = new SessionHandler(PostGre);
     var attachments = new AttachmentHandler(PostGre);
     var documentsHandler = new DocumentsHandler(PostGre);
+    var mammothHandler = new MammothHandler();
     var self = this;
 
     function saveLinkedTemplates(saveData, cb) {
@@ -53,23 +54,12 @@ var TemplatesHandler = function (PostGre) {
             path: filePath
         };
 
-        mammoth
-            .convertToHtml(converterParams)
-            .then(function (result) {
-                var messages = result.messages; // Any messages, such as warnings during conversion
-                var htmlContent;
-
-                if (messages && messages.length) {
-                    console.error(messages);
-                }
-
-                htmlContent = result.value; // The generated HTML
-
-                res.send(htmlContent);
-            })
-            .done();
-
-        //res.send('OK');
+        mammothHandler.docx2html(converterParams, function(htmlContent){
+            if (!htmlContent){
+                return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+            }
+            res.send(htmlContent);
+        });
     };
 
     this.prepareSaveData = function (params) {
@@ -140,20 +130,12 @@ var TemplatesHandler = function (PostGre) {
                     path: filePath
                 };
 
-                mammoth
-                    .convertToHtml(converterParams)
-                    .then(function (result) {
-                        var messages = result.messages; // Any messages, such as warnings during conversion
-
-                        if (messages && messages.length) {
-                            console.error(messages);
-                        }
-
-                        htmlContent = result.value; // The generated HTML
-
-                        cb(null, key, htmlContent);
-                    })
-                    .done();
+                mammothHandler.docx2html(converterParams, function(htmlContent){
+                    if (!htmlContent){
+                        return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+                    }
+                    cb(null, key, htmlContent);
+                });
             },
 
             //insert into templates:
