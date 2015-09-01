@@ -63,6 +63,16 @@ a:hover, input[type="button"]{
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background: url("../images/welcome-bgr.png") no-repeat center #eeeeee;
+  #topMenu,
+  #leftMenu{
+    display: none;
+  }
+  &.loggedState{
+    #topMenu,
+    #leftMenu{
+      display: block;
+    }
+  }
 }
 a {
   color: #00B7FF;
