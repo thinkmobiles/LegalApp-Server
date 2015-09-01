@@ -2,6 +2,7 @@
 
 var badRequests = require('../helpers/badRequests');
 var mammoth = require('../helpers/mammoth');
+var async = require('async');
 
 var MammothHandler = function () {
     var mammothOptions = {
@@ -21,34 +22,52 @@ var MammothHandler = function () {
             element.children.forEach(transformElement);
         }
         if (element.type === "paragraph") {
-            if (element.alignment === "center" && !element.styleId) {
+            if (element.alignment === "center" /*&& !element.styleId*/) {
                 element.styleId = "Center";
+                return element;
             }
         }
         if (element.type === "paragraph") {
-            if (element.alignment === "both" && !element.styleId) {
+            if (element.alignment === "both" /*&& !element.styleId*/) {
                 element.styleId = "Both";
+                return element;
             }
         }
         if (element.type === "paragraph") {
-            if (element.alignment === "left" && !element.styleId) {
+            if (element.alignment === "left" /*&& !element.styleId*/) {
                 element.styleId = "Left";
+                return element;
             }
         }
         if (element.type === "paragraph") {
-            if (element.alignment === "right" && !element.styleId) {
+            if (element.alignment === "right" /*&& !element.styleId*/) {
                 element.styleId = "Right";
+                return element;
             }
         }
-        if (element.type === "paragraph" && !element.styleId) {
-            if (element.children[0] && element.children[0].children[0].type === "pageBreak") {
-                element.styleId = "BreakPage";
+        if (element.type === "paragraph" /*&& !element.styleId*/) {
+            if (element.children.length) {
+                async.each(element.children,
+
+                    function (child, childCb) {
+
+                        if (child.children.length) {
+                            if (child.children[0].type === 'pageBreak') {
+                                element.styleId = "BreakPage";
+                            }
+                        }
+
+                        childCb();
+
+                    }, function (err) {
+                        return element;
+                    });
             }
         }
         return element;
     }
 
-    this.docx2html = function(converterParams, callback){
+    this.docx2html = function (converterParams, callback) {
         mammoth
             .convertToHtml(converterParams, mammothOptions)
             .then(function (result) {
@@ -69,7 +88,7 @@ var MammothHandler = function () {
 
     //TODO: delete this function and route after testing
     this.docxToHtml = function (req, res, next) {
-        var path = req.body.path || "public/uploads/development/docx/testdocx3.docx";
+        var path = req.body.path || "public/uploads/development/docx/testdocx4.docx";
         var fields = {
             //name:code all posible fields from linkFields table
             first_name: '{first_name}',
@@ -89,22 +108,24 @@ var MammothHandler = function () {
                 var html = result.value; // The generated HTML
                 var messages = result.messages; // Any messages, such as warnings during conversion
 
-                console.log(messages);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(messages);
+                }
 
                 res.status(200).send(html);
 
-               /* if (html) {
-                    //try to create html with values from html template
-                    templateHandler.createDocument(html, fields, values, function (err, newHtml) {
-                        if (err) {
-                            res.status(200).send('Can\'t paste values to html');
-                        } else {
-                            res.status(200).send(newHtml); //all right
-                        }
-                    });
-                } else {
-                    res.status(200).send('Can\'t convert docx to html');
-                }*/
+                /* if (html) {
+                 //try to create html with values from html template
+                 templateHandler.createDocument(html, fields, values, function (err, newHtml) {
+                 if (err) {
+                 res.status(200).send('Can\'t paste values to html');
+                 } else {
+                 res.status(200).send(newHtml); //all right
+                 }
+                 });
+                 } else {
+                 res.status(200).send('Can\'t convert docx to html');
+                 }*/
             })
             .done();
     };
