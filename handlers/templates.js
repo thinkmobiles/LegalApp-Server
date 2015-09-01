@@ -9,13 +9,13 @@ var BUCKETS = require('../constants/buckets');
 var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
-var mammoth = require('../helpers/mammoth');
 
 var badRequests = require('../helpers/badRequests');
 
 var SessionHandler = require('../handlers/sessions');
 var AttachmentHandler = require('../handlers/attachments');
 var DocumentsHandler = require('../handlers/documents');
+var MammothHandler = require('../handlers/mammoth');
 
 var TemplatesHandler = function (PostGre) {
     var Models = PostGre.Models;
@@ -26,49 +26,8 @@ var TemplatesHandler = function (PostGre) {
     var session = new SessionHandler(PostGre);
     var attachments = new AttachmentHandler(PostGre);
     var documentsHandler = new DocumentsHandler(PostGre);
-    var mammothOptions = {
-        styleMap: [
-            "p.Center => p.center:fresh",
-            "p.Both => p.both:fresh",
-            "p.Left => p.left:fresh",
-            "p.Right => p.right:fresh",
-            "p.BreakPage => p.breakPage:fresh"
-        ],
-        transformDocument: transformElement
-    };
+    var mammothHandler = new MammothHandler();
     var self = this;
-
-    function transformElement(element) {
-        if (element.children) {
-            element.children.forEach(transformElement);
-        }
-        if (element.type === "paragraph") {
-            if (element.alignment === "center" && !element.styleId) {
-                element.styleId = "Center";
-            }
-        }
-        if (element.type === "paragraph") {
-            if (element.alignment === "both" && !element.styleId) {
-                element.styleId = "Both";
-            }
-        }
-        if (element.type === "paragraph") {
-            if (element.alignment === "left" && !element.styleId) {
-                element.styleId = "Left";
-            }
-        }
-        if (element.type === "paragraph") {
-            if (element.alignment === "right" && !element.styleId) {
-                element.styleId = "Right";
-            }
-        }
-        if (element.type === "paragraph" && !element.styleId) {
-            if (element.children[0] && element.children[0].children[0].type === "pageBreak") {
-                element.styleId = "BreakPage";
-            }
-        }
-        return element;
-    }
 
     function saveLinkedTemplates(saveData, cb) {
         LinkedTemplatesModel
@@ -95,23 +54,12 @@ var TemplatesHandler = function (PostGre) {
             path: filePath
         };
 
-        mammoth
-            .convertToHtml(converterParams, mammothOptions)
-            .then(function (result) {
-                var messages = result.messages; // Any messages, such as warnings during conversion
-                var htmlContent;
-
-                if (messages && messages.length) {
-                    console.error(messages);
-                }
-
-                htmlContent = result.value; // The generated HTML
-
-                res.send(htmlContent);
-            })
-            .done();
-
-        //res.send('OK');
+        mammothHandler.docx2html(converterParams, function(htmlContent){
+            if (!htmlContent){
+                return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+            }
+            res.send(htmlContent);
+        });
     };
 
     this.prepareSaveData = function (params) {
@@ -183,20 +131,12 @@ var TemplatesHandler = function (PostGre) {
                     path: filePath
                 };
 
-                mammoth
-                    .convertToHtml(converterParams, mammothOptions)
-                    .then(function (result) {
-                        var messages = result.messages; // Any messages, such as warnings during conversion
-
-                        if (messages && messages.length) {
-                            console.error(messages);
-                        }
-
-                        htmlContent = result.value; // The generated HTML
-
-                        cb(null, key, htmlContent);
-                    })
-                    .done();
+                mammothHandler.docx2html(converterParams, function(htmlContent){
+                    if (!htmlContent){
+                        return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+                    }
+                    cb(null, key, htmlContent);
+                });
             },
 
             //insert into templates:

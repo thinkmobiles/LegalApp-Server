@@ -1,19 +1,20 @@
-/**
- * Created by kille on 07.08.2015.
- */
 'use strict';
 
 var badRequests = require('../helpers/badRequests');
 var mammoth = require('../helpers/mammoth');
-var TemplateHandler = require('../handlers/templates');
 
-var MammothHandler = function (PostGre) {
-    var templateHandler = new TemplateHandler(PostGre);
-    var Models = PostGre.Models;
-    var linkFields = Models.LinkFields;
-    //var LinksModel = Models.Links;
-    //var linkFieldsHandler = new LinkFieldHandler(PostGre);
-    //var self = this;
+var MammothHandler = function () {
+    var mammothOptions = {
+        styleMap: [
+            "p.Center => p.center:fresh",
+            "p.Both => p.both:fresh",
+            "p.Left => p.left:fresh",
+            "p.Right => p.right:fresh",
+            "p.BreakPage => p.breakPage:fresh"
+        ],
+        transformDocument: transformElement
+    };
+
 
     function transformElement(element) {
         if (element.children) {
@@ -47,6 +48,26 @@ var MammothHandler = function (PostGre) {
         return element;
     }
 
+    this.docx2html = function(converterParams, callback){
+        mammoth
+            .convertToHtml(converterParams, mammothOptions)
+            .then(function (result) {
+                var messages = result.messages; // Any messages, such as warnings during conversion
+                var htmlContent;
+
+                if (messages && messages.length) {
+                    console.error(messages);
+                }
+
+                htmlContent = result.value; // The generated HTML
+
+                callback(htmlContent);
+            })
+            .done();
+    };
+
+
+    //TODO: delete this function and route after testing
     this.docxToHtml = function (req, res, next) {
         var path = req.body.path || "public/uploads/development/docx/testdocx3.docx";
         var fields = {
@@ -63,18 +84,7 @@ var MammothHandler = function (PostGre) {
             last_name: 'Petrovich'
         };
 
-        var options = {
-            styleMap: [
-                "p.Center => p.center:fresh",
-                "p.Both => p.both:fresh",
-                "p.Left => p.left:fresh",
-                "p.Right => p.right:fresh",
-                "p.BreakPage => p.breakPage:fresh"
-            ],
-            transformDocument: transformElement
-        };
-
-        mammoth.convertToHtml({path: path}, options)
+        mammoth.convertToHtml({path: path}, mammothOptions)
             .then(function (result) {
                 var html = result.value; // The generated HTML
                 var messages = result.messages; // Any messages, such as warnings during conversion
