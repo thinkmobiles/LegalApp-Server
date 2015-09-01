@@ -5,13 +5,17 @@
         <div class="form-body">
             <%if(!isInvite){%>
             <div class="form-field">
-                <input type="email" id="loginEmail" class="error_input" placeholder="Email Address">
-                <span class="error_msg" style="display: block;">Email is invalid</span>
+                <input type="email" id="loginEmail" class="<%=errorObject.email ? 'error_input' : ''%>" placeholder="Email Address">
+                <%if (errorObject.email){%>
+                    <span class="error_msg"><%=errorObject.email%></span>
+                <%}%>
             </div>
             <%}%>
             <div class="form-field">
-                <input type="password" id="loginPass" placeholder="Password">
-                <span class="error_msg" style="display: none;">Password is invalid</span>
+                <input type="password" id="loginPass" class="<%=errorObject.password ? 'error_input' : ''%>" placeholder="Password">
+                <%if (errorObject.password){%>
+                    <span class="error_msg"><%=errorObject.password%></span>
+                <%}%>
             </div>
             <%if(isInvite){%>
             <div class="form-field">
