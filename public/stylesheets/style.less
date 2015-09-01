@@ -249,13 +249,16 @@ a {
         input[type="password"]{
           width: 331px;
           background-color: rgb(234, 234, 234);
-          border: 1px solid #eaeaea;
+          border: 1px solid rgb(234, 234, 234);
           height: 50px;
           color: #c4c4c4;
           padding: 0 15px;
           .font-oss;
           &.error_input{
             border-color: #e31937;
+          }
+          &.success_input{
+            border-color: #75d96c;
           }
         }
         .error_msg{
@@ -346,7 +349,8 @@ a {
         &:hover{
           background-color: #e31937;
         }
-        &#loginButton{
+        &#loginButton,
+        &#savePass{
           padding: 0 50px;
         }
       }
