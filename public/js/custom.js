@@ -23,9 +23,8 @@ define([],function () {
                 role       : data.profile.permissions,
                 company    : data.company[0].id
             });
-            //$('#topMenu').show();
-            //$('#leftMenu').show();
             $('body').addClass('loggedState');
+
             return Backbone.history.navigate(url, {trigger: true});
         } else {
             App.sessionData.set({
@@ -34,9 +33,8 @@ define([],function () {
                 role       : null,
                 company    : null
             });
-            //$('#topMenu').hide();
-            //$('#leftMenu').hide();
             $('body').removeClass('loggedState');
+
             return Backbone.history.navigate(url, {trigger: true});
         }
 

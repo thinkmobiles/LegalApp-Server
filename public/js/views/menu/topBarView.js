@@ -23,8 +23,6 @@ define([
         initialize: function () {
             this.listenTo(App.sessionData, 'change:authorized', this.render);
             this.listenTo(App.sessionData, 'change:user', this.render);
-
-            //this.render();
         },
 
         showWantForm : function(){
@@ -56,8 +54,6 @@ define([
                 type : "POST",
 
                 success: function () {
-                    //$('#topMenu').hide();
-                    //$('#leftMenu').hide();
                     $('body').removeClass('loggedState');
 
                     App.sessionData.set({
