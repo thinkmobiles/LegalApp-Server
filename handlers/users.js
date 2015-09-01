@@ -91,6 +91,12 @@ var UsersHandler = function (PostGre) {
         if (options.sign_image !== undefined) {
             signImage = options.sign_image;
             signatureData.sign_image = signImage;
+
+            if (signImage) {
+                profileData.has_sign_image = true;
+            } else {
+                profileData.has_sign_image = false;
+            }
         }
 
         if (options.profile) {
@@ -116,12 +122,7 @@ var UsersHandler = function (PostGre) {
             if (profile.sign_authority !== undefined) {
                 profileData.sign_authority = profile.sign_authority;
             }
-            if (signImage) {
-                profileData.has_sign_image = true;
-            }
-            if (signImage === null) {
-                profileData.has_sign_image = false;
-            }
+
         }
 
         if (options.status !== undefined) {
@@ -954,7 +955,7 @@ var UsersHandler = function (PostGre) {
                 return next(badRequests.AccessError());
             }
 
-            if (!CONSTANTS.BASE64_REGEXP.test(signImage)) {
+            if ((signImage !== null) && (!CONSTANTS.BASE64_REGEXP.test(signImage))) {
                 return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
             }
         }
