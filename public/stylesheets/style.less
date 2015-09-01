@@ -30,11 +30,11 @@
 }
 @font-face {
   font-family: 'PLR';
-  src: url('fonts/PalatinoLTStd-Roman.eot?#iefix') format('embedded-opentype'),
-  url('fonts/PalatinoLTStd-Roman.otf')  format('opentype'),
-  url('fonts/PalatinoLTStd-Roman.woff') format('woff'),
-  url('fonts/PalatinoLTStd-Roman.ttf')  format('truetype'),
-  url('fonts/PalatinoLTStd-Roman.svg#PalatinoLTStd-Roman') format('svg');
+  src: url('fonts/Palatino-Roman.eot?#iefix') format('embedded-opentype'),
+  url('fonts/Palatino-Roman.otf')  format('opentype'),
+  url('fonts/Palatino-Roman.woff') format('woff'),
+  url('fonts/Palatino-Roman.ttf')  format('truetype'),
+  url('fonts/Palatino-Roman.svg#Palatino-Roman') format('svg');
   font-weight: 400;
 }
 
@@ -191,18 +191,31 @@ a {
 
 #wrapper {
 }
-#loginDiv {
+#loginDiv{
+  margin: -300px 0 0 -225px;
+  height: 600px;
+}
+#forgotDiv{
+  margin: -290px 0 0 -225px;
+  height: 580px;
+}
+#resetDiv{
+  margin: -245px 0 0 -225px;
+  height: 540px;
+  input[type="button"]{
+    margin-top: 40px;
+  }
+}
+.welcome-pages {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin: -300px 0 0 -225px;
-  height: 600px;
   width: 450px;
   a{
     display: block;
     text-align: center;
   }
-  #logInForm {
+  .welcome-form {
     margin-top: 65px;
     background-color: #fff;
     h1{
@@ -213,10 +226,20 @@ a {
       color: #fff;
       padding: 0 20px;
     }
+    #innerForgot .form-field{
+      margin-bottom: 45px;
+    }
     .form-body{
       border: 1px solid #d0d0d0;
       border-top: none;
       padding: 30px 44px 17px;
+      p{
+        .font-plr;
+        font-size: 21px;
+        line-height: 25px;
+        margin-bottom: 45px;
+        color: #262626;
+      }
       .form-field{
         position: relative;
         &:first-child{
@@ -289,15 +312,31 @@ a {
         font-size: 14px;
         color: #909090;
         text-decoration: none;
-        &:hover{
+        &:hover {
           color: #e31937;
+        }
+      }
+      .hideRow{
+        margin-top: 51px;
+        display: block;
+        text-align: center;
+        .font-osr;
+        font-size: 14px;
+        color: #909090;
+        a{
+          color: #909090;
+          display: inline;
+          text-decoration: none;
+          &:hover{
+            color: #e31937;
+          }
         }
       }
       input[type="button"]{
         background-color: #c4c4c4;
         border: none;
         margin: 0 auto;
-        width: 162px;
+        padding: 0 20px;
         height: 48px;
         line-height: 48px;
         display: block;
@@ -305,7 +344,10 @@ a {
         font-size: 18px;
         color: #fff;
         &:hover{
-          color: #e31937;
+          background-color: #e31937;
+        }
+        &#loginButton{
+          padding: 0 50px;
         }
       }
     }
