@@ -29,6 +29,7 @@ define([
             this.stateModel = new Backbone.Model();
             this.stateModel.set('viewType', options.viewType);
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
+            //this.listenTo(this.stateModel, 'change:viewType', this.createOurView());
             this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
             $.ajax({
@@ -42,27 +43,13 @@ define([
 
         events : {
             "click .filters"     : "showHideFilters",
-            "click .searchBtn"   : "search",
+            "click .searchBtn"   : "getSearchParams",
             "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
             "click .documentItem": "goToPreview"
         },
 
-        render: function () {
-            var items = this.groupCollection;
-            //this.$el.html(this.mainTemp());
-            this.$el.html(this.mainTemplate());
-            this.renderDocumentsList(items);
-            this.getDocumentsByTemplateId();
 
-            this.$el.find('.fromDate, .toDate').datepicker({
-                dateFormat  : "d M, yy",
-                changeMonth : true,
-                changeYear  : true
-            });
-
-            return this;
-        },
 
         goToPreview: function(event){
             var targetId = $(event.target).closest('.documentItem').data('id');
@@ -110,7 +97,7 @@ define([
             }
 
             var templateId = this.activeTemplateId || argTemplateId;
-            var searchParams = self.getSearchParams();
+            var searchParams = self.stateModel.get('searchParams');
 
             $.ajax({
                 url : '/documents/list/'+templateId,
@@ -206,6 +193,22 @@ define([
                     console.log(response);
                 }
             });
+        },
+
+        render: function () {
+            var items = this.groupCollection;
+
+            this.$el.html(this.mainTemplate());
+            this.renderDocumentsList(items);
+            this.getDocumentsByTemplateId();
+
+            this.$el.find('.fromDate, .toDate').datepicker({
+                dateFormat  : "d M, yy",
+                changeMonth : true,
+                changeYear  : true
+            });
+
+            return this;
         }
 
     });

@@ -17,9 +17,10 @@ define([
 
         templateItem : _.template(TempItem),
 
-        initialize: function () {
+        initialize: function (options) {
             this.render();
 
+            this.stateModel.set('viewType', options.viewType);
             this.tempCollection = new TempCollection();
 
             this.listenTo(this.tempCollection, 'reset', this.renderAlltemplates);
@@ -47,11 +48,14 @@ define([
         renderAlltemplates : function(){
             var self = this;
             var innerContext='';
-            var currentCollection  = this.tempCollection.toJSON();
+            var currentCollection = this.tempCollection.toJSON();
+            var viewTp = this.stateModel.get('viewType');
 
-            currentCollection.forEach(function(template){
-                innerContext = self.templateItem(template) + innerContext;
-            });
+            if (viewTp === 'grid') {
+                currentCollection.forEach(function (template) {
+                    innerContext = self.templateItem(template) + innerContext;
+                });
+            }
 
             this.$el.append(innerContext);
         },

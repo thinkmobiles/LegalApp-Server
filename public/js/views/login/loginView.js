@@ -94,10 +94,7 @@ define([
                 success: function (res) {
                     var profile = res.user.profile;
 
-                    //$('#topMenu').show();
-                    //$('#leftMenu').show();
                     $('body').addClass('loggedState');
-                    //console.log(res);
                     App.sessionData.set({
                         authorized : true,
                         user       : profile.first_name+" "+profile.last_name,

@@ -135,7 +135,7 @@ define([
         },
 
         templates: function (viewType) {
-            this.loadWrapperView('templates', null, REDIRECT.whenNOTAuthorized, viewType);
+            this.loadWrapperView('templates', {viewType : viewType}, REDIRECT.whenNOTAuthorized);
         },
 
         settings: function () {
