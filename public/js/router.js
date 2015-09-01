@@ -43,8 +43,6 @@ define([
             var nameView = name+'View';
             var params =  argParams;
             var redirect = argRedirect;
-            var viewType;
-            //var wrapper = $('#wrapper');
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
@@ -56,11 +54,6 @@ define([
                 if (App.sessionData.get('authorized')){
                     return Backbone.history.navigate("users", {trigger: true});
                 }
-            }
-
-            if (argViewType){
-                viewType = argViewType[0].toUpperCase()+argViewType.slice(1);
-                nameView = name+viewType+'View';
             }
 
             require(['views/'+name+'/'+nameView], function (View) {
