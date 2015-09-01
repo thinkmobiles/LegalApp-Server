@@ -20,8 +20,9 @@ define([
         initialize: function (options) {
             this.render();
 
-            this.stateModel.set('viewType', options.viewType);
             this.tempCollection = new TempCollection();
+            this.stateModel = new Backbone.Model();
+            this.stateModel.set('viewType', options.viewType);
 
             this.listenTo(this.tempCollection, 'reset', this.renderAlltemplates);
         },
