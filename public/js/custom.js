@@ -58,7 +58,6 @@ define([],function () {
                     var src =fr.result;
                     canvasDrawing({imageSrc: src, canvas: canvas}, context);
                 };
-                //inputFile.val('');
 
                 fr.readAsDataURL(file);
 

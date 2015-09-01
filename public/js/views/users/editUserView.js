@@ -62,18 +62,18 @@ define([
                 updateData.status = status.val();
             }
 
-            this.userModel.save(updateData,{
-                wait   : true,
-                success: function(){
+            this.userModel.save(updateData, {
+                wait: true,
+                success: function () {
                     alert('User updated successfully');
                     self.trigger('redirectList');
                     self.remove();
                 },
-                error  : function(model, xhr, options){
+                error  : function(model, xhr){
                     alert('Error'); // todo message
                     //self.errorNotification(xhr);
                 }
-            });
+            })
         },
 
         render: function () {
