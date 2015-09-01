@@ -29,6 +29,7 @@ define([
             this.stateModel = new Backbone.Model();
             this.stateModel.set('viewType', options.viewType);
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
+            this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
             $.ajax({
                 url     : '/documents/list',
@@ -41,7 +42,6 @@ define([
 
         events : {
             "click .filters"     : "showHideFilters",
-            //"click .templateListName": "searchDocuments", //TODO
             "click .searchBtn"   : "search",
             "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
@@ -65,7 +65,7 @@ define([
         },
 
         goToPreview: function(event){
-            var targetId = $(event.target).data('id');
+            var targetId = $(event.target).closest('.documentItem').data('id');
             Backbone.history.navigate('documents/preview/'+targetId, {trigger : true});
         },
 
@@ -161,20 +161,27 @@ define([
             var order = searchContainer.find(".order:checked").val();
             var templateName = searchContainer.find(".templateName").val();
             var userName = searchContainer.find(".userName").val();
+            var fromDate = searchContainer.find('.fromDate').val();
+            var toDate = searchContainer.find('.toDate').val();
             var params = {
                 status   : status,
                 orderBy  : sort,
                 order    : order,
-                templateName: templateName,
-                userName : userName
+                name     : templateName,
+                userName : userName,
+                from     : fromDate,
+                to       : toDate
             };
 
-            return params;
+            this.stateModel.set('searchParams', params);
+
+            //return params;
         },
 
         search: function () {
             var self = this;
-            var searchParams = self.getSearchParams();
+            //var searchParams = self.getSearchParams();
+            var searchParams = self.stateModel.get('searchParams');
             var url = '/documents/list';
 
             $.ajax({

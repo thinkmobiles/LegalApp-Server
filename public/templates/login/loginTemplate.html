@@ -1,19 +1,33 @@
 <div id="loginDiv">
-    <span>McCinnes Cooper LOGO</span>
+    <a href="#"><img src="../../images/logo.png" alt=""/></a>
     <form id="logInForm">
         <h1>Sign in</h1>
-        <%if(!isInvite){%>
-            <input type="email" id="loginEmail" placeholder="Email Address">
-        <%}%>
-        <input type="password" id="loginPass" placeholder="Password">
-        <%if(isInvite){%>
-            <input type="password" id="confLoginPass" placeholder="Confirm password">
-        <%}%>
-        <input type="button" id="loginButton" value="Sign in">
-        <input type="checkbox" id="rememberMe"><label for="rememberMe">Remember me</label>
-        <%if(!isInvite){%>
-            <a href="#forgotPassword" class="link">I forgot my password</a>
-        <%}%>
-        <a href="#signup" class="link">I don`t have an account</a>
+        <div class="form-body">
+            <%if(!isInvite){%>
+            <div class="form-field">
+                <input type="email" id="loginEmail" class="<%=errorObject.email ? 'error_input' : ''%>" placeholder="Email Address">
+                <%if (errorObject.email){%>
+                    <span class="error_msg"><%=errorObject.email%></span>
+                <%}%>
+            </div>
+            <%}%>
+            <div class="form-field">
+                <input type="password" id="loginPass" class="<%=errorObject.password ? 'error_input' : ''%>" placeholder="Password">
+                <%if (errorObject.password){%>
+                    <span class="error_msg"><%=errorObject.password%></span>
+                <%}%>
+            </div>
+            <%if(isInvite){%>
+            <div class="form-field">
+                <input type="password" id="confLoginPass" placeholder="Confirm password">
+                <span class="error_msg" style="display: none;">Password is invalid</span>
+            </div>
+            <%}%>
+            <div class="remember_check"><input type="checkbox" id="rememberMe"><label for="rememberMe"><span>Remember me</span></label></div>
+            <input type="button" id="loginButton" value="Sign in">
+            <%if(!isInvite){%>
+                <a href="#forgotPassword" class="link">I forgot my password</a>
+            <%}%>
+        </div>
     </form>
 </div>

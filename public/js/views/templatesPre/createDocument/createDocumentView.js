@@ -56,7 +56,7 @@ define([
             }
         },
 
-        collectValues : function(context){
+        collectValues : function(){
             var links = this.linkModel.toJSON();
             var values = {};
             var this_el = this.$el;
@@ -72,15 +72,20 @@ define([
         goToPreview: function(){
             var values = this.collectValues();
 
-            var myView = new DocPreView({
+            this.dialogView = new DocPreView({
                 modelId     : this.tempInfo.id,
                 modelValues : values
             });
 
-            myView.on('saveInParent', this.letsSaveDoc, this);
+            this.dialogView.on('saveInParent', this.saveDoc, this);
         },
 
-        letsSaveDoc: function(){
+        letsSaveDoc : function(){
+            this.saveDoc();
+        },
+
+        saveDoc: function(status){
+            var self = this;
             var assignedId = this.$el.find('#createEmployee').attr('data-sig');
             var myModel = this.fillFields ? this.docModel : new DocModel();
             var data;
@@ -94,13 +99,46 @@ define([
 
             myModel.save(data,{
                 success: function(response){
-                    //var curId = response.get('model').id;
-                    // ------- new DocPreView({modelId : curId});
-                    alert('Document was saved successfully');
-                    Backbone.history.navigate('documents/list', {trigger : true});
+                    var sendData;
+
+                    if (self.dialogView){
+                        self.dialogView.remove();
+                    }
+
+                    if (status === 2) {
+                        sendData = {
+                            id      : response.get('id'),
+                            assignId : response.get('assigned_id')
+                        };
+                        self.sendMyDoc(sendData);
+                    } else {
+                        alert('Document was saved successfully');
+                        Backbone.history.navigate('documents/list', {trigger : true});
+                    }
                 },
                 error: function(){
                     alert('error'); //todo -error-
+                }
+            });
+        },
+
+        sendMyDoc: function(sendData){
+            //var self = this;
+            var docId = sendData.id;
+            var assignId = sendData.assignId;
+
+            $.ajax({
+                url  : "/documents/"+docId+"/signAndSend",
+                type : "POST",
+                //data : {assigned_id : assignId},
+
+                success : function(){
+                    alert('A document was sent successfully');
+                    Backbone.history.navigate('/documents/list', {trigger : true});
+                },
+                error : function(model){
+                    alert('Error on sending');
+                    //self.errorNotification(model);
                 }
             });
         },

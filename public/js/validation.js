@@ -4,45 +4,80 @@
 
 define(
     function () {
-        var addTaxAndValue  =  /[~.#<>\^\*₴]/i;
-        var addLessonText   =  /[~<>\^\*₴]/i;
+        var invalidCharsRegExp = /[~<>\^\*₴]/;
+        var emailRegExp = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        var passRegExp = /^[\w\.@]{3,100}$/;
 
-
-        var validateAddTaxonomy = function (validatedString) {
-            return addTaxAndValue.test(validatedString);
+        var hasInvalidChars = function (validatedString) {
+            return invalidCharsRegExp.test(validatedString);
         };
 
-        var validateLessonText = function (validatedString) {
-            return addLessonText.test(validatedString);
+        var validateEmail = function (validatedString) {
+            return emailRegExp.test(validatedString);
+        };
+
+        var validatePass = function (validatedString) {
+            return passRegExp.test(validatedString);
         };
 
         var errorMessages = {
-            invalidAddTaxonomy  :  'Please enter correct ',
-            invalidLessonText   :  'Please enter correct text for lesson.\nWithout symbols "~ < > ^ * ₴"'
-        };
 
+            requiredMsg         :  "field can not be empty",
+            invalidCharsMsg     :  "field can not contain '~ < > ^ * ₴' signs",
+            invalidEmailMsg     :  "field should contain a valid email address",
+            invalidLoginMsg     :  "field value is incorrect",
 
-        var checkAddTaxonomy = function (fieldValue, fieldName) {
-            var errorMsg = false;
-            if(validateAddTaxonomy(fieldValue)){
-                errorMsg = errorMessages.invalidAddTaxonomy + fieldName;
-                return errorMsg;
+            minLengthMsg: function (minLength) {
+                return "field should be at least " + minLength + " characters long"
+            },
+            maxLengthMsg: function (maxLength) {
+                return "field should be at least " + maxLength + " characters long"
             }
-
         };
 
-        var checkLessonText = function (fieldValue) {
-            var errorMsg = false;
-            if(validateLessonText(fieldValue)){
-                errorMsg = errorMessages.invalidLessonText;
-                return errorMsg;
+
+        var checkEmailField = function (errorObject, fieldValue, fieldName) {
+            errorObject[fieldName] = null;
+            if (!fieldValue) {
+                errorObject[fieldName] = errorMessages.requiredMsg;
+                return;
+            }
+            if (hasInvalidChars(fieldValue)) {
+                errorObject[fieldName] = errorMessages.invalidCharsMsg;
+                return;
+            }
+            if (!validateEmail(fieldValue)) errorObject[fieldName] = errorMessages.invalidEmailMsg;
+        };
+
+
+        var checkPasswordField = function (errorObject, fieldValue, fieldName) {
+            errorObject[fieldName] = null;
+            if (!fieldValue) {
+                errorObject[fieldName] = errorMessages.requiredMsg;
+                return;
+            }
+            if (hasInvalidChars(fieldValue)) {
+                errorObject[fieldName] = errorMessages.invalidCharsMsg;
+                return;
+            }
+            if (fieldValue.length < 6) {
+                errorObject[fieldName] = errorMessages.minLengthMsg(6);
+                return;
+            }
+            if (fieldValue.length > 35) {
+                errorObject[fieldName] = errorMessages.maxLengthMsg(35);
+                return;
+            }
+            if (!validatePass(fieldValue)) {
+                errorObject[fieldName] = errorMessages.invalidLoginMsg;
             }
 
         };
 
         return {
-            checkAddTaxonomy  :  checkAddTaxonomy,
-            checkLessonText   :  checkLessonText
+
+            checkEmailField   :  checkEmailField,
+            checkPasswordField:  checkPasswordField
         }
     });
 

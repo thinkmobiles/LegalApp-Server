@@ -1,9 +1,68 @@
-body,html {
-  margin: 0;
+@font-face {
+  font-family: 'OSR';
+  src: url('fonts/opensans-regular-webfont.eot');
+  src: url('fonts/opensans-regular-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-regular-webfont.woff2') format('woff2'),
+  url('fonts/opensans-regular-webfont.woff') format('woff'),
+  url('fonts/opensans-regular-webfont.ttf') format('truetype'),
+  url('fonts/opensans-regular-webfont.svg#open_sansregular') format('svg');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'OSS';
+  src: url('fonts/opensans-semibold-webfont.eot');
+  src: url('fonts/opensans-semibold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-semibold-webfont.woff2') format('woff2'),
+  url('fonts/opensans-semibold-webfont.woff') format('woff'),
+  url('fonts/opensans-semibold-webfont.ttf') format('truetype'),
+  url('fonts/opensans-semibold-webfont.svg#open_sanssemibold') format('svg');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'OSE';
+  src: url('fonts/opensans-extrabold-webfont.eot');
+  src: url('fonts/opensans-extrabold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('fonts/opensans-extrabold-webfont.woff2') format('woff2'),
+  url('fonts/opensans-extrabold-webfont.woff') format('woff'),
+  url('fonts/opensans-extrabold-webfont.ttf') format('truetype'),
+  url('fonts/opensans-extrabold-webfont.svg#open_sansextrabold') format('svg');
+  font-weight: 900;
+}
+@font-face {
+  font-family: 'PLR';
+  src: url('fonts/PalatinoLTStd-Roman.eot?#iefix') format('embedded-opentype'),
+  url('fonts/PalatinoLTStd-Roman.otf')  format('opentype'),
+  url('fonts/PalatinoLTStd-Roman.woff') format('woff'),
+  url('fonts/PalatinoLTStd-Roman.ttf')  format('truetype'),
+  url('fonts/PalatinoLTStd-Roman.svg#PalatinoLTStd-Roman') format('svg');
+  font-weight: 400;
 }
 
+.font-osr{
+  font-family: 'OSR';
+}
+.font-oss{
+  font-family: 'OSS';
+}
+.font-ose{
+  font-family: 'OSE';
+}
+.font-plr{
+  font-family: 'PLR';
+}
+.transition{
+  -webkit-transition: all 0.8s ease 0s;
+  -moz-transition: all 0.8s ease 0s;
+  -ms-transition: all 0.8s ease 0s;
+  -o-transition: all 0.8s ease 0s;
+  transition: all 0.8s ease 0s;
+}
+a:hover, input[type="button"]{
+  .transition;
+}
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: url("../images/welcome-bgr.png") no-repeat center #eeeeee;
 }
 a {
   color: #00B7FF;
@@ -18,63 +77,77 @@ a {
   }
 }
 #topMenu {
-  height: 80px;
+  height: 123px;
 }
 
 #leftTopBar {
   background-color: #e31937;
-  width: 35%;
-  height: 100%;
+  width: 34%;
   float: left;
-  /* display: block; */
-  padding: 0px;
-  margin: 0px;
+  height: 100%;
+  span{
+    display: inline-block;
+    margin: 29px 0 0 30px;
+  }
+  a{
+    .font-oss;
+    color: #aeaeae;
+    text-decoration: none;
+    font-size: 18px;
+    margin: 80px 0 0 24px;
+    display: inline-block;
+  }
 }
 
 #middleTopBar {
   float: left;
-  width: 30%;
+  width: 33%;
   height: 100%;
   background-color: #7c7b7b;
   span {
-    margin-left: 10px;
+    margin: 80px 0 0 24px;
+    .font-oss;
+    color: #aeaeae;
+    font-size: 18px;
+    background: url("../images/arr-down.png") no-repeat right center;
+    padding-right: 25px;
+    display: inline-block;
   }
 }
 
 #rightTopBar {
   float: left;
-  width: 35%;
+  width: 33%;
   height: 100%;
   background-color: #3d3d3d;
-}
-
-#profileTop {
-  float: left;
-  line-height: 40px;
-}
-#profileTop a {
-  float: right;
-}
-#buttonLogout {
-  display: block;
-  float: right;
-}
-#companySpan {
-  display: block;
-  float: left;
-}
-#loginDiv {
-  top: 50%;
-  left: 50%;
-  height: 440px;
-  width: 460px;
-  position: absolute;
-  margin-top: -170px;
-  margin-left: -230px;
-}
-#logInForm {
-  padding: 20px;
-  border: 4px double black;
+  div#profileTop{
+    float: left;
+    margin: 60px 0 0 22px;
+    img{
+      float: left;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+    }
+    a{
+      float: left;
+      text-decoration: none;
+      .font-oss;
+      color: #aeaeae;
+      font-size: 18px;
+      margin: 16px 0 0 10px;
+    }
+  }
+  input{
+    display: block;
+    float: right;
+    border: none;
+    background: transparent;
+    .font-oss;
+    color: #ffffff;
+    font-size: 18px;
+    margin: 73px 37px 0 0;
+  }
 }
 #signUpDiv {
   width: 600px;
@@ -107,7 +180,126 @@ a {
 }
 
 #wrapper {
-
+}
+#loginDiv {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -300px 0 0 -225px;
+  height: 600px;
+  width: 450px;
+  a{
+    display: block;
+    text-align: center;
+  }
+  #logInForm {
+    margin-top: 65px;
+    background-color: #fff;
+    h1{
+      background-color: #e31937;
+      line-height: 62px;
+      .font-osr;
+      font-size: 24px;
+      color: #fff;
+      padding: 0 20px;
+    }
+    .form-body{
+      border: 1px solid #d0d0d0;
+      border-top: none;
+      padding: 30px 44px 17px;
+      .form-field{
+        position: relative;
+        &:first-child{
+          margin-bottom: 45px;
+        }
+        input[type="email"],
+        input[type="password"]{
+          width: 331px;
+          background-color: rgb(234, 234, 234);
+          border: 1px solid #eaeaea;
+          height: 50px;
+          color: #c4c4c4;
+          padding: 0 15px;
+          .font-oss;
+          &.error_input{
+            border-color: #e31937;
+          }
+        }
+        .error_msg{
+          position: absolute;
+          color: #e31937;
+          .font-osr;
+          font-size: 14px;
+          top: 61px;
+        }
+      }
+      input[type="checkbox"]{
+        display: none;
+      }
+      .remember_check{
+        margin: 37px 0 17px;
+        overflow: hidden;
+        label {
+          display: inline-block;
+          width: 22px;
+          height: 22px;
+          border: 1px solid #909090;
+          position: relative;
+          float: left;
+          cursor: pointer;
+          margin-right: 6px;
+        }
+        input[type="checkbox"]:checked + label{
+          border-color: #e31937;
+        }
+        input[type="checkbox"]:checked + label:after {
+          content: '';
+          background: url("../images/check-red.png") no-repeat center;
+          height: 13px;
+          width: 17px;
+          position: absolute;
+          top: 5px;
+          left: 2px;
+        }
+        span{
+          display: block;
+          .font-oss;
+          font-size: 14px;
+          line-height: 24px;
+          color: #909090;
+          margin-left: 32px;
+          width: 150px;
+        }
+      }
+      .link{
+        margin-top: 51px;
+        display: block;
+        text-align: center;
+        .font-osr;
+        font-size: 14px;
+        color: #909090;
+        text-decoration: none;
+        &:hover{
+          color: #e31937;
+        }
+      }
+      input[type="button"]{
+        background-color: #c4c4c4;
+        border: none;
+        margin: 0 auto;
+        width: 162px;
+        height: 48px;
+        line-height: 48px;
+        display: block;
+        .font-ose;
+        font-size: 18px;
+        color: #fff;
+        &:hover{
+          color: #e31937;
+        }
+      }
+    }
+  }
 }
 
 //#addItemLeft {
@@ -153,22 +345,22 @@ a {
   display: none;
 }
 
-#documents .buttons {
-  float: right;
-}
-#documents #templateList, #documents #documentList {
-  display: block;
-  padding: 10px;
-}
+//#documents .buttons {
+//  float: right;
+//}
+//#documents #templateList, #documents #documentList {
+//  display: block;
+//  padding: 10px;
+//}
 
-#documents #templateList {
-  float: left;
-  border-right: 1px solid #333;
-}
+//#documents #templateList {
+//  float: left;
+//  border-right: 1px solid #333;
+//}
 
-#documents #documentList {
-  float: right;
-}
+//#documents #documentList {
+//  float: right;
+//}
 #documents .templateName:hover, #documents .documentItem {
   cursor: pointer;
 }
@@ -232,9 +424,8 @@ a {
 }
 
 .docGrid {
-  border: 2px solid black;
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 120px;
   display: block;
   float: left;
   margin: 10px 10px;
@@ -325,5 +516,9 @@ a {
 }
 
 .hideRow {
+  display: none;
+}
+
+.link_row.activeRow {
   display: none;
 }

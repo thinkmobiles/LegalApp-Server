@@ -1,3 +1,4 @@
+var CONSTANTS = require('../constants/index');
 var MESSAGES = require('../constants/messages');
 var USER_ROLES = require('../constants/userRoles');
 var SESSION_SUPER_ADMIN = 'superAdmin';
@@ -22,7 +23,14 @@ var Session = function (postGre) {
 
         req.session.loggedIn = true;
         req.session.userId = userModel.id;
-        
+
+        if (options && options.rememberMe) {
+            req.session.rememberMe = true;
+            req.session.cookie.maxAge = 1000 * 3600 * 24 * 365 * 5;
+        } else {
+            req.session.rememberMe = false;
+        }
+
         res.status(status).send({ success: MESSAGES.SUCCESS_SIGN_IN, user: userModel });
     };
 
@@ -34,10 +42,15 @@ var Session = function (postGre) {
     };
 
     this.authenticatedUser = function (req, res, next) {
+        var err;
+
         if (req.session && req.session.userId && req.session.loggedIn) {
+            if (!req.session.rememberMe) {
+                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+            }
             next();
         } else {
-            var err = new Error('Unauthorized');
+            err = new Error('Unauthorized');
             err.status = 401;
             next(err);
         }
@@ -54,7 +67,9 @@ var Session = function (postGre) {
         var permissions = req.session.permissions;
 
         if (req.session && req.session.userId && req.session.loggedIn && (availablePermissions.indexOf(permissions) !== -1)) {
-
+            if (!req.session.rememberMe) {
+                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+            }
             next();
         } else {
             next(badRequests.AccessError());
@@ -63,7 +78,7 @@ var Session = function (postGre) {
 
     this.isAuthenticatedUser = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn) {
-            res.status(200).send();
+            res.status(200).send({success: true, exp: req.session.cookie.expires});
         } else {
             var err = new Error('Unauthorized');
             err.status = 401;
@@ -73,6 +88,9 @@ var Session = function (postGre) {
 
     this.authenticatedAdmin = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn && ((req.session.permissions === PERMISSIONS.SUPER_ADMIN) || (req.session.permissions === PERMISSIONS.ADMIN))) {
+            if (!req.session.rememberMe) {
+                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+            }
             next();
         } else {
             next(badRequests.AccessError());
