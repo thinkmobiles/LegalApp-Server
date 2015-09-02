@@ -63,6 +63,10 @@ a:hover, input[type="button"]{
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background: url("../images/welcome-bgr.png") no-repeat center #eeeeee;
+  &.loggedState{
+    background-image: none;
+    background-color: #ffffff;
+  }
   #topMenu,
   #leftMenu{
     display: none;
@@ -79,12 +83,9 @@ a {
 }
 #leftMenu {
   width: 8%;
-  height: 900px;
+  height: calc(~"100vh - 123px");
   float: left;
   display: none;
-  div {
-    margin-top: 40px;
-  }
 }
 #topMenu {
   height: 123px;
@@ -92,7 +93,7 @@ a {
 
 #leftTopBar {
   background-color: #e31937;
-  width: 34%;
+  width: 38%;
   float: left;
   height: 100%;
   span{
@@ -111,7 +112,7 @@ a {
 
 #middleTopBar {
   float: left;
-  width: 33%;
+  width: 31%;
   height: 100%;
   background-color: #7c7b7b;
   span {
@@ -127,7 +128,7 @@ a {
 
 #rightTopBar {
   float: left;
-  width: 33%;
+  width: 31%;
   height: 100%;
   background-color: #3d3d3d;
   div#profileTop{
@@ -157,6 +158,44 @@ a {
     color: #ffffff;
     font-size: 18px;
     margin: 73px 37px 0 0;
+  }
+}
+.sidebar-menu{
+  margin-right: 3px;
+  ul{
+    padding: 0 17px;
+    border: 1px solid #e6e6e7;
+    height: calc(~'100vh-123px');
+    border-left: none;
+    li{
+      border-bottom: 1px solid #ededed;
+      box-shadow: 0 1px 0 #f7f7f7;
+      a{
+        display: block;
+        height: 78px;
+        text-align: center;
+        .font-oss;
+        font-size: 12px;
+        text-decoration: none;
+        color: #7c7b7b;
+        outline: none !important;
+        img{
+          -webkit-filter: grayscale(1);
+          filter: grayscale(1);
+          margin: 14px 0 6px;
+        }
+        &:hover{
+          color: #e31937;
+          img {
+            -webkit-filter: grayscale(0);
+            filter: grayscale(0);
+          }
+        }
+        span{
+          display: block;
+        }
+      }
+    }
   }
 }
 #signUpDiv {
@@ -358,27 +397,75 @@ a {
   }
 }
 
-//#addItemLeft {
-//  display: block;
-//}
-
-//#addItemRight {
-//  display: block;
-//}
-
 .addItemLeft {
-  width: 27%;
-  height: 600px;
+  width: 30%;
   float: left;
   background-color: #3d3d3d;
   color: #eaeaea;
-  display: block;
-  div {
-    margin: 10px;
-
-    label {
-      float:left;
+  >div {
+    margin: 22px 44px 35px;
+    position: relative;
+    height: calc(~"100vh - 171px");
+    h2 {
+      .font-oss;
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 14px;
     }
+    p {
+      .font-oss;
+      font-size: 14px;
+      color: rgba(234, 234, 234, 0.5);
+      margin-bottom: 14px;
+    }
+    div {
+      label {
+        .font-oss;
+        font-size: 16px;
+        color: #fff;
+        margin-bottom: 8px;
+        display: block;
+        span{
+          color: #e31937;
+        }
+      }
+      input[type="text"]{
+        background: #eaeaea;
+        height: 50px;
+        width: 92%;
+        line-height: 50px;
+        padding: 0 4%;
+        border: none;
+        margin-bottom: 14px;
+      }
+      input[type="button"]{
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        .font-ose;
+        font-size: 18px;
+        height: 48px;
+        line-height: 48px;
+        border: none;
+        background: #878787;
+      }
+    }
+  }
+}
+.textareaBlock{
+  margin: 33px 23px;
+  position: relative;
+  height: calc(~"100vh - 123px");
+  width: 58%;
+  float: left;
+  textarea{
+    width: 100%;
+    height: calc(~"100vh - 189px");
+    resize: none;
+    background: #eaeaea;
+    border: none;
   }
 }
 

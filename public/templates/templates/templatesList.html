@@ -1,16 +1,4 @@
-<% tmpLst.forEach(function(template){%>
-<tr class="tempRow" data-id="<%= template.id%>">
-    <td></td>
-    <td><%= template.name%></td>
-    <td><%= template.link_id%></td>
-    <td></td>
-    <td></td>
-    <td>
-        <select id="templateStatus">
-            <option data-id="1">Enabled</option>
-            <option data-id="0">Disabled</option>
-        </select>
-    </td>
-    <td></td>
-</tr>
-<% }) %>
+<div class="tempRow" data-id="<%= id%>">
+    <!--<img src=".././images/bb.png">-->
+    <span><%= name%></span>
+</div>
