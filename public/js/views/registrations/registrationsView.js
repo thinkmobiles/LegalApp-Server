@@ -11,7 +11,7 @@ define([
 
     View = Backbone.View.extend({
         template: _.template(RegistrationsTemplate),
-        userListTemlpate: _.template(UserListTemplate),
+        userListTemplate: _.template(UserListTemplate),
 
         el: "#wrapper",
 
@@ -43,7 +43,7 @@ define([
                 this.pendingCollection = new UsersCollection(data.models);
             }
 
-            pendingContainer.html(this.userListTemlpate({usrLst: users, pending: true}));
+            pendingContainer.html(this.userListTemplate({usrLst: users, pending: true}));
 
             return this;
         },
@@ -56,7 +56,7 @@ define([
                 this.confirmedCollection = new UsersCollection(data.models);
             }
 
-            confirmedContainer.html(this.userListTemlpate({usrLst: users, pending: false}));
+            confirmedContainer.html(this.userListTemplate({usrLst: users, pending: false}));
 
             return this;
         },
