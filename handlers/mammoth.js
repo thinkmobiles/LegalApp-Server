@@ -74,7 +74,7 @@ var MammothHandler = function () {
                 var messages = result.messages; // Any messages, such as warnings during conversion
                 var htmlContent;
 
-                if (messages && messages.length) {
+                if (messages && messages.length && process.env.NODE_ENV === 'development') {
                     console.error(messages);
                 }
 
