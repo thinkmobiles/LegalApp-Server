@@ -88,6 +88,30 @@ define([],function () {
         img.src = currentImage;
     };
 
+    var signatureLoad = function (self, callback) {
+        var inputFile = self.$el.find('#inputImg');
+
+        inputFile.on('change', function (event) {
+            event.preventDefault();
+
+            var file = inputFile[0].files[0];
+            var filesExt = 'jpg';
+            var parts = inputFile.val().split('.');
+
+            if (filesExt === parts[parts.length - 1]) {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var result =fr.result;
+                    callback(result);
+                };
+                fr.readAsDataURL(file);
+
+            } else {
+                alert('Invalid file type!');
+            }
+        });
+    };
+
     /*var docXLoad = function (argContext, callback) {
         var context = (argContext) ? argContext : this;
         var inputFile = context.$('#tempFile');
@@ -137,7 +161,7 @@ define([],function () {
     return {
         runApplication : runApplication,
         canvasDraw     : canvasDraw,
-        canvasDrawing  : canvasDrawing
-        //docXLoad       : docXLoad
+        canvasDrawing  : canvasDrawing,
+        signatureLoad  : signatureLoad
     };
 });

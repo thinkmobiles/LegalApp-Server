@@ -517,7 +517,7 @@ a {
 #tableDiv {
   float: left;
   display: block;
-  width: 59%;
+  width: 56%;
   margin: 35px;
 }
 #usersTable {
@@ -554,6 +554,10 @@ a {
 
 .userRow.notActiv {
   color: darkgrey;
+}
+
+.userRow.activeRow {
+  background-color: darkgrey;
 }
 
 .tempGrid {
@@ -654,7 +658,7 @@ a {
   cursor: pointer;
 }
 
-.userRow:hover {
+.userRow:not(.activeRow):hover {
   background-color: #eee;
 }
 
@@ -664,4 +668,9 @@ a {
 
 .link_row.activeRow {
   display: none;
+}
+
+#currentSign {
+  width: 100px;
+  height: 70px;
 }

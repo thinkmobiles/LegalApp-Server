@@ -4,12 +4,21 @@
 
 define([
     'text!templates/templates/templatesTemplate.html',
+    'text!templates/templates/templatesGridTemplate.html',
+    'text!templates/templates/templatesListTemplate.html',
     'text!templates/templates/templatesGrid.html',
     'text!templates/templates/templatesList.html',
     'views/templates/addTemplate/addTemplateView',
     'collections/templatesCollection'
 
-], function (TempTemplate, TempGridItem, TempListItem, AddTemplate, TempCollection) {
+], function (
+    TempTemplate,
+    TempGrid,
+    TempList,
+    TempGridItem,
+    TempListItem,
+    AddTemplate,
+    TempCollection) {
 
     var View;
     View = Backbone.View.extend({
@@ -18,6 +27,8 @@ define([
 
         templateGridItem : _.template(TempGridItem),
         templateListItem : _.template(TempListItem),
+        templateList : _.template(TempList),
+        templateGrid : _.template(TempGrid),
 
         initialize: function (options) {
             this.render();
@@ -31,8 +42,14 @@ define([
         },
 
         events : {
-            "click #addDiv"     : "goToAddTemplate",
-            "click .tempGrid"   : "goToPreview"
+            "click #addDiv"      : "goToAddTemplate",
+            "click .tempGrid"    : "goToPreview",
+            "click .btnViewType" : "changeViewType"
+        },
+
+        changeViewType: function(event){
+            var targetView = $(event.target).data('id');
+            this.stateModel.set('viewType',targetView);
         },
 
         goToAddTemplate : function(){
@@ -56,19 +73,20 @@ define([
             var viewTp = this.stateModel.get('viewType');
 
             if (viewTp === 'grid') {
-                currentCollection.forEach(function (template) {
-                    innerContext = self.templateGridItem(template) + innerContext;
-                });
+                //currentCollection.forEach(function (template) {
+                //    innerContext = self.templateGridItem(template) + innerContext;
+                //});
+                this.$el.find('#allTemplatesCont').html(this.templateGrid({tempList : currentCollection}));
             }
 
             if (viewTp === 'list') {
-                currentCollection.forEach(function (template) {
-                    innerContext = self.templateListItem(template) + innerContext;
-                });
+                //currentCollection.forEach(function (template) {
+                //    innerContext = self.templateListItem(template) + innerContext;
+                //});
+                this.$el.find('#allTemplatesCont').html(this.templateList({tempList : currentCollection}));
             }
 
-
-            this.$el.append(innerContext);
+            this.$el.find('#allTemplatesCont').html(innerContext);
         },
 
         addOneGrid: function(model){
