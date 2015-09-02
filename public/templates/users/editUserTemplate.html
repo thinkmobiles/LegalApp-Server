@@ -29,13 +29,14 @@
 </div>
 <div id="signInfoBox">
     <div id="signInfo">
-        <%if (usrMdl.profile.sign_authority){%>
-            <img id="trueSignState" src="1">
+        <%if (usrMdl.profile.has_sign_image){%>
+            <img class="trueSignState" src="ddd">
             <button>Replace signature</button>
         <%} else {%>
-            <img id="falseSignState" src="0">
+            <img class="falseSignState" src="ddd">
             <button>Upload signature</button>
         <%}%>
     </div>
+    <div id="signBox"></div>
     <input type="file" value="Edit" id="inputImg" accept="image/*">
 </div>

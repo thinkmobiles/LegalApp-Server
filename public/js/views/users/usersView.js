@@ -18,9 +18,10 @@ define([
         el : '#wrapper',
 
         events: {
-            "click #addNewUser"        : "showAddTemplate",
-            "click .userRow"           : "showEditTemplate",
-            "click #adminClient>span " : "changeCurrentState"
+            "click #addNewUser"              : "showAddTemplate",
+            "click .userRow:not(.activeRow)" : "showEditTemplate",
+            "click .activeRow"               : "hideEdit",
+            "click #adminClient>span "       : "changeCurrentState"
         },
 
         initialize: function () {
@@ -56,19 +57,27 @@ define([
             }
         },
 
-        renderTrigger : function(){
-            var theState = this.stateModel.get('currentState');
+        hideEdit: function(event){
+            $(event.target).closest('.activeRow').removeClass('activeRow');
 
-            if (this.addView){
-                this.addView.currentState=theState;
-            }
-
-            if (theState) {
-                this.usersCollection.fetch({reset: true})
-            } else {
-                this.clientsCollection.fetch({reset: true})
+            if (this.editView){
+                this.editView.remove()
             }
         },
+
+        //renderTrigger : function(){
+        //    var theState = this.stateModel.get('currentState');
+        //
+        //    if (this.addView){
+        //        this.addView.currentState=theState;
+        //    }
+        //
+        //    if (theState) {
+        //        this.usersCollection.fetch({reset: true})
+        //    } else {
+        //        this.clientsCollection.fetch({reset: true})
+        //    }
+        //},
 
         renderUsersList : function(){
             var theState = this.stateModel.get('currentState');
