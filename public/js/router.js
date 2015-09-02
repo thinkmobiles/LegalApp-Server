@@ -19,6 +19,7 @@ define([
             "signup"                       :  "signup",
             "users"                        :  "users",
             "settings"                     :  "settings",
+            "registrations"                :  "registrations",
             ":docType/preview/:id"         :  "forPreview",
             "templates/:viewType"          :  "templates",
             "documents/:token/signature"   :  "signature",
@@ -137,6 +138,9 @@ define([
 
         help: function(){
             this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);
+        },
+        registrations: function() {
+            this.loadWrapperView('registrations', null, REDIRECT.whenNOTAuthorized);
         }
 
     });
