@@ -86,11 +86,21 @@ define([
                 this.$el.find('#allTemplatesCont').html(this.templateList({tempList : currentCollection}));
             }
 
-            this.$el.find('#allTemplatesCont').html(innerContext);
+            //this.$el.find('#allTemplatesCont').html(innerContext);
         },
 
         addOneGrid: function(model){
-            this.$el.append(this.templateGridItem(model));
+            var viewTp = this.stateModel.get('viewType');
+
+            if (viewTp === 'grid') {
+                this.$el.append(this.templateGridItem(model));
+            }
+
+            if (viewTp === 'list') {
+                this.$el.find('#allTemplatesCont>ul').append(this.templateListItem(model));
+            }
+
+
         },
 
         render: function () {
