@@ -18,9 +18,10 @@ define([
         el : '#wrapper',
 
         events: {
-            "click #addNewUser"        : "showAddTemplate",
-            "click .userRow"           : "showEditTemplate",
-            "click #adminClient>span " : "changeCurrentState"
+            "click #addNewUser"              : "showAddTemplate",
+            "click .userRow:not(.activeRow)" : "showEditTemplate",
+            "click .activeRow"               : "hideEdit",
+            "click #adminClient>span "       : "changeCurrentState"
         },
 
         initialize: function () {
@@ -53,6 +54,14 @@ define([
                 sel_visible.hide();
             } else {
                 sel_visible.show();
+            }
+        },
+
+        hideEdit: function(event){
+            $(event.target).closest('.activeRow').removeClass('activeRow');
+
+            if (this.editView){
+                this.editView.remove()
             }
         },
 
@@ -108,8 +117,8 @@ define([
             var theState = this.stateModel.get('currentState');
             var editableUser;
 
-            container.find('.hideRow').removeClass('hideRow');
-            userRow.addClass('hideRow');
+            container.find('.activeRow').removeClass('activeRow');
+            userRow.addClass('activeRow');
 
             if (this.editView){
                 //this.editView.undelegateEvents()
