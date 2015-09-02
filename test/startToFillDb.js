@@ -2,7 +2,7 @@ var TABLES = require('../constants/tables');
 
 var async = require('async');
 
-module.exports = function(PostGre, done){
+module.exports = function (PostGre, done) {
     var factory = require('./fillDatabase')(PostGre);
 
     async.waterfall([

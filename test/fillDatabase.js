@@ -25,7 +25,7 @@ module.exports = function (db) {
     var SecretKey = Models.SecretKey;
     var profilesCount = 1;
     var emailCounter = 1;
-    var userCounter  = 1;
+    var userCounter = 1;
     var firstNameCounter = 1;
     var lastNameCounter = 1;
     var companyCounter = 1;
@@ -40,21 +40,29 @@ module.exports = function (db) {
 
     function getEncryptedPass(pass) {
         var shaSum = crypto.createHash('sha256');
+
         shaSum.update(pass);
+
         return shaSum.digest('hex');
     }
 
     //companies:
     factory.define(TABLES.COMPANIES, Company, {
         name: function () {
-                companyCounter++;
+            companyCounter++;
             return 'company_' + companyCounter;
         },
-        owner_id: function(){return companyCounter},
-        email: function(){return 'company_' + companyCounter + '@company.com'},
+        owner_id: function () {
+            return companyCounter
+        },
+        email: function () {
+            return 'company_' + companyCounter + '@company.com'
+        },
         country: 'USA',
-        city:'New York',
-        address: function(){return companyCounter + ' th Street';}
+        city: 'New York',
+        address: function () {
+            return companyCounter + ' th Street';
+        }
     });
 
     //profiles:
@@ -72,16 +80,29 @@ module.exports = function (db) {
             lastNameCounter++;
             return 'last_name_' + lastNameCounter;
         },
-        company: function(){return 'company_' + Math.round(Math.random()*200)},
-        phone: function(){return '101'+Math.round(Math.random()*9)+'54'+Math.round(Math.random()*9)+'777' + Math.round(Math.random()*9)},
-        permissions: function(){return Math.round(Math.random()*3)},
-        sign_authority: function(){return Math.round(Math.random())?true:false}
+        company: function () {
+            return 'company_' + Math.round(Math.random() * 200)
+        },
+        phone: function () {
+            return '101' + Math.round(Math.random() * 9) + '54' + Math.round(Math.random() * 9) + '777' + Math.round(Math.random() * 9)
+        },
+        permissions: function () {
+            return Math.round(Math.random() * 3)
+        },
+        sign_authority: function () {
+            return Math.round(Math.random()) ? true : false
+        }
     });
 
     //user_companies:
     factory.define(TABLES.USER_COMPANIES, UserCompanies, {
-        user_id: function(){userCounter++; return userCounter},
-        company_id: function(){return Math.round(Math.random()*200)}
+        user_id: function () {
+            userCounter++;
+            return userCounter
+        },
+        company_id: function () {
+            return Math.round(Math.random() * 200)
+        }
     });
 
     //users:
@@ -105,15 +126,18 @@ module.exports = function (db) {
     factory.define(TABLES.LINKS_FIELDS, LinkFields, {
 
         // define attributes using properties and functions:
-        link_id: function(){linkFieldsCounter++; return linkFieldsCounter;},
+        link_id: function () {
+            linkFieldsCounter++;
+            return linkFieldsCounter;
+        },
         name: function () {
             return 'name_' + linkFieldsCounter;
         },
         code: function () {
             return '<code_' + linkFieldsCounter + '>';
         },
-        type:function (){
-            return Math.round(Math.random())?'FIRST_NAME':'LAST_NAME'
+        type: function () {
+            return Math.round(Math.random()) ? 'FIRST_NAME' : 'LAST_NAME'
         }
 
     });
@@ -124,7 +148,9 @@ module.exports = function (db) {
             templateCount++;
             return 'template_' + templateCount;
         },
-        description:function(){return 'This is the description of Template ' + templateCount},
+        description: function () {
+            return 'This is the description of Template ' + templateCount;
+        },
         html_content: function () {
             var html = '<div>';
 
@@ -134,13 +160,18 @@ module.exports = function (db) {
 
             return html;
         },
-        link_id: function(){return templateCount},
+        link_id: function () {
+            return templateCount
+        },
         has_linked_template: false
     });
 
     //documents:
     factory.define(TABLES.DOCUMENTS, Document, {
-        name:function(){documentCount++; return 'Document_name_' + documentCount},
+        name: function () {
+            documentCount++;
+            return 'Document_name_' + documentCount
+        },
         html_content: function () {
             var html = '<div>';
 
@@ -150,18 +181,24 @@ module.exports = function (db) {
 
             return html;
         },
-        template_id: function(){return Math.round(Math.random()*1000)},
+        template_id: function () {
+            return Math.round(Math.random() * 1000)
+        },
         //template_id: 1,
-        company_id: function(){return Math.round(Math.random()*200)}
+        company_id: function () {
+            return Math.round(Math.random() * 200)
+        }
     });
 
     //users_secret_key
     factory.define(TABLES.USERS_SECRET_KEY, SecretKey, {
-        user_id: function(){
+        user_id: function () {
             secretKeyCount++;
             return secretKeyCount
         },
-        secret_key: function(){return tokenGenerator.generate(20);}
+        secret_key: function () {
+            return tokenGenerator.generate(20);
+        }
     });
 
     return factory;
