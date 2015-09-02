@@ -3,9 +3,10 @@
  */
 
 define([
-    'text!templates/users/editUserTemplate.html'
+    'text!templates/users/editUserTemplate.html',
+    'custom'
 
-], function (EditTemp) {
+], function (EditTemp, custom) {
 
     var View;
     View = Backbone.View.extend({
@@ -17,8 +18,8 @@ define([
         },
 
         events : {
-            "click #editBtn"    : "saveUser",
-            //"click #editStatus" : "changeStatus"
+            "click #editBtn"       : "updateUser",
+            "click #trueSignState" : "showOurSign"
         },
 
         //changeStatus: function(event){
@@ -26,8 +27,51 @@ define([
         //    this.updateUser(theId);
         //},
 
-        saveUser: function(){
-            this.updateUser();
+        //saveUser: function(){
+        //    this.updateUser();
+        //},
+
+        showOurSign: function (){
+            var userId = this.userModel.get('id');
+            var container = this.$el.find('#signInfoBox');
+            var signInfo = container.find('#signInfo');
+            /*var signBox = container.find('#signBox');*/
+
+            $.ajax({
+                url : 'url',
+                success  : function (response){
+                    signInfo.hide();
+                    signInfo.after('<img id="currentSign" src="'+response+'">');
+                },
+                error    : function(){
+                    alert('Error');
+                }
+            });
+        },
+
+        signatureLoad: function () {
+            var inputFile = this.$el.find('#inputImg');
+
+            inputFile.on('change', function (event) {
+                event.preventDefault();
+
+                var file = inputFile[0].files[0];
+                var filesExt = 'docx';
+                var parts = inputFile.val().split('.');
+
+                if (filesExt === parts[parts.length - 1]) {
+                    var fr = new FileReader();
+                    fr.onload = function () {
+                     //var result =fr.result;
+                     // callback(file);
+                     };
+                    inputFile.val('');
+                    fr.readAsDataURL(file);
+
+                } else {
+                    alert('Invalid file type!');
+                }
+            });
         },
 
         updateUser : function(){
@@ -42,9 +86,9 @@ define([
             var status_ch = status.prop('checked');
             var profile;
 
-            if (signing) {
-
-            }
+            this.signatureLoad(function(a){
+                console.log(a);
+            });
 
             profile = {
                 first_name  : firstName,
@@ -83,6 +127,8 @@ define([
                 usrMdl : this.userModel.toJSON(),
                 role   : role
             }));
+
+            //custom.canvasDraw(null, this);
 
             return this;
         }

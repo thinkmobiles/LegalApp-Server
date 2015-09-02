@@ -108,8 +108,8 @@ define([
             var theState = this.stateModel.get('currentState');
             var editableUser;
 
-            container.find('.hideRow').removeClass('hideRow');
-            userRow.addClass('hideRow');
+            container.find('.activeRow').removeClass('activeRow');
+            userRow.addClass('activeRow');
 
             if (this.editView){
                 //this.editView.undelegateEvents()
