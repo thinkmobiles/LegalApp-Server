@@ -65,19 +65,19 @@ define([
             }
         },
 
-        //renderTrigger : function(){
-        //    var theState = this.stateModel.get('currentState');
-        //
-        //    if (this.addView){
-        //        this.addView.currentState=theState;
-        //    }
-        //
-        //    if (theState) {
-        //        this.usersCollection.fetch({reset: true})
-        //    } else {
-        //        this.clientsCollection.fetch({reset: true})
-        //    }
-        //},
+        renderTrigger : function(){
+            var theState = this.stateModel.get('currentState');
+
+            if (this.addView){
+                this.addView.currentState=theState;
+            }
+
+            if (theState) {
+                this.usersCollection.fetch({reset: true})
+            } else {
+                this.clientsCollection.fetch({reset: true})
+            }
+        },
 
         renderUsersList : function(){
             var theState = this.stateModel.get('currentState');
