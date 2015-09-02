@@ -8,4 +8,5 @@ module.exports = {
     SUCCESS_CREATED_TEMPLATE: 'Template was created success',
     DELETED_ACCOUNT: 'Your Account was deleted',
     SIGN_AUTHORITY_ERROR: 'Access Error. You can\'t have permissions for signing documents',
+    SIGN_UP_ACCEPT: 'Your request on registration was accepted. We\'ll send e-mail to you when somebody from our team confirm it.'
 };

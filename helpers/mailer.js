@@ -24,7 +24,7 @@ var MailerModule = function () {
         };
         
         deliver(mailOptions, callback);
-    }
+    };
     
     function onSendRessetPassword(options, callback) {
         var templateOptions = {
@@ -204,6 +204,20 @@ var MailerModule = function () {
 
         deliver(mailOptions,callback);
     };
+
+    this.onSignUp = function (options, callback) {
+        var mailOptions;
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,
+            subject: "Your request was accepted",
+            html: _.template(fs.readFileSync('public/templates/mailer/sendSignUpAccept.html', "utf8"))()
+        };
+
+        deliver(mailOptions, callback);
+    };
+
 };
 
 module.exports = new MailerModule();

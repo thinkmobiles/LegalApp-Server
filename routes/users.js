@@ -16,6 +16,8 @@ module.exports = function (app) {
     router.get('/:id', session.authenticatedUser, users.getUser);
     router.get('/:id/signature', session.authenticatedUser, users.getUserSignature);
     router.put('/:id', session.authenticatedAdmin, users.updateUser);
+    router.post(':id/accept', session.authenticatedAdmin, users.acceptUser);
+    router.post(':id/reject', session.authenticatedAdmin, users.rejectUser);
 
     return router;
 };

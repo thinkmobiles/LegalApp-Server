@@ -226,7 +226,10 @@ var UsersHandler = function (PostGre) {
                                 if (secretKeyModel && secretKeyModel.id) {
                                     model = secretKeyModel;
                                 } else {
-                                    model = SecretKeyModel.forge({user_id: userId, secret_key: tokenGenerator.generate(20)})
+                                    model = SecretKeyModel.forge({
+                                        user_id: userId,
+                                        secret_key: tokenGenerator.generate(20)
+                                    })
                                 }
 
                                 model
@@ -273,14 +276,15 @@ var UsersHandler = function (PostGre) {
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
-        var password = options.password;
+        //var password = options.password;
         var company = options.company;
         var confirmToken;
         var userData;
+        var status = STATUSES.NOT_CONFIRMED;
 
         //validate options:
-        if (!email || !password || !company) {
-            return next(badRequests.NotEnParams({reqParams: ['email', 'password', 'company']}));
+        if (!email /*|| !password*/ || !company) {
+            return next(badRequests.NotEnParams({reqParams: ['email', /*'password',*/ 'company']}));
         }
 
         //email validation:
@@ -314,7 +318,8 @@ var UsersHandler = function (PostGre) {
                 confirmToken = tokenGenerator.generate();
                 userData = {
                     email: email,
-                    password: getEncryptedPass(password),
+                    status: status,
+                    //password: getEncryptedPass(password),
                     confirm_token: confirmToken
                 };
 
@@ -332,7 +337,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
-                profileData.permissions = PERMISSIONS.OWNER;
+                profileData.permissions = PERMISSIONS.SUPER_ADMIN;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
@@ -386,14 +391,53 @@ var UsersHandler = function (PostGre) {
             }
 
             mailerOptions = {
-                email: email,
-                confirmToken: confirmToken
+                email: email
+                //confirmToken: confirmToken
             };
-            mailer.onSendConfirm(mailerOptions);
+            //mailer.onSendConfirm(mailerOptions);
+            mailer.onSignUp(mailerOptions);
 
-            res.status(201).send({success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE});
+            res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
 
+    };
+
+    this.acceptUser = function (req, res, next) {
+        var userId = req.params.id;
+        var status = STATUSES.CREATED;
+        var criteria = {
+            id: userId,
+            status: status
+        };
+
+        UserModel
+            .forge(criteria)
+            .save({patch: true})
+            .exec(function (err, userModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send({success: 'User requst was accepted', model: userModel});
+            });
+    };
+
+    this.rejectUser = function (req, res, next) {
+        var userId = req.params.id;
+        var status = STATUSES.DELETED;
+        var criteria = {
+            id: userId,
+            status: status
+        };
+
+        UserModel
+            .forge(criteria)
+            .save({patch: true})
+            .exec(function (err, userModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send({success: 'User request was rejected'});
+            });
     };
 
     this.signIn = function (req, res, next) {
@@ -429,6 +473,13 @@ var UsersHandler = function (PostGre) {
 
                 if (!userModel || !userModel.id) {
                     return next(badRequests.SignInError());
+                }
+
+                if (userModel && userModel.get('status') === STATUSES.NOT_CONFIRMED) {
+                    return next(badRequests.AccessError({
+                        message: 'Your account is not confirmed by our team.',
+                        status: 403
+                    }))
                 }
 
                 if (userModel && userModel.get('confirm_token')) {
@@ -1095,7 +1146,6 @@ var UsersHandler = function (PostGre) {
                 }
                 res.status(200).send({signImage: signImage});
             });
-
 
 
     };
