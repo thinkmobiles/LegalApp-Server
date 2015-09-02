@@ -8,15 +8,22 @@ define([
     var UserCollection = Backbone.Collection.extend({
         model: UserModel,
 
-        url: function () {
+        /*url: function () {
             return "/users"
-        },
+        },*/
 
-        initialize: function(){
+        url: "/users",
+
+        initialize: function(options){
+
+            if (options && options.status) {
+                this.url = "/users/search?status=" + options.status;
+            }
+
             this.fetch({
                 reset: true,
                 success: function(coll){
-                    console.log(coll.toJSON())
+                    //console.log(coll.toJSON())
                 }
             });
         }
