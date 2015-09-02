@@ -72,12 +72,12 @@ module.exports = function (knex) {
                 row.timestamps();
             }),
 
-            createTable(TABLES.INVITES, function (row) {
+            /*createTable(TABLES.INVITES, function (row) {
                 row.increments().primary();
                 row.integer('inivtee_id').notNullable().index();
                 row.string('invited_id').notNullable().index();
                 row.timestamps();
-            }),
+            }),*/
 
             createTable(TABLES.MESSAGES, function (row) {
                 row.increments().primary();
@@ -122,7 +122,6 @@ module.exports = function (knex) {
             createTable(TABLES.LINKS, function (row) {
                 row.increments().primary();
                 row.string('name');
-                row.integer('company_id').index();
                 row.timestamps();
             }),
 
@@ -144,7 +143,6 @@ module.exports = function (knex) {
 
             createTable(TABLES.TEMPLATES, function (row) {
                 row.increments().primary();
-                row.integer('company_id').index();
                 row.integer('link_id').index();
                 row.string('name');
                 row.text('description');
