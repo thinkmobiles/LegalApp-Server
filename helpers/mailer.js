@@ -6,11 +6,11 @@ var fs = require("fs");
 var FROM = "LegalApp <" + "info@legalapp.com" + ">";
 
 var MailerModule = function () {
-    
+
     this.onSendConfirm = function (options, callback) {
         var templateOptions;
         var mailOptions;
-        
+
         templateOptions = {
             email: options.email,
             url: process.env.HOST + '/#confirmEmail/' + options.confirmToken
@@ -22,10 +22,10 @@ var MailerModule = function () {
             subject: "Confirm Email",
             html: _.template(fs.readFileSync('public/templates/mailer/sendEmailConfirm.html', "utf8"))(templateOptions)
         };
-        
+
         deliver(mailOptions, callback);
     };
-    
+
     function onSendRessetPassword(options, callback) {
         var templateOptions = {
             email: options.email,
@@ -38,10 +38,10 @@ var MailerModule = function () {
             subject: "Resset password",
             html: _.template(fs.readFileSync('public/templates/mailer/sendResetPassword.html', "utf8"), templateOptions)
         };
-        
+
         deliver(mailOptions, callback);
     }
-    
+
     function onChangeEmail(options, callback) {
         var templateOptions = {
             email: options.email,
@@ -55,28 +55,28 @@ var MailerModule = function () {
             subject: "Change Email",
             html: _.template(fs.readFileSync('public/templates/mailer/changeEmail.html', "utf8"), templateOptions)
         };
-        
+
         console.log(templateOptions);
-        
+
         deliver(mailOptions, callback);
     }
-    
+
     function onConfirmChangeEmail(options, callback) {
         var templateOptions;
         var mailOptions;
-        
+
         templateOptions = {
             email: options.email,
             url: process.env.HOST + 'changeEmail/confirm/' + options.confirmToken
         };
-        
+
         mailOptions = {
             from: FROM,
             to: options.email,
             subject: "Confirm Email",
             html: _.template(fs.readFileSync('public/templates/mailer/confirmChangeEmail.html', "utf8"), templateOptions)
         };
-        
+
         deliver(mailOptions, callback);
     }
 
@@ -84,7 +84,7 @@ var MailerModule = function () {
         var user = process.env.mailerUserName;
         var pass = process.env.mailerPassword;
         var service = process.env.mailerService;
-        
+
         var smtpTransport = nodemailer.createTransport({
             service: service,
             auth: {
@@ -92,11 +92,11 @@ var MailerModule = function () {
                 pass: pass
             }
         });
-        
+
         if (process.env.NODE_ENV === 'development') {
             console.log(service, user, pass);
         }
-        
+
         smtpTransport.sendMail(mailOptions, function (err, responseResult) {
             if (err) {
                 console.log(err);
@@ -112,32 +112,32 @@ var MailerModule = function () {
         });
     }
 
-    this.onForgotPassword = function(options, callback) {
-            var templateOptions;
-            var mailOptions;
-
-            templateOptions = {
-                url: process.env.HOST + '/#resetPassword/' + options.forgot_token
-            };
-
-            mailOptions = {
-                from: FROM,
-                to: options.email,
-                subject: 'Forgot password',
-                generateTextFromHTML: true,
-                html: _.template(fs.readFileSync('public/templates/mailer/forgotPassword.html', "utf8"))(templateOptions)
-            };
-
-            deliver(mailOptions,callback);
-
-    };
-
-    this.onUserInvite = function(options, callback) {
+    this.onForgotPassword = function (options, callback) {
         var templateOptions;
         var mailOptions;
 
         templateOptions = {
-            url: process.env.HOST + '/#login/'+options.resetToken
+            url: process.env.HOST + '/#resetPassword/' + options.forgot_token
+        };
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,
+            subject: 'Forgot password',
+            generateTextFromHTML: true,
+            html: _.template(fs.readFileSync('public/templates/mailer/forgotPassword.html', "utf8"))(templateOptions)
+        };
+
+        deliver(mailOptions, callback);
+
+    };
+
+    this.onUserInvite = function (options, callback) {
+        var templateOptions;
+        var mailOptions;
+
+        templateOptions = {
+            url: process.env.HOST + '/#login/' + options.resetToken
         };
 
         mailOptions = {
@@ -148,7 +148,7 @@ var MailerModule = function () {
             html: _.template(fs.readFileSync('public/templates/mailer/inviteUser.html', "utf8"))(templateOptions)
         };
 
-        deliver(mailOptions,callback);
+        deliver(mailOptions, callback);
 
     };
 
@@ -157,10 +157,10 @@ var MailerModule = function () {
         var mailOptions;
 
         templateOptions = {
-            email     : options.email,
-            emailText : options.text,
-            name      : options.name,
-            company   : options.company
+            email: options.email,
+            emailText: options.text,
+            name: options.name,
+            company: options.company
         };
 
         mailOptions = {
@@ -171,7 +171,7 @@ var MailerModule = function () {
             html: _.template(fs.readFileSync('public/templates/mailer/helpMe.html', "utf8"))(templateOptions)
         };
 
-        deliver(mailOptions,callback);
+        deliver(mailOptions, callback);
 
     };
 
@@ -186,7 +186,7 @@ var MailerModule = function () {
         var template = options.template;
 
         templateOptions = {
-            email     : dstUser.email,
+            email: dstUser.email,
             srcUserName: srcUser.profile.last_name,
             dstUserName: dstUser.profile.last_name,
             companyName: company.name,
@@ -202,7 +202,7 @@ var MailerModule = function () {
             html: _.template(fs.readFileSync('public/templates/mailer/sendToSignature.html', "utf8"))(templateOptions)
         };
 
-        deliver(mailOptions,callback);
+        deliver(mailOptions, callback);
     };
 
     this.onSignUp = function (options, callback) {
@@ -211,8 +211,39 @@ var MailerModule = function () {
         mailOptions = {
             from: FROM,
             to: options.email,
-            subject: "Your request was accepted",
+            subject: "We get your requst",
             html: _.template(fs.readFileSync('public/templates/mailer/sendSignUpAccept.html', "utf8"))()
+        };
+
+        deliver(mailOptions, callback);
+    };
+
+    this.onAcceptUser = function (options, callback) {
+        var mailOptions;
+        var templateOptions;
+
+        templateOptions = {
+            url: process.env.HOST + '/#login/' + options.forgot_token
+        };
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,
+            subject: "Your request was accepted",
+            html: _.template(fs.readFileSync('public/templates/mailer/sendAcceptUser.html', "utf8"))(templateOptions)
+        };
+
+        deliver(mailOptions, callback);
+    };
+
+    this.onRejectUser = function (options, callback) {
+        var mailOptions;
+
+        mailOptions = {
+            from: FROM,
+            to: options.email,
+            subject: "Your request was rejected",
+            html: _.template(fs.readFileSync('public/templates/mailer/sendRejectUser.html', "utf8"))()
         };
 
         deliver(mailOptions, callback);

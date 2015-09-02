@@ -278,7 +278,7 @@ var UsersHandler = function (PostGre) {
         var email = options.email;
         //var password = options.password;
         var company = options.company;
-        var confirmToken;
+        var forgotToken;
         var userData;
         var status = STATUSES.NOT_CONFIRMED;
 
@@ -315,12 +315,12 @@ var UsersHandler = function (PostGre) {
 
             //create a new user:
             function (cb) {
-                confirmToken = tokenGenerator.generate();
+                forgotToken = tokenGenerator.generate();
                 userData = {
                     email: email,
                     status: status,
                     //password: getEncryptedPass(password),
-                    confirm_token: confirmToken
+                    forgot_token: forgotToken
                 };
 
                 UserModel.upsert(userData, function (err, userModel) {
@@ -404,40 +404,86 @@ var UsersHandler = function (PostGre) {
 
     this.acceptUser = function (req, res, next) {
         var userId = req.params.id;
-        var status = STATUSES.CREATED;
         var criteria = {
             id: userId,
-            status: status
+            status: STATUSES.NOT_CONFIRMED
+        };
+        var saveData = {
+            status: STATUSES.CREATED
         };
 
         UserModel
-            .forge(criteria)
-            .save({patch: true})
-            .exec(function (err, userModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send({success: 'User requst was accepted', model: userModel});
-            });
+            .find(criteria, {require: true})
+            .then(function (userModel) {
+                userModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, updatedUserModel) {
+                        var mailerOptions;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        mailerOptions = {
+                            email: updatedUserModel.get('email'),
+                            forgot_token: updatedUserModel.get('forgot_token')
+                        };
+
+                        mailer.onAcceptUser(mailerOptions, function (err, response) {
+                            if (err) {
+                                return next(err);
+                            }
+                            res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
+                        });
+
+                    });
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                return next(badRequests.NotFound());
+            })
+            .catch(next)
     };
 
     this.rejectUser = function (req, res, next) {
         var userId = req.params.id;
-        var status = STATUSES.DELETED;
         var criteria = {
             id: userId,
-            status: status
+            status: STATUSES.NOT_CONFIRMED
+        };
+        var saveData = {
+            status: STATUSES.DELETED
         };
 
         UserModel
-            .forge(criteria)
-            .save({patch: true})
-            .exec(function (err, userModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send({success: 'User request was rejected'});
-            });
+            .find(criteria, {require: true})
+            .then(function (userModel) {
+                userModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, updatedUserModel) {
+                        var mailerOptions;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        mailerOptions = {
+                            email: updatedUserModel.get('email')
+                        };
+
+                        mailer.onRejectUser(mailerOptions, function (err, response) {
+                            if (err) {
+                                return next(err);
+                            }
+                            res.status(200).send({success: 'User request was rejected'});
+                        });
+
+                    });
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                return next(badRequests.NotFound());
+            })
+            .catch(next);
+
     };
 
     this.signIn = function (req, res, next) {
