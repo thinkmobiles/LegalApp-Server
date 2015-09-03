@@ -199,21 +199,6 @@ a {
     }
   }
 }
-#signUpDiv {
-  width: 600px;
-  height: 300px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-top: -200px;
-  margin-left: -300px;
-  padding: 20px;
-  border: 4px double black;
-  text-align: center;
-}
-#signUpDiv input {
-  margin: 10px 10px;
-}
 #addUserForm {
   border: 1px solid black;
   height: 200px;
@@ -246,6 +231,40 @@ a {
     margin-top: 40px;
   }
 }
+#signUpDiv{
+  margin: -245px 0 0 -400px;
+  height: 490px;
+  width: 800px;
+  .form-body{
+    padding: 25px 26px;
+    div{
+      overflow: hidden;
+      &.left{
+        float: left;
+      }
+      &.right{
+        float: right;
+      }
+      &.form-field{
+        width: 360px;
+        margin-bottom: 7px;
+        input:first-child{
+          margin-bottom: 31px;
+        }
+      }
+      &:first-child{
+        margin-bottom: 0px;
+      }
+      .remember_check{
+        float: left;
+      }
+      #signupButton{
+        float: right;
+        margin-top: 23px;
+      }
+    }
+  }
+}
 .welcome-pages {
   position: absolute;
   left: 50%;
@@ -254,6 +273,18 @@ a {
   a{
     display: block;
     text-align: center;
+    &.termsLink{
+      margin: 1px 0 0 128px;
+      .font-oss;
+      font-size: 14px;
+      line-height: 24px;
+      color: #e31937;
+      text-decoration: none;
+      text-align: left;
+    }
+    &:hover{
+      text-decoration: underline;
+    }
   }
   .welcome-form {
     margin-top: 65px;
@@ -286,7 +317,9 @@ a {
           margin-bottom: 45px;
         }
         input[type="email"],
-        input[type="password"]{
+        input[type="password"],
+        input[type="text"],
+        input[type="email"]{
           width: 331px;
           background-color: rgb(234, 234, 234);
           border: 1px solid rgb(234, 234, 234);
