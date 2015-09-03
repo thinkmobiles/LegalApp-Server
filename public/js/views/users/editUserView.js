@@ -12,7 +12,11 @@ define([
     View = Backbone.View.extend({
 
         initialize: function (options) {
+            //var usId = options.userId;
+            //this.userCollection = options.userColl;
+
             this.userModel = options.userModel;
+            //this.userModel = this.userCollection.get(usId);
 
             this.listenTo(this.userModel, 'change:sign_image', this.showOurSign);
 
@@ -64,6 +68,7 @@ define([
             var signInfo = container.find('#signInfo');
             var signBox = container.find('#signBox');
 
+            signInfo.find('img').switchClass('trueSignState', 'falseSignState');
             signInfo.show();
             signBox.html('');
             this.userModel.set('sign_image', null);
@@ -107,21 +112,22 @@ define([
             var profile;
 
             profile = {
-                first_name  : firstName,
+                first_name     : firstName,
                 last_name      : lastName,
                 permissions    : permissions,
                 sign_authority : signing
             };
 
             var updateData = {
-                profile : profile
+                profile    : profile,
+                sign_image : self.userModel.get('sign_image')
             };
 
             if (status_ch){
                 updateData.status = status.val();
             }
 
-            this.userModel.save(updateData, {
+            this.userModel.save(updateData,{
                 wait: true,
                 success: function () {
                     self.changeDataInRow();
@@ -131,7 +137,19 @@ define([
                     alert('Error'); // todo message
                     //self.errorNotification(xhr);
                 }
-            })
+            });
+
+            //this.userCollection.set(this.userModel,{
+            //    remove : false,
+            //    success: function () {
+            //        self.changeDataInRow();
+            //        self.remove();
+            //    },
+            //    error  : function(model, xhr){
+            //        alert('Error'); // todo message
+            //        //self.errorNotification(xhr);
+            //    }
+            //});
         },
 
         render: function () {

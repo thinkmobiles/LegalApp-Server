@@ -374,8 +374,7 @@ var UsersHandler = function (PostGre, io) {
                 };
 
                 SecretKeyModel
-                    .save(saveSecretKeyData, {patch: true})
-                    .exec(function (err, secretKeyModel) {
+                    .upsert(saveSecretKeyData, function (err, secretKeyModel) {
                         if (err) {
                             return cb(err);
                         }
@@ -398,7 +397,7 @@ var UsersHandler = function (PostGre, io) {
             //mailer.onSendConfirm(mailerOptions);
             mailer.onSignUp(mailerOptions);
 
-            io.emit('signUp', userModel);
+            io.emit('newUser', userModel);
 
             res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
@@ -440,7 +439,7 @@ var UsersHandler = function (PostGre, io) {
                             if (err) {
                                 return next(err);
                             }
-                            io.emit('accept', updatedUserModel);
+                            io.emit('acceptUser', updatedUserModel);
 
                             res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
                         });
@@ -487,7 +486,7 @@ var UsersHandler = function (PostGre, io) {
                             if (err) {
                                 return next(err);
                             }
-                            io.emit('reject', updatedUserModel);
+                            io.emit('rejectUser', updatedUserModel);
 
                             res.status(200).send({success: 'User request was rejected'});
                         });

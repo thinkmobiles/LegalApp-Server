@@ -184,8 +184,9 @@ a {
           filter: grayscale(1);
           margin: 14px 0 6px;
         }
-        &:hover{
-          color: #e31937;
+        &:hover,
+        &.active{
+          color: #e31937 !important;
           img {
             -webkit-filter: grayscale(0);
             filter: grayscale(0);
@@ -346,16 +347,23 @@ a {
           width: 150px;
         }
       }
-      .link{
+      .links{
         margin-top: 51px;
-        display: block;
         text-align: center;
-        .font-osr;
-        font-size: 14px;
-        color: #909090;
-        text-decoration: none;
-        &:hover {
-          color: #e31937;
+        padding-bottom: 14px;
+        a{
+          .font-osr;
+          font-size: 14px;
+          display: block;
+          color: #909090;
+          float: right;
+          text-decoration: none;
+          &:first-child{
+            float: left;
+          }
+          &:hover {
+            color: #e31937;
+          }
         }
       }
       .hideRow{
