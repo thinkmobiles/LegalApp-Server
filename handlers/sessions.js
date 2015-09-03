@@ -76,6 +76,24 @@ var Session = function (postGre) {
         }
     };
 
+    this.authenticatedAdminsEditors = function (req, res, next) {
+        var availablePermissions = [
+            PERMISSIONS.SUPER_ADMIN,
+            PERMISSIONS.ADMIN,
+            PERMISSIONS.EDITOR
+        ];
+        var permissions = req.session.permissions;
+
+        if (req.session && req.session.userId && req.session.loggedIn && (availablePermissions.indexOf(permissions) !== -1)) {
+            if (!req.session.rememberMe) {
+                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+            }
+            next();
+        } else {
+            next(badRequests.AccessError());
+        }
+    };
+
     this.isAuthenticatedUser = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn) {
             res.status(200).send({success: true, exp: req.session.cookie.expires});
