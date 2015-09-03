@@ -30,4 +30,6 @@ node_modules
 migrations\node_modules
 LegalApp-Server.iml
 
+.idea
+
 
