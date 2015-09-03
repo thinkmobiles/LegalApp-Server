@@ -7,13 +7,11 @@
     <th class="sortableData" data-sort="company">COMPANY</th>
     <th class="sortableData" data-sort="role">ROLE</th>
     <th>DESCRIPTION</th>
+    <th class="sortableData" data-sort="status">Status</th>
     <th></th>
 </tr>
 </thead>
 <tbody id="listTable">
-<tr>
-    <div></div>
-</tr>
 
 <% usrLst.forEach(function(user){%>
 
@@ -27,6 +25,11 @@
     </td>
     <td>
         <%if (user.permissions === 3){%>Can view but not edit<%}%>
+    </td>
+    <td>
+        <%if (user.status === -1){%>Pending<%}%>
+        <%if (user.status === 0){%>Deleted<%}%>
+        <%if (user.status === 1){%>Active<%}%>
     </td>
     <td>
         <% if (pending === true) {%>
