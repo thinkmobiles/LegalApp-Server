@@ -5,11 +5,16 @@ var socketEvents = function (io) {
 
     io.on('connection', function( socket ) {
         console.log('>>>user connected to socket');
-        /*socket.on('signUp', function(data){
-            console.log('===event signUp===get from UI ='+data);
-        })*/
 
+        socket.on('authorize', function (data) {
+            console.log('>>> authorize');
+            console.log(data);
+        });
+
+        //socket.emit('newUser', {user: 'foo'});
     });
+
+
 };
 
 module.exports = socketEvents;
