@@ -28,7 +28,6 @@ define([
         setDefaultData: function () {
             var defaultData = {
                 email             : '',
-                password          : '',
                 firstName         : '',
                 lastName          : '',
                 iAcceptConditions : false,
@@ -55,8 +54,6 @@ define([
             var email  = thisEl.find("#signupEmail").val().trim();
             var firstName = thisEl.find("#signupFName").val().trim();
             var lastName  = thisEl.find("#signupLName").val().trim();
-            var password  = thisEl.find("#signupPass").val().trim();
-            var confPassword = thisEl.find("#signupConfPass").val().trim();
             var company = thisEl.find("#signupCompany").val().trim();
             var iAcceptConditions = thisEl.find("#iAgree").prop('checked');
 
@@ -66,7 +63,6 @@ define([
                 email         : email,
                 firstName     : firstName,
                 lastName      : lastName,
-                password      : password,
                 company       : company,
                 iAcceptConditions: iAcceptConditions
             };
@@ -78,14 +74,12 @@ define([
                 type : "POST",
                 data : {
                     email         : stateModelUpdate.email,
-                    password      : stateModelUpdate.password,
                     first_name    : stateModelUpdate.firstName,
                     last_name     : stateModelUpdate.lastName,
                     company       : stateModelUpdate.company
                 },
                 success: function () {
                     self.stateModel.set({
-                        password      : '',
                         email         : '',
                         firstName     : '',
                         lastName      : '',
@@ -96,11 +90,10 @@ define([
                     App.router.navigate("confirmEmail", {trigger: true});
                 },
                 error: function (err) {
-                    //App.error(err);
-                    self.stateModel.set({
-                        errors     : [err.responseJSON.error],
-                        password   : null
-                    });
+                    alert('Error');
+                    //self.stateModel.set({
+                    //    errors     : [err.responseJSON.error],
+                    //});
 
                 }
             });
