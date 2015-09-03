@@ -116,8 +116,10 @@ define([
             container.html(count);
 
             if (count) {
+                container.removeClass('hide');
                 container.addClass('show');
             } else {
+                container.removeClass('show');
                 container.addClass('hide');
             }
         },

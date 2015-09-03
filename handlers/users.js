@@ -1090,6 +1090,7 @@ var UsersHandler = function (PostGre) {
     this.searchUsers = function (req, res, next) {
         var companyId = req.session.companyId;
         var params = req.query;
+        var permissions = req.session.permissions;
         var searchTerm = params.value;
         var status = params.status;
         var signAuthority = params.signAuthority;
@@ -1139,7 +1140,9 @@ var UsersHandler = function (PostGre) {
                 this.where('status', '<>', STATUSES.DELETED);
             }
 
-            this.where(TABLES.COMPANIES + '.id', companyId);
+            if (!session.isAdmin(req)) {
+                this.where(TABLES.COMPANIES + '.id', companyId);
+            }
 
             if (searchTerm) {
                 searchTerm = searchTerm.toLowerCase();
@@ -1162,32 +1165,9 @@ var UsersHandler = function (PostGre) {
             .limit(limit)
             .orderBy(orderBy, order)
             .exec(function (err, rows) {
-                var users = [];
-
                 if (err) {
                     return next(err);
                 }
-
-                console.log(rows);
-
-                /*rows.forEach(function (row) {
-                 var userData = {
-                 id: row.id,
-                 email: row.email,
-                 profile: {
-                 first_name: row.first_name,
-                 last_name: row.last_name,
-                 phone: row.phone
-                 },
-                 company: {
-                 id: row.company_id,
-                 name: row.company_name
-                 }
-                 };
-
-                 users.push(userData)
-                 });*/
-
                 res.status(200).send(rows);
             });
     };
