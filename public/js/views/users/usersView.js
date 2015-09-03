@@ -131,6 +131,7 @@ define([
                 editableUser = this.clientsCollection.get(userID);
             }
 
+            editableUser.currentState = theState;
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.renderTrigger, this);
             //this.$el.find('#addUserContainer').html(this.addView.el);

@@ -21,7 +21,6 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        //id          : "addItemLeft",
         className   : "addItemLeft",
 
         initialize: function () {

@@ -5,8 +5,9 @@
 define([
     'text!templates/menu/topBarTemplate.html',
     'text!templates/menu/leftBarTemplate.html',
-    'views/menu/iWantToView'
-], function (TopTemplate, LeftTemplate, WantView) {
+    'views/menu/iWantToView',
+    'views/menu/contactUsView'
+], function (TopTemplate, LeftTemplate, WantView, ContactView) {
 
     var View;
     View = Backbone.View.extend({
@@ -17,7 +18,8 @@ define([
             'click #buttonLogout'   : 'logout',
             'click #profileTop'     : 'showPofile',
             'click #middleTopBar'   : 'showWantForm',
-            'click #leftTopBar'     : 'showWantForm'
+            'click #leftTopBar'     : 'showContactUsForm'
+            //'click #leftMenu'       : 'makeActiveItem'
         },
 
         initialize: function () {
@@ -34,20 +36,37 @@ define([
             this.iWantView = new WantView();
         },
 
+        showContactUsForm : function(){
+            if (this.contactUsView){
+                this.contactUsView.undelegateEvents();
+            }
+
+            this.contactUsView = new ContactView();
+        },
+
+        //makeActiveItem: function(event) {
+        //    //event.preventDefault();
+        //
+        //    var target = $(event.target);
+        //
+        //    target.closest('.sidebar-menu').find('.active').removeClass('active');
+        //    target.closest('.navBut').addClass('active');
+        //},
+
         getAvatar : function (){
             var image = this.$el.find('#topBarLogo');
 
-            if (App.sessionData.get('authorized')) {
-                $.ajax({
-                    url: "/getAvatar",
-                    type: "GET",
+                if (App.sessionData.get('authorized')) {
+                    $.ajax({
+                        url: "/getAvatar",
+                        type: "GET",
 
-                    success: function (res) {
-                        image.attr('src', res)
-                    }
-                });
-            }
-        },
+                        success: function (res) {
+                            image.attr('src', res)
+                        }
+                    });
+                }
+            },
 
         logout: function () {
             $.ajax({

@@ -26,15 +26,6 @@ define([
 
         },
 
-        //changeStatus: function(event){
-        //    var theId = $(event.target).data('id');
-        //    this.updateUser(theId);
-        //},
-
-        //saveUser: function(){
-        //    this.updateUser();
-        //},
-
         showOurSign: function(){
             var sign = this.userModel.get('sign_image');
 
@@ -59,7 +50,7 @@ define([
                     success  : function (response){
                         var result = response.signImage;
                         signInfo.hide();
-                        signBox.html('<img id="currentSign" w src="'+result+'">');
+                        signBox.html('<img id="currentSign" src="'+result+'">');
                     },
                     error    : function(){
                         alert('Error');
@@ -78,33 +69,8 @@ define([
             this.userModel.set('sign_image', null);
         },
 
-        //signatureLoad: function (callback) {
-        //    var inputFile = this.$el.find('#inputImg');
-        //
-        //    inputFile.on('change', function (event) {
-        //        event.preventDefault();
-        //
-        //        var file = inputFile[0].files[0];
-        //        var filesExt = 'jpg';
-        //        var parts = inputFile.val().split('.');
-        //
-        //        if (filesExt === parts[parts.length - 1]) {
-        //            var fr = new FileReader();
-        //            fr.onload = function () {
-        //             var result =fr.result;
-        //             callback(result);
-        //             };
-        //            fr.readAsDataURL(file);
-        //
-        //        } else {
-        //            alert('Invalid file type!');
-        //        }
-        //    });
-        //},
-
         changeDataInRow: function(){
             var rowTarget = $('.activeRow');
-            var editableRow = rowTarget.find('td');
             var profileInfo = this.userModel.get('profile');
             var fName = profileInfo.first_name;
             var lName = profileInfo.last_name;
@@ -120,10 +86,10 @@ define([
                 default : permVal = 'Viewer';
             }
 
-            editableRow.eq(0).text(fName+' '+lName);
-            editableRow.eq(1).text(permVal);
-            editableRow.eq(2).find('input').prop('checked',signAuth);
-            editableRow.eq(3).text((permission === 3) ? 'Can view but not edit' : '');
+            rowTarget.find('.rName').text(fName+' '+lName);
+            rowTarget.find('.rRole').text(permVal);
+            rowTarget.find('.rCheck>input').prop('checked',signAuth);
+            rowTarget.find('.rDisk').text((permission === 3) ? 'Can view but not edit' : '');
 
             rowTarget.removeClass('activeRow');
             this.remove()
@@ -134,7 +100,6 @@ define([
             var thisEL = this.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
-            //var phone = thisEL.find('#editPhone').val().trim();
             var permissions = thisEL.find("#editRole option:selected").data('id');
             var signing = thisEL.find('#editSign').prop('checked');
             var status = thisEL.find('#editStatus');
@@ -144,7 +109,6 @@ define([
             profile = {
                 first_name  : firstName,
                 last_name      : lastName,
-                //phone          : phone,
                 permissions    : permissions,
                 sign_authority : signing
             };
@@ -160,8 +124,6 @@ define([
             this.userModel.save(updateData, {
                 wait: true,
                 success: function () {
-                    //editableRow = $('.activeRow');
-                    //self.trigger('redirectList');
                     self.changeDataInRow();
                     self.remove();
                 },
@@ -184,7 +146,6 @@ define([
             custom.signatureLoad(this, function(resultSignature){
                 self.userModel.set('sign_image', resultSignature);
             });
-            //custom.canvasDraw(null, this);
 
             return this;
         }

@@ -1,0 +1,13 @@
+<div id="topInfo">
+    <p>You have not permission to sign this document. Select person you want to sign</p>
+</div>
+<div id="signersContainer">
+    <ul>
+        <%someList.forEach(function(signer){%>
+        <li class="signItem" data-id="" id="<%= signer.id%>">
+            <input type="radio" name="signItem" value="<%= signer.first_name+' '+signer.last_name%>">
+        </li>
+        <%})%>
+    </ul>
+</div>
+<input type="button" id="reAsignBtn" value="Select and send">
