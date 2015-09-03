@@ -441,15 +441,11 @@ var UsersHandler = function (PostGre) {
                             forgot_token: updatedUserModel.get('forgot_token')
                         };
 
-                        mailer.onAcceptUser(mailerOptions, function (err, response) {
-                            if (err) {
-                                return next(err);
-                            }
-                            io.emit('acceptUser', updatedUserModel);
+                        mailer.onAcceptUser(mailerOptions);
 
-                            res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
-                        });
+                        io.emit('acceptUser', updatedUserModel);
 
+                        res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
                     });
             })
             .catch(UserModel.NotFoundError, function (err) {
@@ -490,15 +486,11 @@ var UsersHandler = function (PostGre) {
                             email: updatedUserModel.get('email')
                         };
 
-                        mailer.onRejectUser(mailerOptions, function (err, response) {
-                            if (err) {
-                                return next(err);
-                            }
-                            io.emit('rejectUser', updatedUserModel);
+                        mailer.onRejectUser(mailerOptions);
 
-                            res.status(200).send({success: 'User request was rejected'});
-                        });
+                        io.emit('rejectUser', updatedUserModel);
 
+                        res.status(200).send({success: 'User request was rejected'});
                     });
             })
             .catch(UserModel.NotFoundError, function (err) {
