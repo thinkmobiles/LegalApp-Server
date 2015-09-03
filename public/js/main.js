@@ -11,7 +11,7 @@ require.config({
         Underscore      : './libs/underscore/underscore',
         Backbone        : './libs/backbone/backbone',
         less            : './libs/less/dist/less',
-        socketio        : './socket.io/socket.io',
+        socketio        : '/socket.io/socket.io',
         views           : './views',
         models          : './models',
         collections     : './collections',
@@ -45,12 +45,20 @@ require(['app', 'socketio'], function(app, io){
         }
     };
 
-    console.log(io);
+    var socket = io.connect(
+        {
+            transports: ['websocket']/*,
+         cookie: 'FlipStar',
+         query: 'userId=testUser'*/
+        }
+    );
 
-    var socket = io.connect();
+    socket.emit('authorize',{userId: 1, permissions: 1}, function (err, res) {
+    });
 
     socket.on('newUser', function (user) {
         console.log('>>> newUser', user);
+        App.trigger('newUser', user);
     });
 
     app.initialize();
