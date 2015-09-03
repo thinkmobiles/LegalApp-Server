@@ -376,7 +376,9 @@ var UsersHandler = function (PostGre) {
                 };
 
                 SecretKeyModel
-                    .upsert(saveSecretKeyData, function (err, secretKeyModel) {
+                    .forge(saveSecretKeyData)
+                    .save()
+                    .exec(function (err, secretKeyModel) {
                         if (err) {
                             return cb(err);
                         }
