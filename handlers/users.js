@@ -21,7 +21,7 @@ var CompaniesHandler = require('../handlers/companies');
 var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
-var UsersHandler = function (PostGre, io) {
+var UsersHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
@@ -274,6 +274,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.signUp = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var options = req.body;
         var email = options.email;
         //var password = options.password;
@@ -405,6 +407,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.acceptUser = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var userId = req.params.id;
         var criteria = {
             id: userId,
@@ -453,6 +457,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.rejectUser = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var userId = req.params.id;
         var criteria = {
             id: userId,
