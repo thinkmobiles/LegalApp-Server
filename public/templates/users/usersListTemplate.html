@@ -17,19 +17,19 @@
 <% usrLst.forEach(function(user){%>
 
 <tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
-    <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+    <td class="rName"><%= user.profile.first_name%> <%= user.profile.last_name%></td>
     <% if (!state && user.company[0]) {%>
-        <td><%= user.company[0].name%></td>
+        <td class="rComp"><%= user.company[0].name%></td>
     <%}%>
-    <td>
+    <td class="rRole">
         <%if (user.profile.permissions === 3){%>Viewer<%}%>
         <%if (user.profile.permissions === 2){%>Editor<%}%>
         <%if (user.profile.permissions === 1){%>Admin<%}%>
     </td>
-    <td class="withCheck">
+    <td class="rCheck">
         <input type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled>
     </td>
-    <td>
+    <td class="rDisk">
         <%if (user.profile.permissions === 3){%>Can view but not edit<%}%>
     </td>
 </tr>
