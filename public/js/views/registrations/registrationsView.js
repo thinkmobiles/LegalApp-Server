@@ -10,6 +10,7 @@ define([
     var View;
 
     View = Backbone.View.extend({
+
         template: _.template(RegistrationsTemplate),
         userListTemplate: _.template(UserListTemplate),
 
@@ -38,10 +39,11 @@ define([
         renderPendingUsers: function (data) {
             var users = data.toJSON();
             var pendingContainer = this.$el.find('.pending');
-
             if (users) {
                 this.pendingCollection = new UsersCollection(data.models);
             }
+
+            App.Badge.set('pendingUsers', users.length);
 
             pendingContainer.html(this.userListTemplate({usrLst: users, pending: true}));
 

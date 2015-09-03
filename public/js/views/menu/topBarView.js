@@ -21,8 +21,11 @@ define([
         },
 
         initialize: function () {
+            //this.initializeBadges();
+
             this.listenTo(App.sessionData, 'change:authorized', this.render);
             this.listenTo(App.sessionData, 'change:user', this.render);
+            this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
         },
 
         showWantForm : function(){
@@ -84,8 +87,35 @@ define([
             $('#leftMenu').html(_.template(LeftTemplate));
 
             this.getAvatar();
+            this.initializeBadges();
+            //this.updatePendingUsersBadge();
 
             return this;
+        },
+
+        updatePendingUsersBadge: function () {
+            console.log('>>> update badge');
+            var count = App.Badge.attributes.pendingUsers;
+            var container = $('.registrationsBadge');
+
+            if (count) {
+                container.addClass('show');
+            } else {
+                container.addClass('hide');
+            }
+        },
+
+        initializeBadges: function () {
+            $.ajax({
+                url: "/users/search",
+                type: "GET",
+                data: {
+                    status: -1
+                },
+                success: function (pendingUsers) {
+                    App.Badge.set('pendingUsers', pendingUsers.length);
+                }
+            });
         }
     });
     return View;

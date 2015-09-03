@@ -18,7 +18,10 @@ define([
             company     : null
         });
 
-        App.templateInfo = new Backbone.Model();
+        App.Badge = new Backbone.Model({
+            pendingUsers:  0,
+            notifications: 0
+        });
 
         appRouter = new Router();
         App.router = appRouter;
