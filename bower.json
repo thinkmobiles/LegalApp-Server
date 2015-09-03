@@ -15,12 +15,12 @@
     "tests"
   ],
   "dependencies": {
-    "backbone": "~1.2.1",
-    "jquery": "~2.1.4",
-    "jqueryui": "~1.11.4",
-    "text": "~2.0.14",
-    "requirejs": "~2.1.18",
-    "underscore": "~1.8.3",
-    "less": "~2.5.1"
+    "backbone": "1.2.1",
+    "jquery": "2.1.4",
+    "jqueryui": "1.11.4",
+    "text": "2.0.14",
+    "requirejs": "2.1.18",
+    "underscore": "1.8.3",
+    "less": "2.5.1"
   }
 }

@@ -11,6 +11,7 @@ require.config({
         Underscore      : './libs/underscore/underscore',
         Backbone        : './libs/backbone/backbone',
         less            : './libs/less/dist/less',
+        socketio        : './socket.io/socket.io',
         views           : './views',
         models          : './models',
         collections     : './collections',
@@ -24,7 +25,7 @@ require.config({
     }
 });
 
-require(['app'], function(app){
+require(['app', 'socketio'], function(app, io){
 
     Backbone.View.prototype.errorNotification = function (xhr) {
         if (xhr) {
@@ -43,6 +44,14 @@ require(['app'], function(app){
             }
         }
     };
+
+    console.log(io);
+
+    var socket = io.connect();
+
+    socket.on('newUser', function (user) {
+        console.log('>>> newUser', user);
+    });
 
     app.initialize();
 });

@@ -136,6 +136,8 @@ define([
                 success: function () {
                     alert('success');
                     //self.pendingCollection.remove(userId);
+                    self.pendingCollection.remove(userId);
+                    self.confirmedCollection.add(userModel);
                 },
                 error: function (response, xhr) {
                     //self.errorNotification(err);
