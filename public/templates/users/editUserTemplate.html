@@ -31,12 +31,12 @@
     <div id="signInfo">
         <%if (usrMdl.profile.has_sign_image){%>
             <img class="trueSignState" src="ddd">
-            <button>Replace signature</button>
+            <label for="inputImg">Replace signature</label>
         <%} else {%>
             <img class="falseSignState" src="ddd">
-            <button>Upload signature</button>
+            <label for="inputImg">Upload signature</label>
         <%}%>
     </div>
     <div id="signBox"></div>
-    <input type="file" value="Edit" id="inputImg" accept="image/*">
+    <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
 </div>
