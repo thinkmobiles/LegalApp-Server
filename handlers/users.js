@@ -21,7 +21,7 @@ var CompaniesHandler = require('../handlers/companies');
 var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
-var UsersHandler = function (PostGre, io) {
+var UsersHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
@@ -274,6 +274,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.signUp = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var options = req.body;
         var email = options.email;
         //var password = options.password;
@@ -374,7 +376,8 @@ var UsersHandler = function (PostGre, io) {
                 };
 
                 SecretKeyModel
-                    .save(saveSecretKeyData, {patch: true})
+                    .forge(saveSecretKeyData)
+                    .save()
                     .exec(function (err, secretKeyModel) {
                         if (err) {
                             return cb(err);
@@ -398,7 +401,7 @@ var UsersHandler = function (PostGre, io) {
             //mailer.onSendConfirm(mailerOptions);
             mailer.onSignUp(mailerOptions);
 
-            io.emit('signUp', userModel);
+            io.emit('newUser', userModel);
 
             res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
@@ -406,6 +409,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.acceptUser = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var userId = req.params.id;
         var criteria = {
             id: userId,
@@ -440,7 +445,7 @@ var UsersHandler = function (PostGre, io) {
                             if (err) {
                                 return next(err);
                             }
-                            io.emit('accept', updatedUserModel);
+                            io.emit('acceptUser', updatedUserModel);
 
                             res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
                         });
@@ -454,6 +459,8 @@ var UsersHandler = function (PostGre, io) {
     };
 
     this.rejectUser = function (req, res, next) {
+        var app = req.app;
+        var io = app.get('io');
         var userId = req.params.id;
         var criteria = {
             id: userId,
@@ -487,7 +494,7 @@ var UsersHandler = function (PostGre, io) {
                             if (err) {
                                 return next(err);
                             }
-                            io.emit('reject', updatedUserModel);
+                            io.emit('rejectUser', updatedUserModel);
 
                             res.status(200).send({success: 'User request was rejected'});
                         });

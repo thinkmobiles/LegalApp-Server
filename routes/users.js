@@ -7,8 +7,7 @@ var SessionHandler = require('../handlers/sessions');
 
 module.exports = function (app) {
     var PostGre = app.get('PostGre');
-    var io = app.get('io');
-    var users = new UserHandler(PostGre, io);
+    var users = new UserHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
     router.get('/', session.authenticatedUser, users.getUsers);
