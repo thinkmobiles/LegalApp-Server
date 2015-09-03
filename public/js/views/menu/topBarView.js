@@ -23,8 +23,6 @@ define([
         },
 
         initialize: function () {
-            //this.initializeBadges();
-
             this.listenTo(App.sessionData, 'change:authorized', this.render);
             this.listenTo(App.sessionData, 'change:user', this.render);
             this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
@@ -107,15 +105,15 @@ define([
 
             this.getAvatar();
             this.initializeBadges();
-            //this.updatePendingUsersBadge();
 
             return this;
         },
 
         updatePendingUsersBadge: function () {
-            console.log('>>> update badge');
             var count = App.Badge.attributes.pendingUsers;
             var container = $('.registrationsBadge');
+
+            container.html(count);
 
             if (count) {
                 container.addClass('show');

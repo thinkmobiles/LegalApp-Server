@@ -434,15 +434,6 @@ var DocumentsHandler = function (PostGre) {
             return false;
         }
 
-        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
-
-        /*for (var i in values) {
-         var val = values[i];
-         var code = fields[i];
-
-         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
-         }*/
-
         fields.forEach(function (field) {
             var fieldName = field.name;
             var searchValue = toUnicode(field.code);
@@ -450,7 +441,8 @@ var DocumentsHandler = function (PostGre) {
 
             if (fieldName in values) {
                 replaceValue = values[fieldName];
-                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+                //replace fields in input html by values
+                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue);
             }
         });
 

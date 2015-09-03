@@ -12,14 +12,14 @@ module.exports = function (app) {
     var templates = new TemplateHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.post('/', session.authenticatedUser, multipartMiddleware, templates.createTemplate);
+    router.post('/', session.authenticatedAdminsEditors, multipartMiddleware, templates.createTemplate);
     router.get('/', session.authenticatedUser, templates.getTemplates);  //TODO: check permissions
     router.get('/:id', session.authenticatedUser, templates.getTemplate);
-    router.put('/:id', session.authenticatedUser, templates.updateTemplate); //TODO: check permissions
-    router.delete('/:id', session.authenticatedUser, templates.removeTemplate); //TODO: check permissions
+    router.put('/:id', session.authenticatedAdminsEditors, templates.updateTemplate);
+    router.delete('/:id', session.authenticatedAdminsEditors, templates.removeTemplate);
     router.get('/:id/preview', session.authenticatedUser, templates.previewTemplate);
     router.post('/:id/previewDocument', session.authenticatedUser, templates.previewDocument);
-    router.post('/docx2html', session.authenticatedUser, multipartMiddleware, templates.docx2html);
+    router.post('/docx2html', session.authenticatedEditor, multipartMiddleware, templates.docx2html);
 
     return router;
 };
