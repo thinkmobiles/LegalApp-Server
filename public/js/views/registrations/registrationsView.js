@@ -26,8 +26,11 @@ define([
             this.pendingCollection = new UsersCollection({ status: -1 });
             this.confirmedCollection = new UsersCollection({ status: 1 });
 
+            App.Collections.pendingCollection = this.pendingCollection;
+            App.Collections.confirmedCollection = this.confirmedCollection;
+
             this.pendingCollection.on('reset', this.renderPendingUsers, this);
-            this.pendingCollection.on('add', this.renderPendingUsers, this);
+            this.pendingCollection.on('add', this.addPendingUser, this);
             this.pendingCollection.on('remove', this.removePendingUser, this);
 
             this.confirmedCollection.on('reset', this.renderConfirmedUsers, this);
@@ -62,6 +65,14 @@ define([
             confirmedContainer.html(this.userListTemplate({usrLst: users, pending: false}));
 
             return this;
+        },
+
+        addPendingUser: function (userModel) {
+            var user = userModel.toJSON();
+            var tr = this.generateUserRow(user);
+            var container = this.$el.find('.pending tbody');
+
+            container.prepend(tr);
         },
 
         removePendingUser: function (userModel) {
@@ -110,9 +121,9 @@ define([
         addConfirmedUser: function (userModel) {
             var user = userModel.toJSON();
             var tr = this.generateUserRow(user);
-            var confirmedContainer = this.$el.find('.confirmed tbody');
+            var container = this.$el.find('.confirmed tbody');
 
-            confirmedContainer.prepend(tr);
+            container.prepend(tr);
         },
 
         acceptRegistration: function (event) {

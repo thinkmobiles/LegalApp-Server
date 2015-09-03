@@ -24,6 +24,8 @@ define([
             notifications: 0
         });
 
+        App.Collections = {};
+
         appRouter = new Router();
         App.router = appRouter;
 

@@ -13,6 +13,7 @@ define([
 
     events.on('newUser', function (user) {
         console.log('>>> events.newUser');
+        App.Collections.pendingCollection.add(user);
     });
 
 
