@@ -1,15 +1,22 @@
-<div id="signUpDiv">
-    <span>Get Started</span>
-</div>
-<div>
-    <input type="text" id="signupFName" placeholder="First name">
-    <input type="text" id="signupLName" placeholder="Last name">
-</div>
-<div>
-    <input type="email" id="signupEmail" placeholder="Email Address*">
-    <input type="text" id="signupCompany" placeholder="Company name">
-</div>
-    <!--<span>You agree to the<a href="#termsAndConditions" class="link">Terms of Service</a></span>-->
-    <input type="checkbox" id="iAgree"><label for="iAgree">I agree to the</label><a href="#termsAndConditions" class="link">Terms of Service</a>
-    <input type="button" id="signupButton" value="Sign Up">
+<div id="signUpDiv" class="welcome-pages">
+    <a href="#"><img src="../../images/logo.png" alt=""/></a>
+    <div class="welcome-form">
+        <h1>Get Started</h1>
+        <div class="form-body">
+            <div>
+                <div class="left form-field">
+                    <input type="text" id="signupFName" placeholder="First name">
+                    <input type="text" id="signupLName" placeholder="Last name">
+                </div>
+                <div class="right form-field">
+                    <input type="email" id="signupEmail" placeholder="Email Address*">
+                    <input type="text" id="signupCompany" placeholder="Company name">
+                </div>
+            </div>
+            <div>
+                <div class="remember_check"><input type="checkbox" id="iAgree"><label for="iAgree"><span>I agree to the</span></label><a href="#termsAndConditions" class="link termsLink">Terms of Service</a></div>
+                <input type="button" id="signupButton" value="Sign Up">
+            </div>
+        </div>
+    </div>
 </div>
