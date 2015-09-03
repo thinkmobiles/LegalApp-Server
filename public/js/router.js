@@ -38,7 +38,7 @@ define([
                 new TopMenuView();
         },
 
-        loadWrapperView: function (argName, argParams, argRedirect, argViewType) {
+        loadWrapperView: function (argName, argParams, argRedirect) {
             var self = this;
             var name = argName;
             var nameView = name+'View';
@@ -139,6 +139,7 @@ define([
         help: function(){
             this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);
         },
+
         registrations: function() {
             this.loadWrapperView('registrations', null, REDIRECT.whenNOTAuthorized);
         }

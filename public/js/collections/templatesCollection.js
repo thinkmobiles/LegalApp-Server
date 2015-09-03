@@ -16,7 +16,7 @@ define([
             this.fetch({
                 reset: true,
                 success: function(coll){
-                    console.log(coll.toJSON())
+                    //console.log(coll.toJSON())
                 }
             });
         }
