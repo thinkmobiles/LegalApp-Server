@@ -21,7 +21,7 @@ var CompaniesHandler = require('../handlers/companies');
 var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
-var UsersHandler = function (PostGre) {
+var UsersHandler = function (PostGre, io) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
@@ -226,7 +226,10 @@ var UsersHandler = function (PostGre) {
                                 if (secretKeyModel && secretKeyModel.id) {
                                     model = secretKeyModel;
                                 } else {
-                                    model = SecretKeyModel.forge({user_id: userId, secret_key: tokenGenerator.generate(20)})
+                                    model = SecretKeyModel.forge({
+                                        user_id: userId,
+                                        secret_key: tokenGenerator.generate(20)
+                                    })
                                 }
 
                                 model
@@ -273,14 +276,15 @@ var UsersHandler = function (PostGre) {
     this.signUp = function (req, res, next) {
         var options = req.body;
         var email = options.email;
-        var password = options.password;
+        //var password = options.password;
         var company = options.company;
-        var confirmToken;
+        var forgotToken;
         var userData;
+        var status = STATUSES.NOT_CONFIRMED;
 
         //validate options:
-        if (!email || !password || !company) {
-            return next(badRequests.NotEnParams({reqParams: ['email', 'password', 'company']}));
+        if (!email /*|| !password*/ || !company) {
+            return next(badRequests.NotEnParams({reqParams: ['email', /*'password',*/ 'company']}));
         }
 
         //email validation:
@@ -311,11 +315,12 @@ var UsersHandler = function (PostGre) {
 
             //create a new user:
             function (cb) {
-                confirmToken = tokenGenerator.generate();
+                forgotToken = tokenGenerator.generate();
                 userData = {
                     email: email,
-                    password: getEncryptedPass(password),
-                    confirm_token: confirmToken
+                    status: status,
+                    //password: getEncryptedPass(password),
+                    forgot_token: forgotToken
                 };
 
                 UserModel.upsert(userData, function (err, userModel) {
@@ -332,7 +337,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
-                profileData.permissions = PERMISSIONS.OWNER;
+                profileData.permissions = PERMISSIONS.SUPER_ADMIN;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
@@ -356,6 +361,7 @@ var UsersHandler = function (PostGre) {
                         //return console.error(err);
                         return cb(err);
                     }
+                    userModel.set('company', company);
                     cb(null, userModel);
                 });
             },
@@ -386,13 +392,112 @@ var UsersHandler = function (PostGre) {
             }
 
             mailerOptions = {
-                email: email,
-                confirmToken: confirmToken
+                email: email
+                //confirmToken: confirmToken
             };
-            mailer.onSendConfirm(mailerOptions);
+            //mailer.onSendConfirm(mailerOptions);
+            mailer.onSignUp(mailerOptions);
 
-            res.status(201).send({success: MESSAGES.SUCCESS_REGISTRATION_MESSAGE});
+            io.emit('signUp', userModel);
+
+            res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
+
+    };
+
+    this.acceptUser = function (req, res, next) {
+        var userId = req.params.id;
+        var criteria = {
+            id: userId,
+            status: STATUSES.NOT_CONFIRMED
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
+        var saveData = {
+            status: STATUSES.CREATED
+        };
+
+        UserModel
+            .find(criteria, fetchOptions)
+            .then(function (userModel) {
+                userModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, updatedUserModel) {
+                        var mailerOptions;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        mailerOptions = {
+                            email: updatedUserModel.get('email'),
+                            forgot_token: updatedUserModel.get('forgot_token')
+                        };
+
+                        mailer.onAcceptUser(mailerOptions, function (err, response) {
+                            if (err) {
+                                return next(err);
+                            }
+                            io.emit('accept', updatedUserModel);
+
+                            res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
+                        });
+
+                    });
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                return next(badRequests.NotFound());
+            })
+            .catch(next)
+    };
+
+    this.rejectUser = function (req, res, next) {
+        var userId = req.params.id;
+        var criteria = {
+            id: userId,
+            status: STATUSES.NOT_CONFIRMED
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
+        var saveData = {
+            status: STATUSES.DELETED
+        };
+
+        UserModel
+            .find(criteria, fetchOptions)
+            .then(function (userModel) {
+                userModel
+                    .save(saveData, {patch: true})
+                    .exec(function (err, updatedUserModel) {
+                        var mailerOptions;
+
+                        if (err) {
+                            return next(err);
+                        }
+
+                        mailerOptions = {
+                            email: updatedUserModel.get('email')
+                        };
+
+                        mailer.onRejectUser(mailerOptions, function (err, response) {
+                            if (err) {
+                                return next(err);
+                            }
+                            io.emit('reject', updatedUserModel);
+
+                            res.status(200).send({success: 'User request was rejected'});
+                        });
+
+                    });
+            })
+            .catch(UserModel.NotFoundError, function (err) {
+                return next(badRequests.NotFound());
+            })
+            .catch(next);
 
     };
 
@@ -429,6 +534,13 @@ var UsersHandler = function (PostGre) {
 
                 if (!userModel || !userModel.id) {
                     return next(badRequests.SignInError());
+                }
+
+                if (userModel && userModel.get('status') === STATUSES.NOT_CONFIRMED) {
+                    return next(badRequests.AccessError({
+                        message: 'Your account is not confirmed by our team.',
+                        status: 403
+                    }))
                 }
 
                 if (userModel && userModel.get('confirm_token')) {
@@ -1095,7 +1207,6 @@ var UsersHandler = function (PostGre) {
                 }
                 res.status(200).send({signImage: signImage});
             });
-
 
 
     };

@@ -1,4 +1,5 @@
 module.exports = {
+    NOT_CONFIRMED: -1,
     DELETED: 0,
     CREATED: 1,
     SENT_TO_SIGNATURE_COMPANY: 2,

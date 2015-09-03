@@ -226,14 +226,15 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
 
         TemplateModel
-            .forge()
+            /*.forge()
             .query(function (qb) {
                 qb.where({company_id: companyId});
             })
-            .fetchAll()
+            .fetchAll()*/
+            .findAll()
             .exec(function (err, result) {
                 var templateModels;
 
@@ -253,11 +254,11 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplate = function (req, res, next) {
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
         var templateId = req.params.id;
         var criteria = {
-            id: templateId,
-            company_id: companyId
+            id: templateId
+            //company_id: companyId
         };
         var fetchParams = {
             require: true,
