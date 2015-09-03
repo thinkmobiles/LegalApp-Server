@@ -27,6 +27,7 @@ define([
 
             this.pendingCollection.on('reset', this.renderPendingUsers, this);
             this.confirmedCollection.on('reset', this.renderConfirmedUsers, this);
+            this.confirmedCollection.on('add', this.addConfirmedUser, this);
 
             this.render();
         },
@@ -63,6 +64,13 @@ define([
             return this;
         },
 
+        addConfirmedUser: function (userModel) {
+            var users = userModel.toJSON();
+            var confirmedContainer = this.$el.find('.confirmed');
+
+            confirmedContainer.html(this.userListTemplate({usrLst: users, pending: false}));
+        },
+
         acceptRegistration: function (event) {
             this.acceptOrReject(event, 'accept');
         },
@@ -82,9 +90,12 @@ define([
                 type : "POST",
                 success: function () {
                     alert('success');
+                    self.pendingCollection.remove(userId);
                 },
-                error: function (err) {
+                error: function (response, xhr) {
                     //self.errorNotification(err);
+                    alert(response.responseText || response.responseJson.error);
+                    self.pendingCollection.remove(userId);
                 }
             });
         }
