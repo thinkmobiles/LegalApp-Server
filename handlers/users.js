@@ -21,7 +21,7 @@ var CompaniesHandler = require('../handlers/companies');
 var ImagesHandler = require('../handlers/images');
 var VALID_PERMISSIONS = _.values(PERMISSIONS);
 
-var UsersHandler = function (PostGre) {
+var UsersHandler = function (PostGre, io) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var UserModel = Models.User;
@@ -361,6 +361,7 @@ var UsersHandler = function (PostGre) {
                         //return console.error(err);
                         return cb(err);
                     }
+                    userModel.set('company', company);
                     cb(null, userModel);
                 });
             },
@@ -397,6 +398,8 @@ var UsersHandler = function (PostGre) {
             //mailer.onSendConfirm(mailerOptions);
             mailer.onSignUp(mailerOptions);
 
+            io.emit('signUp', userModel);
+
             res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
 
@@ -408,12 +411,16 @@ var UsersHandler = function (PostGre) {
             id: userId,
             status: STATUSES.NOT_CONFIRMED
         };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
         var saveData = {
             status: STATUSES.CREATED
         };
 
         UserModel
-            .find(criteria, {require: true})
+            .find(criteria, fetchOptions)
             .then(function (userModel) {
                 userModel
                     .save(saveData, {patch: true})
@@ -433,6 +440,8 @@ var UsersHandler = function (PostGre) {
                             if (err) {
                                 return next(err);
                             }
+                            io.emit('accept', updatedUserModel);
+
                             res.status(200).send({success: 'User request was accepted', model: updatedUserModel});
                         });
 
@@ -450,12 +459,16 @@ var UsersHandler = function (PostGre) {
             id: userId,
             status: STATUSES.NOT_CONFIRMED
         };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['profile', 'company']
+        };
         var saveData = {
             status: STATUSES.DELETED
         };
 
         UserModel
-            .find(criteria, {require: true})
+            .find(criteria, fetchOptions)
             .then(function (userModel) {
                 userModel
                     .save(saveData, {patch: true})
@@ -474,6 +487,8 @@ var UsersHandler = function (PostGre) {
                             if (err) {
                                 return next(err);
                             }
+                            io.emit('reject', updatedUserModel);
+
                             res.status(200).send({success: 'User request was rejected'});
                         });
 

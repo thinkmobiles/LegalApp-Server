@@ -35,6 +35,14 @@ if (process.env.NODE_ENV === 'production') {
 var httpServer = http.createServer(app);
 app.set('port', process.env.PORT || 8850);
 
+//=====socket.io==========================
+var Io = require('./helpers/sockets');
+var io = Io(httpServer);
+var SocketEvents = require('./helpers/socketEvents');
+var socketEvents = SocketEvents(io);
+app.set('io', io);
+//=========================================
+
 //<editor-fold desc="PostGre">
 
 var Bookshelf = require('bookshelf');
