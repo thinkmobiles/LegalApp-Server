@@ -127,11 +127,19 @@ define([
 
             if (theState) {
                 editableUser = this.usersCollection.get(userID);
+                //this.editView = new EditUserView({
+                //    userColl : this.usersCollection,
+                //    userId   :  userID
+                //});
             } else {
                 editableUser = this.clientsCollection.get(userID);
+                //this.editView = new EditUserView({
+                //    userColl : this.clientsCollection,
+                //    userId   :  userID
+                //});
             }
 
-            editableUser.currentState = theState;
+            //editableUser.currentState = theState;
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.renderTrigger, this);
             //this.$el.find('#addUserContainer').html(this.addView.el);
