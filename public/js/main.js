@@ -45,20 +45,15 @@ require(['app', 'socketio'], function(app, io){
         }
     };
 
-    var socket = io.connect(
-        {
-            transports: ['websocket']/*,
-         cookie: 'FlipStar',
-         query: 'userId=testUser'*/
-        }
-    );
-
-    socket.emit('authorize',{userId: 1, permissions: 1}, function (err, res) {
+    var socket = io.connect({
+        transports: ['websocket']
     });
+
+    socket.emit('authorize',{userId: 1, permissions: 1});
 
     socket.on('newUser', function (user) {
         console.log('>>> newUser', user);
-        App.trigger('newUser', user);
+        App.events.trigger('newUser', user);
     });
 
     app.initialize();

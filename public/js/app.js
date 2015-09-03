@@ -7,7 +7,7 @@ define([
     'communication',
     'events',
     'custom'
-], function (Router, Events, Communication, Custom) {
+], function (Router, Communication, Events, Custom) {
 
     var initialize = function () {
         var appRouter;

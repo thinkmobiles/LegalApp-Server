@@ -2,14 +2,18 @@
 
 define([
     'views/menu/topBarView',
-    'collections/users'
+    'collections/usersCollection'
 
 ], function (TopBarView, UsersCollection) {
+    var events = {};
 
-    App.on('newUser', function (user) {
+    App.events = events;
+
+    _.extend(events, Backbone.Events);
+
+    events.on('newUser', function (user) {
         console.log('>>> events.newUser');
     });
-
 
 
 });

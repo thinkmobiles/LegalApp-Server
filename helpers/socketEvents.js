@@ -11,7 +11,7 @@ var socketEvents = function (io) {
             console.log(data);
         });
 
-        //socket.emit('newUser', {user: 'foo'});
+        socket.emit('newUser', {user: 'foo'});
     });
 
 
