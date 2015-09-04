@@ -16,15 +16,19 @@
 <% usrLst.forEach(function(user){%>
 
 <tr class="userRow notActive" data-id="<%= user.id%>">
-    <td><%= user.first_name%> <%= user.last_name%></td>
-    <td><%= user.company_name%></td>
+    <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+    <td><%= user.company.name%></td>
     <td>
-        <%if (user.permissions === 3){%>Viewer<%}%>
-        <%if (user.permissions === 2){%>Editor<%}%>
-        <%if (user.permissions === 1){%>Admin<%}%>
+        <%if ((user.profile.permissions === 0) || (user.profile.permissions === 1)) {%>Admin<%}%>
+        <%if (user.profile.permissions === 2){%>Editor<%}%>
+        <%if (user.profile.permissions === 3){%>Viewer<%}%>
+
+        <%if (user.profile.permissions === 11){%>Client Admin<%}%>
+        <%if (user.profile.permissions === 12){%>Client Editor<%}%>
+        <%if (user.profile.permissions === 13){%>Client Viewer<%}%>
     </td>
     <td>
-        <%if (user.permissions === 3){%>Can view but not edit<%}%>
+        <%if ((user.profile.permissions === 3) || (user.profile.permissions === 13)){%>Can view but not edit<%}%>
     </td>
     <td>
         <%if (user.status === -1){%>Pending<%}%>

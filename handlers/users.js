@@ -1157,10 +1157,57 @@ var UsersHandler = function (PostGre) {
             .limit(limit)
             .orderBy(orderBy, order)
             .exec(function (err, rows) {
+                var users = [];
+
                 if (err) {
                     return next(err);
                 }
-                res.status(200).send(rows);
+
+                /*
+                *
+                * var columns = [
+                 TABLES.USERS + '.id',
+                 TABLES.USERS + '.email',
+                 TABLES.USERS + '.status',
+                 TABLES.PROFILES + '.first_name',
+                 TABLES.PROFILES + '.last_name',
+                 TABLES.PROFILES + '.phone',
+                 TABLES.PROFILES + '.permissions',
+                 TABLES.PROFILES + '.sign_authority',
+                 //TABLES.USER_COMPANIES + '.id as user_company_id',
+                 TABLES.COMPANIES + '.id as company_id',
+                 TABLES.COMPANIES + '.name as company_name',
+                 knex.raw(
+                 "CONCAT(" + TABLES.PROFILES + ".first_name, ' ', " + TABLES.PROFILES + ".last_name) AS value"
+                 )
+                 ];
+                * */
+
+                rows.forEach(function (row) {
+                    row.profile = {
+                        first_name: row.first_name,
+                        last_name: row.last_name,
+                        phone: row.phone,
+                        permissions: row.permissions,
+                        sign_authority: row.sign_authority
+                    };
+
+                    row.company = {
+                        id: row.company_id,
+                        name: row.company_name
+                    };
+
+                    delete row.first_name;
+                    delete row.last_name;
+                    delete row.phone;
+                    delete row.permissions;
+                    delete row.sign_authority;
+                    delete row.company_id;
+                    delete row.company_name;
+
+                    users.push(row);
+                });
+                res.status(200).send(users);
             });
     };
 

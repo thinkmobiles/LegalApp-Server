@@ -53,7 +53,7 @@ require(['app', 'socketio'], function(app, io){
 
     socket.on('newUser', function (user) {
         console.log('>>> newUser', user);
-        App.events.trigger('newUser', user);
+        App.Events.trigger('newUser', user);
     });
 
     app.initialize();
