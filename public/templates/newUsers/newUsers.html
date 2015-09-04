@@ -1,0 +1,48 @@
+<h2>Pending Users</h2>
+<table>
+
+<thead>
+<tr>
+    <th class="sortableData" data-sort="name">NAME</th>
+    <th class="sortableData" data-sort="company">COMPANY</th>
+    <th class="sortableData" data-sort="role">ROLE</th>
+    <th>DESCRIPTION</th>
+    <th class="sortableData" data-sort="status">Status</th>
+    <th></th>
+</tr>
+</thead>
+<tbody id="listTable">
+
+<% usrLst.forEach(function(user){%>
+
+<tr class="userRow notActive" data-id="<%= user.id%>">
+    <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+    <td><%= user.company.name%></td>
+    <td>
+        <%if ((user.profile.permissions === 0) || (user.profile.permissions === 1)) {%>Admin<%}%>
+        <%if (user.profile.permissions === 2){%>Editor<%}%>
+        <%if (user.profile.permissions === 3){%>Viewer<%}%>
+
+        <%if (user.profile.permissions === 11){%>Client Admin<%}%>
+        <%if (user.profile.permissions === 12){%>Client Editor<%}%>
+        <%if (user.profile.permissions === 13){%>Client Viewer<%}%>
+    </td>
+    <td>
+        <%if ((user.profile.permissions === 3) || (user.profile.permissions === 13)){%>Can view but not edit<%}%>
+    </td>
+    <td>
+        <%if (user.status === -1){%>Pending<%}%>
+        <%if (user.status === 0){%>Deleted<%}%>
+        <%if (user.status === 1){%>Active<%}%>
+    </td>
+    <td>
+        <% if (pending === true) {%>
+            <button class="accept">Accept</button> | <button class="reject">Reject</button>
+        <% } %>
+    </td>
+</tr>
+
+<% }) %>
+
+</tbody>
+</table>

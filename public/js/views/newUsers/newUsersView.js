@@ -1,9 +1,9 @@
 'use strict';
 
 define([
-    'text!templates/registrations/registrationsTemplate.html',
+    'text!templates/newUsers/newUsersTemplate.html',
     'collections/usersCollection',
-    'text!templates/registrations/usersList.html'
+    'text!templates/newUsers/newUsers.html'
 
 ], function (RegistrationsTemplate, UsersCollection, UserListTemplate) {
 
@@ -73,6 +73,7 @@ define([
             var container = this.$el.find('.pending tbody');
 
             container.prepend(tr);
+            App.Badge.set('pendingUsers', this.pendingCollection.length);
         },
 
         removePendingUser: function (userModel) {
@@ -84,26 +85,46 @@ define([
         },
 
         generateUserRow: function (user) {
-            var permissions = user.permissions;
             var status = user.status;
+            var permissions = user.profile.permissions;
             var tr = '<tr class="userRow" data-id="' + user.id + '">';
 
-            tr += '<td>' + user.first_name + ' ' + user.last_name + '</td>';
-            tr += '<td>' + user.company_name + '</td>';
+            tr += '<td>' + user.profile.first_name + ' ' + user.profile.last_name + '</td>'; //NAME
+            tr += '<td>' + user.company.name + '</td>';                                      //COMPANY
 
-            if (permissions === 1) {   //role
-                tr += '<td>Admin</td>';
-            } else if (permissions === 2) {
-                tr += '<td>Editor</td>';
-            } else {
-                tr += '<td>Viewer</td>';
+            switch (permissions) {
+                case 0:
+                    tr += '<td>Admin</td>';
+                    break;
+                case 1:
+                    tr += '<td>Admin</td>';
+                    break;
+                case 2:
+                    tr += '<td>Editor</td>';
+                    break;
+                case 3:
+                    tr += '<td>Viewer</td>';
+                    break;
+                case 11:
+                    tr += '<td>Client Admin</td>';
+                    break;
+                case 12:
+                    tr += '<td>Client Editor</td>';
+                    break;
+                case 13:
+                    tr += '<td>Client Viewer</td>';
+                    break;
+                default:
+                    tr += '<td>Viewer</td>';
             }
 
-            if (permissions === 3) {  //description
+            if (permissions === 3) {                                                        //DESCRIPTION
                 tr += '<td>Can view but not edit</td>';
+            } else {
+                tr += '<td></td>';
             }
 
-            if (status === -1) {    //status
+            if (status === -1) {                                                           //STATUS
                 tr += '<td>Pending</td>';
             } else if (status === 0) {
                 tr += '<td>Deleted</td>';
@@ -111,6 +132,10 @@ define([
                 tr += '<td>Active</td>';
             } else {
                 tr += '<td></td>';
+            }
+
+            if (status === -1) {
+                tr += '<td><button class="accept">Accept</button> | <button class="reject">Reject</button></td>';
             }
 
             tr += '</tr>';
@@ -127,37 +152,51 @@ define([
         },
 
         acceptRegistration: function (event) {
-            this.acceptOrReject(event, 'accept');
-        },
-
-        rejectRegistration: function (event) {
-            this.acceptOrReject(event, 'reject');
-        },
-
-        acceptOrReject: function (event, type) {
-            var target = $(event.target).closest('.' + type);
+            var target = $(event.target).closest('.accept');
             var row = target.closest('tr');
             var userId = row.data('id');
             var userModel = this.pendingCollection.get(userId);
             var self = this;
 
+            userModel.set('status', 1);
+
             $.ajax({
-                url  : "/users/" + userId + '/' + type,
-                type : "POST",
+                url  : '/users/' + userId + '/accept',
+                type : 'POST',
                 success: function () {
-                    alert('success');
-                    //self.pendingCollection.remove(userId);
                     self.pendingCollection.remove(userId);
                     self.confirmedCollection.add(userModel);
                 },
                 error: function (response, xhr) {
-                    //self.errorNotification(err);
-                    alert(response.responseText);
                     self.pendingCollection.remove(userId);
                     self.confirmedCollection.add(userModel);
                 }
             });
-        }
+        },
+
+        rejectRegistration: function (event) {
+            var target = $(event.target).closest('.reject');
+            var row = target.closest('tr');
+            var userId = row.data('id');
+            var userModel = this.pendingCollection.get(userId);
+            var self = this;
+
+            userModel.set('status', 0);
+
+            $.ajax({
+                url  : '/users/' + userId + '/reject',
+                type : 'POST',
+                success: function () {
+                    self.pendingCollection.remove(userId);
+                    self.confirmedCollection.add(userModel);
+                },
+                error: function (response, xhr) {
+                    self.pendingCollection.remove(userId);
+                    self.confirmedCollection.add(userModel);
+                }
+            });
+        },
+
     });
 
     return View;
