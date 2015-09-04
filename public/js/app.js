@@ -16,7 +16,7 @@ define([
         });
 
         socket.on('newUser', function (user) {
-            console.log('>>> newUser', user);
+            //console.log('>>> newUser', user);
             App.Events.trigger('newUser', user);
         });
 
@@ -38,19 +38,18 @@ define([
         events = App.Events;
 
         events.on('authorized', function () {
-            console.log('>>> events.authorized');
-
             var sessionData = App.sessionData;
             var socketAuth = {
                 userId: sessionData.get('userId'),
                 permissions: sessionData.get('role')
             };
 
+            //console.log('>>> events.authorized');
             socket.emit('authorize', socketAuth);
         });
 
         events.on('logout', function () {
-            console.log('>>> events.logout');
+            //console.log('>>> events.logout');
 
             var sessionData = App.sessionData;
             var socketAuth = {
