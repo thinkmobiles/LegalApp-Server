@@ -5,12 +5,12 @@
 define([
     'router',
     'communication',
-    'events',
     'custom'
-], function (Router, Communication, Events, Custom) {
+], function (Router, Communication, Custom) {
 
     var initialize = function () {
         var appRouter;
+        var events = {};
 
         App.sessionData = new Backbone.Model({
             authorized  : false,
@@ -25,6 +25,13 @@ define([
         });
 
         App.Collections = {};
+        App.Events = events;
+
+        _.extend(events, Backbone.Events);
+
+        events.on('newUser', function (user) {
+            App.Collections.pendingCollection.add(user);
+        });
 
         appRouter = new Router();
         App.router = appRouter;
