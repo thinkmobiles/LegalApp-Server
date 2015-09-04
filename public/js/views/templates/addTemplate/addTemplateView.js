@@ -37,7 +37,7 @@ define([
         mainTemplate  : _.template(TempTemplate),
         linksFieldsTemplate : _.template(LinkFilTemp),
         linksNamesTemplate  : _.template(LinkNamTemp),
-        tempNamesTemplate  : _.template(TempNames),
+        tempNamesTemplate   : _.template(TempNames),
 
         events : {
             "click #addNewLink"    : "showLinksTable",
@@ -113,7 +113,8 @@ define([
                 success: function(response){
                     alert('Template was added successfully');
                     var model = response.model;
-                    self.trigger('addInParentView', model);
+                    //self.trigger('addInParentView', model);
+                    self.parentContext.tempCollection.add(model);
                 },
                 error: function(){
                     alert('error'); //todo -error-

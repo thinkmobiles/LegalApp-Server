@@ -53,8 +53,11 @@ define([
         },
 
         goToAddTemplate : function(){
+            var self = this;
             var currentView =  new AddTemplate({parentCont : this});
-            currentView.on('addInParentView', this.addOneGrid, this);
+
+            //currentView.on('addInParentView', this.addOneGrid, this);
+            //currentView.listenTo(self.tempCollection, 'add', self.renderAlltemplates);
             //currentView.on('addInParentView', this.renderAlltemplates, this);
             this.$el.find('#addTemplateContainer').html(currentView.el);
         },
@@ -77,7 +80,7 @@ define([
             Backbone.history.navigate(urlName);
         },
 
-        addOneGrid: function(model){
+        /*addOneGrid: function(model){
             //var viewTp = this.stateModel.get('viewType');
             this.tempCollection.add(model);
 
@@ -90,7 +93,7 @@ define([
             //}
 
 
-        },
+        },*/
 
         render: function () {
 
