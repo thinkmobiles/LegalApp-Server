@@ -3,27 +3,35 @@
  */
 
 define([
-    'text!templates/menu/iWantToTemplate.html'
-
-], function (WantTemp) {
+    'text!templates/menu/iWantToTemplate.html',
+    'collections/templatesCollection'
+], function (WantTemp, TemplateCollection) {
 
     var View;
     View = Backbone.View.extend({
 
+        template: _.template(WantTemp),
+
         initialize: function () {
-            this.render();
+            this.collection = new TemplateCollection();
+            this.collection.on('reset', this.render, this);
+            this.getCollection();
         },
 
         events : {
-            'focusout #iWantTo' : 'closeVeiw'
+            'focusout #iWantTo' : 'closeView',
+            'click .templateName': 'closeView'
         },
 
-        closeVeiw: function (){
-            this.remove()
+        closeView: function (){
+            this.remove();
         },
 
         render: function () {
-            this.$el.html(_.template(WantTemp))
+            var items = this.collection.toJSON();
+            var self = this;
+
+            this.$el.html(this.template({items: items}))
                 .dialog({
                     closeOnEscape: false,
                     autoOpen: true,
@@ -31,11 +39,26 @@ define([
                     modal: true,
                     width: "600px",
                     close : function(){
-                        self.remove()
+                        self.closeVeiw()
                     }
                 });
 
             return this;
+        },
+
+        getCollection: function () {
+            var self = this;
+
+            $.ajax({
+                url  : '/templates/',
+                type : 'GET',
+                success: function (response) {
+                    self.collection.add(response);
+                },
+                error: function (response, xhr) {
+                    self.errorNotification(xhr);
+                }
+            });
         }
 
     });

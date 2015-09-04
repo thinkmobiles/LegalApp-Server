@@ -1,1 +1,8 @@
-<input id="wantSearch" type="text">
+<!--<input id="wantSearch" type="text">-->
+<ul>
+    <% items.forEach(function(template){%>
+    <li class="templateName" data-id="<%= template.id%>">
+        <a href="#templates/preview/<%= template.id%>"><%= template.name%></a>
+    </li>
+    <% }) %>
+</ul>
