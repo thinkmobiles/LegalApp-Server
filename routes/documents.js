@@ -16,13 +16,13 @@ module.exports = function (app) {
     router.get('/list', session.authenticatedUser, documentsHandler.getDocumentsByTemplates);
     router.get('/list/:templateId', session.authenticatedUser, documentsHandler.getDocumentsByTemplate);
 
-    router.get('/signature', documentsHandler.validateDocumentBySecretKey);
+    router.get('/signature', session.authenticatedUser, documentsHandler.validateDocumentBySecretKey);
     router.post('/signature', documentsHandler.saveEncryptedDataToDocument); //TODO: delete this in future, for testing
 
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
     router.patch('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
-    router.post('/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend);
+    router.post('/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend); //TODO: dublicate, not used now
     router.post('/:id/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);

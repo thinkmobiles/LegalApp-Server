@@ -290,7 +290,12 @@ var DocumentsHandler = function (PostGre) {
             .find(criteria, fetchOptions)
             .then(function (documentModel) {
                 var templateId = documentModel.get('template_id');
+                var companyId = documentModel.get('company_id');
                 var userId = options.user_id;
+
+                if (options.companyId && (options.companyId !== companyId)) {
+                    return callback(badRequests.AccessError());
+                }
 
                 async.parallel({
                     templateModel: function (cb) {
@@ -550,7 +555,7 @@ var DocumentsHandler = function (PostGre) {
 
         if ((assignedId == currentUserId)) {
             if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                return next(badRequests.NotEnParams({ reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
+                return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
             }
         }
 
@@ -667,8 +672,14 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.updateDocument = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var documentId = req.params.id;
         var options = req.body;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+            options.companyId = companyId;
+        }
 
         updateDocument(documentId, options, function (err, documentModel) {
             if (err) {
@@ -678,7 +689,7 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    function signAndSend (documentModel, options) {
+    function signAndSend(documentModel, options) {
 
     };
 
@@ -861,11 +872,13 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.signAndSend = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var currentUserId = req.session.userId;
         var documentId = req.params.id;
         var options = req.body;
         var signImage = options.signature;
-        var assignedId = options.assigned_id || req.session.userId;
+        var assignedId = options.assigned_id || currentUserId;
         var willBeSignedNow;
         var criteria = {
             id: documentId
@@ -878,12 +891,17 @@ var DocumentsHandler = function (PostGre) {
         var assignedUserModel;
         var currentUserModel;
         var userModel;
+        var check;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+            check = companyId;
+        }
 
         if (!assignedId) {
             return next(badRequests.NotEnParams({reqParams: ['assigned_id']}));
         }
 
-        if (currentUserId == assignedId) {
+        if (currentUserId === assignedId) {
 
             if (signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)) {
                 return next(badRequests.InvalidValue({param: 'signature'}));
@@ -904,6 +922,12 @@ var DocumentsHandler = function (PostGre) {
                 DocumentModel
                     .find(criteria, fetchOptions)
                     .then(function (documentModel) {
+                        var docCompanyId = documentModel.get('company_id');
+
+                        if (check && (check !== docCompanyId)) {
+                            return next(badRequests.AccessError());
+                        }
+
                         if (documentModel.get('status') !== STATUSES.CREATED) {
                             return next(badRequests.AccessError({message: 'The document was signed by company'}));
                         }
@@ -1047,14 +1071,21 @@ var DocumentsHandler = function (PostGre) {
 
     this.getDocuments = function (req, res, next) {
         var companyId = req.session.companyId;
-        var criteria = {
-            company_id: companyId
-        };
+        var permissions = req.session.permissions;
+        var criteria;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            criteria = {
+                company_id: companyId
+            }
+        }
 
         DocumentModel
             .forge()
             .query(function (qb) {
-                qb.where(criteria);
+                if (criteria) {
+                    qb.where(criteria);
+                }
             })
             .fetchAll()
             .exec(function (err, documentModels) {
@@ -1066,21 +1097,47 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocument = function (req, res, next) {
+        var permissions = req.session.permissions;
         var documentId = req.params.id;
         var companyId = req.session.companyId;
         var criteria = {
-            id: documentId,
-            company_id: companyId
+            id: documentId
         };
         var fetchOptions = {
-            require: true,
-            withRelated: ['template']
+            require: true
         };
+        var check;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            check = companyId;
+        }
 
         DocumentModel
             .find(criteria, fetchOptions)
             .then(function (documentModel) {
-                res.status(200).send(documentModel);
+                var status = documentModel.get('status');
+                var docCompanyId = documentModel.get('company_id');
+                var AttachmentModel;
+
+                if (check && (check !== docCompanyId)) {
+                    return next(badRequests.AccessError());
+                }
+
+                if (status === STATUSES.SIGNED_BY_CLIENT) {
+                    AttachmentModel = documentModel.related('File');
+
+                    AttachmentModel
+                        .fetch()
+                        .exec(function (err, attachmentModel) {
+                            if (err) {
+                                return next(err);
+                            }
+
+                            res.status(200).send(documentModel);
+                        })
+                } else {
+                    res.status(200).send(documentModel);
+                }
             })
             .catch(DocumentModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());
@@ -1089,6 +1146,8 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.previewDocument = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var documentId = req.params.id;
         var criteria = {
             id: documentId
@@ -1096,11 +1155,22 @@ var DocumentsHandler = function (PostGre) {
         var fetchOptions = {
             require: true
         };
+        var check;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            check = companyId;
+        }
 
         DocumentModel
             .find(criteria, fetchOptions)
             .then(function (documentModel) {
                 var html = documentModel.get('html_content');
+                var docCompanyId = documentModel.get('company_id');
+
+                if (check && (check !== docCompanyId)) {
+                    return next(badRequests.AccessError());
+                }
+
                 res.status(200).send(html);
             })
             .catch(DocumentModel.NotFoundError, function (err) {
@@ -1144,21 +1214,35 @@ var DocumentsHandler = function (PostGre) {
             query.andWhere(DOCUMENTS + '.created_at', '<=', toDate);
         }
 
+        if (params.companyId) {
+            query.andWhere(DOCUMENTS + '.company_id', '=', params.companyId)
+        }
+
         return query;
 
     };
 
     this.getDocumentsByTemplates = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var TEMPLATES = TABLES.TEMPLATES;
+        var query = knex(TEMPLATES);
         var params = req.query;
-        var subQuery = setDocumentsCountQuery(params);
-        var subQueryString = knex.raw("(" + subQuery.toString() + ") as count");
-        var fields = [
+        var subQuery;
+        var subQueryString;
+        var fields;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            params.companyId = companyId;
+        }
+
+        subQuery = setDocumentsCountQuery(params);
+        subQueryString = knex.raw("(" + subQuery.toString() + ") as count");
+        fields = [
             TEMPLATES + '.id',
             TEMPLATES + '.name',
             knex.raw(subQueryString)
         ];
-        var query = knex(TEMPLATES);
 
         query
             .select(fields)
@@ -1172,6 +1256,8 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocumentsByTemplate = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var DOCUMENTS = TABLES.DOCUMENTS;
         var templateId = req.params.templateId;
         var params = req.query;
@@ -1183,12 +1269,17 @@ var DocumentsHandler = function (PostGre) {
         var toDate;
         var orderBy;
         var order;
+        var byCompanyId;
 
         if (templateId) {
             templateId = parseInt(templateId);
             if (isNaN(templateId)) {
                 return next(badRequests.InvalidValue({param: 'templateId', value: templateId}));
             }
+        }
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            byCompanyId = companyId;
         }
 
         if (params.orderBy) {
@@ -1225,6 +1316,10 @@ var DocumentsHandler = function (PostGre) {
                     if (to) {
                         toDate = new Date(to);
                         this.where(DOCUMENTS + '.created_at', '<=', toDate);
+                    }
+
+                    if (byCompanyId) {
+                        this.where('company_id', byCompanyId);
                     }
 
                     this.where('template_id', templateId);
@@ -1375,9 +1470,7 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.sendDocumentToSign = function (req, res, next) {
-        //next(badRequests.AccessError({message: 'Not implemented yet'}));
         var documentId = req.params.id;
-
 
         async.parallel({
 
@@ -1522,18 +1615,28 @@ var DocumentsHandler = function (PostGre) {
     this.getTheDocumentToSign = function (req, res, next) {
         var token = req.params.token;
         var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var criteria = {
-            access_token: token,
-            company_id: companyId
+            access_token: token
         };
         var fetchOptions = {
             require: true
         };
+        var check;
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+            check = companyId;
+        }
 
         DocumentModel
             .find(criteria, fetchOptions)
             .then(function (documentModel) {
                 var html = documentModel.get('html_content');
+                var docCompanyId = documentModel.get('company_id');
+
+                if (check && (check !== docCompanyId)) {
+                    return next(badRequests.AccessError());
+                }
                 res.status(200).send(html);
             })
             .catch(DocumentModel.NotFoundError, function (err) {
@@ -1547,7 +1650,7 @@ var DocumentsHandler = function (PostGre) {
         var currentUserId = req.session.userId;
         var companyId = req.session.companyId;
         var token = req.params.token;
-        var signImage = req.body.signature;    //base64  need to check params
+        var signImage = req.body.signature;
         var criteria = {
             access_token: token,
             company_id: companyId
@@ -1638,7 +1741,8 @@ var DocumentsHandler = function (PostGre) {
                         };
 
                         mailer.onSendToSingnature(mailerParams);
-                        cb(null, users.models);
+                        //cb(null, users.models);
+                        cb(null, documentModel);
                     })
                     .catch(UserModel.NotFoundError, function (err) {
                         cb(badRequests.NotFound({message: 'The assigned user was not found'}));
@@ -1650,6 +1754,27 @@ var DocumentsHandler = function (PostGre) {
                     });
 
 
+            },
+
+            //if Client signed the document need to CREATE PDF
+            function (documentModel, cb) {
+                var status = documentModel.get('status');
+                var options = {};
+                var htmlContent;
+
+                if (status !== STATUSES.SIGNED_BY_CLIENT) {
+                    return cb(null, documentModel);
+                }
+
+                htmlContent = documentModel.get('html_content');
+                options.html = htmlContent;
+
+                saveHtmlToPdf(options, function (err, pdfFilePath) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, documentModel);
+                });
             }
 
         ], function (err, savedDocumentModel) {
