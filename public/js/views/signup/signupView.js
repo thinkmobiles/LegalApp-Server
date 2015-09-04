@@ -30,7 +30,7 @@ define([
                 email             : '',
                 firstName         : '',
                 lastName          : '',
-                iAcceptConditions : false,
+                //iAcceptConditions : false,
                 errors            : false,
                 messages          : false
             };
@@ -63,40 +63,44 @@ define([
                 email         : email,
                 firstName     : firstName,
                 lastName      : lastName,
-                company       : company,
-                iAcceptConditions: iAcceptConditions
+                company       : company
+                //iAcceptConditions: iAcceptConditions
             };
 
             this.stateModel.set(stateModelUpdate);
 
-            $.ajax({
-                url  : "/signUp",
-                type : "POST",
-                data : {
-                    email         : stateModelUpdate.email,
-                    first_name    : stateModelUpdate.firstName,
-                    last_name     : stateModelUpdate.lastName,
-                    company       : stateModelUpdate.company
-                },
-                success: function () {
-                    self.stateModel.set({
-                        email         : '',
-                        firstName     : '',
-                        lastName      : '',
-                        company       : '',
-                        iAcceptConditions: false
-                    });
+            if (iAcceptConditions) {
+                $.ajax({
+                    url: "/signUp",
+                    type: "POST",
+                    data: {
+                        email: stateModelUpdate.email,
+                        first_name: stateModelUpdate.firstName,
+                        last_name: stateModelUpdate.lastName,
+                        company: stateModelUpdate.company
+                    },
+                    success: function () {
+                        self.stateModel.set({
+                            email: '',
+                            firstName: '',
+                            lastName: '',
+                            company: ''
+                            //iAcceptConditions: false
+                        });
 
-                    App.router.navigate("confirmEmail", {trigger: true});
-                },
-                error: function (err) {
-                    alert('Error');
-                    //self.stateModel.set({
-                    //    errors     : [err.responseJSON.error],
-                    //});
+                        App.router.navigate("confirmEmail", {trigger: true});
+                    },
+                    error: function (err) {
+                        alert('Error');
+                        //self.stateModel.set({
+                        //    errors     : [err.responseJSON.error],
+                        //});
 
-                }
-            });
+                    }
+                });
+            } else {
+                alert('You mast agree with "Terms of Service"');
+            }
             return this;
         },
 
