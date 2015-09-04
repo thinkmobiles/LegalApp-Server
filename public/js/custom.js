@@ -21,9 +21,11 @@ define([],function () {
                 authorized : true,
                 user       : data.profile.first_name+' '+data.profile.last_name,
                 role       : data.profile.permissions,
-                company    : data.company[0].id
+                company    : data.company[0].id,
+                userId     : data.id
             });
             $('body').addClass('loggedState');
+            App.Events.trigger('authorized', data);
 
             return Backbone.history.navigate(url, {trigger: true});
         } else {
@@ -31,7 +33,8 @@ define([],function () {
                 authorized : false,
                 user       : null,
                 role       : null,
-                company    : null
+                company    : null,
+                userId     : null
             });
             $('body').removeClass('loggedState');
 

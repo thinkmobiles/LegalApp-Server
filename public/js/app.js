@@ -8,9 +8,17 @@ define([
     'custom'
 ], function (Router, Communication, Custom) {
 
-    var initialize = function () {
+    var initialize = function (socketio) {
         var appRouter;
-        var events = {};
+        var events;
+        var socket = socketio.connect({
+            transports: ['websocket']
+        });
+
+        socket.on('newUser', function (user) {
+            //console.log('>>> newUser', user);
+            App.Events.trigger('newUser', user);
+        });
 
         App.sessionData = new Backbone.Model({
             authorized  : false,
@@ -25,9 +33,32 @@ define([
         });
 
         App.Collections = {};
-        App.Events = events;
+        App.Events = _.extend({}, Backbone.Events);
 
-        _.extend(events, Backbone.Events);
+        events = App.Events;
+
+        events.on('authorized', function () {
+            var sessionData = App.sessionData;
+            var socketAuth = {
+                userId: sessionData.get('userId'),
+                permissions: sessionData.get('role')
+            };
+
+            //console.log('>>> events.authorized');
+            socket.emit('authorize', socketAuth);
+        });
+
+        events.on('logout', function () {
+            //console.log('>>> events.logout');
+
+            var sessionData = App.sessionData;
+            var socketAuth = {
+                userId: sessionData.get('userId'),
+                permissions: sessionData.get('role')
+            };
+
+            socket.emit('logout', socketAuth);
+        });
 
         events.on('newUser', function (user) {
             App.Collections.pendingCollection.add(user);

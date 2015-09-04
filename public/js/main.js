@@ -45,16 +45,23 @@ require(['app', 'socketio'], function(app, io){
         }
     };
 
-    var socket = io.connect({
+    /*var socket = io.connect({
         transports: ['websocket']
     });
 
-    socket.emit('authorize',{userId: 1, permissions: 1});
+
+   /!* socket.on('welcome', function () {
+        var model = App.sessionData;
+
+        console.log('>>> welcome');
+        socket.emit('authorize',{userId: model.get('userId'), permissions: model.get('role')});
+
+    });*!/
 
     socket.on('newUser', function (user) {
         console.log('>>> newUser', user);
         App.Events.trigger('newUser', user);
-    });
+    });*/
 
-    app.initialize();
+    app.initialize(io);
 });
