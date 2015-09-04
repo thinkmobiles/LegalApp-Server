@@ -82,23 +82,15 @@ var TemplatesHandler = function (PostGre) {
         var templateFile = req.files.templateFile;
         var name = options.name;
         var linkId = options.link_id;
+        var description = options.description;
+        var hasLinkedTemplate = false;
+        var linkedTemplates = options.linked_templates;
+        var linkedTemplatesArray;
         var originalFilename;
         var extension;
-        var hasLinkedTemplate = false;
-        var linkedTemplatesArray;
-        var description;
 
-        if (!name || !linkId || !templateFile) {
-            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
-        }
-
-        if (options.linked_templates && options.linked_templates.length) {
-            hasLinkedTemplate = true;
-            linkedTemplatesArray = options.linked_templates;
-        }
-
-        if (options.description && options.description.length) {
-            description = options.description;
+        if (!name || !linkId || !templateFile || !description) {
+            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile', 'description']}));
         }
 
         originalFilename = templateFile.originalFilename;
@@ -106,6 +98,15 @@ var TemplatesHandler = function (PostGre) {
 
         if (extension !== 'docx') {
             return next(badRequests.InvalidValue({message: 'Incorrect file type'}));
+        }
+
+        if (linkedTemplates) {
+            hasLinkedTemplate = true;
+            if (Array.isArray(linkedTemplates)) {
+                linkedTemplatesArray = options.linked_templates;
+            } else {
+                linkedTemplatesArray = [options.linked_templates];
+            }
         }
 
         async.waterfall([
