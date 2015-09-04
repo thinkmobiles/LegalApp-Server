@@ -339,7 +339,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
-                profileData.permissions = PERMISSIONS.SUPER_ADMIN;
+                profileData.permissions = PERMISSIONS.CLIENT_ADMIN;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
