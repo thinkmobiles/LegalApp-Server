@@ -19,6 +19,7 @@ define([
             //this.userModel = this.userCollection.get(usId);
 
             this.listenTo(this.userModel, 'change:sign_image', this.showOurSign);
+            this.listenTo(this.userModel, 'sync', this.changeDataInRow);
 
             this.render();
         },
@@ -119,8 +120,8 @@ define([
             };
 
             var updateData = {
-                profile    : profile,
-                sign_image : self.userModel.get('sign_image')
+                profile    : profile
+                //sign_image : self.userModel.get('sign_image')
             };
 
             if (status_ch){
@@ -128,15 +129,15 @@ define([
             }
 
             this.userModel.save(updateData,{
-                wait: true,
-                success: function () {
-                    self.changeDataInRow();
-                    self.remove();
-                },
-                error  : function(model, xhr){
-                    alert('Error'); // todo message
-                    //self.errorNotification(xhr);
-                }
+                wait: true
+                //success: function (response) {
+                //    self.changeDataInRow();
+                //    self.remove();
+                //},
+                //error  : function(model, xhr){
+                //    alert('Error'); // todo message
+                //    //self.errorNotification(xhr);
+                //}
             });
 
             //this.userCollection.set(this.userModel,{

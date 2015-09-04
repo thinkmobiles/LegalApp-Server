@@ -6,6 +6,7 @@ define([
     'text!templates/templates/addTemplate/addTemplateTemplate.html',
     'text!templates/templates/addTemplate/linkFieldsTemplate.html',
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
+    'text!templates/templates/addTemplate/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
     'models/templateModel',
     'collections/linksCollection'
@@ -14,6 +15,7 @@ define([
     TempTemplate,
     LinkFilTemp,
     LinkNamTemp,
+    TempNames,
     AddLinkView,
     TempModel,
     LinksCollection) {
@@ -21,9 +23,12 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        className   : "addItemLeft",
+        className       : "addItemLeft",
+        linkedTemplates : [],
 
-        initialize: function () {
+        initialize: function (options) {
+
+            this.parentContext = options.parentCont;
             this.linksCollection = new LinksCollection();
 
             this.render();
@@ -32,13 +37,23 @@ define([
         mainTemplate  : _.template(TempTemplate),
         linksFieldsTemplate : _.template(LinkFilTemp),
         linksNamesTemplate  : _.template(LinkNamTemp),
+        tempNamesTemplate  : _.template(TempNames),
 
         events : {
             "click #addNewLink"    : "showLinksTable",
             "click .linkName"      : "linkSelect",
             "click #tempSave"      : "saveTemplate",
-            "click #tempLinkTable" : "showHideTable"
+            "click #tempLinkTable" : "showHideTable",
+            "click .tempName"      : "addLinkedTemp"
 
+        },
+
+        addLinkedTemp: function (event){
+            var target = $(event.target).closest('.tempName');
+            var name = target.text().trim();
+            var tempId = target.data('id');
+            this.$el.find('#tempLinkedTemp').val(name);
+            this.linkedTemplates = [tempId];
         },
 
         appendLinksNames : function(){
@@ -53,6 +68,13 @@ define([
                     linksContainer.html(self.linksNamesTemplate({lnkColl : linkColl}));
                 }
             });
+        },
+
+        appendTempNames : function(){
+            var tempContainer = this.$el.find('#tempNames');
+            var tempColl = this.parentContext.tempCollection.toJSON();
+
+            tempContainer.html(this.tempNamesTemplate({tempNames : tempColl}));
         },
 
         showLinksTable: function(){
@@ -77,6 +99,10 @@ define([
             var this_el = this.$el;
             var form = this_el.find('#addTempForm')[0];
             var formData = new FormData(form);
+
+            if (this.linkedTemplates.length > 0){
+                formData.append('linked_templates', this.linkedTemplates)
+            }
 
             $.ajax({
                 url: '/templates',
@@ -116,6 +142,7 @@ define([
             this.delegateEvents();
 
             this.appendLinksNames();
+            this.appendTempNames();
 
             return this;
         }
