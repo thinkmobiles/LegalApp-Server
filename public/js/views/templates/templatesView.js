@@ -27,8 +27,8 @@ define([
 
         templateGridItem : _.template(TempGridItem),
         templateListItem : _.template(TempListItem),
-        templateList : _.template(TempList),
-        templateGrid : _.template(TempGrid),
+        template_list : _.template(TempList),
+        template_grid : _.template(TempGrid),
 
         initialize: function (options) {
             this.render();
@@ -37,7 +37,7 @@ define([
             this.stateModel = new Backbone.Model();
             this.stateModel.set('viewType', options.viewType);
 
-            this.listenTo(this.tempCollection, 'reset', this.renderAlltemplates);
+            this.listenTo(this.tempCollection, 'reset add', this.renderAlltemplates);
             this.listenTo(this.stateModel, 'change:viewType', this.renderAlltemplates);
         },
 
@@ -53,8 +53,12 @@ define([
         },
 
         goToAddTemplate : function(){
+            var self = this;
             var currentView =  new AddTemplate({parentCont : this});
-            currentView.on('addInParentView', this.addOneGrid, this);
+
+            //currentView.on('addInParentView', this.addOneGrid, this);
+            //currentView.listenTo(self.tempCollection, 'add', self.renderAlltemplates);
+            //currentView.on('addInParentView', this.renderAlltemplates, this);
             this.$el.find('#addTemplateContainer').html(currentView.el);
         },
 
@@ -67,41 +71,29 @@ define([
         },
 
         renderAlltemplates : function(){
-            var self = this;
-            var innerContext='';
             var currentCollection = this.tempCollection.toJSON();
             var viewTp = this.stateModel.get('viewType');
+            var tempName = 'template_' + viewTp;
+            var urlName = 'templates/'+viewTp;
 
-            if (viewTp === 'grid') {
-                //currentCollection.forEach(function (template) {
-                //    innerContext = self.templateGridItem(template) + innerContext;
-                //});
-                this.$el.find('#allTemplatesCont').html(this.templateGrid({tempList : currentCollection}));
-            }
-
-            if (viewTp === 'list') {
-                //currentCollection.forEach(function (template) {
-                //    innerContext = self.templateListItem(template) + innerContext;
-                //});
-                this.$el.find('#allTemplatesCont').html(this.templateList({tempList : currentCollection}));
-            }
-
-            //this.$el.find('#allTemplatesCont').html(innerContext);
+            this.$el.find('#allTemplatesCont').html(this[tempName]({tempList : currentCollection}));
+            Backbone.history.navigate(urlName);
         },
 
-        addOneGrid: function(model){
-            var viewTp = this.stateModel.get('viewType');
+        /*addOneGrid: function(model){
+            //var viewTp = this.stateModel.get('viewType');
+            this.tempCollection.add(model);
 
-            if (viewTp === 'grid') {
-                this.$el.append(this.templateGridItem(model));
-            }
+            //if (viewTp === 'grid') {
+            //    this.$el.append(this.templateGridItem(model));
+            //}
+            //
+            //if (viewTp === 'list') {
+            //    this.$el.find('#allTemplatesCont>ul').append(this.templateListItem(model));
+            //}
 
-            if (viewTp === 'list') {
-                this.$el.find('#allTemplatesCont>ul').append(this.templateListItem(model));
-            }
 
-
-        },
+        },*/
 
         render: function () {
 

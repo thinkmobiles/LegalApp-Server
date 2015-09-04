@@ -29,7 +29,6 @@ define([
             this.stateModel = new Backbone.Model();
             this.stateModel.set('viewType', options.viewType);
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
-            //this.listenTo(this.stateModel, 'change:viewType', this.createOurView());
             this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
             $.ajax({

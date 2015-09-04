@@ -47,14 +47,15 @@ define([
         },
 
         render: function () {
+            var self = this;
             this.$el.html(_.template(ContactTemp))
                 .dialog({
                     closeOnEscape: false,
                     //autoOpen: true,
-                    dialogClass: "contactDialog",
-                    modal      : true,
-                    width      : "300px",
-                    height     : "300px",
+                    dialogClass  : "contactDialog",
+                    modal        : true,
+                    width        : "300px",
+                    height       : "300px",
                     close : function(){
                         self.remove()
                     }

@@ -45,16 +45,5 @@ require(['app', 'socketio'], function(app, io){
         }
     };
 
-    var socket = io.connect({
-        transports: ['websocket']
-    });
-
-    socket.emit('authorize',{userId: 1, permissions: 1});
-
-    socket.on('newUser', function (user) {
-        console.log('>>> newUser', user);
-        App.events.trigger('newUser', user);
-    });
-
-    app.initialize();
+    app.initialize(io);
 });

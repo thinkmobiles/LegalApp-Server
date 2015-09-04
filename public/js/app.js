@@ -5,12 +5,20 @@
 define([
     'router',
     'communication',
-    'events',
     'custom'
-], function (Router, Communication, Events, Custom) {
+], function (Router, Communication, Custom) {
 
-    var initialize = function () {
+    var initialize = function (socketio) {
         var appRouter;
+        var events;
+        var socket = socketio.connect({
+            transports: ['websocket']
+        });
+
+        socket.on('newUser', function (user) {
+            //console.log('>>> newUser', user);
+            App.Events.trigger('newUser', user);
+        });
 
         App.sessionData = new Backbone.Model({
             authorized  : false,
@@ -22,6 +30,38 @@ define([
         App.Badge = new Backbone.Model({
             pendingUsers:  0,
             notifications: 0
+        });
+
+        App.Collections = {};
+        App.Events = _.extend({}, Backbone.Events);
+
+        events = App.Events;
+
+        events.on('authorized', function () {
+            var sessionData = App.sessionData;
+            var socketAuth = {
+                userId: sessionData.get('userId'),
+                permissions: sessionData.get('role')
+            };
+
+            //console.log('>>> events.authorized');
+            socket.emit('authorize', socketAuth);
+        });
+
+        events.on('logout', function () {
+            //console.log('>>> events.logout');
+
+            var sessionData = App.sessionData;
+            var socketAuth = {
+                userId: sessionData.get('userId'),
+                permissions: sessionData.get('role')
+            };
+
+            socket.emit('logout', socketAuth);
+        });
+
+        events.on('newUser', function (user) {
+            App.Collections.pendingCollection.add(user);
         });
 
         appRouter = new Router();
