@@ -24,7 +24,7 @@ define([
 
         initialize: function () {
             this.listenTo(App.sessionData, 'change:authorized', this.render);
-            this.listenTo(App.sessionData, 'change:user', this.render);
+            this.listenTo(App.sessionData, 'change:user', this.renderUser);
             this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
         },
 
@@ -94,17 +94,30 @@ define([
         render: function () {
             var authorized = App.sessionData.get('authorized');
             var user = App.sessionData.get('user');
-
             var data = {
                 authorized : authorized,
                 username   : user
             };
+            var pendingUsersCount = App.Badge.attributes.pendingUsers;
 
             this.$el.html(_.template(TopTemplate)(data));
             $('#leftMenu').html(_.template(LeftTemplate));
 
-            this.getAvatar();
             this.initializeBadges();
+
+            if (pendingUsersCount) {
+                this.updatePendingUsersBadge();
+            }
+
+            return this;
+        },
+
+        renderUser: function () {
+            var authorized = App.sessionData.get('authorized');
+            var user = App.sessionData.get('user');
+
+            this.$el.find('.userName').html(user);
+            this.getAvatar();
 
             return this;
         },
@@ -126,13 +139,13 @@ define([
 
         initializeBadges: function () {
             $.ajax({
-                url: "/users/search",
+                url: "/users/count",
                 type: "GET",
                 data: {
                     status: -1
                 },
-                success: function (pendingUsers) {
-                    App.Badge.set('pendingUsers', pendingUsers.length);
+                success: function (response) {
+                    App.Badge.set('pendingUsers', response.count);
                 }
             });
         }

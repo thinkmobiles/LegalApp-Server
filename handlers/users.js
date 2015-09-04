@@ -1086,7 +1086,6 @@ var UsersHandler = function (PostGre) {
         var searchTerm = params.value;
         var status = params.status;
         var signAuthority = params.signAuthority;
-        //var field = params.field;
         var page = params.page || 1;
         var limit = params.count || 10;
         var orderBy = params.orderBy || TABLES.PROFILES + '.first_name';
@@ -1100,7 +1099,6 @@ var UsersHandler = function (PostGre) {
             TABLES.PROFILES + '.phone',
             TABLES.PROFILES + '.permissions',
             TABLES.PROFILES + '.sign_authority',
-            //TABLES.USER_COMPANIES + '.id as user_company_id',
             TABLES.COMPANIES + '.id as company_id',
             TABLES.COMPANIES + '.name as company_name',
             knex.raw(
@@ -1121,8 +1119,6 @@ var UsersHandler = function (PostGre) {
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
-
-        //console.log(JSON.stringify(columns));
 
         query.where(function (qb) {
 
@@ -1163,26 +1159,6 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
-                /*
-                *
-                * var columns = [
-                 TABLES.USERS + '.id',
-                 TABLES.USERS + '.email',
-                 TABLES.USERS + '.status',
-                 TABLES.PROFILES + '.first_name',
-                 TABLES.PROFILES + '.last_name',
-                 TABLES.PROFILES + '.phone',
-                 TABLES.PROFILES + '.permissions',
-                 TABLES.PROFILES + '.sign_authority',
-                 //TABLES.USER_COMPANIES + '.id as user_company_id',
-                 TABLES.COMPANIES + '.id as company_id',
-                 TABLES.COMPANIES + '.name as company_name',
-                 knex.raw(
-                 "CONCAT(" + TABLES.PROFILES + ".first_name, ' ', " + TABLES.PROFILES + ".last_name) AS value"
-                 )
-                 ];
-                * */
-
                 rows.forEach(function (row) {
                     row.profile = {
                         first_name: row.first_name,
@@ -1208,6 +1184,64 @@ var UsersHandler = function (PostGre) {
                     users.push(row);
                 });
                 res.status(200).send(users);
+            });
+    };
+
+    this.countUsers = function (req, res, next) {
+        var companyId = req.session.companyId;
+        var params = req.query;
+        var permissions = req.session.permissions;
+        var searchTerm = params.value;
+        var status = params.status;
+        var signAuthority = params.signAuthority;
+        var query;
+
+        if (status) {
+            status = parseInt(status);
+            if (isNaN(status)) {
+                return next(badRequests.InvalidValue({param: 'status', value: status}));
+            }
+        }
+
+        query = knex(TABLES.USERS)
+            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
+            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
+
+        query.where(function () {
+
+            if (status !== undefined) {
+                this.where('status', status);
+            } else {
+                this.where('status', '<>', STATUSES.DELETED);
+            }
+
+            if (!session.isAdmin(req)) {
+                this.where(TABLES.COMPANIES + '.id', companyId);
+            }
+
+            if (searchTerm) {
+                searchTerm = searchTerm.toLowerCase();
+                this.whereRaw(
+                    "LOWER(first_name) LIKE '%" + searchTerm + "%' "
+                    + "OR LOWER(last_name) LIKE '%" + searchTerm + "%' "
+                    + "OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE '%" + searchTerm + "%' "
+                );
+            }
+
+            if (signAuthority === 'true') {
+                this.where('sign_authority', true);
+            }
+        });
+
+        query
+            .count('users.id')
+            .exec(function (err, rows) {
+                if (rows && rows.length) {
+                    res.status(200).send(rows[0]);
+                } else {
+                    res.status(200).send({count: "0"});
+                }
             });
     };
 
