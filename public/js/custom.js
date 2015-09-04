@@ -25,6 +25,7 @@ define([],function () {
                 userId     : data.id
             });
             $('body').addClass('loggedState');
+            App.Events.trigger('authorized', data);
 
             return Backbone.history.navigate(url, {trigger: true});
         } else {

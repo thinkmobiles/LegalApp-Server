@@ -24,11 +24,13 @@ var Session = function (postGre) {
         req.session.loggedIn = true;
         req.session.userId = userModel.id;
 
-        if (options && options.rememberMe) {
+
+        if (options && options.rememberMe === 'true') {
             req.session.rememberMe = true;
-            req.session.cookie.maxAge = 1000 * 3600 * 24 * 365 * 5;
+            req.session.cookie.maxAge = 1000 * 3600 * 24 * 365 * 5; //5 year
         } else {
             req.session.rememberMe = false;
+            req.session.cookie.maxAge = CONSTANTS.SESSION_MAX_AGE;
         }
 
         res.status(status).send({ success: MESSAGES.SUCCESS_SIGN_IN, user: userModel });

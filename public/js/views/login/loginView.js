@@ -92,14 +92,16 @@ define([
                 dataType : 'json',
                 data     : data,
                 success: function (res) {
-                    var profile = res.user.profile;
+                    var user = res.user;
+                    var profile = user.profile;
 
                     $('body').addClass('loggedState');
                     App.sessionData.set({
                         authorized : true,
                         user       : profile.first_name+" "+profile.last_name,
                         role       : profile.permissions,
-                        company    : res.user.company[0].id
+                        company    : user.company[0].id,
+                        userId     : user.id
                     });
                     App.router.navigate("users", {trigger: true});
                     self.stateModel.set({
@@ -107,13 +109,15 @@ define([
                         email       : '',
                         errorObject : false
                     });
+                    App.Events.trigger('authorized');
                 },
                 error: function (err) {
                     App.sessionData.set({
                         authorized : false,
                         user       : null,
                         role       : null,
-                        company    : null
+                        company    : null,
+                        userId     : null
                     });
 
                     self.stateModel.set({

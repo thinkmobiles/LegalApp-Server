@@ -76,11 +76,13 @@ define([
                 success: function () {
                     $('body').removeClass('loggedState');
 
+                    App.Events.trigger('logout');
                     App.sessionData.set({
                         authorized : false,
                         user       : null,
                         role       : null,
-                        company    : null
+                        company    : null,
+                        userId     : null
                     });
                     App.router.navigate("login", {trigger: true});
                 },
@@ -98,15 +100,15 @@ define([
                 authorized : authorized,
                 username   : user
             };
-            var pendingUsersCount = App.Badge.attributes.pendingUsers;
 
             this.$el.html(_.template(TopTemplate)(data));
-            $('#leftMenu').html(_.template(LeftTemplate));
 
-            this.initializeBadges();
-
-            if (pendingUsersCount) {
-                this.updatePendingUsersBadge();
+            if (authorized) {
+                $('#leftMenu').html(_.template(LeftTemplate));
+                this.initializeBadges();
+                if (App.Badge.attributes.pendingUsers) {
+                    this.updatePendingUsersBadge();
+                }
             }
 
             return this;
