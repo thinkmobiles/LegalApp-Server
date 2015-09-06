@@ -64,7 +64,7 @@ define([
             var lastName  = thisEL.find('#addLName');
             var phone = thisEL.find('#addPhone');
             var email = thisEL.find('#addEmail');
-            var permissions = thisEL.find("#addRole option:selected");
+            var permissions = thisEL.find("#addRole option:selected").data('id');
             var sel_company = thisEL.find("#selectedCompany");
             var companyId = sel_company.attr('data-id');
 
@@ -73,7 +73,7 @@ define([
                 last_name   : lastName.val().trim(),
                 phone       : phone.val().trim(),
                 email       : email.val().trim(),
-                permissions : permissions.data('id')
+                permissions : this.currentState ? permissions : (permissions+10)
             };
 
             if (!this.currentState && +companyId === 0){

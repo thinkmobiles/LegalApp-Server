@@ -6,8 +6,6 @@ define([
     'text!templates/templates/templatesTemplate.html',
     'text!templates/templates/templatesGridTemplate.html',
     'text!templates/templates/templatesListTemplate.html',
-    'text!templates/templates/templatesGrid.html',
-    'text!templates/templates/templatesList.html',
     'views/templates/addTemplate/addTemplateView',
     'collections/templatesCollection'
 
@@ -15,8 +13,6 @@ define([
     TempTemplate,
     TempGrid,
     TempList,
-    TempGridItem,
-    TempListItem,
     AddTemplate,
     TempCollection) {
 
@@ -25,8 +21,6 @@ define([
 
         el : '#wrapper',
 
-        templateGridItem : _.template(TempGridItem),
-        templateListItem : _.template(TempListItem),
         template_list : _.template(TempList),
         template_grid : _.template(TempGrid),
 
@@ -53,12 +47,8 @@ define([
         },
 
         goToAddTemplate : function(){
-            var self = this;
             var currentView =  new AddTemplate({parentCont : this});
 
-            //currentView.on('addInParentView', this.addOneGrid, this);
-            //currentView.listenTo(self.tempCollection, 'add', self.renderAlltemplates);
-            //currentView.on('addInParentView', this.renderAlltemplates, this);
             this.$el.find('#addTemplateContainer').html(currentView.el);
         },
 
@@ -79,21 +69,6 @@ define([
             this.$el.find('#allTemplatesCont').html(this[tempName]({tempList : currentCollection}));
             Backbone.history.navigate(urlName);
         },
-
-        /*addOneGrid: function(model){
-            //var viewTp = this.stateModel.get('viewType');
-            this.tempCollection.add(model);
-
-            //if (viewTp === 'grid') {
-            //    this.$el.append(this.templateGridItem(model));
-            //}
-            //
-            //if (viewTp === 'list') {
-            //    this.$el.find('#allTemplatesCont>ul').append(this.templateListItem(model));
-            //}
-
-
-        },*/
 
         render: function () {
 
