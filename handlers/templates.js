@@ -259,7 +259,6 @@ var TemplatesHandler = function (PostGre) {
         var templateId = req.params.id;
         var criteria = {
             id: templateId
-            //company_id: companyId
         };
         var fetchParams = {
             require: true,
@@ -279,15 +278,18 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.removeTemplate = function (req, res, next) {
-        var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
         var templateId = req.params.id;
         var criteria = {
-            id: templateId,
-            company_id: companyId
+            id: templateId
         };
         var fetchParams = {
             require: true
         };
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+            return next(badRequests.AccessError());
+        }
 
         async.waterfall([
 
@@ -338,14 +340,18 @@ var TemplatesHandler = function (PostGre) {
     this.updateTemplate = function (req, res, next) {
         var templateSaveData = self.prepareSaveData(req.body);
         var templateId = req.params.id;
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
         var criteria = {
-            id: templateId,
-            company_id: companyId
+            id: templateId
+            //company_id: companyId
         };
         var fetchOptions = {
             require: true
         };
+
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+            return next(badRequests.AccessError());
+        }
 
         if (Object.keys(templateSaveData).length === 0) {
             return next(badRequests.NotEnParams({message: 'Nothing to update'}))

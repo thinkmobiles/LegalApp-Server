@@ -339,7 +339,7 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
-                profileData.permissions = PERMISSIONS.SUPER_ADMIN;
+                profileData.permissions = PERMISSIONS.CLIENT_ADMIN;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
@@ -1088,7 +1088,7 @@ var UsersHandler = function (PostGre) {
         var signAuthority = params.signAuthority;
         var page = params.page || 1;
         var limit = params.count || 10;
-        var orderBy = params.orderBy || TABLES.PROFILES + '.first_name';
+        var orderBy = params.orderBy || 'value';
         var order = params.order || 'ASC';
         var columns = [
             TABLES.USERS + '.id',

@@ -2,6 +2,7 @@
 
 var STATUSES = require('../constants/statuses');
 var TABLES = require('../constants/tables');
+var BUCKETS = require('../constants/buckets');
 
 var badRequests = require('../helpers/badRequests');
 var tokenGenerator = require('../helpers/randomPass');
@@ -17,6 +18,10 @@ module.exports = function (PostGre, ParentModel) {
 
         company: function () {
             return this.belongsTo(PostGre.Models.Company);
+        },
+
+        File: function () {
+            return this.morphOne(PostGre.Models.Attachment, 'attacheable');
         },
 
         assignedUser: function () {
@@ -151,6 +156,33 @@ module.exports = function (PostGre, ParentModel) {
             documentModel
                 .save(saveData, {patch: true})
                 .exec(callback);
+        },
+
+        toJSON: function () {
+            var attributes;
+            var pdfFile;
+            var key;
+            //var name;
+            var bucket = BUCKETS.PDF_FILES;
+            var url;
+
+            attributes = ParentModel.prototype.toJSON.call(this);
+
+            if (attributes.id && this.relations && this.relations.File) {
+                pdfFile = this.relations.File;
+
+                if (pdfFile.id && pdfFile.attributes.key && pdfFile.attributes.name) {
+                    //name = pdfFile.attributes.name;
+                    key = pdfFile.attributes.key;
+                    url = PostGre.Models.Image.uploader.getFileUrl(key, bucket);
+                }
+
+                attributes.File = {
+                    url: url
+                };
+            }
+
+            return attributes;
         }
 
 

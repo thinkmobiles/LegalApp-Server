@@ -45,23 +45,5 @@ require(['app', 'socketio'], function(app, io){
         }
     };
 
-    /*var socket = io.connect({
-        transports: ['websocket']
-    });
-
-
-   /!* socket.on('welcome', function () {
-        var model = App.sessionData;
-
-        console.log('>>> welcome');
-        socket.emit('authorize',{userId: model.get('userId'), permissions: model.get('role')});
-
-    });*!/
-
-    socket.on('newUser', function (user) {
-        console.log('>>> newUser', user);
-        App.Events.trigger('newUser', user);
-    });*/
-
     app.initialize(io);
 });
