@@ -77,7 +77,7 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.createTemplate = function (req, res, next) {
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
         var options = req.body;
         var templateFile = req.files.templateFile;
         var name = options.name;
@@ -144,7 +144,7 @@ var TemplatesHandler = function (PostGre) {
                 var saveData = {
                     name: name,
                     link_id: linkId,
-                    company_id: companyId,
+                    //company_id: companyId,
                     html_content: htmlContent,
                     has_linked_template: hasLinkedTemplate,
                     description: description

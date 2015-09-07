@@ -23,6 +23,12 @@ define([
         render: function () {
             this.$el.html(_.template(TaskTemp));
             return this;
+        },
+
+        afterRender: function (){
+            var navContainer = $('.sidebar-menu');
+            navContainer.find('.active').removeClass('active');
+            navContainer.find('#nav_task').addClass('active')
         }
 
     });
