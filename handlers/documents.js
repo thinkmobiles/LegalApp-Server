@@ -894,7 +894,7 @@ var DocumentsHandler = function (PostGre) {
         var userModel;
         var check;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             check = companyId;
         }
 
@@ -903,11 +903,13 @@ var DocumentsHandler = function (PostGre) {
         }
 
         if (currentUserId === assignedId) {
-
-            if (check) {
-                if (signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                    return next(badRequests.InvalidValue({param: 'signature'}));
-                }
+            //if CLIENT try to sign document and signature from canvas is invalid
+            if (check && signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                return next(badRequests.InvalidValue({param: 'signature'}));
+            }
+            //if member of Mciness company try to sign document from canvas
+            if (!check && signImage){
+                return next(badRequests.InvalidValue({message:'You must sign document by uploaded signature'}));
             }
 
             userIds = [assignedId];
@@ -927,6 +929,7 @@ var DocumentsHandler = function (PostGre) {
                     .then(function (documentModel) {
                         var docCompanyId = documentModel.get('company_id');
 
+                        //check if CLIENT try to sign document, he can't sign document not from his company
                         if (check && (check !== docCompanyId)) {
                             return next(badRequests.AccessError());
                         }
@@ -942,7 +945,7 @@ var DocumentsHandler = function (PostGre) {
                     .catch(next);
             },
 
-            //check sign_authority
+            //check sign_authority and has_sign_image or not
             function (documentModel, cb) {
                 var criteria;
 
@@ -960,10 +963,19 @@ var DocumentsHandler = function (PostGre) {
                     .fetch({require: true})
                     .then(function (profileModel) {
                         var signAuthority = profileModel.get('sign_authority');
+                        var hasSignImage = profileModel.get('has_sign_image');
 
                         if (!signAuthority) {
                             return next(badRequests.AccessError({message: 'You don\'t have sign authority'}))
+                        } else {
+                            if (!check && !hasSignImage) {
+                                return next(badRequests.NotEnParams({
+                                    message: 'Need upload sign image',
+                                    required: 'sign_image'
+                                }));
+                            }
                         }
+
                         cb(null, documentModel);
                     })
                     .catch(ProfileModel.NotFoundError, function (err) {
