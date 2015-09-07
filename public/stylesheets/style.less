@@ -634,6 +634,56 @@ a {
       width: 26%;
       float: left;
     }
+    .editUser-centerLeft{
+      width: 10%;
+      float: left;
+      .check{
+        margin: 37px 0 17px;
+        overflow: hidden;
+        input[type="checkbox"]{
+          display: none;
+        }
+        label {
+          display: inline-block;
+          width: 22px;
+          height: 22px;
+          border: 1px solid #909090;
+          position: relative;
+          float: left;
+          cursor: pointer;
+          margin-right: 6px;
+        }
+        input[type="checkbox"]:checked + label{
+          border-color: #e31937;
+        }
+        input[type="checkbox"]:checked + label:after {
+          content: '';
+          background: url("../images/check-red.png") no-repeat center;
+          height: 13px;
+          width: 17px;
+          position: absolute;
+          top: 5px;
+          left: 2px;
+        }
+        span{
+          display: block;
+          .font-oss;
+          font-size: 14px;
+          line-height: 24px;
+          color: #909090;
+          margin-left: 32px;
+          width: 150px;
+        }
+      }
+    }
+    .editUser-centerRight{
+      width: 24%;
+      float: left;
+    }
+    .editUser-right{
+      width: 10%;
+      float: left;
+    }
   }
   th,
   td{

@@ -1,42 +1,47 @@
 <%var permiss = usrMdl.profile.permissions%>
+<td colspan="4">
+    <div>
+        <div class="editUser-left">
+            <label for="editFName">First name</label><br>
+            <input type="text" id="editFName" value="<%= usrMdl.profile.first_name%>">
 
-<h3 style="display: none;">Edit User</h3>
-<div class="editUser-left">
-    <label for="editFName">First name</label><br>
-    <input type="text" id="editFName" value="<%= usrMdl.profile.first_name%>">
+            <label for="editLName">Last name</label><br>
+            <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
+        </div>
+        <div class="editUser-centerLeft">
+            <label for="editRole">Role</label>
+            <select id="editRole">
+                <option data-id="3" <%= (permiss === 3 || permiss === 13) ? 'selected' : ''%> >Viewer</option>
+                <option data-id="2" <%= (permiss === 2 || permiss === 12) ? 'selected' : ''%> >Editor</option>
+                <%if (role === 0){%>
+                <option data-id="1" <%= (permiss === 1 || permiss === 11) ? 'selected' : ''%> >Admin</option>
+                <%}%>
+            </select>
+            <div class="check">
+                <input type="checkbox" id="editStatus" value="<%= usrMdl.status ? 0 : 1%>">
+                <label for="editStatus"><%= usrMdl.status ? 'Delete User' : 'Activate User'%></label>
+            </div>
+        </div>
+        <div class="editUser-centerRight">
+            <div class="check">
+                <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
+                <label for="editSign">Authorization to signing</label>
+            </div>
 
-    <label for="editLName">Last name</label><br>
-    <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
-</div>
-<div class="editUser-centerLeft">
-    <label for="editRole">Role</label>
-    <select id="editRole">
-        <option data-id="3" <%= (permiss === 3 || permiss === 13) ? 'selected' : ''%> >Viewer</option>
-        <option data-id="2" <%= (permiss === 2 || permiss === 12) ? 'selected' : ''%> >Editor</option>
-        <%if (role === 0){%>
-        <option data-id="1" <%= (permiss === 1 || permiss === 11) ? 'selected' : ''%> >Admin</option>
-        <%}%>
-    </select>
-
-    <input type="checkbox" id="editStatus" value="<%= usrMdl.status ? 0 : 1%>">
-    <label for="editStatus"><%= usrMdl.status ? 'Delete User' : 'Activate User'%></label>
-</div>
-<div class="editUser-centerRight">
-    <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
-    <label for="editSign">Authorization to signing</label>
-
-    <input type="button" id="editBtn" value="Save Changes">
-</div>
-<div id="signInfoBox" class="editUser-right">
-    <div id="signInfo">
-        <%if (usrMdl.profile.has_sign_image){%>
-            <img class="trueSignState" src="ddd">
-            <label for="inputImg">Replace signature</label>
-        <%} else {%>
-            <img class="falseSignState" src="ddd">
-            <label for="inputImg">Upload signature</label>
-        <%}%>
+            <input type="button" id="editBtn" value="Save Changes">
+        </div>
+        <div id="signInfoBox" class="editUser-right">
+            <div id="signInfo">
+                <%if (usrMdl.profile.has_sign_image){%>
+                    <img class="trueSignState" src="ddd">
+                    <label for="inputImg">Replace signature</label>
+                <%} else {%>
+                    <img class="falseSignState" src="ddd">
+                    <label for="inputImg">Upload signature</label>
+                <%}%>
+            </div>
+            <div id="signBox"></div>
+            <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
+        </div>
     </div>
-    <div id="signBox"></div>
-    <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
-</div>
+</td>
