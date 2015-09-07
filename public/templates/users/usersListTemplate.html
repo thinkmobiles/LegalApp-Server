@@ -27,7 +27,7 @@
         <%}%>
     </td>
     <td class="rCheck">
-        <input id="check-1" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-1"></label>
+        <input id="check-<%= user.id%>" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-<%= user.id%>"></label>
     </td>
     <td class="rDisk">
         <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
