@@ -27,6 +27,7 @@ var DocumentsHandler = function (PostGre) {
     var FieldModel = Models.Field;
     var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
+    var ProfileModel = Models.Profile;
     var LinkFieldsModel = Models.LinkFields;
     var SecretKeyModel = Models.SecretKey;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
@@ -935,6 +936,36 @@ var DocumentsHandler = function (PostGre) {
                     })
                     .catch(DocumentModel.NotFoundError, function (err) {
                         next(badRequests.NotFound());
+                    })
+                    .catch(next);
+            },
+
+            //check sign_authority
+            function (documentModel, cb) {
+                var criteria;
+
+                if (!willBeSignedNow) {
+                    return cb(null, documentModel);
+                }
+
+                criteria = {
+                    id: currentUserId
+                };
+
+                ProfileModel
+                    .forge()
+                    .where(criteria)
+                    .fetch({require:true})
+                    .then(function (profileModel) {
+                        var signAuthority = profileModel.get('sign_authority');
+
+                        if (!signAuthority){
+                            return next(badRequests.AccessError({message:'You don\'t have sign authority'}))
+                        }
+                        cb(null, documentModel);
+                    })
+                    .catch(ProfileModel.NotFoundError, function(err){
+                        return next(badRequests.NotFound())
                     })
                     .catch(next);
             },
