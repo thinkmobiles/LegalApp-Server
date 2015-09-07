@@ -4,26 +4,31 @@
 
 define([
     'text!templates/menu/iWantToTemplate.html'
-
 ], function (WantTemp) {
 
     var View;
     View = Backbone.View.extend({
 
+        template: _.template(WantTemp),
+
         initialize: function () {
+            this.getCollection();
             this.render();
         },
 
         events : {
-            'focusout #iWantTo' : 'closeVeiw'
+            'focusout #iWantTo' : 'closeView',
+            'click .templateName': 'closeView'
         },
 
-        closeVeiw: function (){
-            this.remove()
+        closeView: function (){
+            this.remove();
         },
 
         render: function () {
-            this.$el.html(_.template(WantTemp))
+            var self = this;
+
+            this.$el.html(this.template())
                 .dialog({
                     closeOnEscape: false,
                     autoOpen: true,
@@ -31,11 +36,43 @@ define([
                     modal: true,
                     width: "600px",
                     close : function(){
-                        self.remove()
+                        self.closeView();
                     }
                 });
 
             return this;
+        },
+
+        renderItems: function (collection) {
+            var container = this.$el.find('ul');
+            var html = '';
+
+            collection.forEach(function (item) {
+                var id = item.id;
+                var li = '<li class="templateName" data-id="' + id + '">';
+                li += '<a href="#templates/preview/"' + id + '>' + item.name + '</a>';
+                li += '</li>';
+                html += li;
+            });
+
+            container.html(html);
+
+            return this;
+        },
+
+        getCollection: function () {
+            var self = this;
+
+            $.ajax({
+                url  : '/templates/',
+                type : 'GET',
+                success: function (response) {
+                    self.renderItems(response);
+                },
+                error: function (response, xhr) {
+                    self.errorNotification(xhr);
+                }
+            });
         }
 
     });

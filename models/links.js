@@ -9,11 +9,11 @@ var async = require('async');
 
 module.exports = function (PostGre, ParentModel) {
     var knex = PostGre.knex;
-    var removeLink = function (linkId, companyId, callback) {
+    var removeLink = function (linkId,/* companyId,*/ callback) {
         knex(TABLES.LINKS)
             .where({
-                id: linkId,
-                company_id: companyId
+                id: linkId
+                //company_id: companyId
             })
             .del()
             .exec(function (err, result) {
@@ -22,12 +22,12 @@ module.exports = function (PostGre, ParentModel) {
                 }
             })
     };
-    var removeLinkFields = function (linkId, companyId, callback) {
+    var removeLinkFields = function (linkId, /*companyId,*/ callback) {
         var subquery = knex.select('id')
             .from(TABLES.LINKS)
             .where({
-                id: linkId,
-                company_id: companyId
+                id: linkId
+                //company_id: companyId
             });
 
         knex(TABLES.LINKS_FIELDS)
@@ -49,14 +49,14 @@ module.exports = function (PostGre, ParentModel) {
         }
 
     }, {
-        removeById: function (linkId, companyId, callback) {
+        removeById: function (linkId, /*companyId,*/ callback) {
 
             async.waterfall([
                     function (cb) {
-                        removeLinkFields(linkId, companyId, cb);
+                        removeLinkFields(linkId, /*companyId,*/ cb);
                     },
                     function (result, cb) {
-                        removeLink(linkId, companyId, cb);
+                        removeLink(linkId, /*companyId,*/ cb);
                     }],
                 function (err, result) {
                     if (callback && typeof (callback) === 'function') {

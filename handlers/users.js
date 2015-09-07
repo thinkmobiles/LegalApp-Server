@@ -1159,6 +1159,10 @@ var UsersHandler = function (PostGre) {
                     return next(err);
                 }
 
+                if (params.format === 'single') {
+                    return res.status(200).send(rows);
+                }
+
                 rows.forEach(function (row) {
                     row.profile = {
                         first_name: row.first_name,

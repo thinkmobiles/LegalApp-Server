@@ -30,7 +30,7 @@ var LinksHandler = function (PostGre) {
     this.createLink = function (req, res, next) {
         var options = req.body;
 
-        options.company_id = req.session.companyId;
+        //options.company_id = req.session.companyId;
 
         async.waterfall([
 
@@ -95,12 +95,12 @@ var LinksHandler = function (PostGre) {
 
     this.updateLink = function (req, res, next) {
         var options = req.body;
-        options.company_id = req.session.companyId;
+        //options.company_id = req.session.companyId;
         var linksaveData = self.prepareSaveData(options);
         var linkId = req.params.id;
         var criteria = {
-            id: linkId,
-            company_id: options.company_id
+            id: linkId
+            //company_id: options.company_id
         };
         var fetchOptions = {
             require: true,
@@ -162,10 +162,10 @@ var LinksHandler = function (PostGre) {
 
     this.getLink = function (req, res, next) {
         var id = req.params.id;
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
         var criteria = {
-            id: id,
-            company_id: companyId
+            id: id
+            //company_id: companyId
         };
         var fetchOptions = {
             require: true,
@@ -184,11 +184,11 @@ var LinksHandler = function (PostGre) {
     };
 
     this.getLinks = function (req, res, next) {
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
 
         LinksModel
             .forge()
-            .where({company_id: companyId})
+            //.where({company_id: companyId})
             .fetchAll({withRelated: ['linkFields']})
             .exec(function (err, result) {
                 var linksModels;
@@ -208,11 +208,11 @@ var LinksHandler = function (PostGre) {
     };
 
     this.removeLink = function (req, res, next) {
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
         var linkid = req.params.id;
 
         LinksModel
-            .removeById(linkid, companyId, function (err) {
+            .removeById(linkid, /*companyId,*/ function (err) {
                 if (err) {
                     next(err);
                 } else {
