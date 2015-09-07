@@ -678,7 +678,8 @@ var DocumentsHandler = function (PostGre) {
         var documentId = req.params.id;
         var options = req.body;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR)) {
             options.companyId = companyId;
         }
 
@@ -894,7 +895,8 @@ var DocumentsHandler = function (PostGre) {
         var userModel;
         var check;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             check = companyId;
         }
 
@@ -968,6 +970,7 @@ var DocumentsHandler = function (PostGre) {
                         if (!signAuthority) {
                             return next(badRequests.AccessError({message: 'You don\'t have sign authority'}))
                         } else {
+                            //member of MCinees company must have sign_image
                             if (!check && !hasSignImage) {
                                 return next(badRequests.NotEnParams({
                                     message: 'Need upload sign image',
@@ -1119,7 +1122,8 @@ var DocumentsHandler = function (PostGre) {
         var permissions = req.session.permissions;
         var criteria;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             criteria = {
                 company_id: companyId
             }
@@ -1153,7 +1157,8 @@ var DocumentsHandler = function (PostGre) {
         };
         var check;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             check = companyId;
         }
 
@@ -1202,7 +1207,8 @@ var DocumentsHandler = function (PostGre) {
         };
         var check;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             check = companyId;
         }
 
@@ -1279,7 +1285,8 @@ var DocumentsHandler = function (PostGre) {
         var subQueryString;
         var fields;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             params.companyId = companyId;
         }
 
@@ -1332,7 +1339,8 @@ var DocumentsHandler = function (PostGre) {
             }
         }
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             byCompanyId = companyId;
         }
 
@@ -1678,7 +1686,8 @@ var DocumentsHandler = function (PostGre) {
         };
         var check;
 
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
+        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             check = companyId;
         }
 
