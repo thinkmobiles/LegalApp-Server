@@ -3,9 +3,10 @@
 </div>
 <div id="signersContainer">
     <ul>
-        <%someList.forEach(function(signer){%>
+        <%signUsers.forEach(function(signer){%>
         <li class="signItem" data-id="" id="<%= signer.id%>">
-            <input type="radio" name="signItem" value="<%= signer.first_name+' '+signer.last_name%>">
+            <input id="rad_<%= signer.id%>" type="radio" name="signItem">
+            <label for="rad_<%= signer.id%>"><%= signer.value%></label>
         </li>
         <%})%>
     </ul>
