@@ -91,7 +91,11 @@ var imagesUploader = function (dirConfig) {
         try {
             fs.writeFile(imagePath, imageData.data, function (err, data) {
                 if (callback && typeof callback === 'function') {
-                    callback(err, imageNameWithExt)
+                    callback(err, {
+                        name: imageData.name,
+                        nameWithExtension: imageNameWithExt,
+                        extension: imageData.extention
+                    });
                 }
             });
         }
@@ -205,7 +209,7 @@ var imagesUploader = function (dirConfig) {
             }
         }
         //var imagePath = rootDir + osPathData.slash + defaultUploadsDir + osPathData.slash + imageDir + osPathData.slash + imageName;
-        var imagePath = rootDir + osPathData.slash + imageDir + osPathData.slash + imageName + '.jpeg';
+        var imagePath = rootDir + osPathData.slash + imageDir + osPathData.slash + imageName;// + '.jpeg';
         fs.unlink(imagePath, function (err) {
             if (callback && typeof callback === 'function') {
                 callback(err);
