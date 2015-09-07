@@ -51,8 +51,14 @@ define([
 
 
         goToPreview: function(event){
-            var targetId = $(event.target).closest('.documentItem').data('id');
-            Backbone.history.navigate('documents/preview/'+targetId, {trigger : true});
+            var target = $(event.target).closest('.documentItem');
+            var targetId = target.data('id');
+            var targetStatus = target.data('val');
+            if (targetStatus === 1) {
+                Backbone.history.navigate('documents/preview/' + targetId, {trigger: true});
+            } else {
+                Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
+            }
         },
 
         renderDocumentsList: function (data) {

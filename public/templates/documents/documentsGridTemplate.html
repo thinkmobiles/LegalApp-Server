@@ -1,5 +1,5 @@
 <%documents.forEach(function(doc){%>
-    <div class="docGrid documentItem" data-id="<%=doc.id%>">
+    <div class="docGrid documentItem" data-val="<%= doc.status%>" data-id="<%=doc.id%>">
         <img src=".././images/bb.png">
         <span><%= doc.name%> <%= doc.created_at%></span>
     </div>
