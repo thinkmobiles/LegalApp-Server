@@ -7,9 +7,16 @@ define([
     'models/documentModel',
     'models/linkModel',
     'constants/forTemplate',
-    'views/templatesPre/docPreView'
+    'views/templatesPre/docPreView',
+    'views/custom/signatureBoxView'
 
-], function (CreateTemplate, DocModel, LinkModel, CONST, DocPreView) {
+], function (
+    CreateTemplate,
+    DocModel,
+    LinkModel,
+    CONST,
+    DocPreView,
+    SignView) {
 
     var View;
     View = Backbone.View.extend({
@@ -107,7 +114,7 @@ define([
 
                     if (status === 2) {
                         sendData = {
-                            id      : response.get('id'),
+                            id       : response.get('id'),
                             assignId : response.get('assigned_id')
                         };
                         self.sendMyDoc(sendData);
@@ -125,7 +132,11 @@ define([
         sendMyDoc: function(sendData){
             //var self = this;
             var docId = sendData.id;
-            var assignId = sendData.assignId;
+            var sesData = App.sessionData.toJSON();
+
+            if (sesData.companyId !==1) {
+
+            }
 
             $.ajax({
                 url  : "/documents/"+docId+"/signAndSend",

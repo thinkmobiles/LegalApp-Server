@@ -49,7 +49,6 @@ define([
         },
 
 
-
         goToPreview: function(event){
             var target = $(event.target).closest('.documentItem');
             var targetId = target.data('id');
@@ -86,13 +85,6 @@ define([
 
             this.getDocumentsByTemplateId();
         },
-
-        //searchDocuments: function (event) {
-        //    var target = $(event.target);
-        //    var templateId = target.closest('.templateItem').data('id');
-        //
-        //    this.getDocumentsByTemplateId(templateId);
-        //},
 
         getDocumentsByTemplateId: function (argTemplateId) {
             var self = this;

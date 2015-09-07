@@ -82,13 +82,6 @@ define([
         },
 
         render: function () {
-            //var authorized = App.sessionData.get('authorized');
-            //var user = App.sessionData.get('first_name') + ' ' +App.sessionData.get('last_name');
-            //var data = {
-            //    authorized : authorized,
-            //    username   : user
-            //};
-
             var data = App.sessionData.toJSON();
 
             this.$el.html(_.template(TopTemplate)(data));
