@@ -152,6 +152,12 @@ define([
             this.addTemplate();
 
             return this;
+        },
+
+        afterRender: function (){
+            var navContainer = $('.sidebar-menu');
+            navContainer.find('.active').removeClass('active');
+            navContainer.find('#nav_users').addClass('active')
         }
 
     });

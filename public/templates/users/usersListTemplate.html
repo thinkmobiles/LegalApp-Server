@@ -1,8 +1,8 @@
 <thead>
 <tr>
-    <th class="sortableData" data-sort="name">NAME</th>
+    <th class="sortableData" data-sort="name" width="26%">NAME</th>
     <% if (!state) {%>
-        <th class="sortableData" data-sort="company">COMPANY</th>
+        <th class="sortableData" data-sort="company" width="26%">COMPANY</th>
     <%}%>
     <th class="sortableData" data-sort="role">ROLE</th>
     <th data-sort="signing">SIGNING</th>
@@ -27,7 +27,7 @@
         <%}%>
     </td>
     <td class="rCheck">
-        <input type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled>
+        <input id="check-<%= user.id%>" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-<%= user.id%>"></label>
     </td>
     <td class="rDisk">
         <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
