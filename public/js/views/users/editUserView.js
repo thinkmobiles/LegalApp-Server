@@ -109,7 +109,7 @@ define([
             var thisEL = this.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
-            var permissions = thisEL.find("#editRole option:selected").data('id');
+            var permissions = thisEL.find(".addRole").data('id');
             var signing = thisEL.find('#editSign').prop('checked');
             var status = thisEL.find('#editStatus');
             var status_ch = status.prop('checked');
@@ -133,32 +133,12 @@ define([
 
             this.userModel.save(updateData,{
                 wait: true
-                //success: function (response) {
-                //    self.changeDataInRow();
-                //    self.remove();
-                //},
-                //error  : function(model, xhr){
-                //    alert('Error'); // todo message
-                //    //self.errorNotification(xhr);
-                //}
             });
-
-            //this.userCollection.set(this.userModel,{
-            //    remove : false,
-            //    success: function () {
-            //        self.changeDataInRow();
-            //        self.remove();
-            //    },
-            //    error  : function(model, xhr){
-            //        alert('Error'); // todo message
-            //        //self.errorNotification(xhr);
-            //    }
-            //});
         },
 
         render: function () {
             var self = this;
-            var role = App.sessionData.get('role');
+            var role = App.sessionData.get('permissions');
 
             this.$el.html(_.template(EditTemp)({
                 usrMdl : this.userModel.toJSON(),

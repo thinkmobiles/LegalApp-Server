@@ -44,7 +44,8 @@ define([
 
         events : {
             "click #createBtnNext" : "goToPreview",
-            "click #createBtnSave" : "letsSaveDoc"
+            "click #createBtnSave" : "letsSaveDoc",
+            "click #reAsignBtn"    : "chooseThisSigner"
         },
 
         inviteDataToFields: function(contentObject){
@@ -76,6 +77,16 @@ define([
             });
 
             return values;
+        },
+
+        chooseThisSigner: function(){
+            var signersId = $('#signersContainer').find('.signItem:checked').closest('li').data('id');
+
+            if (signersId){
+                alert('Olololo: '+signersId)
+            } else {
+                alert('Choose some user!')
+            }
         },
 
         goToPreview: function(){
@@ -132,7 +143,7 @@ define([
         },
 
         signMyDoc: function(sendData){
-            //var self = this;
+            var self = this;
             var docId = sendData.id;
             var sesData = App.sessionData.toJSON();
 
@@ -144,7 +155,12 @@ define([
                         url  : '/users/search',
                         data : {'signAuthority' : true},
                         success : function(result) {
-                            _.template(ReasignTemp)(result).dialog();
+                            self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
+                                autoOpen: true,
+                                dialogClass: "reSignDialog",
+                                modal: true,
+                                width: "600px"
+                            });
                         }
                     });
 
