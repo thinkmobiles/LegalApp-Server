@@ -904,8 +904,10 @@ var DocumentsHandler = function (PostGre) {
 
         if (currentUserId === assignedId) {
 
-            if (signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                return next(badRequests.InvalidValue({param: 'signature'}));
+            if (check) {
+                if (signImage && !CONSTANTS.BASE64_REGEXP.test(signImage)) {
+                    return next(badRequests.InvalidValue({param: 'signature'}));
+                }
             }
 
             userIds = [assignedId];
@@ -955,16 +957,16 @@ var DocumentsHandler = function (PostGre) {
                 ProfileModel
                     .forge()
                     .where(criteria)
-                    .fetch({require:true})
+                    .fetch({require: true})
                     .then(function (profileModel) {
                         var signAuthority = profileModel.get('sign_authority');
 
-                        if (!signAuthority){
-                            return next(badRequests.AccessError({message:'You don\'t have sign authority'}))
+                        if (!signAuthority) {
+                            return next(badRequests.AccessError({message: 'You don\'t have sign authority'}))
                         }
                         cb(null, documentModel);
                     })
-                    .catch(ProfileModel.NotFoundError, function(err){
+                    .catch(ProfileModel.NotFoundError, function (err) {
                         return next(badRequests.NotFound())
                     })
                     .catch(next);
