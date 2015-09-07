@@ -50,7 +50,7 @@ define([
             collection.forEach(function (item) {
                 var id = item.id;
                 var li = '<li class="templateName" data-id="' + id + '">';
-                li += '<a href="#templates/preview/"' + id + '>' + item.name + '</a>';
+                li += '<a href="#templates/preview/' + id + '">' + item.name + '</a>';
                 li += '</li>';
                 html += li;
             });

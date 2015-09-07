@@ -48,22 +48,36 @@ var DocumentsHandler = function (PostGre) {
     }
 
     function saveHtmlToPdf(options, callback) {
-        var name = CONSTANTS.DEFAULT_DOCUMENT_NAME;
-        var key = attachmentsHandler.computeKey(name);
-        var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, key);
-        var html;
+        var documentId = options.documentId;
+        var name = CONSTANTS.DEFAULT_DOCUMENT_NAME + '_' + documentId + '.pdf';
+        var key = attachmentsHandler.computeKey();
+        var fileName = key + '_' + name;
+        var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, fileName);
+        var result = {
+            name: name,
+            key: key
+        };
+        var html = options.html;
 
-        if (!options && !options.html) {
-            return callback(badRequests.NotEnParams({required: 'html'}));
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('--- create pdf file ------------------------');
+            console.log('>>> name', name);
+            console.log('>>> key', key);
+            console.log('>>> filePath', filePath);
+            console.log('--------------------------------------------');
         }
 
-        html = options.html;
+        /*if (!options && !options.html) {
+            return callback(badRequests.NotEnParams({required: 'html'}));
+        }
+        html = options.html;*/
 
         wkhtmltopdf(html, {output: filePath}, function (err) {
+
             if (err) {
                 return callback(err);
             }
-            callback(null, filePath);
+            callback(null, result);
         });
     }
 
@@ -1074,6 +1088,7 @@ var DocumentsHandler = function (PostGre) {
 
             //send mail notification:
             function (documentModel, users, cb) {
+                var accessToken = documentModel.get('access_token');
                 var documentJSON = documentModel.toJSON();
                 var company = documentJSON.company;
                 var status = documentJSON.status;
@@ -1090,14 +1105,14 @@ var DocumentsHandler = function (PostGre) {
                     console.log(documentJSON);
                     return cb(badRequests.InvalidValue({param: 'documents.status', value: status}));
                 }
-
+                documentJSON.access_token = accessToken;
                 mailerParams = {
                     srcUser: srcUser,
                     dstUser: dstUser,
                     company: company,
                     document: documentJSON
                 };
-
+                console.log(documentJSON);
                 console.log(mailerParams.dstUser);
 
                 mailer.onSendToSingnature(mailerParams);
@@ -1720,7 +1735,7 @@ var DocumentsHandler = function (PostGre) {
 
         async.waterfall([
 
-            //find document
+            //find the document:
             function (cb) {
                 DocumentModel
                     .find(criteria, fetchOptions)
@@ -1744,7 +1759,7 @@ var DocumentsHandler = function (PostGre) {
                     cb(null, documentModel);
                 }
                 else {
-                    return cb(badRequests.AccessError());
+                    cb(badRequests.AccessError());
                 }
             },
 
@@ -1813,7 +1828,7 @@ var DocumentsHandler = function (PostGre) {
             //if Client signed the document need to CREATE PDF
             function (documentModel, cb) {
                 var status = documentModel.get('status');
-                var options = {};
+                var pdfOptions = {};
                 var htmlContent;
 
                 if (status !== STATUSES.SIGNED_BY_CLIENT) {
@@ -1821,9 +1836,33 @@ var DocumentsHandler = function (PostGre) {
                 }
 
                 htmlContent = documentModel.get('html_content');
-                options.html = htmlContent;
+                pdfOptions.html = htmlContent;
+                pdfOptions.documentId = documentModel.id;
 
-                saveHtmlToPdf(options, function (err, pdfFilePath) {
+                saveHtmlToPdf(pdfOptions, function (err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, documentModel, result);
+                });
+            },
+
+            //try to insert into attachments:
+            function (documentModel, pdfParams, cb) {
+                var data;
+
+                if (!pdfParams) {
+                    return cb(null, documentModel);
+                }
+
+                data = {
+                    attacheable_id: documentModel.id,
+                    attacheable_type: TABLES.DOCUMENTS,
+                    name: pdfParams.name,
+                    key: pdfParams.key
+                };
+
+                attachmentsHandler.saveAttachment(data, function (err, attachmentModel) {
                     if (err) {
                         return cb(err);
                     }
