@@ -516,7 +516,7 @@ var UsersHandler = function (PostGre) {
             password: getEncryptedPass(password)
         };
         fetchOptions = {
-            withRelated: ['profile', 'company']
+            withRelated: ['profile', 'company', 'avatar']
         };
 
         UserModel

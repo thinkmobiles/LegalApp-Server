@@ -6,6 +6,8 @@ define([],function () {
 
     var runApplication = function (err, data) {
         var url;
+        var sessionInfo = {};
+
         url =  Backbone.history.fragment || Backbone.history.getFragment();
 
         if (url === "") {
@@ -17,13 +19,21 @@ define([],function () {
         }
 
         if (!err) {
-            App.sessionData.set({
-                authorized : true,
-                user       : data.profile.first_name+' '+data.profile.last_name,
+            sessionInfo = data.profile;
+            sessionInfo.authorized = true;
+            sessionInfo.companyId = data.company[0].id;
+            sessionInfo.userId  = data.id;
+            sessionInfo.avatar  = data.avatar.url;
+
+                /*App.sessionData.set({
+                //authorized : true,
+                //user       : data.profile.first_name+' '+data.profile.last_name,
                 role       : data.profile.permissions,
                 company    : data.company[0].id,
                 userId     : data.id
-            });
+            });*/
+            App.sessionData.set(sessionInfo);
+
             $('body').addClass('loggedState');
             App.Events.trigger('authorized', data);
 
@@ -31,9 +41,7 @@ define([],function () {
         } else {
             App.sessionData.set({
                 authorized : false,
-                user       : null,
-                role       : null,
-                company    : null,
+                companyId  : null,
                 userId     : null
             });
             $('body').removeClass('loggedState');

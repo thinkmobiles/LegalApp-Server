@@ -18,7 +18,7 @@ define([
         currentState : true,
 
         events: {
-            "click #addInvite"     : "actionUser",
+            "click #addInvite"     : "inviteUser",
             "click .selThisComp"   : "selectCurrentCompany",
             "click #goSaveCompany" : "goSaveCompany"
         },
@@ -119,17 +119,17 @@ define([
             });
         },
 
-        actionUser : function(){
+        /*actionUser : function(){
             if (this.editThisForm){
                 this.updateUser()
             } else {
                 this.inviteUser()
             }
-        },
+        },*/
 
         render: function () {
-            var role = App.sessionData.get('role');
-            var company = App.sessionData.get('company');
+            var role = App.sessionData.get('permissions');
+            var company = App.sessionData.get('companyId');
 
             this.$el.html(_.template(AddUserTemplate)({
                 edit   : false,

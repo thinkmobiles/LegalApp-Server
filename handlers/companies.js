@@ -119,7 +119,7 @@ var CompaniesHandler = function (PostGre) {
     };
 
     this.newCompany = function (req, res, next) {
-        var userId = req.session.userId || 1; //TODO: !!!
+        var userId = req.session.userId;
         var options = req.body;
         var createOptions;
 
@@ -163,6 +163,33 @@ var CompaniesHandler = function (PostGre) {
                 res.status(200).send(rows);
             })
             .catch(next);
+    };
+
+    this.getCompany = function (req, res, next) {
+        var companyId = req.params.id;
+        var criteria = {
+            id: companyId
+        };
+        var fetchOptions = {
+            require: true,
+            withRelated: ['logo']
+        };
+
+        // return AccessError if not SuperAdmin and not Admin and companyId !== session.companyId:
+        if (req.session.permissions !== PERMISSIONS.SUPER_ADMIN && req.session.permissions !== PERMISSIONS.ADMIN && (req.session.companyId) != companyId) {
+            return next(badRequests.AccessError());
+        }
+
+        CompanyModel
+            .find(criteria, fetchOptions)
+            .then(function (companyModel) {
+                res.status(200).send(companyModel);
+            })
+            .catch(CompanyModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+
     };
 
     this.getAllCompanies = function (req, res, next) {

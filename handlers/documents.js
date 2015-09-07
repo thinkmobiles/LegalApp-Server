@@ -1273,6 +1273,8 @@ var DocumentsHandler = function (PostGre) {
         var TEMPLATES = TABLES.TEMPLATES;
         var query = knex(TEMPLATES);
         var params = req.query;
+        var page = params.page || 1;
+        var limit = params.count;
         var subQuery;
         var subQueryString;
         var fields;
@@ -1291,7 +1293,14 @@ var DocumentsHandler = function (PostGre) {
 
         query
             .select(fields)
-            .orderBy(TEMPLATES + '.name')
+            .orderBy(TEMPLATES + '.name');
+
+        if (limit) {
+            query.offset(( page - 1 ) * limit)
+                .limit(limit);
+        }
+
+        query
             .exec(function (err, rows) {
                 if (err) {
                     return next(err);
@@ -1330,7 +1339,7 @@ var DocumentsHandler = function (PostGre) {
         if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
-            orderBy = DOCUMENTS + '.created_at';
+            orderBy = DOCUMENTS + '.name';
         }
 
         order = params.order || 'ASC';
