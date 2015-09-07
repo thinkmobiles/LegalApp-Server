@@ -152,14 +152,14 @@ var imagesHandler = function (PostGre) {
         saveParams = prepareParams(image);
 
         newImageName = image.key + '_' + image.name;
-        imageUploader.uploadImage(image.imageSrc, newImageName, bucket, function (err, imageData) {
+        imageUploader.uploadImage(image.imageSrc, newImageName, bucket, function (err, saveResult) {
             if (err) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.error(err);
                     // logWriter.log('handlers/images -> saveImage -> imageUploader.uploadImage', err);
                 }
             }
-            saveParams.name = fileName + '.' + imageData.extension;
+            saveParams.name = fileName + '.' + saveResult.extension;
             saveImageToDb(saveParams, callback);
 
         });

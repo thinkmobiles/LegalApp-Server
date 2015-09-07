@@ -335,7 +335,6 @@ var CompaniesHandler = function (PostGre) {
             return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
         }*/
 
-
         //try to find the company:
         var criteria = {
             id: companyId
@@ -369,7 +368,7 @@ var CompaniesHandler = function (PostGre) {
 
                     //try to update the logo:
                     logoUrl: function (cb) {
-                        if (!options.imageSrc) {
+                        if (imageSrc === undefined) {
                             return cb(null, null);
                         }
 
@@ -403,9 +402,6 @@ var CompaniesHandler = function (PostGre) {
 
                     res.status(200).send({success: 'success updated', company: companyJSON});
                 });
-
-
-
             })
             .catch(CompanyModel.NotFoundError, function (err) {
                 next(badRequests.NotFound());
