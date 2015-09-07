@@ -45,6 +45,12 @@ define([
         render: function () {
             this.$el.html(_.template(HelpTemp));
             return this;
+        },
+
+        afterRender: function (){
+            var navContainer = $('.sidebar-menu');
+            navContainer.find('.active').removeClass('active');
+            navContainer.find('#nav_help').addClass('active')
         }
 
     });
