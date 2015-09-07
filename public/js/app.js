@@ -40,7 +40,7 @@ define([
         events.on('authorized', function () {
             var sessionData = App.sessionData;
             var socketAuth = {
-                userId: sessionData.get('userId'),
+                userId     : sessionData.get('userId'),
                 permissions: sessionData.get('role')
             };
 
@@ -53,7 +53,7 @@ define([
 
             var sessionData = App.sessionData;
             var socketAuth = {
-                userId: sessionData.get('userId'),
+                userId     : sessionData.get('userId'),
                 permissions: sessionData.get('role')
             };
 

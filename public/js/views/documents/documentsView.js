@@ -212,6 +212,12 @@ define([
             });
 
             return this;
+        },
+
+        afterRender: function (){
+            var navContainer = $('.sidebar-menu');
+            navContainer.find('.active').removeClass('active');
+            navContainer.find('#nav_document').addClass('active')
         }
 
     });

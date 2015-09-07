@@ -194,7 +194,10 @@ define([
 
                     $.ajax({
                         url      : "/users/search",
-                        data     : {value : myTerm},
+                        data     : {
+                            value : myTerm,
+                            format : 'single'
+                        },
                         success  : function(response){
                             res(response);
                         }
