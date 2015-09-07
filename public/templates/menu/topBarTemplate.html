@@ -8,9 +8,9 @@
 
 <div id="rightTopBar">
     <div id="profileTop">
-        <img id="topBarLogo" src="">
+        <img id="topBarLogo" src="<%= avatar ? avatar : ''%>">
         <a href="#userProfile">
-            <div class="userName"><%= username%></div>
+            <div class="userName"><%= first_name%> <%= last_name%></div>
         </a>
     </div>
     <input type="button" value="Log out" id="buttonLogout">

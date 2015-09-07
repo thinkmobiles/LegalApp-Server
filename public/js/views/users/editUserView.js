@@ -11,6 +11,9 @@ define([
     var View;
     View = Backbone.View.extend({
 
+        tagName: 'tr',
+        className : 'editUserRow',
+
         initialize: function (options) {
             //var usId = options.userId;
             //this.userCollection = options.userColl;

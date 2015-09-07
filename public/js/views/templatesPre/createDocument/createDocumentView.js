@@ -4,12 +4,21 @@
 
 define([
     'text!templates/templatesPreview/createDocumentTemplate.html',
+    'text!templates/templatesPreview/reAsignTemplate.html',
     'models/documentModel',
     'models/linkModel',
     'constants/forTemplate',
-    'views/templatesPre/docPreView'
+    'views/templatesPre/docPreView',
+    'views/custom/signatureBoxView'
 
-], function (CreateTemplate, DocModel, LinkModel, CONST, DocPreView) {
+], function (
+    CreateTemplate,
+    ReasignTemp,
+    DocModel,
+    LinkModel,
+    CONST,
+    DocPreView,
+    SignView) {
 
     var View;
     View = Backbone.View.extend({
@@ -107,10 +116,10 @@ define([
 
                     if (status === 2) {
                         sendData = {
-                            id      : response.get('id'),
+                            id       : response.get('id'),
                             assignId : response.get('assigned_id')
                         };
-                        self.sendMyDoc(sendData);
+                        self.signMyDoc(sendData);
                     } else {
                         alert('Document was saved successfully');
                         Backbone.history.navigate('documents/list', {trigger : true});
@@ -122,11 +131,30 @@ define([
             });
         },
 
-        sendMyDoc: function(sendData){
+        signMyDoc: function(sendData){
             //var self = this;
             var docId = sendData.id;
-            var assignId = sendData.assignId;
+            var sesData = App.sessionData.toJSON();
 
+            if (sesData.companyId !==1) {
+                if (sesData.sign_authority) {
+                    new SignView();
+                } else {
+                    $.ajax({
+                        url  : '/users/search',
+                        data : {'signAuthority' : true},
+                        success : function(result) {
+                            _.template(ReasignTemp)(result).dialog();
+                        }
+                    });
+
+                }
+            }
+
+
+        },
+
+        sendMyDoc: function(sendData){
             $.ajax({
                 url  : "/documents/"+docId+"/signAndSend",
                 type : "POST",
@@ -142,6 +170,7 @@ define([
                 }
             });
         },
+
 
         createOurPage: function(){
             var thisEl = this.$el;

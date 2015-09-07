@@ -197,6 +197,12 @@ define([
             });
         },
 
+        afterRender: function (){
+            var navContainer = $('.sidebar-menu');
+            navContainer.find('.active').removeClass('active');
+            navContainer.find('#nav_nUser').addClass('active')
+        }
+
     });
 
     return View;

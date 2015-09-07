@@ -19,12 +19,11 @@ define([
             'click #profileTop'     : 'showPofile',
             'click #middleTopBar'   : 'showWantForm',
             'click #leftTopBar'     : 'showContactUsForm'
-            //'click #leftMenu'       : 'makeActiveItem'
         },
 
         initialize: function () {
             this.listenTo(App.sessionData, 'change:authorized', this.render);
-            this.listenTo(App.sessionData, 'change:user', this.renderUser);
+            this.listenTo(App.sessionData, 'change:first_name change:last_name', this.renderUser);
             this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
         },
 
@@ -43,15 +42,6 @@ define([
 
             this.contactUsView = new ContactView();
         },
-
-        //makeActiveItem: function(event) {
-        //    //event.preventDefault();
-        //
-        //    var target = $(event.target);
-        //
-        //    target.closest('.sidebar-menu').find('.active').removeClass('active');
-        //    target.closest('.navBut').addClass('active');
-        //},
 
         getAvatar : function (){
             var image = this.$el.find('#topBarLogo');
@@ -79,9 +69,7 @@ define([
                     App.Events.trigger('logout');
                     App.sessionData.set({
                         authorized : false,
-                        user       : null,
-                        role       : null,
-                        company    : null,
+                        companyId  : null,
                         userId     : null
                     });
                     App.router.navigate("login", {trigger: true});
@@ -94,16 +82,11 @@ define([
         },
 
         render: function () {
-            var authorized = App.sessionData.get('authorized');
-            var user = App.sessionData.get('user');
-            var data = {
-                authorized : authorized,
-                username   : user
-            };
+            var data = App.sessionData.toJSON();
 
             this.$el.html(_.template(TopTemplate)(data));
 
-            if (authorized) {
+            if (data.authorized) {
                 $('#leftMenu').html(_.template(LeftTemplate));
                 this.initializeBadges();
                 if (App.Badge.attributes.pendingUsers) {
@@ -116,7 +99,7 @@ define([
 
         renderUser: function () {
             var authorized = App.sessionData.get('authorized');
-            var user = App.sessionData.get('user');
+            var user = App.sessionData.get('first_name') +' '+ App.sessionData.get('last_name');
 
             this.$el.find('.userName').html(user);
             this.getAvatar();
