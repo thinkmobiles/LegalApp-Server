@@ -3,9 +3,8 @@
  */
 
 define([
-    'text!templates/menu/iWantToTemplate.html',
-    'collections/templatesCollection'
-], function (WantTemp, TemplateCollection) {
+    'text!templates/menu/iWantToTemplate.html'
+], function (WantTemp) {
 
     var View;
     View = Backbone.View.extend({
@@ -13,9 +12,8 @@ define([
         template: _.template(WantTemp),
 
         initialize: function () {
-            this.collection = new TemplateCollection();
-            this.collection.on('reset', this.render, this);
             this.getCollection();
+            this.render();
         },
 
         events : {
@@ -28,10 +26,9 @@ define([
         },
 
         render: function () {
-            var items = this.collection.toJSON();
             var self = this;
 
-            this.$el.html(this.template({items: items}))
+            this.$el.html(this.template())
                 .dialog({
                     closeOnEscape: false,
                     autoOpen: true,
@@ -39,9 +36,26 @@ define([
                     modal: true,
                     width: "600px",
                     close : function(){
-                        self.closeVeiw()
+                        self.closeView();
                     }
                 });
+
+            return this;
+        },
+
+        renderItems: function (collection) {
+            var container = this.$el.find('ul');
+            var html = '';
+
+            collection.forEach(function (item) {
+                var id = item.id;
+                var li = '<li class="templateName" data-id="' + id + '">';
+                li += '<a href="#templates/preview/"' + id + '>' + item.name + '</a>';
+                li += '</li>';
+                html += li;
+            });
+
+            container.html(html);
 
             return this;
         },
@@ -53,7 +67,7 @@ define([
                 url  : '/templates/',
                 type : 'GET',
                 success: function (response) {
-                    self.collection.add(response);
+                    self.renderItems(response);
                 },
                 error: function (response, xhr) {
                     self.errorNotification(xhr);
