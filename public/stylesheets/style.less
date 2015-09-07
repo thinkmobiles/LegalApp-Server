@@ -172,28 +172,28 @@ a {
       box-shadow: 0 1px 0 #f7f7f7;
       a{
         display: block;
-        height: 78px;
+        height: 64px;
         text-align: center;
         .font-oss;
         font-size: 12px;
         text-decoration: none;
         color: #7c7b7b;
         outline: none !important;
-        img{
-          -webkit-filter: grayscale(1);
-          filter: grayscale(1);
-          margin: 14px 0 6px;
+        padding-top: 14px;
+        .cls-1{
+          fill: #7c7b7b;
+          fill-rule: evenodd;
         }
         &:hover,
         &.active{
           color: #e31937 !important;
-          img {
-            -webkit-filter: grayscale(0);
-            filter: grayscale(0);
+          .cls-1 {
+            fill: #e31937;
           }
         }
         span{
           display: block;
+          padding-top: 5px;
         }
       }
     }
@@ -328,7 +328,7 @@ a {
           background-color: rgb(234, 234, 234);
           border: 1px solid rgb(234, 234, 234);
           height: 50px;
-          color: #c4c4c4;
+          color: #878787;
           padding: 0 15px;
           .font-oss;
           &.error_input{
@@ -562,11 +562,60 @@ a {
 #tableDiv {
   float: left;
   display: block;
-  width: 56%;
-  margin: 35px;
+  width: 58%;
+  margin: 80px 25px 25px;
 }
 #usersTable {
   width: 100%;
+  border: 1px solid #d0d0d1;
+  thead{
+    background: #eaeaea;
+    height: 44px;
+    line-height: 44px;
+    .font-oss;
+    text-transform: uppercase;
+  }
+  td{
+    .font-osr;
+    line-height: 44px;
+    &.rRole{
+      .font-oss;
+    }
+    &.rCheck{
+      input[type="checkbox"]{
+        display: none;
+      }
+      label {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border: 1px solid #909090;
+        position: relative;
+        cursor: pointer;
+        margin: 7px auto 0px;
+      }
+      input[type="checkbox"]:checked + label{
+        border-color: #e31937;
+        border: 1px solid #666666;
+      }
+      input[type="checkbox"]:checked + label:after {
+        content: '';
+        background: url("../images/check.png") no-repeat center;
+        height: 13px;
+        width: 17px;
+        position: absolute;
+        top: 5px;
+        left: 2px;
+      }
+    }
+  }
+  th,
+  td{
+    border: 2px solid #d0d0d1;
+    text-align: center;
+    color: #3d3d3d;
+    font-size: 16px;
+  }
 }
 .dialogWindow {
   border: 4px double black;
