@@ -22,15 +22,15 @@
         <td class="rComp"><%= user.company[0].name%></td>
     <%}%>
     <td class="rRole">
-        <%if (user.profile.permissions === 3){%>Viewer<%}%>
-        <%if (user.profile.permissions === 2){%>Editor<%}%>
-        <%if (user.profile.permissions === 1){%>Admin<%}%>
+        <%if (user.profile.permissions % 10 === 3){%>Viewer<%} else {%>
+            <%if (user.profile.permissions % 10 === 2){%>Editor<%} else {%>Admin<%}%>
+        <%}%>
     </td>
     <td class="rCheck">
         <input type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled>
     </td>
     <td class="rDisk">
-        <%if (user.profile.permissions === 3){%>Can view but not edit<%}%>
+        <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
     </td>
 </tr>
 

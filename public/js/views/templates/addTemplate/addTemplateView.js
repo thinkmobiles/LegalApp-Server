@@ -4,7 +4,6 @@
 
 define([
     'text!templates/templates/addTemplate/addTemplateTemplate.html',
-    'text!templates/templates/addTemplate/linkFieldsTemplate.html',
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
     'text!templates/templates/addTemplate/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
@@ -13,7 +12,6 @@ define([
 
 ], function (
     TempTemplate,
-    LinkFilTemp,
     LinkNamTemp,
     TempNames,
     AddLinkView,
@@ -35,7 +33,6 @@ define([
         },
 
         mainTemplate  : _.template(TempTemplate),
-        linksFieldsTemplate : _.template(LinkFilTemp),
         linksNamesTemplate  : _.template(LinkNamTemp),
         tempNamesTemplate   : _.template(TempNames),
 
@@ -113,7 +110,6 @@ define([
                 success: function(response){
                     alert('Template was added successfully');
                     var model = response.model;
-                    //self.trigger('addInParentView', model);
                     self.parentContext.tempCollection.add(model);
                 },
                 error: function(){
@@ -128,12 +124,10 @@ define([
             var target = $(event.target);
             var linkID = target.data('id');
             var resultTarget = thisEl.find('#tempLinkTable');
-            var linkModel = this.linksCollection.get(linkID);
 
             target.closest('#linkContainer').hide();
             resultTarget.val(target.text());
             fakeInput.val(linkID);
-            thisEl.find('#linksFields').html(this.linksFieldsTemplate({lnkFields : linkModel.get('linkFields')}));
         },
 
         render: function () {

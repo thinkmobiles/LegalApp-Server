@@ -3,7 +3,7 @@
     <span>Add Template</span>
 </div>
 <%tempList.forEach(function(template){%>
-    <div class="tempGrid" data-id="<%= template.id%>">
+    <div class="tempGrid <%= (template.has_linked_template ? 'thisLinked' : '')%>" data-id="<%= template.id%>">
         <img src=".././images/bb.png">
         <span><%= template.name%></span>
         <div class="whenHover">

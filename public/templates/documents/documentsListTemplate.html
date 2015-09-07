@@ -1,6 +1,6 @@
 <ul>
     <%documents.forEach(function(doc){%>
-        <li class="documentItem" data-id="<%=doc.id%>">
+        <li class="documentItem" data-val="<%= doc.status%>" data-id="<%=doc.id%>">
             <%= doc.name%> <%= doc.created_at%>
         </li>
     <%})%>
