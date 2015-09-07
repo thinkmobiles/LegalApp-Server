@@ -10,9 +10,10 @@ module.exports = function (app) {
     var companiesHandler= new CompaniesHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
-    router.post('/', /*session.authenticatedUser,*/ companiesHandler.newCompany); //todo check permissions...
+    router.post('/', session.authenticatedUser, companiesHandler.newCompany); //todo check permissions...
     router.get('/', session.authenticatedAdmin, companiesHandler.getCompanies);
     router.get('/getList',session.authenticatedUser, companiesHandler.getAllCompanies);
+    router.get('/:id', session.authenticatedUser, companiesHandler.getCompany); //todo check permissions...
     router.put('/:id', session.authenticatedUser, companiesHandler.updateCompany);
 
 
