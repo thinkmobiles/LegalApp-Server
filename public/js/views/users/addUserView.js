@@ -64,7 +64,7 @@ define([
             var lastName  = thisEL.find('#addLName');
             var phone = thisEL.find('#addPhone');
             var email = thisEL.find('#addEmail');
-            var permissions = thisEL.find("#addRole option:selected").data('id');
+            var permissions = thisEL.find(".addRole").data('id');
             var sel_company = thisEL.find("#selectedCompany");
             var companyId = sel_company.attr('data-id');
 

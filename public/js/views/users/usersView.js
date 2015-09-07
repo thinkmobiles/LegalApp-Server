@@ -21,7 +21,9 @@ define([
             "click #addNewUser"              : "showAddTemplate",
             "click .userRow:not(.activeRow)" : "showEditTemplate",
             "click .activeRow"               : "hideEdit",
-            "click #adminClient>span "       : "changeCurrentState"
+            "click #adminClient>span "       : "changeCurrentState",
+            "click .chooseRole"              : "selectRole",
+            "click .addRole"                 : "showSelect"
         },
 
         initialize: function () {
@@ -36,6 +38,24 @@ define([
             this.listenTo(this.stateModel, 'change:currentState', this.renderTrigger);
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
             this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
+        },
+
+        selectRole: function(event){
+            var target = $(event.target);
+            var container = target.closest('.sellCont');
+            var result = container.find('.addRole');
+
+            result.text(target.text());
+            result.data('id', target.data('id'));
+            container.find('.sellList').hide();
+        },
+
+        showSelect: function(event){
+            //event.stopPropagation();
+            //event.preventDefault();
+
+            var target = $(event.target).closest('.sellCont').find('.sellList');
+            target.toggle();
         },
 
         changeCurrentState: function(event){
