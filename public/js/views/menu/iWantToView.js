@@ -64,7 +64,7 @@ define([
             var self = this;
 
             $.ajax({
-                url  : '/templates/',
+                url: '/documents/list?orderBy=count&page=1&count=5',
                 type : 'GET',
                 success: function (response) {
                     self.renderItems(response);
