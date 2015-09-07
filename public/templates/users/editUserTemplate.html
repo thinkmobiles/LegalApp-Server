@@ -1,5 +1,5 @@
 <%var permiss = usrMdl.profile.permissions%>
-<td colspan="4">
+<td colspan="<%= usrMdl.currentState ? 4 : 5%>">
     <div>
         <div class="editUser-left">
             <label for="editFName">First name</label><br>
