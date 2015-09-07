@@ -26,11 +26,29 @@ var imagesHandler = function (PostGre) {
             imageable_id: data.imageable_id,
             imageable_type: data.imageable_type
         };
-        var fetchOptions = {
+        /*var fetchOptions = {
             require: true
-        };
+        };*/
 
-        if (data && data.imageable_id && data.imageable_type) {
+
+        ImageModel
+            .upsert(data, callback);
+
+        /*ImageModel
+            .forge()
+            .query(function (qb) {
+                qb.where(criteria);
+            })
+            .save(data, {patch: true})
+            .exec(function (err, savedImageModel) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, savedImageModel);
+            });*/
+
+
+        /*if (data && data.imageable_id && data.imageable_type) {
             ImageModel
                 .find(criteria, fetchOptions)
                 .then(function (imageModel) {
@@ -57,7 +75,7 @@ var imagesHandler = function (PostGre) {
                 .catch(callback)
         } else {
             callback(null, {});
-        }
+        }*/
     }
 
     function prepareParams(options) {
@@ -134,14 +152,14 @@ var imagesHandler = function (PostGre) {
         saveParams = prepareParams(image);
 
         newImageName = image.key + '_' + image.name;
-        imageUploader.uploadImage(image.imageSrc, newImageName, bucket, function (err, saveImageName) {
+        imageUploader.uploadImage(image.imageSrc, newImageName, bucket, function (err, imageData) {
             if (err) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.error(err);
                     // logWriter.log('handlers/images -> saveImage -> imageUploader.uploadImage', err);
                 }
             }
-
+            saveParams.name = fileName + '.' + imageData.extension;
             saveImageToDb(saveParams, callback);
 
         });

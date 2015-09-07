@@ -91,7 +91,11 @@ var imagesUploader = function (dirConfig) {
         try {
             fs.writeFile(imagePath, imageData.data, function (err, data) {
                 if (callback && typeof callback === 'function') {
-                    callback(err, imageNameWithExt)
+                    callback(err, {
+                        name: imageData.name,
+                        nameWithExtension: imageNameWithExt,
+                        extension: imageData.extention
+                    });
                 }
             });
         }

@@ -15,7 +15,9 @@ var CompaniesHandler = function (PostGre) {
     var UserModel = Models.User;
     var CompanyModel = Models.Company;
     var UserCompanies = Models.UserCompanies;
+    var ImageModel = Models.Image;
     var imageHandler = new ImagesHandler(PostGre);
+    var imageUploader = ImageModel.uploader;
     var self = this;
 
     function prepareData(saveData) {
@@ -39,6 +41,99 @@ var CompaniesHandler = function (PostGre) {
 
         return saveOptions;
     }
+
+    function saveLogo(companyId, imageSrc, callback) {
+        var searchOptions = {
+            imageable_id: companyId,
+            imageable_type: TABLES.COMPANIES
+        };
+
+        /*async.waterfall([
+
+                //try to find the attachmentModel:
+                function (cb) {
+                    Models.Attachment
+                        .forge()
+                        .query(function (qb) {
+                            qb.where(searchOptions);
+                        })
+                        .fetch()
+                        .exec(function (err, attachmentModel) {
+                            if (err) {
+                                return callback(err);
+                            }
+
+                            if (!attachmentModel || !attachmentModel.id) {
+                                attachmentModel = Models.Attachment.forge(searchOptions);
+                            }
+
+                            cb(null, attachmentModel);
+                        });
+                },
+
+                //try to remove the old file;
+                function (attachmentModel, cb) {
+
+                },
+
+                //save the new file:
+                function (attachmentModel, cb) {
+
+                },
+
+                // create / update the attachmentModel
+                function (attachmentModel, options, cb) {
+
+                }
+            ],
+
+            function (err, model, url) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, url);
+            });*/
+
+        Models.Image
+            .forge()
+            .query(function (qb) {
+                qb.where(searchOptions);
+            })
+            .fetch()
+            .exec(function (err, logoModel) {
+                var logoJSON;
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (!logoModel || !logoModel.id) {
+                    logoModel = Models.Image.forge(searchOptions);
+                }
+
+                logoJSON = logoModel.attributes;
+                logoJSON.imageSrc = imageSrc;
+                logoJSON.oldName = logoJSON.name;
+                logoJSON.oldKey = logoJSON.key;
+
+                imageHandler.saveImage(logoJSON, function (err, imageModel) {
+                    var logoUrl;
+                    var logoName;
+                    var logoKey;
+                    var bucket = BUCKETS.LOGOS;
+
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    logoName = imageModel.attributes.name;
+                    logoKey = imageModel.attributes.key;
+                    logoUrl = Models.Image.getImageUrl(logoName, logoKey, bucket);
+
+                    callback(null, logoUrl);
+                });
+            });
+    };
 
     this.createCompanyWithOwner = function (options, callback) {
         var userId = options.userId;
@@ -221,6 +316,104 @@ var CompaniesHandler = function (PostGre) {
     };
 
     this.updateCompany = function (req, res, next) {
+        var companyId = req.params.id;
+        var permissions = req.session.permissions;
+        var options = req.body;
+        var imageSrc = options.imageSrc;
+        var saveData;
+
+        if ((permissions === PERMISSIONS.SUPER_ADMIN) ||
+            (permissions === PERMISSIONS.ADMIN) ||
+            ((permissions === PERMISSIONS.CLIENT_ADMIN) && (companyId === req.session.companyId))) {
+
+            saveData = prepareData(options);
+        } else {
+            return next(badRequests.AccessError());
+        }
+
+        /*if ((!Object.keys(saveData).length) && !imageSrc) {
+            return next(badRequests.NotEnParams({message: 'Nothing to modify'}))
+        }*/
+
+
+        //try to find the company:
+        var criteria = {
+            id: companyId
+        };
+        var fetchOptions = {
+            require: true
+        };
+
+        CompanyModel
+            .find(criteria, fetchOptions)
+            .then(function (companyModel) {
+
+                async.parallel({
+
+                    //try to update the company:
+                    updatedCompanyModel: function (cb) {
+
+                        if ((!Object.keys(saveData).length)) {
+                            return cb(null, companyModel);
+                        }
+
+                        companyModel
+                            .save(saveData, {patch: true})
+                            .exec(function (err, updatedModel) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                cb(null, updatedModel);
+                            });
+                    },
+
+                    //try to update the logo:
+                    logoUrl: function (cb) {
+                        if (!options.imageSrc) {
+                            return cb(null, null);
+                        }
+
+                        saveLogo(companyId, imageSrc, function (err, logoUrl) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            cb(null, logoUrl);
+                        });
+                    }
+
+                }, function (err, results) {
+                    var updatedCompanyModel;
+                    var logoUrl;
+                    var companyJSON;
+
+                    if (err) {
+                        return next(err);
+                    }
+
+                    updatedCompanyModel = results.updatedCompanyModel;
+                    logoUrl = results.logoUrl;
+
+                    companyJSON = updatedCompanyModel.toJSON();
+
+                    if (imageSrc) {
+                        companyJSON.logo = {
+                            url: logoUrl
+                        };
+                    }
+
+                    res.status(200).send({success: 'success updated', company: companyJSON});
+                });
+
+
+
+            })
+            .catch(CompanyModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+    };
+
+    this.updateCompany_old = function (req, res, next) {
         var updateCompanyId = req.params.id;
         var permissions = req.session.permissions;
         var companyId = req.session.companyId;
