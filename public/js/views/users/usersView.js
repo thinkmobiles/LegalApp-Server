@@ -55,7 +55,7 @@ define([
             //event.preventDefault();
 
             var target = $(event.target);
-            target.closest('addRole').toggleClass('active');
+            target.closest('.addRole').toggleClass('active');
             target.closest('.sellCont').find('.sellList').toggle();
         },
 
