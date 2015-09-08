@@ -112,9 +112,8 @@ module.exports = function (PostGre, ParentModel) {
             var saveData;
             var now = new Date();
 
-            if (!documentModel || !documentModel.id) {
-                return; //TODO: send error
-            }
+            /*console.log('>>> documentModel: ');
+            console.log(documentModel);*/
 
             /*if (!userModel || !userModel.related('profile')) {
                 return callback(badRequests.NotEnParams({reqParams: 'userModel'}));

@@ -16,6 +16,7 @@ var badRequests = require('../helpers/badRequests');
 var dSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
+var checkRunningTime = require('../helpers/checkRunningTime');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
@@ -173,6 +174,48 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
+    function setDocumentsCountQuery(params) {
+        var DOCUMENTS = TABLES.DOCUMENTS;
+        var TEMPLATES = TABLES.TEMPLATES;
+        var name = params.name;
+        var status = params.status;
+        var from = params.from;
+        var to = params.to;
+        var fromDate;
+        var toDate;
+        var query = knex(DOCUMENTS)
+            .count('id')
+            .whereRaw(DOCUMENTS + '.template_id=' + TEMPLATES + '.id');
+
+        if ((status !== undefined) && (status !== 'all')) {
+            query.andWhere(DOCUMENTS + '.status', status);
+        }
+
+        if (name) {
+            name = name.toLowerCase();
+            query.whereRaw(
+                "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
+            );
+        }
+
+        if (from) {
+            fromDate = new Date(from);
+            query.andWhere(DOCUMENTS + '.created_at', '>=', fromDate);
+        }
+
+        if (to) {
+            toDate = new Date(to);
+            query.andWhere(DOCUMENTS + '.created_at', '<=', toDate);
+        }
+
+        if (params.companyId) {
+            query.andWhere(DOCUMENTS + '.company_id', '=', params.companyId)
+        }
+
+        return query;
+
+    };
+
     function createDocumentContent(htmlText, fields, values, callback) {
 
         //check input params:
@@ -285,6 +328,79 @@ var DocumentsHandler = function (PostGre) {
     }
 
     function createDocument(options, callback) {
+        var templateId = options.template_id;
+        var userId = options.user_id || options.assigned_id;
+        var values;
+
+        if (!templateId) {
+            return callback(badRequests.NotEnParams({reqParams: ['template_id']}));
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        }
+
+        async.parallel({
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+
+            },
+            userModel: function (cb) {
+                var criteria = {
+                    id: userId
+                };
+                var fetchOptions = {
+                    require: true,
+                    withRelated: ['profile', 'company']
+                };
+
+                if (!userId) {
+                    return cb();
+                }
+
+                UserModel
+                    .find(criteria, fetchOptions)
+                    .then(function (userModel) {
+                        cb(null, userModel);
+                    })
+                    .catch(UserModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'The User was not found'}));
+                    })
+                    .catch(cb);
+            }
+        }, function (err, models) {
+            if (err) {
+                return callback(err);
+            }
+
+            prepareAndSave(options, models, function (err, documentModel) {
+                if (err) {
+                    return callback(err);
+                }
+
+                models.documentModel = documentModel;
+                callback(null, models);
+            });
+        });
     };
 
     function updateDocument(id, options, callback) {
@@ -383,7 +499,7 @@ var DocumentsHandler = function (PostGre) {
             .catch(callback);
     };
 
-    function prepareSaveData(options, models, callback) {
+    function prepareAndSave(options, models, callback) {
         var templateModel = models.templateModel;
         var userModel = models.userModel;
         var documentModel = models.documentModel;
@@ -442,7 +558,161 @@ var DocumentsHandler = function (PostGre) {
                 callback(null, documentModel);
             });
 
+    };
+
+    function prepareDocumentToSave(options, models, callback) {
+        var templateModel = models.templateModel;
+        var userModel = models.userModel;
+        var documentModel = models.documentModel = new DocumentModel();
+        var currentUserModel = models.currentUserModel;
+        var templateHtmlContent = templateModel.get('html_content');
+        var linkModel = templateModel.related('link');
+        var linkFieldsModels;
+        var fields = [];
+        var companyId;
+        var saveData = {
+            template_id: templateModel.id,
+            status: STATUSES.CREATED
+        };
+        var documentName;
+        var values;
+        var htmlContent = '';
+        var now = new Date();
+
+        if (!documentModel.id) {
+            documentName = generateDocumentName(templateModel, userModel);
+            saveData.name = documentName;
+            saveData.created_by = currentUserModel.id;
+            saveData.sent_to_company_at = now;
+        }
+
+        if (userModel && userModel.id) {
+            saveData.user_id = userModel.id;
+
+            if (userModel.related('company') && userModel.related('company').length) {
+                companyId = userModel.related('company').models[0].id;
+                saveData.company_id = companyId;
+            }
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+            saveData.values = values;
+        }
+
+        if (linkModel && linkModel.related('linkFields')) {
+            linkFieldsModels = linkModel.related('linkFields');
+            linkFieldsModels.models.forEach(function (model) {
+                fields.push(model.toJSON());
+            });
+        }
+
+        if (templateHtmlContent) {
+            if (values) {
+                htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+            } else {
+                htmlContent = templateHtmlContent;
+            }
+        }
+        saveData.html_content = htmlContent;
+
+        documentModel.set(saveData);
+
+        callback(null, documentModel);
     }
+
+    // This function is return the models what needs to create, sign and send the document
+    function getModelsToCreateAndSign(options, callback) {
+        var userId = options.user_id;
+        var currentUserId = options.currentUserId;
+        var assignedId = options.assigned_id;
+        var templateId = options.template_id;
+        var values;
+        var userIds = [
+            currentUserId,
+            assignedId,
+            userId
+        ];
+
+        if (!templateId) {
+            return callback(badRequests.NotEnParams({reqParams: ['template_id']}));
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        }
+
+        async.parallel({
+
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            users: function (cb) {
+                var fetchOptions = {
+                    withRelated: ['profile', 'company']
+                };
+
+                UserModel
+                    .forge()
+                    .query(function (qb) {
+                        qb.whereIn('id', userIds);
+                    })
+                    .fetchAll(fetchOptions)
+                    .then(function (users) {
+                        var userModels = users.models;
+
+                        cb(null, userModels);
+                    })
+                    .catch(function (err) {
+                        cb(err);
+                    });
+            }
+
+        }, function (err, models) {
+            var users;
+            var currentUserModel;
+            var assignedUserModel;
+            var userModel;
+
+            if (err) {
+                return callback(err);
+            }
+
+            users = models.users;
+
+            currentUserModel = _.find(users, {id: currentUserId});
+            assignedUserModel = _.find(users, {id: assignedId});
+            userModel = _.find(users, {id: userId});
+
+            models.currentUserModel = currentUserModel;
+            models.assignedUserModel = assignedUserModel;
+            models.userModel = userModel;
+
+            delete models.users;
+
+            callback(null, models);
+        });
+    };
 
     this.createDocumentContent = function (htmlText, fields, values, callback) {
 
@@ -471,84 +741,6 @@ var DocumentsHandler = function (PostGre) {
             callback(null, htmlText); //all right
         }
         return htmlText;
-    };
-
-    this.saveNewDocument = function (req, res, next) {
-        var options = req.body;
-        var templateId = options.template_id;
-        var userId = options.user_id || options.assigned_id; //TODO: !!!
-        var values;
-
-        console.log('create document');
-        console.log(options);
-
-        if (!templateId) {
-            return next(badRequests.NotEnParams({reqParams: ['template_id']}));
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        }
-
-        async.parallel({
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-
-            },
-            userModel: function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    require: true,
-                    withRelated: ['profile', 'company']
-                };
-
-                if (!userId) {
-                    return cb();
-                }
-
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'The User was not found'}));
-                    })
-                    .catch(cb);
-            }
-        }, function (err, models) {
-            if (err) {
-                return next(err);
-            }
-
-            prepareSaveData(options, models, function (err, documentModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({success: 'success created', model: documentModel});
-            });
-        });
     };
 
     this.newDocument = function (req, res, next) {
@@ -686,6 +878,17 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
+    this.saveNewDocument = function (req, res, next) {
+        var options = req.body;
+
+        createDocument(options, function (err, models) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'success created', model: models.documentModel});
+        });
+    };
+
     this.updateDocument = function (req, res, next) {
         var companyId = req.session.companyId;
         var permissions = req.session.permissions;
@@ -706,10 +909,6 @@ var DocumentsHandler = function (PostGre) {
     };
 
     function signAndSend(documentModel, options) {
-
-    };
-
-    function sendToSignature(params, callback) {
 
     };
 
@@ -1132,6 +1331,102 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
+    this.createSignAndSend = function (req, res, next) {  //POST /documents/signAndSand;
+        var options = req.body;
+        var currentUserId = req.session.userId;
+        var assignedId = options.assigned_id || currentUserId;
+
+        options.currentUserId = currentUserId;
+        options.assigned_id = assignedId;
+
+        /*console.log('>>> createSignAndSend');
+        console.log(options);*/
+
+        async.waterfall([
+
+            //get models to create, sign and send:
+            function (cb) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> getModelsToCreateAndSign time');
+                }
+                getModelsToCreateAndSign(options, function (err, models) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> getModelsToCreateAndSign time');
+                    }
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, models);
+                });
+            },
+
+            //create a new document:
+            function (models, cb) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> prepareDocumentToSave time');
+                }
+                prepareDocumentToSave(options, models, function (err, documentModel) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> prepareDocumentToSave time');
+                    }
+                    if (err) {
+                        return cb(err);
+                    }
+                    models.documentModel = documentModel;
+                    cb(null, models);
+                });
+            },
+
+            //save the documentModel with signature:
+            function (models, cb) {
+                var documentModel = models.documentModel;
+                var signImage = options.signature;   // use this.companiesSignatureMiddleware
+
+                if (assignedId === currentUserId) {  // document most be signed by the current user
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.time('>>> documentModel.saveSignature time');
+                    }
+                    documentModel.saveSignature(assignedId, signImage, function (err, signedDocumentModel) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> documentModel.saveSignature time');
+                        }
+                        if (err) {
+                            return cb(err);
+                        }
+                        models.documentModel = signedDocumentModel;
+                        cb(null, models);
+                    });
+                } else {                             // assign the document to another user
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.time('>>> documentModel.prepareToSend time');
+                    }
+                    documentModel.prepareToSend(assignedId, function (err, updatedDocument) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.time('>>> documentModel.prepareToSend time');
+                        }
+                        if (err) {
+                            return cb(err);
+                        }
+                        models.documentModel = updatedDocument;
+                        cb(null, models);
+                    });
+                }
+            },
+
+            //sending email notification:
+            function (models, cb) {
+                cb(null, models);
+            }
+
+        ], function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.status(201).send({success: 'success created', models: result, options: options});
+        });
+
+    };
+
     this.getDocuments = function (req, res, next) {
         var companyId = req.session.companyId;
         var permissions = req.session.permissions;
@@ -1243,48 +1538,6 @@ var DocumentsHandler = function (PostGre) {
                 next(badRequests.NotFound());
             })
             .catch(next);
-
-    };
-
-    function setDocumentsCountQuery(params) {
-        var DOCUMENTS = TABLES.DOCUMENTS;
-        var TEMPLATES = TABLES.TEMPLATES;
-        var name = params.name;
-        var status = params.status;
-        var from = params.from;
-        var to = params.to;
-        var fromDate;
-        var toDate;
-        var query = knex(DOCUMENTS)
-            .count('id')
-            .whereRaw(DOCUMENTS + '.template_id=' + TEMPLATES + '.id');
-
-        if ((status !== undefined) && (status !== 'all')) {
-            query.andWhere(DOCUMENTS + '.status', status);
-        }
-
-        if (name) {
-            name = name.toLowerCase();
-            query.whereRaw(
-                "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
-            );
-        }
-
-        if (from) {
-            fromDate = new Date(from);
-            query.andWhere(DOCUMENTS + '.created_at', '>=', fromDate);
-        }
-
-        if (to) {
-            toDate = new Date(to);
-            query.andWhere(DOCUMENTS + '.created_at', '<=', toDate);
-        }
-
-        if (params.companyId) {
-            query.andWhere(DOCUMENTS + '.company_id', '=', params.companyId)
-        }
-
-        return query;
 
     };
 
@@ -1886,6 +2139,63 @@ var DocumentsHandler = function (PostGre) {
             res.status(201).send({success: 'Document was signed'});
         });
 
+    };
+
+    this.companiesSignatureMiddleware = function (req, res, next) {
+        var options = req.body;
+        var currentUserId = req.session.userId;
+        var assignedId = options.assigned_id || currentUserId;
+        var companyId = req.session.companyId;
+        var columns;
+
+        if (companyId !== CONSTANTS.DEFAULT_COMPANY_ID) {
+            return next(); //this is a client user. The client user can't have saved sign image;
+        }
+
+        if (currentUserId !== assignedId) {
+            return next(); //it will be signed by another user;
+        }
+
+        columns = [
+            TABLES.PROFILES + '.user_id',
+            'has_sign_image', //profiles
+            'permissions',    //profiles
+            'sign_authority', //profiles
+            'sign_image'      //users_secret_keys
+        ];
+
+        knex(TABLES.PROFILES)
+            .leftJoin(
+                TABLES.USERS_SECRET_KEY,
+                TABLES.PROFILES + '.user_id',
+                TABLES.USERS_SECRET_KEY + '.user_id'
+            ).where(TABLES.PROFILES + '.user_id', currentUserId)
+            .select(columns)
+            .then(function (rows) {
+                var row;
+                var signImage;
+
+                if (!rows || !rows.length) {
+                    return next(badRequests.NotFound({message: 'Profile was not found'}));
+                }
+
+                row = rows[0];
+
+                if (row.sign_authority === false) {
+                    return next(badRequests.AccessError({message: 'You don\'t have sign authority'}));
+                }
+
+                signImage = row.sign_image;
+                if (!signImage) {
+                    return next(badRequests.NotFound({message: 'Sign image was not found'}));
+                }
+
+                options.signature = signImage;
+                next();
+            })
+            .catch(function (err) {
+                next(err);
+            });
     };
 };
 
