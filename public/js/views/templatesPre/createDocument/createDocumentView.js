@@ -26,6 +26,7 @@ define([
         className   : "addItemLeft",
 
         initialize: function (options) {
+            this.signersId = App.sessionData.get('userId');
             this.tempInfo = options.model;
             this.fillFields = false;
 
@@ -44,8 +45,8 @@ define([
 
         events : {
             "click #createBtnNext" : "goToPreview",
-            "click #createBtnSave" : "letsSaveDoc",
-            "click #reAsignBtn"    : "chooseThisSigner"
+            "click #createBtnSave" : "letsSaveDoc"
+            //"click #reAsignBtn"    : "chooseThisSigner"
         },
 
         inviteDataToFields: function(contentObject){
@@ -80,10 +81,10 @@ define([
         },
 
         chooseThisSigner: function(){
-            var signersId = $('#signersContainer').find('.signItem:checked').closest('li').data('id');
+            this.signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
 
-            if (signersId){
-                alert('Olololo: '+signersId)
+            if (this.signersId){
+                alert('Olololo: '+this.signersId)
             } else {
                 alert('Choose some user!')
             }
@@ -151,26 +152,41 @@ define([
                 if (sesData.sign_authority) {
                     new SignView();
                 } else {
-                    $.ajax({
-                        url  : '/users/search',
-                        data : {'signAuthority' : true},
-                        success : function(result) {
-                            self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
-                                autoOpen: true,
-                                dialogClass: "reSignDialog",
-                                modal: true,
-                                width: "600px"
-                            });
-                        }
-                    });
-
+                    this.showResignWindow();
+                }
+            } else {
+                if (sesData.sign_authority) {
+                    this.sendMyDoc();
+                } else {
+                    this.showResignWindow();
                 }
             }
 
 
         },
 
-        sendMyDoc: function(sendData){
+        showResignWindow: function(){
+            $.ajax({
+                url  : '/users/search',
+                data : {'signAuthority' : true},
+                success : function(result) {
+                    self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
+                        autoOpen: true,
+                        dialogClass: "reSignDialog",
+                        modal: true,
+                        width: "600px",
+                        buttons: [
+                            {
+                                text: "Select and send",
+                                click: self.chooseThisSigner
+                            }
+                        ]
+                    });
+                }
+            });
+        },
+
+        sendMyDoc: function(){
             $.ajax({
                 url  : "/documents/"+docId+"/signAndSend",
                 type : "POST",

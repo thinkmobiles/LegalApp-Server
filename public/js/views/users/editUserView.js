@@ -81,6 +81,7 @@ define([
         changeDataInRow: function(){
             var rowTarget = $('.activeRow');
             var profileInfo = this.userModel.get('profile');
+            var status = this.userModel.get('status');
             var fName = profileInfo.first_name;
             var lName = profileInfo.last_name;
             var permission = profileInfo.permissions % 10;
@@ -101,6 +102,11 @@ define([
             rowTarget.find('.rDisk').text((permission === 3) ? 'Can view but not edit' : '');
 
             rowTarget.removeClass('activeRow');
+            if (+status){
+                rowTarget.removeClass('notActiv');
+            } else {
+                rowTarget.addClass('notActiv');
+            }
             this.remove()
         },
 

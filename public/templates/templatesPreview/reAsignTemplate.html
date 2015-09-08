@@ -4,11 +4,11 @@
 <div id="signersContainer">
     <ul>
         <%signUsers.forEach(function(signer){%>
-        <li class="signItem" data-id="" id="<%= signer.id%>">
+        <li class="signItem" data-id="<%= signer.id%>">
             <input id="rad_<%= signer.id%>" type="radio" name="signItem">
             <label for="rad_<%= signer.id%>"><%= signer.value%></label>
         </li>
         <%})%>
     </ul>
 </div>
-<input type="button" id="reAsignBtn" value="Select and send">
+<!--<input type="button" id="reAsignBtn" value="Select and send">-->

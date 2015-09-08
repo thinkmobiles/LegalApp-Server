@@ -37,11 +37,7 @@ define([
                 errorObject : false
             };
 
-            if (this.stateModel) {
-                this.stateModel.set(defaultData);
-            } else {
-                this.stateModel = new Backbone.Model(defaultData);
-            }
+            this.stateModel = new Backbone.Model(defaultData);
         },
 
         login: function (event) {
@@ -96,15 +92,10 @@ define([
                     userInfo.authorized = true;
                     userInfo.companyId = res.user.company[0].id;
                     userInfo.userId  = res.user.id;
+                    userInfo.avatar  = res.user.avatar.url;
 
                     $('body').addClass('loggedState');
-                    /*App.sessionData.set({
-                        //authorized : true,
-                        //user       : profile.first_name+" "+profile.last_name,
-                        //role       : profile.permissions,
-                        company    : user.company[0].id,
-                        userId     : user.id
-                    });*/
+
                     App.sessionData.set(userInfo);
 
                     App.router.navigate("users", {trigger: true});
@@ -118,8 +109,6 @@ define([
                 error: function (err) {
                     App.sessionData.set({
                         authorized : false,
-                        //user       : null,
-                        //role       : null,
                         companyId  : null,
                         userId     : null
                     });
@@ -150,10 +139,6 @@ define([
                 tempModel.isInvite = true;
             }
             this_el.html(this.typicalLogin(tempModel));
-                //this_el.html(this.typicalLogin({isInvite : isInvite}));
-            //} else {
-            //    this_el.html(this.typicalLogin(tempModel));
-            //}
 
             return this;
         }
