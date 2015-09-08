@@ -1,9 +1,11 @@
 <ul>
     <%templates.forEach(function(temp){%>
-        <li class="templateItem" data-id="<%=temp.id%>">
-            <div class="templateListName">
-                <%=temp.name%> (<%=temp.count%>)
-            </div>
-        </li>
+        <%if (temp.count > 0){%>
+            <li class="templateItem" data-id="<%=temp.id%>">
+                <div class="templateListName">
+                    <%=temp.name%> (<%=temp.count%>)
+                </div>
+            </li>
+        <%}%>
     <%})%>
 </ul>

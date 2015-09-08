@@ -3,9 +3,11 @@
  */
 
 define([
-    'text!templates/settings/settingsTemplate.html'
+    'text!templates/settings/settingsTemplate.html',
+    'models/companyModel',
+    'custom'
 
-], function (SettingsTemp) {
+], function (SettingsTemp, CompModel, Custom) {
 
     var View;
     View = Backbone.View.extend({
@@ -13,7 +15,11 @@ define([
         el : '#wrapper',
 
         initialize: function () {
-            this.render();
+            var currentCompId = App.sessionData.get('companyId');
+
+            this.companyModel = new CompModel({id : currentCompId});
+            this.companyModel.on('sync', this.render, this);
+            this.companyModel.fetch();
         },
 
         events : {
@@ -21,7 +27,14 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(SettingsTemp));
+            var self = this;
+            var tempCompany = self.companyModel.toJSON();
+
+            this.$el.html(_.template(SettingsTemp)({tempCompany : tempCompany}));
+            Custom.signatureLoad(self, function(result){
+                self.$el.find('#compLogo').attr('src', result);
+            });
+
             return this;
         },
 

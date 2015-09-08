@@ -52,7 +52,7 @@ module.exports = function (PostGre, ParentModel) {
             var newbucket = bucket || BUCKETS.AVATARS;
             var name;
 
-            name = this.getFileName(imageName, key) + '.jpeg';
+            name = this.getFileName(imageName, key);// + '.jpeg';
 
             return imageUploader.getImageUrl(name, newbucket);
         },

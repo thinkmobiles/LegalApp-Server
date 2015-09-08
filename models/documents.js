@@ -162,9 +162,10 @@ module.exports = function (PostGre, ParentModel) {
             var attributes;
             var pdfFile;
             var key;
-            //var name;
+            var name;
             var bucket = BUCKETS.PDF_FILES;
             var url;
+            var fileName;
 
             attributes = ParentModel.prototype.toJSON.call(this);
 
@@ -172,9 +173,10 @@ module.exports = function (PostGre, ParentModel) {
                 pdfFile = this.relations.File;
 
                 if (pdfFile.id && pdfFile.attributes.key && pdfFile.attributes.name) {
-                    //name = pdfFile.attributes.name;
+                    name = pdfFile.attributes.name;
                     key = pdfFile.attributes.key;
-                    url = PostGre.Models.Image.uploader.getFileUrl(key, bucket);
+                    fileName = key + '_' + name;
+                    url = PostGre.Models.Image.uploader.getFileUrl(fileName, bucket);
                 }
 
                 attributes.File = {

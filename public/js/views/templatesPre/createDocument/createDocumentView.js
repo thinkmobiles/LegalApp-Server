@@ -4,6 +4,7 @@
 
 define([
     'text!templates/templatesPreview/createDocumentTemplate.html',
+    'text!templates/templatesPreview/reAsignTemplate.html',
     'models/documentModel',
     'models/linkModel',
     'constants/forTemplate',
@@ -12,6 +13,7 @@ define([
 
 ], function (
     CreateTemplate,
+    ReasignTemp,
     DocModel,
     LinkModel,
     CONST,
@@ -24,6 +26,7 @@ define([
         className   : "addItemLeft",
 
         initialize: function (options) {
+            this.signersId = App.sessionData.get('userId');
             this.tempInfo = options.model;
             this.fillFields = false;
 
@@ -43,6 +46,7 @@ define([
         events : {
             "click #createBtnNext" : "goToPreview",
             "click #createBtnSave" : "letsSaveDoc"
+            //"click #reAsignBtn"    : "chooseThisSigner"
         },
 
         inviteDataToFields: function(contentObject){
@@ -74,6 +78,16 @@ define([
             });
 
             return values;
+        },
+
+        chooseThisSigner: function(){
+            this.signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
+
+            if (this.signersId){
+                alert('Olololo: '+this.signersId)
+            } else {
+                alert('Choose some user!')
+            }
         },
 
         goToPreview: function(){
@@ -117,7 +131,7 @@ define([
                             id       : response.get('id'),
                             assignId : response.get('assigned_id')
                         };
-                        self.sendMyDoc(sendData);
+                        self.signMyDoc(sendData);
                     } else {
                         alert('Document was saved successfully');
                         Backbone.history.navigate('documents/list', {trigger : true});
@@ -129,15 +143,50 @@ define([
             });
         },
 
-        sendMyDoc: function(sendData){
-            //var self = this;
+        signMyDoc: function(sendData){
+            var self = this;
             var docId = sendData.id;
             var sesData = App.sessionData.toJSON();
 
             if (sesData.companyId !==1) {
-
+                if (sesData.sign_authority) {
+                    new SignView();
+                } else {
+                    this.showResignWindow();
+                }
+            } else {
+                if (sesData.sign_authority) {
+                    this.sendMyDoc();
+                } else {
+                    this.showResignWindow();
+                }
             }
 
+
+        },
+
+        showResignWindow: function(){
+            $.ajax({
+                url  : '/users/search',
+                data : {'signAuthority' : true},
+                success : function(result) {
+                    self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
+                        autoOpen: true,
+                        dialogClass: "reSignDialog",
+                        modal: true,
+                        width: "600px",
+                        buttons: [
+                            {
+                                text: "Select and send",
+                                click: self.chooseThisSigner
+                            }
+                        ]
+                    });
+                }
+            });
+        },
+
+        sendMyDoc: function(){
             $.ajax({
                 url  : "/documents/"+docId+"/signAndSend",
                 type : "POST",
@@ -153,6 +202,7 @@ define([
                 }
             });
         },
+
 
         createOurPage: function(){
             var thisEl = this.$el;
