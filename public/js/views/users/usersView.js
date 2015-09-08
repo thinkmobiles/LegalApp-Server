@@ -41,19 +41,23 @@ define([
         },
 
         selectSomething: function(event){
+            $('.sel_container .active').removeClass('active');
+
             var target = $(event.target);
             var container = target.closest('.sel_container');
             var result = container.find('.sel_result');
+            var newId;
 
             result.text(target.text());
-            result.data('id', target.data('id'));
-            //result.toggleClass('active');
-            //container.find('.sellList').hide();
+            newId = target.attr('data-id');
+            result.attr('data-id', newId);
         },
 
         showHideSelect: function(event){
+            $('.sel_container .active').removeClass('active');
+
             var target = $(event.target);
-            target.closest('.sel_container').toggleClass('active');
+            target.closest('.sel_container').addClass('active');
             //target.closest('.sellCont').find('.sellList').toggle();
         },
 
