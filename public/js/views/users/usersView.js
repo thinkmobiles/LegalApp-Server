@@ -54,8 +54,9 @@ define([
             //event.stopPropagation();
             //event.preventDefault();
 
-            var target = $(event.target).closest('.sellCont').find('.sellList');
-            target.toggle();
+            var target = $(event.target);
+            target.closest('addRole').toggleClass('active');
+            target.closest('.sellCont').find('.sellList').toggle();
         },
 
         changeCurrentState: function(event){
