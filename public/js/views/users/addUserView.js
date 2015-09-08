@@ -18,24 +18,34 @@ define([
         currentState : true,
 
         events: {
-            "click #addInvite"     : "inviteUser",
-            "click .selThisComp"   : "selectCurrentCompany",
-            "click #goSaveCompany" : "goSaveCompany"
+            "click #addInvite"       : "inviteUser",
+            "click .selThisComp"     : "selectCurrentCompany",
+            "click #goSaveCompany"   : "goSaveCompany"
+            //"click #selectedCompany" : "showSelect"
         },
 
         initialize: function () {
             this.render();
         },
 
-        selectCurrentCompany: function(event){
-            var target = $(event.target);
-            var comId = target.data('id');
-            var comName = target.text().trim();
-            var resultField = this.$el.find('#selectedCompany');
+        //showSelect: function(event){
+        //    event.stopPropagation();
+        //    event.preventDefault();
+        //
+        //    var target = $(event.target);
+        //    target.closest('#selectedCompany').toggleClass('active');
+        //    target.closest('.sellCont').find('#companyNames').toggle();
+        //},
 
-            resultField.text(comName);
-            resultField.attr('data-id', comId);
-        },
+        //selectCurrentCompany: function(event){
+        //    var target = $(event.target);
+        //    var comId = target.data('id');
+        //    var comName = target.text().trim();
+        //    var resultField = this.$el.find('#selectedCompany');
+        //
+        //    resultField.text(comName);
+        //    resultField.attr('data-id', comId);
+        //},
 
         goSaveCompany: function(){
             var self = this;
@@ -51,6 +61,7 @@ define([
                     var model = response.model;
                     resultField.text(model.name);
                     resultField.attr('data-id', model.id);
+                    resultField.closest('.sel_container').removeClass('active');
                     self.renderCompanies();
                 },
                 error   : function(){}
@@ -118,14 +129,6 @@ define([
                 }
             });
         },
-
-        /*actionUser : function(){
-            if (this.editThisForm){
-                this.updateUser()
-            } else {
-                this.inviteUser()
-            }
-        },*/
 
         render: function () {
             var role = App.sessionData.get('permissions');

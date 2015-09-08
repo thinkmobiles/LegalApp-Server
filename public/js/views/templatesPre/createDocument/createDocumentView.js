@@ -23,7 +23,7 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        className   : "addItemLeft",
+        //className   : "addItemLeft",
 
         initialize: function (options) {
             this.signersId = App.sessionData.get('userId');

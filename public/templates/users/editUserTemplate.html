@@ -9,20 +9,20 @@
             <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
         </div>
         <div class="editUser-centerLeft">
-            <div class="sellCont">
+            <div class="sel_container">
                 <label for="role">Role</label>
-                <a href="javascript:;" id="role" class="addRole" data-id="<%= permiss%>"><%= permiss % 10 === 3 ? 'Viewer' : (permiss % 10 === 2 ? 'Editor' : 'Admin')%></a>
-                <ul class="sellList">
-                    <li class="chooseRole" data-id="3">Viewer</li>
-                    <li class="chooseRole" data-id="2">Editor</li>
+                <a href="javascript:;" id="role" class="addRole sel_result" data-id="<%= permiss%>"><%= permiss % 10 === 3 ? 'Viewer' : (permiss % 10 === 2 ? 'Editor' : 'Admin')%></a>
+                <ul class="sel_list">
+                    <li class="sel_item" data-id="3">Viewer</li>
+                    <li class="sel_item" data-id="2">Editor</li>
                     <%if (role === 0){%>
-                    <li class="chooseRole" data-id="1">Admin</li>
+                    <li class="sel_item" data-id="1">Admin</li>
                     <%}%>
                 </ul>
             </div>
             <div class="check">
-                <input type="checkbox" id="editStatus" value="<%= usrMdl.status ? 0 : 1%>">
-                <label for="editStatus"><span><%= usrMdl.status ? 'Delete User' : 'Activate User'%></span></label>
+                <input type="checkbox" id="editStatus" value="<%= usrMdl.status === 1 ? 0 : 1%>">
+                <label for="editStatus"><span><%= usrMdl.status === 1 ? 'Delete User' : 'Activate User'%></span></label>
             </div>
         </div>
         <div class="editUser-centerRight">

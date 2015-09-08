@@ -587,10 +587,12 @@ a {
   border: 1px solid #d0d0d1;
   thead{
     background: #eaeaea;
-    height: 44px;
-    line-height: 44px;
     .font-oss;
     text-transform: uppercase;
+    th{
+      height: 44px;
+      line-height: 44px;
+    }
   }
   td{
     .font-osr;
@@ -630,6 +632,18 @@ a {
     position: relative;
     width: 100%;
     text-align: left;
+    &:before{
+      bottom: 100%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-bottom-color: #fff;
+      border-width: 5px;
+      left: 1%;
+    }
     & > div > label,
     & > div > div > label{
       display: block;
@@ -725,8 +739,22 @@ a {
       }
     }
     .editUser-right{
-      width: 16%;
+      width: calc(~"16% - 2px");
+      border-left: 2px solid #d0d0d1;
+      text-align: center;
       float: left;
+      height: 191px;
+      & > div{
+        margin-top: 44px;
+        label{
+          .font-osr;
+          font-size: 14px;
+        }
+      }
+      #currentSign{
+        width: 100%;
+        height: auto;
+      }
     }
   }
   th,
@@ -737,10 +765,16 @@ a {
     font-size: 16px;
   }
 }
-.sellCont{
+#hideCompany{
+  display: block;
+  &.hide{
+    display: none;
+  }
+}
+.sel_container{
   position: relative;
   margin-top: 15px;
-  a{
+  a {
     background: url("../images/select-arr-down.png") no-repeat 95% center #eaeaea;
     height: 50px;
     line-height: 50px;
@@ -749,9 +783,6 @@ a {
     display: block;
     color: #3d3d3d;
     text-decoration: none;
-    &.active{
-      background-image: url("../images/select-arr-top.png");
-    }
   }
   ul{
     display: none;
@@ -763,12 +794,21 @@ a {
       height: 50px;
       line-height: 50px;
       padding: 0 4%;
+      color: #3d3d3d;
       &:nth-child(odd){
         background: #c1c1c1;
       }
       &:nth-child(even){
         background: #dadada;
       }
+    }
+  }
+  &.active{
+    a{
+      background-image: url("../images/select-arr-top.png");
+    }
+    ul{
+      display: block;
     }
   }
 }
@@ -881,10 +921,6 @@ a {
   float: left;
 }
 
-#selectedCompany {
-  display: none;
-}
-
 #adminClient {
   span{
     position: relative;
@@ -922,4 +958,16 @@ a {
 #currentSign {
   width: 100px;
   height: 70px;
+}
+
+.main_state {
+  .linked_type {
+    display: none;
+  }
+}
+
+.linked_state {
+  .main_type {
+    display: none;
+  }
 }

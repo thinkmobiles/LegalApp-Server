@@ -22,8 +22,8 @@ define([
             "click .userRow:not(.activeRow)" : "showEditTemplate",
             "click .activeRow"               : "hideEdit",
             "click #adminClient>span "       : "changeCurrentState",
-            "click .chooseRole"              : "selectRole",
-            "click .addRole"                 : "showSelect"
+            "click .sel_item"                : "selectSomething",
+            "click .sel_container"           : "showHideSelect"
         },
 
         initialize: function () {
@@ -40,23 +40,24 @@ define([
             this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
         },
 
-        selectRole: function(event){
+        selectSomething: function(event){
+            //$('.sel_container .active').removeClass('active');
             var target = $(event.target);
-            var container = target.closest('.sellCont');
-            var result = container.find('.addRole');
+            var container = target.closest('.sel_container');
+            var result = container.find('.sel_result');
+            var newId;
 
             result.text(target.text());
-            result.data('id', target.data('id'));
-            container.find('.sellList').hide();
+            newId = target.attr('data-id');
+            result.attr('data-id', newId);
         },
 
-        showSelect: function(event){
-            //event.stopPropagation();
-            //event.preventDefault();
+        showHideSelect: function(event){
+            //$('.sel_container .active').removeClass('active');
 
             var target = $(event.target);
-            target.closest('.addRole').toggleClass('active');
-            target.closest('.sellCont').find('.sellList').toggle();
+            target.closest('.sel_container').toggleClass('active');
+            //target.closest('.sel_container').find('.sel_list').toggle();
         },
 
         changeCurrentState: function(event){
