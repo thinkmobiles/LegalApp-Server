@@ -1,8 +1,8 @@
-<li class="selThisComp" data-id="0">Select company</li>
+<li class="sel_item" data-id="0">Select company</li>
 <li id="create_company">
     <input id="newCompName" type="text" placeholder="+New Company">
     <input id="goSaveCompany" type="button" value=">">
 </li>
 <% coll.forEach(function(company){%>
-    <li class="selThisComp" data-id="<%= company.id%>"><%= company.name%></li>
+    <li class="sel_item" data-id="<%= company.id%>"><%= company.name%></li>
 <%})%>
