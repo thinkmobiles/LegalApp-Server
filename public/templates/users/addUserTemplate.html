@@ -9,33 +9,33 @@
         <p>*denotes required fields</p>
     </div>
     <div>
-        <label for="addFName">First name*</label><br>
+        <label for="addFName">First name*</label>
         <input type="text" id="addFName" placeholder="ie: John">
     </div>
     <div>
-        <label for="addLName">Last name*</label><br>
+        <label for="addLName">Last name*</label>
         <input type="text" id="addLName" placeholder="ie: Smith">
     </div>
     <div>
-        <label for="addEmail">Email Address*</label><br>
+        <label for="addEmail">Email Address*</label>
         <input type="email" id="addEmail" placeholder="ie : johnsmith@mail.com">
     </div>
     <div>
-    <label for="addPhone">Phone</label><br>
+    <label for="addPhone">Phone</label>
     <input type="text" id="addPhone" placeholder="ie: +380000000000">
     </div>
     <div>
-    <select id="addRole">
-        <option data-id="3" selected >Viewer</option>
-        <option data-id="2">Editor</option>
-        <%if (role === 0){%>
-        <option data-id="1">Admin</option>
-        <%}%>
-    </select>
-    <a href="javascript:;" id="selectedCompany" data-id="0">Select Company</a>
-    <div id="companyContainer">
-        <ul id="companyNames">
-        </ul>
-    </div>
+        <select id="addRole">
+            <option data-id="3" selected >Viewer</option>
+            <option data-id="2">Editor</option>
+            <%if (role === 0){%>
+            <option data-id="1">Admin</option>
+            <%}%>
+        </select>
+        <a href="javascript:;" id="selectedCompany" data-id="0">Select Company</a>
+        <div id="companyContainer">
+            <ul id="companyNames">
+            </ul>
+        </div>
     </div>
     <input type="button" id="addInvite" value="Invite">

@@ -626,62 +626,106 @@ a {
       }
     }
   }
-  #listTable > div{
+  .editUserRow > td > div{
     position: relative;
     overflow: hidden;
     width: 100%;
-    .editUser-left{
-      width: 26%;
-      float: left;
+    text-align: left;
+    & > div > label{
+      display: block;
+      color: #7c7b7b;
+      .font-oss;
+      font-size: 16px;
+      margin-bottom: 8px;
     }
-    .editUser-centerLeft{
-      width: 10%;
+    .editUser-left{
+      width: 32.2%;
       float: left;
-      .check{
-        margin: 37px 0 17px;
-        overflow: hidden;
-        input[type="checkbox"]{
-          display: none;
-        }
-        label {
-          display: inline-block;
-          width: 22px;
-          height: 22px;
-          border: 1px solid #909090;
-          position: relative;
-          float: left;
-          cursor: pointer;
-          margin-right: 6px;
-        }
-        input[type="checkbox"]:checked + label{
-          border-color: #e31937;
-        }
-        input[type="checkbox"]:checked + label:after {
-          content: '';
-          background: url("../images/check-red.png") no-repeat center;
-          height: 13px;
-          width: 17px;
-          position: absolute;
-          top: 5px;
-          left: 2px;
-        }
-        span{
-          display: block;
-          .font-oss;
-          font-size: 14px;
-          line-height: 24px;
-          color: #909090;
-          margin-left: 32px;
-          width: 150px;
+      padding: 15px 1.4%;
+      input{
+        background: #eaeaea;
+        border:none;
+        height: 50px;
+        line-height: 50px;
+        padding: 0 4%;
+        width: 92%;
+        &.first{
+          margin-bottom: 8px;
         }
       }
     }
-    .editUser-centerRight{
-      width: 24%;
+    .editUser-centerLeft{
+      width: 16.8%;
       float: left;
+      padding: 0 0.6%;
+      & >label{
+        margin-top: 15px;
+      }
+    }
+    .check{
+      margin: 45px 0 17px;
+      overflow: hidden;
+      height: 40px;
+      input[type="checkbox"]{
+        display: none;
+      }
+      label {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border: 1px solid #909090;
+        position: relative;
+        float: left;
+        cursor: pointer;
+        margin-right: 6px;
+      }
+      input[type="checkbox"]:checked + label{
+        border-color: #e31937;
+      }
+      input[type="checkbox"]:checked + label:after {
+        content: '';
+        background: url("../images/check-red.png") no-repeat center;
+        height: 13px;
+        width: 17px;
+        position: absolute;
+        top: 5px;
+        left: 2px;
+      }
+      span{
+        display: block;
+        .font-oss;
+        font-size: 14px;
+        line-height: 14px;
+        color: #909090;
+        margin-left: 32px;
+        width: 150px;
+        padding-top: 4px;
+      }
+    }
+    .editUser-centerRight{
+      width: 31%;
+      float: left;
+      .check{
+        margin: 52px 0 29px 52px;
+      }
+      input[type="button"]{
+        background-color: #c4c4c4;
+        border: none;
+        margin: 0 auto;
+        width: 92%;
+        height: 50px;
+        line-height: 50px;
+        display: block;
+        .font-ose;
+        font-size: 18px;
+        color: #fff;
+        &:hover{
+          background-color: #e31937;
+        }
+      }
     }
     .editUser-right{
-      width: 10%;
+      width: 16%;
       float: left;
     }
   }
@@ -691,6 +735,38 @@ a {
     text-align: center;
     color: #3d3d3d;
     font-size: 16px;
+  }
+}
+.styled-select{
+  position: relative;
+  span{
+    background: url("../images/select-arr-down.png") no-repeat 95% center #eaeaea;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 4%;
+    width: 92%;
+    display: block;
+    &.active{
+      background-image: url("../images/select-arr-top.png");
+    }
+  }
+  ul{
+    display: none;
+    position: absolute;
+    top:100%;
+    z-index: 10;
+    width: 100%;
+    li{
+      height: 50px;
+      line-height: 50px;
+      padding: 0 4%;
+      &:nth-child(odd){
+        background: #c1c1c1;
+      }
+      &:nth-child(even){
+        background: #dadada;
+      }
+    }
   }
 }
 .dialogWindow {
