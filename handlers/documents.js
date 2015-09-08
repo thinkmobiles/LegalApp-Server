@@ -16,7 +16,6 @@ var badRequests = require('../helpers/badRequests');
 var dSignature = require('../helpers/dSignature');
 var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
-var checkRunningTime = require('../helpers/checkRunningTime');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
 var path = require('path');
