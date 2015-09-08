@@ -628,10 +628,10 @@ a {
   }
   .editUserRow > td > div{
     position: relative;
-    overflow: hidden;
     width: 100%;
     text-align: left;
-    & > div > label{
+    & > div > label,
+    & > div > div > label{
       display: block;
       color: #7c7b7b;
       .font-oss;
@@ -737,15 +737,17 @@ a {
     font-size: 16px;
   }
 }
-.styled-select{
+.sellCont{
   position: relative;
-  span{
+  a{
     background: url("../images/select-arr-down.png") no-repeat 95% center #eaeaea;
     height: 50px;
     line-height: 50px;
     padding: 0 4%;
     width: 92%;
     display: block;
+    color: #3d3d3d;
+    text-decoration: none;
     &.active{
       background-image: url("../images/select-arr-top.png");
     }

@@ -10,7 +10,8 @@
         </div>
         <div class="editUser-centerLeft">
             <div class="sellCont">
-                <a href="javascript:;" class="addRole" data-id="<%= permiss%>"><%= permiss % 10 === 3 ? 'Viewer' : (permiss % 10 === 2 ? 'Editor' : 'Admin')%></a>
+                <label for="role">Role</label>
+                <a href="javascript:;" id="role" class="addRole" data-id="<%= permiss%>"><%= permiss % 10 === 3 ? 'Viewer' : (permiss % 10 === 2 ? 'Editor' : 'Admin')%></a>
                 <ul class="sellList">
                     <li class="chooseRole" data-id="3">Viewer</li>
                     <li class="chooseRole" data-id="2">Editor</li>
