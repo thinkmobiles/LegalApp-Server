@@ -119,14 +119,6 @@ define([
             });
         },
 
-        /*actionUser : function(){
-            if (this.editThisForm){
-                this.updateUser()
-            } else {
-                this.inviteUser()
-            }
-        },*/
-
         render: function () {
             var role = App.sessionData.get('permissions');
             var company = App.sessionData.get('companyId');
