@@ -27,7 +27,11 @@ var Attachments = function (PostGre) {
         var ticks_ = new Date().valueOf();
         var key;
 
-        key = ticks_ + '_' + random(1000) + '_' + name;
+        if (name) {
+            key = ticks_ + '_' + random(1000) + '_' + name;
+        } else {
+            key = ticks_ + '_' + random(1000);
+        }
 
         return key;
     };
