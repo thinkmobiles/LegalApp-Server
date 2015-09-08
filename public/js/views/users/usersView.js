@@ -47,6 +47,7 @@ define([
 
             result.text(target.text());
             result.data('id', target.data('id'));
+            result.toggleClass('active');
             container.find('.sellList').hide();
         },
 
