@@ -63,7 +63,7 @@ define([
         changeCurrentState: function(event){
             var target = $(event.target);
             var container = target.closest('#adminClient');
-            var sel_visible = $('#selectedCompany');
+            var sel_visible = $('#hideCompany');
             var theState;
 
             container.find('.active').removeClass('active');
@@ -73,9 +73,9 @@ define([
             this.stateModel.set('currentState', theState);
 
             if (theState){
-                sel_visible.hide();
+                sel_visible.addClass('hide');
             } else {
-                sel_visible.show();
+                sel_visible.removeClass('hide');
             }
         },
 
