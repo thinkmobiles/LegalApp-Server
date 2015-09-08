@@ -134,7 +134,7 @@ define([
             };
 
             if (status_ch){
-                updateData.status = status.val();
+                updateData.status = +status.val();
             }
 
             this.userModel.save(updateData,{

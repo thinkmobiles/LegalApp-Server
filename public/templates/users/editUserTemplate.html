@@ -21,8 +21,8 @@
                 </ul>
             </div>
             <div class="check">
-                <input type="checkbox" id="editStatus" value="<%= usrMdl.status ? 0 : 1%>">
-                <label for="editStatus"><span><%= usrMdl.status ? 'Delete User' : 'Activate User'%></span></label>
+                <input type="checkbox" id="editStatus" value="<%= usrMdl.status === 1 ? 0 : 1%>">
+                <label for="editStatus"><span><%= usrMdl.status === 1 ? 'Delete User' : 'Activate User'%></span></label>
             </div>
         </div>
         <div class="editUser-centerRight">
