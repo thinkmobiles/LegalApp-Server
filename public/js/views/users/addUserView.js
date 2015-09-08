@@ -27,6 +27,15 @@ define([
             this.render();
         },
 
+        showSelect: function(event){
+            event.stopPropagation();
+            event.preventDefault();
+
+            var target = $(event.target);
+            target.closest('#selectedCompany').toggleClass('active');
+            target.closest('.sellCont').find('.sellList').toggle();
+        },
+
         selectCurrentCompany: function(event){
             var target = $(event.target);
             var comId = target.data('id');
