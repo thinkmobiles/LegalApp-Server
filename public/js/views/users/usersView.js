@@ -41,8 +41,7 @@ define([
         },
 
         selectSomething: function(event){
-            $('.sel_container .active').removeClass('active');
-
+            //$('.sel_container .active').removeClass('active');
             var target = $(event.target);
             var container = target.closest('.sel_container');
             var result = container.find('.sel_result');
@@ -54,11 +53,11 @@ define([
         },
 
         showHideSelect: function(event){
-            $('.sel_container .active').removeClass('active');
+            //$('.sel_container .active').removeClass('active');
 
             var target = $(event.target);
-            target.closest('.sel_container').addClass('active');
-            //target.closest('.sellCont').find('.sellList').toggle();
+            target.closest('.sel_container').toggleClass('active');
+            //target.closest('.sel_container').find('.sel_list').toggle();
         },
 
         changeCurrentState: function(event){

@@ -20,24 +20,26 @@ define([
         initialize: function (options) {
             var self = this;
             this.tempType = options.docType;
-            this.startId = options.id;
+            var startId = options.id;
+            var tempId = startId;
 
             if (this.tempType === 'documents'){
-                this.docModel = new DocModel({id : this.startId});
+                this.docModel = new DocModel({id : startId});
                 this.docModel.fetch({
                     success: function(response){
-                        self.tempId = response.get('template_id');
-                        self.createStateModel(self.tempId);
+                        tempId = response.get('template_id');
+                        self.createStateModel(tempId);
                     }
                 });
             } else {
-                self.tempId = self.startId;
-                self.createStateModel(self.tempId);
+                tempId = startId;
+                self.createStateModel(tempId);
             }
         },
 
         events : {
-            "click #createDoc" : "openCreateForm"
+            "click #createDoc"  : "openCreateForm",
+            "click .showLinked" : "showLinkedPreview"
         },
 
         createStateModel: function(id){
@@ -61,9 +63,33 @@ define([
             this.$el.find('#createDocContainer').html(currentView.el);
         },
 
-        findPreview: function(){
-            var id = this.tempId;
-            var myDocContainer = this.$el.find('#previewContainer');
+        showLinkedPreview: function(event){
+            var type = $(event.target).attr('data-val');
+            var mainDiv = this.$el.find('#div_main');
+            var secondId;
+            var containerForPreview;
+
+            if (type === "link"){
+                containerForPreview = this.$el.find('#linkedPreviewContainer');
+
+                if (containerForPreview.html() === ''){
+                    secondId = this.stateModel.get('linkedTemplates')[0].id;
+                    this.findPreview(secondId, containerForPreview);
+                }
+                mainDiv.switchClass('main_state','linked_state');
+            } else {
+                mainDiv.switchClass('linked_state','main_state');
+            }
+        },
+
+        findPreview: function(id, container){
+            var myDocContainer;
+
+            if (container){
+                myDocContainer = container
+            } else {
+                myDocContainer = this.$el.find('#previewContainer');
+            }
 
             $.ajax({
                 url  : '/templates/'+id+'/preview',
@@ -79,11 +105,11 @@ define([
         },
 
         render: function () {
+            var tempModel = this.stateModel.toJSON();
 
+            this.$el.html(this.currentTemp({tempModel : tempModel}));
 
-            this.$el.html(this.currentTemp);
-
-            this.findPreview();
+            this.findPreview(tempModel.id);
             if (this.tempType === 'documents'){
                 this.openCreateForm()
             }

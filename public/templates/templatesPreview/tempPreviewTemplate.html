@@ -1,13 +1,45 @@
+<% var linkedModel=tempModel.linkedTemplates[0]%>
+
 <div id="createDocContainer">
     <!--Create Document-->
 </div>
-<div id="leftPreview">
-    <div id="previewContainer" contenteditable="false">
 
+<div id="div_main" class="main_state">
+    <div class="addItemLeft main_type">
+        <div>
+            <h2><%= tempModel.name%></h2>
+        </div>
+        <div>
+            <p><%= tempModel.description%></p>
+        </div>
+        <%if (tempModel.has_linked_template){%>
+        <div>
+            <span>Linked template: </span><span class="showLinked" data-val="link"><%= linkedModel.name%></span>
+        </div>
+        <%}%>
     </div>
+    <%if (tempModel.has_linked_template){%>
+    <div class="addItemLeft linked_type">
+        <div>
+            <h2><%= linkedModel.name%></h2>
+        </div>
+        <div>
+            <p><%= linkedModel.description%></p>
+        </div>
+        <div>
+            <span>Linked template: </span><span class="showLinked" data-val="main"><%= tempModel.name%></span>
+        </div>
+    </div>
+    <%}%>
+
+    <div id="div_with_a4">
+        <div id="previewContainer" class="a4_template main_type" contenteditable="false"></div>
+        <div id="linkedPreviewContainer" class="a4_template linked_type" contenteditable="false"></div>
+    </div>
+</div>
+
+<div id="rightPreview">
     <div>
         <input type="button" id="createDoc" value="Create">
     </div>
-</div>
-<div id="rightPreview">
 </div>
