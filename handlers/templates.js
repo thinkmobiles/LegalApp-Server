@@ -18,6 +18,7 @@ var DocumentsHandler = require('../handlers/documents');
 var MammothHandler = require('../handlers/mammoth');
 
 var TemplatesHandler = function (PostGre) {
+    var knex = PostGre.knex;
     var Models = PostGre.Models;
     var uploader = PostGre.Models.Image.uploader;
     var TemplateModel = Models.Template;
@@ -433,34 +434,90 @@ var TemplatesHandler = function (PostGre) {
             return next(badRequests.NotEnParams('values'));
         }
 
-        TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var templateHtmlContent = templateModel.get('html_content');
-                var linkModel = templateModel.related('link');
-                var fields = [];
-                var htmlContent;
-                var linkFieldsModels;
+        async.parallel({
 
-                if (linkModel && linkModel.related('linkFields')) {
-                    linkFieldsModels = linkModel.related('linkFields');
-                    linkFieldsModels.models.forEach(function (model) {
-                        fields.push(model.toJSON());
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> templateModel time');
+                }
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> templateModel time');
+                        }
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            linkedTemplates: function (cb) {
+                var columns = [
+                    'linked_id',    // linked_templates
+                    'template_id',  // linked_templates
+                    'name',         // templates
+                    'html_content', // templates
+                    'link_id'       // templates
+                ];
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> linkedTemplates time');
+                }
+                knex(TABLES.LINKED_TEMPLATES)
+                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
+                    .where('template_id', templateId)
+                    .select(columns)
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> linkedTemplates time');
+                        }
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!rows || !rows.length) {
+                            return cb(null, null);
+                        }
+
+                        cb(null, rows);
                     });
-                }
+            }
 
-                if (values && templateHtmlContent) {
-                    htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
-                } else {
-                    htmlContent = '';
-                }
+        }, function (err, models) {
+            var templateModel = models.templateModel;
+            var linkedTemplates = models.linkedTemplates;
+            var templateHtmlContent = templateModel.get('html_content');
+            var linkModel = templateModel.related('link');
+            var fields = [];
+            var htmlContent;
+            var linkFieldsModels;
 
-                res.status(200).send({htmlContent : htmlContent});
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+            if (linkModel && linkModel.related('linkFields')) {
+                linkFieldsModels = linkModel.related('linkFields');
+                linkFieldsModels.models.forEach(function (model) {
+                    fields.push(model.toJSON());
+                });
+            }
+
+            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
+
+            res.status(200).send({htmlContent : htmlContent});
+        });
     };
 
 };

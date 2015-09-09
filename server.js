@@ -1,4 +1,5 @@
-﻿var os;
+﻿/*
+var os;
 var cluster;
 var cpuCount;
 
@@ -29,5 +30,6 @@ if (cluster.isMaster) {
 } else {
     require('./app');
 }
+*/
 
-//require('./app');
+require('./app');
