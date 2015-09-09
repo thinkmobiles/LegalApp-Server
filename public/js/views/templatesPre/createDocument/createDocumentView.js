@@ -26,7 +26,7 @@ define([
         //className   : "addItemLeft",
 
         initialize: function (options) {
-            this.signersId = App.sessionData.get('userId');
+            //this.signersId = App.sessionData.get('userId');
             this.tempInfo = options.model;
             this.fillFields = false;
 
@@ -80,9 +80,9 @@ define([
         },
 
         chooseThisSigner: function(context){
-            var signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
+            var signersId = $('#signersContainer').find('input:checked').closest('li').data('id');
 
-            if (this.signersId){
+            if (signersId){
                 context.signMyDoc(signersId, false)
             } else {
                 alert('Choose some user!')
@@ -102,16 +102,18 @@ define([
         },
 
         saveDoc: function(){
-            var assignedId = this.$el.find('#createEmployee').attr('data-sig');
             var myModel = this.fillFields ? this.docModel : new DocModel();
             var data;
             var values = this.collectValues();
 
             data = {
                 template_id : this.tempInfo.id,
-                user_id     : assignedId,
                 values      : values
             };
+
+            if (!this.fillFields){
+                data.user_id = this.$el.find('#createEmployee').attr('data-sig');
+            }
 
             myModel.save(data,{
                 success: function(){
@@ -151,6 +153,8 @@ define([
             var data;
             var values = this.collectValues();
             var url;
+            var docId;
+            var userId;
 
             data = {values : values};
             if (assignedUser){
@@ -162,12 +166,13 @@ define([
             }
 
             if (this.fillFields){
-                url = '/documents/'+this.docModel.get('id')+'/signAndSend'
-
+                docId = this.docModel.get('id');
+                url = '/documents/'+docId+'/signAndSend'
             } else {
                 url ='/documents/signAndSend';
+                userId = this.$el.find('#createEmployee').attr('data-sig');
                 data.template_id = this.tempInfo.id;
-                data.user_id = +(this.$el.find('#createEmployee').attr('data-sig'));
+                data.user_id = +userId;
             }
 
             $.ajax({

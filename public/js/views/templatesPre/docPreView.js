@@ -18,7 +18,6 @@ define([
         },
 
         events : {
-            //"click #sendAndSignBtn" : "sendMyDoc",
             "click #modalBack" : "closeDialog",
             "click #modalSave" : "saveFromDialog",
             "click #modalSend" : "sendFromDialog"
@@ -46,33 +45,18 @@ define([
             });
         },
 
-        //sendMyDoc: function(){
-        //    var self = this;
-        //
-        //    $.ajax({
-        //        url : "/documents/"+this.tempId+"/send",
-        //        success : function(){
-        //            alert('A document was sent successfully');
-        //            Backbone.history.navigate('/documents/list', {trigger : true});
-        //        },
-        //        error : function(model){
-        //            alert('Error on sending');
-        //            //self.errorNotification(model);
-        //        }
-        //    });
-        //},
-
         closeDialog: function(){
             this.remove();
         },
 
-        saveFromDialog: function(event){
-            //var status = $(event.target).data('val');
+        saveFromDialog: function(){
             this.trigger('saveInParent');
+            this.remove();
         },
 
         sendFromDialog: function(){
             this.trigger('sendInParent');
+            this.remove();
         },
 
         render: function () {
