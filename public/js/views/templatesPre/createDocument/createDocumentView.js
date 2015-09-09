@@ -144,6 +144,21 @@ define([
             });
         },
 
+        beginToSendMyDoc : function(){
+            var sesData = App.sessionData.toJSON();
+            if (sesData.sign_authority){
+                if (sesData.companyId === 1){
+                    if (sesData.has_sign_image){
+
+                    } else {
+                        alert('Your signature is not uploaded.')
+                    }
+                } else {
+
+                }
+            }
+        },
+
         signMyDoc: function(){
             var self = this;
             var sesData = App.sessionData.toJSON();
@@ -154,17 +169,25 @@ define([
             var data;
             var values = this.collectValues();
 
-            data = {
+            /*data = {
                 template_id : this.tempInfo.id,
                 //user_id     : assignedId,
                 values      : values
-            };
+            };*/
 
             if (this.fillFields){
+                data = {
+                    values      : values
+                };
 
             } else {
-                user_id = this.$el.find('#createEmployee').attr('data-sig');
-                template_id = this.tempInfo.id;
+                data = {
+                    template_id : this.tempInfo.id,
+                    user_id     : this.$el.find('#createEmployee').attr('data-sig'),
+                    values      : values
+                };
+
+
             }
 
             /*var self = this;
