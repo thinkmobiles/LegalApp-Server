@@ -420,13 +420,6 @@ var TemplatesHandler = function (PostGre) {
         var templateId = req.params.id;
         var options = req.body;
         var values;
-        var criteria = {
-            id: templateId
-        };
-        var fetchOptions = {
-            require: true,
-            withRelated: ['link.linkFields']
-        };
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
