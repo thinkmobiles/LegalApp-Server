@@ -701,6 +701,18 @@ var DocumentsHandler = function (PostGre) {
             assignedUserModel = _.find(users, {id: assignedId});
             userModel = _.find(users, {id: userId});
 
+            if (userId && !userModel) {
+                return callback(badRequests.NotFound({message: 'User was not found'}));
+            }
+
+            if (assignedId && !assignedUserModel) {
+                return callback(badRequests.NotFound({message: 'Assigned User was not found'}));
+            }
+
+            if (currentUserId && !currentUserModel) {
+                return callback(badRequests.NotFound({message: 'Current User User was not found'}));
+            }
+
             models.currentUserModel = currentUserModel;
             models.assignedUserModel = assignedUserModel;
             models.userModel = userModel;
@@ -722,7 +734,7 @@ var DocumentsHandler = function (PostGre) {
         var userModel = models.userModel;
         var userJSON = userModel.toJSON();
         var assignedJSON = assignedUserModel.toJSON();
-        var documentJSON = documentModel.toJSON();
+        var documentJSON = documentModel.attributes;
         var status = documentJSON.status;
         var company = userJSON.company;
         var srcUser = currentUserModel.toJSON();
@@ -1244,6 +1256,7 @@ var DocumentsHandler = function (PostGre) {
                     if (err) {
                         return cb(err);
                     }
+
                     models.documentModel = documentModel;
                     cb(null, models);
                 });
