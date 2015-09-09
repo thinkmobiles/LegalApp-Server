@@ -227,10 +227,6 @@ a {
 //  display: none;
 //}
 
-#adminClient {
-  border-bottom: 1px solid;
-}
-
 #wrapper {
 }
 #loginDiv{
@@ -927,10 +923,19 @@ a {
 }
 
 #adminClient {
+  padding: 0 26px;
+  overflow: hidden;
+  margin-top: 45px;
   span{
-    position: relative;
     width: 50%;
     cursor: pointer;
+    display: block;
+    float: left;
+    color: #3d3d3d;
+    .font-osr;
+    font-size: 16px;
+    border-bottom: 3px solid #878787;
+    padding-bottom: 9px;
 
     &:nth-child(2){
       float:right;
@@ -938,8 +943,8 @@ a {
     }
 
     &.active {
-      color : #e31937;
-      border-bottom: 1px solid #e31937;
+      color : #bfbfbf;
+      border-bottom: 3px solid #e31937;
     }
   }
 }
