@@ -82,6 +82,8 @@ define([
 
         render: function () {
             var self = this;
+
+            this.undelegateEvents();
             this.$el.html(_.template(SignatureTemplate)).dialog({
                 closeOnEscape: false,
                 autoOpen: true,
@@ -92,6 +94,7 @@ define([
                     self.remove()
                 }
             });
+            this.delegateEvents();
 
             this.drowOnCanvas();
 
