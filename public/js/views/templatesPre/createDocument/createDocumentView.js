@@ -79,11 +79,11 @@ define([
             return values;
         },
 
-        chooseThisSigner: function(){
-            this.signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
+        chooseThisSigner: function(context){
+            var signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
 
             if (this.signersId){
-                this.signMyDoc(this.signersId, false)
+                context.signMyDoc(signersId, false)
             } else {
                 alert('Choose some user!')
             }
@@ -186,6 +186,8 @@ define([
         },
 
         showResignWindow: function(){
+            var self = this;
+
             $.ajax({
                 url  : '/users/search',
                 data : {'signAuthority' : true},
