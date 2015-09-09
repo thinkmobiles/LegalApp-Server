@@ -585,7 +585,7 @@ var UsersHandler = function (PostGre) {
 
                 UserModel
                     .forge(criteria)
-                    .fetch({withRelated: ['profile', 'company']})
+                    .fetch({withRelated: ['profile', 'company', 'avatar']})
                     .exec(function (err, userModel) {
                         if (err) {
                             return cb(err);
