@@ -104,6 +104,7 @@ define([
         saveDoc: function(){
             var myModel = this.fillFields ? this.docModel : new DocModel();
             var data;
+            var userId;
             var values = this.collectValues();
 
             data = {
@@ -112,7 +113,8 @@ define([
             };
 
             if (!this.fillFields){
-                data.user_id = this.$el.find('#createEmployee').attr('data-sig');
+                userId = this.$el.find('#createEmployee').attr('data-sig');
+                data.user_id = +userId;
             }
 
             myModel.save(data,{
