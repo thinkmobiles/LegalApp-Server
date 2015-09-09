@@ -459,15 +459,18 @@ a {
   }
 }
 
-.addItemLeft {
+.addItemLeft{
   width: 30%;
   float: left;
-  background-color: #3d3d3d;
   color: #eaeaea;
+}
+
+.centerBlock {
+  background-color: #3d3d3d;
   >div {
     margin: 22px 44px 35px;
     position: relative;
-    height: calc(~"100vh - 171px");
+    min-height: 670px;
     h2 {
       .font-oss;
       font-size: 24px;
@@ -491,7 +494,8 @@ a {
           color: #e31937;
         }
       }
-      input[type="text"]{
+      input[type="text"],
+      input[type="email"]{
         background: #eaeaea;
         height: 50px;
         width: 92%;
@@ -519,12 +523,13 @@ a {
 .textareaBlock{
   margin: 33px 23px;
   position: relative;
-  height: calc(~"100vh - 123px");
+  min-height: 670px;
   width: 58%;
   float: left;
   textarea{
     width: 100%;
-    height: calc(~"100vh - 189px");
+    min-height: 630px;
+    padding: 20px;
     resize: none;
     background: #eaeaea;
     border: none;

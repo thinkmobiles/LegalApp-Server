@@ -4,42 +4,46 @@
         <span data-id="0">Client</span>
     </div>
     <%}%>
-    <div id="addNewUser">
-        <span>ADD NEW USER</span>
-        <p>*denotes required fields</p>
-    </div>
-    <div>
-        <label for="addFName">First name*</label>
-        <input type="text" id="addFName" placeholder="ie: John">
-    </div>
-    <div>
-        <label for="addLName">Last name*</label>
-        <input type="text" id="addLName" placeholder="ie: Smith">
-    </div>
-    <div>
-        <label for="addEmail">Email Address*</label>
-        <input type="email" id="addEmail" placeholder="ie : johnsmith@mail.com">
-    </div>
-    <div>
-    <label for="addPhone">Phone</label>
-    <input type="text" id="addPhone" placeholder="ie: +380000000000">
-    </div>
-    <div>
-        <div class="sel_container">
-            <a href="javascript:;" class="addRole sel_result" data-id="3">Viewer</a>
-            <ul class="sel_list">
-                <li class="sel_item" data-id="3">Viewer</li>
-                <li class="sel_item" data-id="2">Editor</li>
-                <%if (role === 0){%>
-                <li class="sel_item" data-id="1">Admin</li>
-                <%}%>
-            </ul>
-        </div>
+    <div class="centerBlock">
+        <div>
+            <div id="addNewUser">
+                <h2>ADD NEW USER</h2>
+                <p>*denotes required fields</p>
+            </div>
+            <div>
+                <label for="addFName">First name*</label>
+                <input type="text" id="addFName" placeholder="ie: John">
+            </div>
+            <div>
+                <label for="addLName">Last name*</label>
+                <input type="text" id="addLName" placeholder="ie: Smith">
+            </div>
+            <div>
+                <label for="addEmail">Email Address*</label>
+                <input type="email" id="addEmail" placeholder="ie : johnsmith@mail.com">
+            </div>
+            <div>
+            <label for="addPhone">Phone</label>
+            <input type="text" id="addPhone" placeholder="ie: +380000000000">
+            </div>
+            <div>
+                <div class="sel_container">
+                    <a href="javascript:;" class="addRole sel_result" data-id="3">Viewer</a>
+                    <ul class="sel_list">
+                        <li class="sel_item" data-id="3">Viewer</li>
+                        <li class="sel_item" data-id="2">Editor</li>
+                        <%if (role === 0){%>
+                        <li class="sel_item" data-id="1">Admin</li>
+                        <%}%>
+                    </ul>
+                </div>
 
-        <div id="hideCompany" class="sel_container">
-        <a href="javascript:;" id="selectedCompany" class="sel_result" data-id="0">Select Company</a>
-            <ul id="companyNames" class="sel_list">
-            </ul>
+                <div id="hideCompany" class="sel_container">
+                <a href="javascript:;" id="selectedCompany" class="sel_result" data-id="0">Select Company</a>
+                    <ul id="companyNames" class="sel_list">
+                    </ul>
+                </div>
+            </div>
+            <input type="button" id="addInvite" value="Invite">
         </div>
     </div>
-    <input type="button" id="addInvite" value="Invite">
