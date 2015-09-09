@@ -747,9 +747,21 @@ a {
       height: 191px;
       & > div{
         margin-top: 44px;
+        position: relative;
         label{
           .font-osr;
           font-size: 14px;
+        }
+        #closeIco{
+          position: absolute;
+          right: 6px;
+          top: 6px;
+          .cls-x{
+            fill: #d0d0d1;
+            &:hover{
+              fill: #e31937;
+            }
+          }
         }
       }
       #currentSign{
