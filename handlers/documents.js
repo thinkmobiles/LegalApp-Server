@@ -1928,7 +1928,7 @@ var DocumentsHandler = function (PostGre) {
                 ];
                 var fetchOptions = {
                     required: true,
-                    withRelated: ['profile']
+                    withRelated: ['profile', 'company']
                 };
 
                 if (status !== STATUSES.SENT_TO_SIGNATURE_CLIENT) {
@@ -1945,7 +1945,16 @@ var DocumentsHandler = function (PostGre) {
                         var users = userModels.models;
                         var currentUserModel = _.find(users, {id: currentUserId});
                         var userModel = _.find(users, {id: userId});
-                        var srcUser = currentUserModel.toJSON();
+                        var models = {
+                            userModel: userModel,
+                            assignedUserModel: userModel,
+                            currentUserModel: currentUserModel,
+                            documentModel: documentModel
+                        };
+
+                        sendToSignature(models);
+
+                        /*var srcUser = currentUserModel.toJSON();
                         var dstUser = userModel.toJSON();
                         var document = documentModel.toJSON();
                         var company = document.company;
@@ -1958,7 +1967,7 @@ var DocumentsHandler = function (PostGre) {
                             document: document
                         };
 
-                        mailer.onSendToSignature(mailerParams);
+                        mailer.onSendToSignature(mailerParams);*/
                         //cb(null, users.models);
                         cb(null, documentModel);
                     })
@@ -1970,8 +1979,6 @@ var DocumentsHandler = function (PostGre) {
                         console.log(err.stack);
                         cb(err);
                     });
-
-
             },
 
             //if Client signed the document need to CREATE PDF
@@ -1981,7 +1988,7 @@ var DocumentsHandler = function (PostGre) {
                 var htmlContent;
 
                 if (status !== STATUSES.SIGNED_BY_CLIENT) {
-                    return cb(null, documentModel);
+                    return cb(null, documentModel, null);
                 }
 
                 htmlContent = documentModel.get('html_content');
@@ -2068,16 +2075,19 @@ var DocumentsHandler = function (PostGre) {
 
                 row = rows[0];
 
-                if (row.sign_authority === false) {
+                /*if (row.sign_authority === false) {
                     return next(badRequests.AccessError({message: 'You don\'t have sign authority'}));
-                }
+                }*/
 
                 signImage = row.sign_image;
-                if (!signImage) {
+                /*if (!signImage) {
                     return next(badRequests.NotFound({message: 'Sign image was not found'}));
+                }*/
+
+                if (signImage) {
+                    options.signature = signImage;
                 }
 
-                options.signature = signImage;
                 next();
             })
             .catch(function (err) {

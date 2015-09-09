@@ -11,8 +11,8 @@ module.exports = function (app) {
     var session = new SessionHandler(PostGre);
 
     router.get('/', session.authenticatedUser, users.getUsers);
-    router.get('/search', session.authenticatedAdmin, users.searchUsers);
-    router.get('/count', session.authenticatedUser, users.countUsers);
+    router.get('/search', session.authenticatedEditor, users.searchUsers);
+    router.get('/count', session.authenticatedEditor, users.countUsers);
     router.post('/', session.authenticatedAdmin, users.inviteUser);
     router.get('/:id', session.authenticatedUser, users.getUser);
     router.get('/:id/signature', session.authenticatedUser, users.getUserSignature);
