@@ -61,7 +61,16 @@ define([
         });
 
         events.on('newUser', function (user) {
-            App.Collections.pendingCollection.add(user);
+            console.log('newUser', user);
+            var count;
+
+            if (App.Collections.pendingCollection) {
+                App.Collections.pendingCollection.add(user);
+            } else {
+                count = App.Badge.get('pendingUsers');
+                count++;
+                App.Badge.set('pendingUsers', count);
+            }
         });
 
         appRouter = new Router();
