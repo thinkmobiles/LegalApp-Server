@@ -46,7 +46,6 @@ define([
         events : {
             "click #createBtnNext" : "goToPreview",
             "click #createBtnSave" : "saveDoc"
-            //"click #reAsignBtn"    : "chooseThisSigner"
         },
 
         inviteDataToFields: function(contentObject){
@@ -101,10 +100,6 @@ define([
             this.dialogView.on('saveInParent', this.saveDoc, this);
             this.dialogView.on('sendInParent', this.beginToSendMyDoc, this);
         },
-
-        /*letsSaveDoc : function(){
-            this.saveDoc();
-        },*/
 
         saveDoc: function(){
             var self = this;
@@ -168,7 +163,7 @@ define([
             }
 
             if (this.fillFields){
-                url = '/documents/:id/signAndSend'
+                url = '/documents/'+this.docModel.get('id')+'/signAndSend'
 
             } else {
                 url ='/documents/signAndSend';
@@ -210,24 +205,6 @@ define([
                 }
             });
         },
-
-        /*sendMyDoc: function(){
-            $.ajax({
-                url  : "/documents/"+docId+"/signAndSend",
-                type : "POST",
-                //data : {assigned_id : assignId},
-
-                success : function(){
-                    alert('A document was sent successfully');
-                    Backbone.history.navigate('/documents/list', {trigger : true});
-                },
-                error : function(model){
-                    alert('Error on sending');
-                    //self.errorNotification(model);
-                }
-            });
-        },*/
-
 
         createOurPage: function(){
             var thisEl = this.$el;
