@@ -22,7 +22,7 @@ module.exports = function (app) {
     router.get('/:id', session.authenticatedUser, documentsHandler.getDocument);
     router.put('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
     router.patch('/:id', session.authenticatedEditor, documentsHandler.updateDocument);
-    router.post('/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend); //TODO: dublicate, not used now
+    router.post('/signAndSend', session.authenticatedEditor, documentsHandler.companiesSignatureMiddleware, documentsHandler.createSignAndSend); //TODO: dublicate, not used now
     router.post('/:id/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);
