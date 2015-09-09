@@ -23,7 +23,7 @@ define([
             "click .activeRow"               : "hideEdit",
             "click #adminClient>span "       : "changeCurrentState",
             "click .sel_item"                : "selectSomething",
-            "click .sel_container"           : "showHideSelect"
+            "click .sel_container:not(#create_company)" : "showHideSelect"
         },
 
         initialize: function () {
@@ -149,22 +149,14 @@ define([
 
             if (theState) {
                 editableUser = this.usersCollection.get(userID);
-                //this.editView = new EditUserView({
-                //    userColl : this.usersCollection,
-                //    userId   :  userID
-                //});
             } else {
                 editableUser = this.clientsCollection.get(userID);
-                //this.editView = new EditUserView({
-                //    userColl : this.clientsCollection,
-                //    userId   :  userID
-                //});
             }
 
             editableUser.currentState = theState;
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.renderTrigger, this);
-            //this.$el.find('#addUserContainer').html(this.addView.el);
+
             userRow.after(this.editView.el);
         },
 
