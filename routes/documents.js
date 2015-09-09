@@ -11,7 +11,7 @@ module.exports = function (app) {
     var session = new SessionHandler(PostGre);
 
     //router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
-    router.post('/', session.authenticatedEditor, documentsHandler.saveNewDocument);
+    router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
     router.get('/', session.authenticatedUser, documentsHandler.getDocuments);
     router.get('/list', session.authenticatedUser, documentsHandler.getDocumentsByTemplates);
     router.get('/list/:templateId', session.authenticatedUser, documentsHandler.getDocumentsByTemplate);
