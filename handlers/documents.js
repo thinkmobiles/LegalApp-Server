@@ -715,6 +715,38 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
+    function sendToSignature(models) {
+        var documentModel = models.documentModel;
+        var currentUserModel = models.currentUserModel;
+        var assignedUserModel = models.assignedUserModel;
+        var userModel = models.userModel;
+        var userJSON = userModel.toJSON();
+        var assignedJSON = assignedUserModel.toJSON();
+        var documentJSON = documentModel.toJSON();
+        var status = documentJSON.status;
+        var company = userJSON.company;
+        var srcUser = currentUserModel.toJSON();
+        var dstUser;
+        var mailerParams;
+
+        if (status === STATUSES.SENT_TO_SIGNATURE_COMPANY) {
+            dstUser = assignedJSON;
+        } else if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+            dstUser = userJSON;
+        } else {
+            return console.error('>>> Incorrect value of documentModel.status', status);
+        }
+
+        mailerParams = {
+            srcUser: srcUser,
+            dstUser: dstUser,
+            company: company,
+            document: documentJSON
+        };
+
+        mailer.onSendToSignature(mailerParams);
+    };
+
     this.newDocument = function (req, res, next) {
         var options = req.body;
         var currentUserId = req.session.userId;
@@ -905,7 +937,7 @@ var DocumentsHandler = function (PostGre) {
                             };
 
                             console.log(mailerParams.dstUser);
-                            mailer.onSendToSingnature(mailerParams);
+                            mailer.onSendToSignature(mailerParams);
                             cb(null, documentModel);
 
                         }
@@ -1157,7 +1189,7 @@ var DocumentsHandler = function (PostGre) {
                 console.log(documentJSON);
                 console.log(mailerParams.dstUser);
 
-                mailer.onSendToSingnature(mailerParams);
+                mailer.onSendToSignature(mailerParams);
 
                 cb(null, documentModel);
             }
@@ -1258,11 +1290,13 @@ var DocumentsHandler = function (PostGre) {
                 cb(null, models);
             }
 
-        ], function (err, result) {
+        ], function (err, models) {
             if (err) {
                 return next(err);
             }
-            res.status(201).send({success: 'success created', models: result, options: options});
+
+            sendToSignature(models);
+            res.status(201).send({success: 'success created', models: models, options: options});
         });
 
     };
@@ -1776,7 +1810,7 @@ var DocumentsHandler = function (PostGre) {
                         document: savedDocument.toJSON()
                     };
 
-                    mailer.onSendToSingnature(mailerParams);
+                    mailer.onSendToSignature(mailerParams);
                     res.status(200).send(results);
                 });
         });
@@ -1911,7 +1945,7 @@ var DocumentsHandler = function (PostGre) {
                             document: document
                         };
 
-                        mailer.onSendToSingnature(mailerParams);
+                        mailer.onSendToSignature(mailerParams);
                         //cb(null, users.models);
                         cb(null, documentModel);
                     })

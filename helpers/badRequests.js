@@ -34,6 +34,14 @@ var BadRequestModule = function () {
 
     Errors.prototype = Object.create(Error.prototype);
 
+    this.UnAuthorized = function () {
+        var err = new Error('Unauthorized');
+
+        err.status = 401;
+
+        return err;
+    };
+
     this.NotEnParams = function (options) {
         var errOptions;
 

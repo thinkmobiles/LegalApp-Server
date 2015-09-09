@@ -29,6 +29,5 @@ module.exports = function (app) {
     router.get('/:token/signature', session.authenticatedUser, documentsHandler.getTheDocumentToSign);
     router.post('/:token/signature', session.authenticatedUser, documentsHandler.addSignatureToDocument);
 
-
     return router;
 };

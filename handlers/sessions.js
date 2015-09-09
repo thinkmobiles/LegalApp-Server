@@ -44,17 +44,13 @@ var Session = function (postGre) {
     };
 
     this.authenticatedUser = function (req, res, next) {
-        var err;
-
         if (req.session && req.session.userId && req.session.loggedIn) {
             if (!req.session.rememberMe) {
                 req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
             }
             next();
         } else {
-            err = new Error('Unauthorized');
-            err.status = 401;
-            next(err);
+            return next(badRequests.UnAuthorized());
         }
     };
 
@@ -68,10 +64,17 @@ var Session = function (postGre) {
         ];
         var permissions = req.session.permissions;
 
-        if (req.session && req.session.userId && req.session.loggedIn && (availablePermissions.indexOf(permissions) !== -1)) {
-            if (!req.session.rememberMe) {
-                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
-            }
+        if (req.session && req.session.userId && req.session.loggedIn) {
+            //next();
+        } else {
+            return next(badRequests.UnAuthorized());
+        }
+
+        if (!req.session.rememberMe) {
+            req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+        }
+
+        if ((availablePermissions.indexOf(permissions) !== -1)) {
             next();
         } else {
             next(badRequests.AccessError());
