@@ -167,7 +167,7 @@ define([
             } else {
                 url ='/documents/signAndSend';
                 data.template_id = this.tempInfo.id;
-                data.user_id = this.$el.find('#createEmployee').attr('data-sig');
+                data.user_id = +(this.$el.find('#createEmployee').attr('data-sig'));
             }
 
             $.ajax({
