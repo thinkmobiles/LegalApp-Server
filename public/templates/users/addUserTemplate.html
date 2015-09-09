@@ -27,8 +27,15 @@
             <input type="text" id="addPhone" placeholder="ie: +380000000000">
             </div>
             <div>
+                <div id="hideCompany" class="sel_container">
+                    <label for="selectedCompany">Company</label>
+                    <a href="javascript:;" id="selectedCompany" class="sel_result" data-id="0">Select Company</a>
+                    <ul id="companyNames" class="sel_list">
+                    </ul>
+                </div>
                 <div class="sel_container">
-                    <a href="javascript:;" class="addRole sel_result" data-id="3">Viewer</a>
+                    <label for="addRole">Role</label>
+                    <a href="javascript:;" id="addRole" class="addRole sel_result" data-id="3">Viewer</a>
                     <ul class="sel_list">
                         <li class="sel_item" data-id="3">Viewer</li>
                         <li class="sel_item" data-id="2">Editor</li>
@@ -37,13 +44,7 @@
                         <%}%>
                     </ul>
                 </div>
-
-                <div id="hideCompany" class="sel_container">
-                <a href="javascript:;" id="selectedCompany" class="sel_result" data-id="0">Select Company</a>
-                    <ul id="companyNames" class="sel_list">
-                    </ul>
-                </div>
             </div>
-            <input type="button" id="addInvite" value="Invite">
+            <div><input type="button" id="addInvite" value="Invite"></div>
         </div>
     </div>
