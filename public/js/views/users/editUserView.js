@@ -51,7 +51,7 @@ define([
 
             if (sign){
                 signInfo.hide();
-                signBox.html('<img id="currentSign" src="'+sign+'">');
+                signBox.html('<img id="currentSign" src="'+sign+'"><a href="#" id="closeIco">x</a>');
             } else {
                 $.ajax({
                     url : 'users/'+userId+'/signature',
