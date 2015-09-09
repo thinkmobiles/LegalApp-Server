@@ -30,6 +30,7 @@ var DocumentsHandler = function (PostGre) {
     var ProfileModel = Models.Profile;
     var LinkFieldsModel = Models.LinkFields;
     var SecretKeyModel = Models.SecretKey;
+    var LinkedTemplateModel = Models.LinkedTemplates;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
@@ -215,50 +216,39 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
-    function createDocumentContent(htmlText, fields, values, callback) {
+    function createDocumentContent(htmlText, fields, values, linkedTemplates) {
 
-        //check input params:
-        if (!htmlText || !htmlText.length || !fields || !values) {
-            if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
-            }
-            return false;
+        if (linkedTemplates && linkedTemplates.length) {
+            htmlText += '<div class="brakePage"></div>';
+            htmlText += linkedTemplates[0].html_content;
         }
 
-        //if (htmlText.length && (Object.keys(fields).length !== 0) && (Object.keys(values).length !== 0)) { //TODO ..
+        if (fields && values) {
+            fields.forEach(function (field) {
+                var fieldName = field.name;
+                var searchValue = toUnicode(field.code);
+                var replaceValue;
 
-        /*for (var i in values) {
-         var val = values[i];
-         var code = fields[i];
-
-         htmlText = htmlText.replace(new RegExp(code, 'g'), val); //replace fields in input html by values
-         }*/
-
-        fields.forEach(function (field) {
-            var fieldName = field.name;
-            var searchValue = toUnicode(field.code);
-            var replaceValue;
-
-            if (fieldName in values) {
-                replaceValue = values[fieldName];
-                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
-            }
-        });
-
-        //return result
-        if (callback && (typeof callback === 'function')) {
-            callback(null, htmlText); //all right
+                if (fieldName in values) {
+                    replaceValue = values[fieldName];
+                    htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue); //replace fields in input html by values
+                }
+            });
         }
+
         return htmlText;
-
-    }
+    };
 
     this.createDocumentContent = createDocumentContent;
 
-    function generateDocumentName(templateModel, userModel) {
+    function generateDocumentName(templateModel, userModel, linkedTemplates) {
         var name = templateModel.get('name');
         var profileModel;
         var username;
+
+        if (linkedTemplates && linkedTemplates.length) {
+            name += ' - ' + linkedTemplates[0].name;
+        }
 
         if (userModel && userModel.id && userModel.related('profile')) {
             profileModel = userModel.related('profile');
@@ -324,7 +314,7 @@ var DocumentsHandler = function (PostGre) {
                 }
                 callback(null, documentModel);
             });
-    }
+    };
 
     function createDocument(options, callback) {
         var templateId = options.template_id;
@@ -564,6 +554,7 @@ var DocumentsHandler = function (PostGre) {
         var userModel = models.userModel;
         var documentModel = models.documentModel = new DocumentModel();
         var currentUserModel = models.currentUserModel;
+        var linkedTemplates = models.linkedTemplates;
         var templateHtmlContent = templateModel.get('html_content');
         var linkModel = templateModel.related('link');
         var linkFieldsModels;
@@ -579,7 +570,7 @@ var DocumentsHandler = function (PostGre) {
         var now = new Date();
 
         if (!documentModel.id) {
-            documentName = generateDocumentName(templateModel, userModel);
+            documentName = generateDocumentName(templateModel, userModel, linkedTemplates);
             saveData.name = documentName;
             saveData.created_by = currentUserModel.id;
             saveData.sent_to_company_at = now;
@@ -608,13 +599,13 @@ var DocumentsHandler = function (PostGre) {
 
         if (templateHtmlContent) {
             if (values) {
-                htmlContent = createDocumentContent(templateHtmlContent, fields, values);
+                htmlContent = createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
             } else {
                 htmlContent = templateHtmlContent;
             }
         }
-        saveData.html_content = htmlContent;
 
+        saveData.html_content = htmlContent;
         documentModel.set(saveData);
 
         callback(null, documentModel);
@@ -655,9 +646,15 @@ var DocumentsHandler = function (PostGre) {
                     fetchOptions.withRelated = ['link.linkFields'];
                 }
 
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> templateModel time');
+                }
                 TemplateModel
                     .find(criteria, fetchOptions)
                     .then(function (templateModel) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> templateModel time');
+                        }
                         cb(null, templateModel);
                     })
                     .catch(TemplateModel.NotFoundError, function (err) {
@@ -666,11 +663,47 @@ var DocumentsHandler = function (PostGre) {
                     .catch(cb);
             },
 
+            linkedTemplates: function (cb) {
+                var columns = [
+                    'linked_id', // linked_templates
+                    'template_id',  // linked_templates
+                    'name',         // templates
+                    'html_content', // templates
+                    'link_id'       // templates
+                ];
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> linkedTemplates time');
+                }
+                knex(TABLES.LINKED_TEMPLATES)
+                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
+                    .where('template_id', templateId)
+                    .select(columns)
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> linkedTemplates time');
+                        }
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!rows || !rows.length) {
+                            return cb(null, null);
+                        }
+
+                        cb(null, rows);
+                    });
+            },
+
             users: function (cb) {
                 var fetchOptions = {
                     withRelated: ['profile', 'company']
                 };
 
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> users time');
+                }
                 UserModel
                     .forge()
                     .query(function (qb) {
@@ -679,6 +712,10 @@ var DocumentsHandler = function (PostGre) {
                     .fetchAll(fetchOptions)
                     .then(function (users) {
                         var userModels = users.models;
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> users time');
+                        }
 
                         cb(null, userModels);
                     })
@@ -697,6 +734,10 @@ var DocumentsHandler = function (PostGre) {
                 return callback(err);
             }
 
+            if (process.env.NODE_ENV !== 'production') {
+                console.time('>>> map users time');
+            }
+
             users = models.users;
 
             currentUserModel = _.find(users, {id: currentUserId});
@@ -708,6 +749,10 @@ var DocumentsHandler = function (PostGre) {
             models.userModel = userModel;
 
             delete models.users;
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.timeEnd('>>> map users time');
+            }
 
             callback(null, models);
         });
