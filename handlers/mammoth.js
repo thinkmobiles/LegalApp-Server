@@ -51,7 +51,7 @@ var MammothHandler = function () {
 
                     function (child, childCb) {
 
-                        if (child.children.length) {
+                        if (child && child.children && child.children.length) {
                             if (child.children[0].type === 'pageBreak') {
                                 element.styleId = "BreakPage";
                             }
