@@ -317,19 +317,88 @@ var DocumentsHandler = function (PostGre) {
     };
 
     function createDocument(options, callback) {
+        var currentUserId = options.currentUserId;  //documents.created_by
         var templateId = options.template_id;
-        var userId = options.user_id || options.assigned_id;
+        var userId = options.user_id;
         var values;
-
-        if (!templateId) {
-            return callback(badRequests.NotEnParams({reqParams: ['template_id']}));
+        if (!templateId || !userId) {
+            return callback(badRequests.NotEnParams({reqParams: ['template_id', 'user_id']}));
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
         }
 
-        async.parallel({
+        async.waterfall([
+
+            // get the models what needs to create:
+            function (cb) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> getModelsToCreateAndSign time');
+                }
+
+                delete options.currentUserId; //dont need to fetch the current user;
+                getModelsToCreateAndSign(options, function (err, models) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> getModelsToCreateAndSign time');
+                    }
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, models);
+                });
+            },
+
+            //create a new documentModel:
+            function (models, cb) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> prepareDocumentToSave time');
+                }
+                options.currentUserId = currentUserId; //documents.created_by
+                prepareDocumentToSave(options, models, function (err, documentModel) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> prepareDocumentToSave time');
+                    }
+                    if (err) {
+                        return cb(err);
+                    }
+                    models.documentModel = documentModel;
+                    cb(null, models);
+                });
+            },
+
+            //save the documentModel:
+            function (models, cb) {
+                var documentModel = models.documentModel;
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> documentModel.save time');
+                }
+
+                documentModel
+                    .save()
+                    .exec(function (err, savedDocumentModel) {
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> documentModel.save time');
+                        }
+
+                        if (err) {
+                            return cb(err);
+                        }
+                        models.documentModel = savedDocumentModel;
+                        cb(null, models);
+                    });
+            }
+        ], function (err, models) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, models.documentModel);
+        });
+
+        /*async.parallel({
+
             templateModel: function (cb) {
                 var criteria = {
                     id: templateId
@@ -353,6 +422,7 @@ var DocumentsHandler = function (PostGre) {
                     .catch(cb);
 
             },
+
             userModel: function (cb) {
                 var criteria = {
                     id: userId
@@ -361,10 +431,6 @@ var DocumentsHandler = function (PostGre) {
                     require: true,
                     withRelated: ['profile', 'company']
                 };
-
-                if (!userId) {
-                    return cb();
-                }
 
                 UserModel
                     .find(criteria, fetchOptions)
@@ -375,7 +441,41 @@ var DocumentsHandler = function (PostGre) {
                         cb(badRequests.NotFound({message: 'The User was not found'}));
                     })
                     .catch(cb);
+            },
+
+            linkedTemplates: function (cb) {
+                var columns = [
+                    'linked_id',    // linked_templates
+                    'template_id',  // linked_templates
+                    'name',         // templates
+                    'html_content', // templates
+                    'link_id'       // templates
+                ];
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> linkedTemplates time');
+                }
+                knex(TABLES.LINKED_TEMPLATES)
+                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
+                    .where('template_id', templateId)
+                    .select(columns)
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> linkedTemplates time');
+                        }
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!rows || !rows.length) {
+                            return cb(null, null);
+                        }
+
+                        cb(null, rows);
+                    });
             }
+
         }, function (err, models) {
             if (err) {
                 return callback(err);
@@ -389,7 +489,7 @@ var DocumentsHandler = function (PostGre) {
                 models.documentModel = documentModel;
                 callback(null, models);
             });
-        });
+        });*/
     };
 
     function updateDocument(id, options, callback) {
@@ -555,6 +655,7 @@ var DocumentsHandler = function (PostGre) {
         var documentModel = models.documentModel = new DocumentModel();
         var currentUserModel = models.currentUserModel;
         var linkedTemplates = models.linkedTemplates;
+        var currentUserId = options.currentUserId;
         var templateHtmlContent = templateModel.get('html_content');
         var linkModel = templateModel.related('link');
         var linkFieldsModels;
@@ -572,8 +673,8 @@ var DocumentsHandler = function (PostGre) {
         if (!documentModel.id) {
             documentName = generateDocumentName(templateModel, userModel, linkedTemplates);
             saveData.name = documentName;
-            saveData.created_by = currentUserModel.id;
-            saveData.sent_to_company_at = now;
+            saveData.created_by = currentUserId;
+            //saveData.sent_to_company_at = now;
         }
 
         if (userModel && userModel.id) {
@@ -619,13 +720,19 @@ var DocumentsHandler = function (PostGre) {
         var templateId = options.template_id;
         var values;
         var userIds = [
-            currentUserId,
-            assignedId,
             userId
         ];
 
-        if (!templateId) {
-            return callback(badRequests.NotEnParams({reqParams: ['template_id']}));
+        if (!templateId || !userId) {
+            return callback(badRequests.NotEnParams({reqParams: ['template_id', 'user_id']}));
+        }
+
+        if (currentUserId) {
+            userIds.push(currentUserId);
+        }
+
+        if (assignedId && (assignedId !== currentUserId)) {
+            userIds.push(assignedId);
         }
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -788,148 +895,16 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.newDocument = function (req, res, next) {
-        var companyId = req.session.companyId;
+        var options = req.body;
         var currentUserId = req.session.userId;
-        var options = req.body;
-        var templateId = options.template_id;
-        var assignedId = options.assigned_id || req.session.userId;
-        var userId = options.user_id;
-        var signImage = options.signature;
-        var values;
 
-        console.log('create document');
-        console.log(options);
+        options.currentUserId = currentUserId;
 
-        if (!templateId || !assignedId || !userId) {
-            return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id']}));
-        }
-
-        if ((assignedId == currentUserId)) {
-            if (!signImage || !CONSTANTS.BASE64_REGEXP.test(signImage)) {
-                return next(badRequests.NotEnParams({reqParams: ['template_id', 'assigned_id', 'user_id', 'signature']}));
-            }
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        }
-
-        async.parallel({
-
-            //try to find the user:
-            userModel: function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile', 'company']
-                };
-
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        (badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            //try to find the assigned user: (access to email, check sign_authority)
-            assignedUserModel: function (cb) {
-                var criteria = {
-                    id: assignedId
-                };
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile']
-                };
-
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        //TODO: check
-                        var profileModel = userModel.related('profile');
-                        var signAuthority = profileModel.get('sign_authority');
-
-                        if (signAuthority !== SIGN_AUTHORITY.ENABLED) {
-                            return cb(badRequests.AccessError({message: MESSAGES.SIGN_AUTHORITY_ERROR}));
-                        }
-
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            //try to find the template:
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            }
-
-        }, function (err, results) {
-            var userModel;
-            var templateModel;
-            var assignedUserModel;
-            var insertOptions;
-
+        createDocument(options, function (err, documentModel) {
             if (err) {
                 return next(err);
             }
-
-            userModel = results.userModel;
-            templateModel = results.templateModel;
-            assignedUserModel = results.assignedUserModel;
-
-            insertOptions = {
-                currentUserId: currentUserId, //created_by
-                userModel: userModel,
-                templateModel: templateModel,
-                assignedUserModel: assignedUserModel,
-                values: values
-            };
-
-            insertIntoDocuments(insertOptions, function (err, documentModel) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(201).send({success: 'success created', model: documentModel});
-            });
-
-        });
-    };
-
-    this.saveNewDocument = function (req, res, next) {
-        var options = req.body;
-
-        createDocument(options, function (err, models) {
-            if (err) {
-                return next(err);
-            }
-            res.status(201).send({success: 'success created', model: models.documentModel});
+            res.status(201).send({success: 'success created', model: documentModel});
         });
     };
 
@@ -1404,7 +1379,7 @@ var DocumentsHandler = function (PostGre) {
                 });
             },
 
-            //create a new document:
+            //create a new documentModel:
             function (models, cb) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.time('>>> prepareDocumentToSave time');
