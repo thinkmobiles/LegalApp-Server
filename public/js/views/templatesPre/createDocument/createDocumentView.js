@@ -79,11 +79,11 @@ define([
             return values;
         },
 
-        chooseThisSigner: function(){
-            this.signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
+        chooseThisSigner: function(context){
+            var signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
 
             if (this.signersId){
-                this.signMyDoc(this.signersId, false)
+                context.signMyDoc(signersId, false)
             } else {
                 alert('Choose some user!')
             }
@@ -102,7 +102,6 @@ define([
         },
 
         saveDoc: function(){
-            var self = this;
             var assignedId = this.$el.find('#createEmployee').attr('data-sig');
             var myModel = this.fillFields ? this.docModel : new DocModel();
             var data;
@@ -155,11 +154,11 @@ define([
 
             data = {values : values};
             if (assignedUser){
-                data.assignedId = assignedUser;
+                data.assigned_id = assignedUser;
             }
 
             if (signatureImage){
-                data.signImage = signatureImage;
+                data.signature = signatureImage;
             }
 
             if (this.fillFields){
@@ -172,9 +171,12 @@ define([
             }
 
             $.ajax({
-                url : url,
-                type : 'POST',
-                data : data,
+                url         : url,
+                type        : 'POST',
+                contentType : "application/json; charset=utf-8",
+                dataType    : "json",
+                data        : JSON.stringify(data),
+                //data : data,
                 success : function(){
                     alert('A document was sent successfully');
                     Backbone.history.navigate('/documents/list', {trigger : true});
@@ -186,6 +188,8 @@ define([
         },
 
         showResignWindow: function(){
+            var self = this;
+
             $.ajax({
                 url  : '/users/search',
                 data : {'signAuthority' : true},
@@ -198,7 +202,9 @@ define([
                         buttons: [
                             {
                                 text: "Select and send",
-                                click: self.chooseThisSigner
+                                click: function(){
+                                    self.chooseThisSigner(self)
+                                }
                             }
                         ]
                     });
