@@ -30,7 +30,7 @@ define([
         events : {
             "click #editBtn"       : "updateUser",
             "click .trueSignState" : "showOurSign",
-            "click #currentSign"   : "deleteSign"
+            "click #closeIco"      : "deleteSign"
 
         },
 
@@ -51,14 +51,14 @@ define([
 
             if (sign){
                 signInfo.hide();
-                signBox.html('<img id="currentSign" src="'+sign+'">');
+                signBox.html('<img id="currentSign" src="' +sign+ '"><a href="javascript:;" id="closeIco">&#10006;</a>');
             } else {
                 $.ajax({
                     url : 'users/'+userId+'/signature',
                     success  : function (response){
                         var result = response.signImage;
                         signInfo.hide();
-                        signBox.html('<img id="currentSign" src="'+result+'">');
+                        signBox.html('<img id="currentSign" src="'+result+'"><a href="javascript:;" id="closeIco">&#10006;</a>');
                     },
                     error    : function(){
                         alert('Error');

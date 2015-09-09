@@ -45,8 +45,7 @@ define([
 
         events : {
             "click #createBtnNext" : "goToPreview",
-            "click #createBtnSave" : "letsSaveDoc"
-            //"click #reAsignBtn"    : "chooseThisSigner"
+            "click #createBtnSave" : "saveDoc"
         },
 
         inviteDataToFields: function(contentObject){
@@ -84,7 +83,7 @@ define([
             this.signersId = $('#signersContainer').find('.signItem :checked').closest('li').data('id');
 
             if (this.signersId){
-                alert('Olololo: '+this.signersId)
+                this.signMyDoc(this.signersId, false)
             } else {
                 alert('Choose some user!')
             }
@@ -99,14 +98,10 @@ define([
             });
 
             this.dialogView.on('saveInParent', this.saveDoc, this);
-            this.dialogView.on('sendInParent', this.signMyDoc, this);
+            this.dialogView.on('sendInParent', this.beginToSendMyDoc, this);
         },
 
-        letsSaveDoc : function(){
-            this.saveDoc();
-        },
-
-        saveDoc: function(status){
+        saveDoc: function(){
             var self = this;
             var assignedId = this.$el.find('#createEmployee').attr('data-sig');
             var myModel = this.fillFields ? this.docModel : new DocModel();
@@ -120,23 +115,9 @@ define([
             };
 
             myModel.save(data,{
-                success: function(response){
-                    var sendData;
-
-                    if (self.dialogView){
-                        self.dialogView.remove();
-                    }
-
-                    /*if (status === 2) {
-                        sendData = {
-                            id       : response.get('id'),
-                            assignId : response.get('assigned_id')
-                        };
-                        self.signMyDoc(sendData);
-                    } else {*/
-                        alert('Document was saved successfully');
-                        Backbone.history.navigate('documents/list', {trigger : true});
-                    //}
+                success: function(){
+                    alert('Document was saved successfully');
+                    Backbone.history.navigate('documents/list', {trigger : true});
                 },
                 error: function(){
                     alert('error'); //todo -error-
@@ -144,53 +125,64 @@ define([
             });
         },
 
-        signMyDoc: function(){
+        beginToSendMyDoc : function(){
             var self = this;
             var sesData = App.sessionData.toJSON();
-            var user_id;
-            var template_id;
-            //var assignedId = this.$el.find('#createEmployee').attr('data-sig');
-            //var myModel = this.fillFields ? this.docModel : new DocModel();
+            var signatureView;
+
+            if (sesData.sign_authority){
+                if (sesData.companyId === 1){
+                    if (sesData.has_sign_image){
+                        this.signMyDoc(false, false)
+                    } else {
+                        alert('Your signature is not uploaded. Contact, please, with your administrator! ')
+                    }
+                } else {
+                    signatureView = new SignView();
+                    signatureView.on('iAccept', function(response){
+                        self.signMyDoc(false, response)
+                    }, this);
+                }
+            } else {
+                this.showResignWindow();
+            }
+        },
+
+        signMyDoc: function(assignedUser, signatureImage){
             var data;
             var values = this.collectValues();
+            var url;
 
-            data = {
-                template_id : this.tempInfo.id,
-                //user_id     : assignedId,
-                values      : values
-            };
-
-            if (this.fillFields){
-
-            } else {
-                user_id = this.$el.find('#createEmployee').attr('data-sig');
-                template_id = this.tempInfo.id;
+            data = {values : values};
+            if (assignedUser){
+                data.assignedId = assignedUser;
             }
 
-            /*var self = this;
-            var docId = sendData.id;
-            var sesData = App.sessionData.toJSON();
+            if (signatureImage){
+                data.signImage = signatureImage;
+            }
 
-            if (sesData.companyId !==1) {
-                if (sesData.sign_authority) {
-                    new SignView();
-                } else {
-                    this.showResignWindow();
-                }
+            if (this.fillFields){
+                url = '/documents/'+this.docModel.get('id')+'/signAndSend'
+
             } else {
-                if (sesData.sign_authority) {
-                    this.sendMyDoc();
-                } else {
-                    this.showResignWindow();
-                }
-            }*/
+                url ='/documents/signAndSend';
+                data.template_id = this.tempInfo.id;
+                data.user_id = this.$el.find('#createEmployee').attr('data-sig');
+            }
+
             $.ajax({
-                url : '/documents/signAndSend',
-
+                url : url,
+                type : 'POST',
+                data : data,
+                success : function(){
+                    alert('A document was sent successfully');
+                    Backbone.history.navigate('/documents/list', {trigger : true});
+                },
+                error : function(){
+                    alert('Error on sending');
+                }
             });
-            POST /documents/signAndSend
-
-
         },
 
         showResignWindow: function(){
@@ -213,24 +205,6 @@ define([
                 }
             });
         },
-
-        sendMyDoc: function(){
-            $.ajax({
-                url  : "/documents/"+docId+"/signAndSend",
-                type : "POST",
-                //data : {assigned_id : assignId},
-
-                success : function(){
-                    alert('A document was sent successfully');
-                    Backbone.history.navigate('/documents/list', {trigger : true});
-                },
-                error : function(model){
-                    alert('Error on sending');
-                    //self.errorNotification(model);
-                }
-            });
-        },
-
 
         createOurPage: function(){
             var thisEl = this.$el;

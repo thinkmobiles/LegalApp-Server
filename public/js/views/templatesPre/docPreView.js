@@ -72,7 +72,7 @@ define([
         },
 
         sendFromDialog: function(){
-            this.trigger('sandInParent');
+            this.trigger('sendInParent');
         },
 
         render: function () {
