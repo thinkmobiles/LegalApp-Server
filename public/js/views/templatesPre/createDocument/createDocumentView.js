@@ -99,6 +99,7 @@ define([
             });
 
             this.dialogView.on('saveInParent', this.saveDoc, this);
+            this.dialogView.on('sendInParent', this.signMyDoc, this);
         },
 
         letsSaveDoc : function(){
@@ -126,16 +127,16 @@ define([
                         self.dialogView.remove();
                     }
 
-                    if (status === 2) {
+                    /*if (status === 2) {
                         sendData = {
                             id       : response.get('id'),
                             assignId : response.get('assigned_id')
                         };
                         self.signMyDoc(sendData);
-                    } else {
+                    } else {*/
                         alert('Document was saved successfully');
                         Backbone.history.navigate('documents/list', {trigger : true});
-                    }
+                    //}
                 },
                 error: function(){
                     alert('error'); //todo -error-
@@ -143,8 +144,30 @@ define([
             });
         },
 
-        signMyDoc: function(sendData){
+        signMyDoc: function(){
             var self = this;
+            var sesData = App.sessionData.toJSON();
+            var user_id;
+            var template_id;
+            //var assignedId = this.$el.find('#createEmployee').attr('data-sig');
+            //var myModel = this.fillFields ? this.docModel : new DocModel();
+            var data;
+            var values = this.collectValues();
+
+            data = {
+                template_id : this.tempInfo.id,
+                //user_id     : assignedId,
+                values      : values
+            };
+
+            if (this.fillFields){
+
+            } else {
+                user_id = this.$el.find('#createEmployee').attr('data-sig');
+                template_id = this.tempInfo.id;
+            }
+
+            /*var self = this;
             var docId = sendData.id;
             var sesData = App.sessionData.toJSON();
 
@@ -160,7 +183,12 @@ define([
                 } else {
                     this.showResignWindow();
                 }
-            }
+            }*/
+            $.ajax({
+                url : '/documents/signAndSend',
+
+            });
+            POST /documents/signAndSend
 
 
         },

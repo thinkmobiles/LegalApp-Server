@@ -227,10 +227,6 @@ a {
 //  display: none;
 //}
 
-#adminClient {
-  border-bottom: 1px solid;
-}
-
 #wrapper {
 }
 #loginDiv{
@@ -459,15 +455,18 @@ a {
   }
 }
 
-.addItemLeft {
+.addItemLeft{
   width: 30%;
   float: left;
-  background-color: #3d3d3d;
   color: #eaeaea;
+}
+
+.centerBlock {
+  background-color: #3d3d3d;
   >div {
-    margin: 22px 44px 35px;
+    padding: 22px 44px 35px;
     position: relative;
-    height: calc(~"100vh - 171px");
+    min-height: 670px;
     h2 {
       .font-oss;
       font-size: 24px;
@@ -491,7 +490,8 @@ a {
           color: #e31937;
         }
       }
-      input[type="text"]{
+      input[type="text"],
+      input[type="email"]{
         background: #eaeaea;
         height: 50px;
         width: 92%;
@@ -502,8 +502,8 @@ a {
       }
       input[type="button"]{
         position: absolute;
-        bottom: 0;
-        width: 100%;
+        bottom: 35px;
+        width: calc(~'100% - 88px');
         text-align: center;
         color: #fff;
         .font-ose;
@@ -519,12 +519,13 @@ a {
 .textareaBlock{
   margin: 33px 23px;
   position: relative;
-  height: calc(~"100vh - 123px");
+  min-height: 670px;
   width: 58%;
   float: left;
   textarea{
     width: 100%;
-    height: calc(~"100vh - 189px");
+    min-height: 630px;
+    padding: 20px;
     resize: none;
     background: #eaeaea;
     border: none;
@@ -922,10 +923,19 @@ a {
 }
 
 #adminClient {
+  padding: 0 26px;
+  overflow: hidden;
+  margin-top: 45px;
   span{
-    position: relative;
     width: 50%;
     cursor: pointer;
+    display: block;
+    float: left;
+    color: #3d3d3d;
+    .font-osr;
+    font-size: 16px;
+    border-bottom: 3px solid #878787;
+    padding-bottom: 9px;
 
     &:nth-child(2){
       float:right;
@@ -933,8 +943,8 @@ a {
     }
 
     &.active {
-      color : #e31937;
-      border-bottom: 1px solid #e31937;
+      color : #bfbfbf;
+      border-bottom: 3px solid #e31937;
     }
   }
 }

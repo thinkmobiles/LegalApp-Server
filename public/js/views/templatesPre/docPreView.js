@@ -21,7 +21,7 @@ define([
             //"click #sendAndSignBtn" : "sendMyDoc",
             "click #modalBack" : "closeDialog",
             "click #modalSave" : "saveFromDialog",
-            "click #modalSend" : "saveFromDialog"
+            "click #modalSend" : "sendFromDialog"
         },
 
         drawDocument: function(){
@@ -67,9 +67,12 @@ define([
         },
 
         saveFromDialog: function(event){
-            var status = $(event.target).data('val');
+            //var status = $(event.target).data('val');
+            this.trigger('saveInParent');
+        },
 
-            this.trigger('saveInParent', status);
+        sendFromDialog: function(){
+            this.trigger('sandInParent');
         },
 
         render: function () {
