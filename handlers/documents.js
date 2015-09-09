@@ -262,71 +262,14 @@ var DocumentsHandler = function (PostGre) {
         return name;
     };
 
-    function insertIntoDocuments(options, callback) {
-        var userModel = options.userModel;
-        var assignedUserModel = options.assignedUserModel;
-        var templateModel = options.templateModel;
-        var currentUserId = options.currentUserId;
-        var linkFieldsModels = options.linkFieldsModel;
-        var values = options.values;
-        var linkModel = templateModel.related('link');
-        var templateHtmlContent = templateModel.get('html_content');
-        var documentName = generateDocumentName(templateModel, userModel);
-        var companyId;
-        var companyModel;
-        var htmlContent;
-        var fields = [];
-        var saveData;
-
-        if (userModel && userModel.related('company') && userModel.related('company').length) {
-            companyId = userModel.related('company').models[0].id;
-        }
-
-        if (linkModel && linkModel.related('linkFields')) {
-            linkFieldsModels = linkModel.related('linkFields');
-            linkFieldsModels.models.forEach(function (model) {
-                fields.push(model.toJSON());
-            });
-        }
-
-        if (values && templateHtmlContent) {
-            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
-        } else {
-            htmlContent = '';
-        }
-
-        saveData = {
-            name: documentName,
-            html_content: htmlContent,
-            template_id: templateModel.id,
-            company_id: companyId,
-            status: STATUSES.CREATED,
-            user_id: userModel.id,
-            assigned_id: assignedUserModel.id,
-            //created_by: currentUserId
-        };
-
-        DocumentModel
-            .upsert(saveData)
-            .exec(function (err, documentModel) {
-                if (err) {
-                    return callback(err);
-                }
-                callback(null, documentModel);
-            });
-    };
-
     function createDocument(options, callback) {
         var currentUserId = options.currentUserId;  //documents.created_by
         var templateId = options.template_id;
         var userId = options.user_id;
         var values;
+
         if (!templateId || !userId) {
             return callback(badRequests.NotEnParams({reqParams: ['template_id', 'user_id']}));
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
         }
 
         async.waterfall([
@@ -397,99 +340,6 @@ var DocumentsHandler = function (PostGre) {
             callback(null, models.documentModel);
         });
 
-        /*async.parallel({
-
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-
-            },
-
-            userModel: function (cb) {
-                var criteria = {
-                    id: userId
-                };
-                var fetchOptions = {
-                    require: true,
-                    withRelated: ['profile', 'company']
-                };
-
-                UserModel
-                    .find(criteria, fetchOptions)
-                    .then(function (userModel) {
-                        cb(null, userModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'The User was not found'}));
-                    })
-                    .catch(cb);
-            },
-
-            linkedTemplates: function (cb) {
-                var columns = [
-                    'linked_id',    // linked_templates
-                    'template_id',  // linked_templates
-                    'name',         // templates
-                    'html_content', // templates
-                    'link_id'       // templates
-                ];
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> linkedTemplates time');
-                }
-                knex(TABLES.LINKED_TEMPLATES)
-                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
-                    .where('template_id', templateId)
-                    .select(columns)
-                    .exec(function (err, rows) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> linkedTemplates time');
-                        }
-
-                        if (err) {
-                            return cb(err);
-                        }
-
-                        if (!rows || !rows.length) {
-                            return cb(null, null);
-                        }
-
-                        cb(null, rows);
-                    });
-            }
-
-        }, function (err, models) {
-            if (err) {
-                return callback(err);
-            }
-
-            prepareAndSave(options, models, function (err, documentModel) {
-                if (err) {
-                    return callback(err);
-                }
-
-                models.documentModel = documentModel;
-                callback(null, models);
-            });
-        });*/
     };
 
     function updateDocument(id, options, callback) {
@@ -772,7 +622,7 @@ var DocumentsHandler = function (PostGre) {
 
             linkedTemplates: function (cb) {
                 var columns = [
-                    'linked_id', // linked_templates
+                    'linked_id',    // linked_templates
                     'template_id',  // linked_templates
                     'name',         // templates
                     'html_content', // templates
@@ -863,35 +713,6 @@ var DocumentsHandler = function (PostGre) {
 
             callback(null, models);
         });
-    };
-
-    this.createDocumentContent = function (htmlText, fields, values, callback) {
-
-        //check input params:
-        if (!htmlText || !htmlText.length || !fields || !values) {
-            if (callback && (typeof callback === 'function')) {
-                callback(badRequests.NotEnParams({reqParams: ['htmlText', 'fields', 'values']}));
-            }
-            return false;
-        }
-
-        fields.forEach(function (field) {
-            var fieldName = field.name;
-            var searchValue = toUnicode(field.code);
-            var replaceValue;
-
-            if (fieldName in values) {
-                replaceValue = values[fieldName];
-                //replace fields in input html by values
-                htmlText = htmlText.replace(new RegExp(searchValue, 'g'), replaceValue);
-            }
-        });
-
-        //return result
-        if (callback && (typeof callback === 'function')) {
-            callback(null, htmlText); //all right
-        }
-        return htmlText;
     };
 
     this.newDocument = function (req, res, next) {
