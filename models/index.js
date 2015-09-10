@@ -33,7 +33,6 @@ var Models = function ( PostGre ) {
     this.Attachment =  require('./attachments')( PostGre, Model );
     this.Company =  require('./company')( PostGre, Model );
     this.Document =  require('./documents')( PostGre, Model );
-    this.Field =  require('./fields')( PostGre, Model );
     this.Image =  require('./images')( PostGre, Model );
     this.User =  require('./user')( PostGre, Model );
     this.Profile =  require('./profile')( PostGre, Model );
