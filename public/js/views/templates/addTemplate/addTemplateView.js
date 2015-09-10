@@ -7,7 +7,7 @@ define([
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
     'text!templates/templates/addTemplate/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
-    'models/templateModel',
+    //'models/templateModel',
     'collections/linksCollection'
 
 ], function (
@@ -15,7 +15,7 @@ define([
     LinkNamTemp,
     TempNames,
     AddLinkView,
-    TempModel,
+    //TempModel,
     LinksCollection) {
 
     var View;
@@ -41,7 +41,9 @@ define([
             "click .linkName"      : "linkSelect",
             "click #tempSave"      : "saveTemplate",
             "click #tempLinkTable" : "showHideTable",
-            "click .tempName"      : "addLinkedTemp"
+            "click .tempName"      : "addLinkedTemp",
+            "click .closeCurrentView" : "closeCurrentView"
+
 
         },
 
@@ -88,7 +90,6 @@ define([
         showHideTable: function(){
             var target = this.$el.find('#linkContainer');
             target.toggle();
-
         },
 
         saveTemplate: function(){
@@ -115,7 +116,21 @@ define([
                 error: function(){
                     alert('error'); //todo -error-
                 }
-            })
+            });
+
+            //****************************************************
+            //var testModel = new TempModel();
+            //testModel.save(formData,{
+            //    success: function(response){
+            //        alert('Template was added successfully');
+            //        var model = response.model;
+            //        self.parentContext.tempCollection.add(model);
+            //    },
+            //    error: function(){
+            //        alert('error');
+            //    }
+            //});
+            //****************************************************
         },
 
         linkSelect: function(event){
@@ -128,6 +143,10 @@ define([
             target.closest('#linkContainer').hide();
             resultTarget.val(target.text());
             fakeInput.val(linkID);
+        },
+
+        closeCurrentView: function(){
+            this.remove();
         },
 
         render: function () {

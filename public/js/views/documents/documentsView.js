@@ -16,10 +16,10 @@ define([
 
         el : '#wrapper',
 
-        mainTemplate : _.template(MainTemplate),
-        documentList : _.template(DocumentList),
-        documentGrid : _.template(DocumentGrid),
-        templateList : _.template(TemplateList),
+        mainTemplate  : _.template(MainTemplate),
+        document_list : _.template(DocumentList),
+        document_grid : _.template(DocumentGrid),
+        templateList  : _.template(TemplateList),
 
         activeTemplateId: null,
 
@@ -115,12 +115,14 @@ define([
             var documentsContainer = this.$el.find("#documentList");
             var curColl = this.currentCollByIds;
             var viewType = this.stateModel.get('viewType');
+            var templateName = 'document_'+viewType;
 
-            if (viewType === 'list') {
-                documentsContainer.html(this.documentList({documents: curColl}));
-            } else {
-                documentsContainer.html(this.documentGrid({documents: curColl}));
-            }
+            documentsContainer.html(this[templateName]({documents: curColl}));
+            //if (viewType === 'list') {
+            //    documentsContainer.html(this.documentList({documents: curColl}));
+            //} else {
+            //    documentsContainer.html(this.documentGrid({documents: curColl}));
+            //}
 
             Backbone.history.navigate("documents/"+viewType);
 

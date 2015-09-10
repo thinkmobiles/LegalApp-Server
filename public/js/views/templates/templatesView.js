@@ -37,7 +37,7 @@ define([
 
         events : {
             "click #addDiv"      : "goToAddTemplate",
-            "click .tempGrid"    : "goToPreview",
+            "click .hovCreateD"  : "goToPreview",
             "click .btnViewType" : "changeViewType"
         },
 
@@ -50,6 +50,10 @@ define([
             var currentView =  new AddTemplate({parentCont : this});
 
             this.$el.find('#addTemplateContainer').html(currentView.el);
+        },
+
+        goToEditTemplate : function(){
+
         },
 
         goToPreview: function(event){

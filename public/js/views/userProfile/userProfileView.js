@@ -76,7 +76,7 @@ define([
             var photoInput = this_el.find('#inputImg')[0].files.length;
             var newPass = this_el.find('#profPass').val().trim();
             var imageSRC;
-            var logoContainer = $('#topBarLogo');
+            //var logoContainer = $('#topBarLogo');
             var saveData={};
             var pass;
             var confirmPass;
@@ -110,12 +110,22 @@ define([
                 dataType    : "json",
                 data        : JSON.stringify(saveData),
 
-                success: function () {
-                    logoContainer.attr('src',imageSRC);
+                success: function (response) {
+                    var userInfo = response.user;
+                    var avatar = userInfo.avatar.url;
+                    var fName = userInfo.profile.first_name;
+                    var lName = userInfo.profile.last_name;
+                    //$('#topBarLogo').attr('src',imageSRC);
+                    //$('#topBarLogo').attr('src', avatar);
                     alert('Profile updated successfully');
 
+                    //App.sessionData.set({
+                    //    user: profNameFirst+' '+profNameLast
+                    //});
                     App.sessionData.set({
-                        user: profNameFirst+' '+profNameLast
+                        avatar     : avatar,
+                        first_name : fName,
+                        last_name  : lName
                     });
                     Backbone.history.navigate("users", {trigger: true});
                 },

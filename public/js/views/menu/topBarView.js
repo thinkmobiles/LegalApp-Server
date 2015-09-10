@@ -23,7 +23,7 @@ define([
 
         initialize: function () {
             this.listenTo(App.sessionData, 'change:authorized', this.render);
-            this.listenTo(App.sessionData, 'change:first_name change:last_name', this.renderUser);
+            this.listenTo(App.sessionData, 'change:first_name change:last_name change:avatar', this.renderUser);
             this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
         },
 
@@ -49,7 +49,6 @@ define([
                 if (App.sessionData.get('authorized')) {
                     $.ajax({
                         url: "/getAvatar",
-                        type: "GET",
 
                         success: function (res) {
                             image.attr('src', res)
