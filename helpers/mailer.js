@@ -176,8 +176,8 @@ var MailerModule = function () {
     };
 
     this.onSendToSignature = function (options, callback) {
-        console.log('maile.sendToSignature');
-        console.log(options);
+        //console.log('maile.sendToSignature');
+        //console.log(options);
         var templateOptions;
         var mailOptions;
         var document = options.document;

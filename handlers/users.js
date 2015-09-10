@@ -1087,7 +1087,7 @@ var UsersHandler = function (PostGre) {
         var status = params.status;
         var signAuthority = params.signAuthority;
         var page = params.page || 1;
-        var limit = params.count || 10;
+        var limit = params.count; //|| 10;
         var orderBy = params.orderBy || 'value';
         var order = params.order || 'ASC';
         var columns = [
@@ -1148,9 +1148,15 @@ var UsersHandler = function (PostGre) {
         });
 
         query
-            .select(columns)
-            .offset(( page - 1 ) * limit)
-            .limit(limit)
+            .select(columns);
+
+        if (page && limit) {
+            query
+                .offset(( page - 1 ) * limit)
+                .limit(limit)
+        }
+
+        query
             .orderBy(orderBy, order)
             .exec(function (err, rows) {
                 var users = [];

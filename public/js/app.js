@@ -44,13 +44,10 @@ define([
                 permissions: sessionData.get('role')
             };
 
-            //console.log('>>> events.authorized');
             socket.emit('authorize', socketAuth);
         });
 
         events.on('logout', function () {
-            //console.log('>>> events.logout');
-
             var sessionData = App.sessionData;
             var socketAuth = {
                 userId     : sessionData.get('userId'),
@@ -61,10 +58,9 @@ define([
         });
 
         events.on('newUser', function (user) {
-            console.log('newUser', user);
             var count;
 
-            if (App.Collections.pendingCollection) {
+            if (window.location.hash === '#newUsers') {
                 App.Collections.pendingCollection.add(user);
             } else {
                 count = App.Badge.get('pendingUsers');

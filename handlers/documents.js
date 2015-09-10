@@ -292,7 +292,7 @@ var DocumentsHandler = function (PostGre) {
                 });
             },
 
-            //create a new documentModel:
+            // create a new documentModel:
             function (models, cb) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.time('>>> prepareDocumentToSave time');
@@ -310,7 +310,7 @@ var DocumentsHandler = function (PostGre) {
                 });
             },
 
-            //save the documentModel:
+            // save the documentModel:
             function (models, cb) {
                 var documentModel = models.documentModel;
 
@@ -344,19 +344,70 @@ var DocumentsHandler = function (PostGre) {
 
     function updateDocument(id, options, callback) {
         var documentId = id;
-        var criteria = {
-            id: documentId
-        };
-        var fetchOptions = {
-            require: true
-        };
-        var values;
 
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        }
+        async.waterfall([
 
-        DocumentModel
+            // find the documentModel:
+            function (cb) {
+                var criteria = {
+                    id: documentId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        cb(null, documentModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Document was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            // get models what need to update:
+            function (documentModel, cb) {
+                getModelsToCreateAndSign(options, function (err, models) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    models.documentModel = documentModel;
+                    cb(null, models);
+                });
+            },
+
+            // prepare save data:
+            function (models, cb) {
+                prepareDocumentToSave(options, models, function (err, preparedDocumentModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, preparedDocumentModel);
+                });
+            },
+
+            // save the documentModel:
+            function (documentModel, cb) {
+                documentModel
+                    .save()
+                    .exec(function (err, updatedDocument) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, updatedDocument);
+                    });
+            }
+
+        ], function (err, documentModel) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, documentModel);
+        });
+
+        /*DocumentModel
             .find(criteria, fetchOptions)
             .then(function (documentModel) {
                 var templateId = documentModel.get('template_id');
@@ -424,7 +475,7 @@ var DocumentsHandler = function (PostGre) {
                     }
 
                     models.documentModel = documentModel;
-                    prepareSaveData(options, models, function (err, documentModel) {
+                    prepareDocumentToSave(options, models, function (err, documentModel) {
                         if (err) {
                             return callback(err);
                         }
@@ -435,7 +486,7 @@ var DocumentsHandler = function (PostGre) {
             .catch(DocumentModel.NotFoundError, function (err) {
                 callback(badRequests.NotFound({message: 'Document was not found'}));
             })
-            .catch(callback);
+            .catch(callback);*/
     };
 
     function prepareAndSave(options, models, callback) {
@@ -502,7 +553,7 @@ var DocumentsHandler = function (PostGre) {
     function prepareDocumentToSave(options, models, callback) {
         var templateModel = models.templateModel;
         var userModel = models.userModel;
-        var documentModel = models.documentModel = new DocumentModel();
+        var documentModel = models.documentModel || new DocumentModel();
         var currentUserModel = models.currentUserModel;
         var linkedTemplates = models.linkedTemplates;
         var currentUserId = options.currentUserId;
