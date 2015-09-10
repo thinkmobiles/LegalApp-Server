@@ -1,9 +1,9 @@
 <div class="avatar">
-    <div class="upload">
-        Edit
-        <input type="file" value="Edit" id="inputImg" accept="image/*">
-    </div>
+    <!--<div class="upload">-->
+        <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
+    <!--</div>-->
     <canvas id="avatar" width="140" height="140"></canvas>
+    <label for="inputImg">Replace picture</label>
 </div>
 <div id="profileInfo">
     <label for="profFName">First name:</label>
@@ -14,15 +14,15 @@
     <input id="profPhone" type="text" value="<%= phone %>">
     <label for="company">Company:</label>
     <input id="company" type="text" value="<%= company %>">
-    <input type="button" id="profSaveBut" value="Save profile">
 </div>
 <div>
-    <label for="profCurPass">Current password</label><br>
+    <label for="profCurPass">Current password</label>
     <input type="password" id="profCurPass">
 </div>
 <div>
-    <label for="profPass">New password</label><br>
+    <label for="profPass">New password</label>
     <input type="password" id="profPass">
-    <label for="profConfPass">Confirm password</label><br>
+    <label for="profConfPass">Confirm password</label>
     <input type="password" id="profConfPass">
 </div>
+<input type="button" id="profSaveBut" value="Save profile">

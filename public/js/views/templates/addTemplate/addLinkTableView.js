@@ -29,7 +29,8 @@ define([
             "click #addingBut"    : "addNewRow",
             "click .baseType"     : "selectTypes",
             "click #saveButton"   : "saveNewValues",
-            "dblclick .link_row"  : "changeThisRow"
+            "dblclick .link_row"  : "changeThisRow",
+            "click .closeCurrentView" : "closeCurrentView"
         },
 
         autoAppendValues: function(){
@@ -169,6 +170,10 @@ define([
 
             //container.find('#editableRow').remove();
             target.after(this.editRowTemp(eData));
+        },
+
+        closeCurrentView: function(){
+            this.remove();
         },
 
         render: function () {

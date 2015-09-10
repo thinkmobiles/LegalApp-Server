@@ -47,7 +47,10 @@ define([
         //    resultField.attr('data-id', comId);
         //},
 
-        goSaveCompany: function(){
+        goSaveCompany: function(event){
+            event.preventDefault();
+            event.stopPropagation();
+
             var self = this;
             var this_el = this.$el;
             var newCompany = this_el.find('#newCompName').val().trim();

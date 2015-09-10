@@ -23,7 +23,7 @@ define([
             "click .activeRow"               : "hideEdit",
             "click #adminClient>span "       : "changeCurrentState",
             "click .sel_item"                : "selectSomething",
-            "click .sel_container:not(#create_company)" : "showHideSelect"
+            "click .sel_container:not(#create_company>#newCompName)" : "showHideSelect"
         },
 
         initialize: function () {
@@ -41,7 +41,6 @@ define([
         },
 
         selectSomething: function(event){
-            //$('.sel_container .active').removeClass('active');
             var target = $(event.target);
             var container = target.closest('.sel_container');
             var result = container.find('.sel_result');
@@ -53,11 +52,10 @@ define([
         },
 
         showHideSelect: function(event){
-            //$('.sel_container .active').removeClass('active');
-
             var target = $(event.target);
-            target.closest('.sel_container').toggleClass('active');
-            //target.closest('.sel_container').find('.sel_list').toggle();
+            if (target.context.id !== 'newCompName'){
+                target.closest('.sel_container').toggleClass('active');
+            }
         },
 
         changeCurrentState: function(event){
