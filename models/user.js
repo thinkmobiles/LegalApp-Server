@@ -15,8 +15,8 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         company: function () {
-            return this.belongsToMany(PostGre.Models.Company, 'owner_id')
-                .through(PostGre.Models.UserCompanies, 'user_id', 'company_id');
+            return this.belongsToMany(PostGre.Models.Company)
+                .through(PostGre.Models.Profile, 'user_id', 'company_id');
         },
 
         avatar: function() {
@@ -52,6 +52,11 @@ module.exports = function (PostGre, ParentModel) {
                     url: imageUrl
                 };
             }
+
+            if (attributes.id && this.relations && this.relations.company && this.relations.company.length) {
+                attributes.company = [this.relations.company.models[0]];
+            }
+
             return attributes;
         }
 
@@ -79,18 +84,21 @@ module.exports = function (PostGre, ParentModel) {
 
             return this
                 .query(function (qb) {
-                    qb.innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id');
+                    //qb.innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id');
+                    qb.innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id');
 
                     if (userId) {
                         qb.andWhere(TABLES.USERS + '.id', userId);
                     }
 
                     if (companyId) {
-                        qb.andWhere(TABLES.USER_COMPANIES + '.company_id', companyId);
+                        //qb.andWhere(TABLES.USER_COMPANIES + '.company_id', companyId);
+                        qb.andWhere(TABLES.PROFILES + '.company_id', companyId);
                     }
 
                     if (withoutCompany) {
-                        qb.andWhere(TABLES.USER_COMPANIES + '.company_id', '<>', withoutCompany);
+                        //qb.andWhere(TABLES.USER_COMPANIES + '.company_id', '<>', withoutCompany);
+                        qb.andWhere(TABLES.PROFILES + '.company_id', '<>', withoutCompany);
                     }
 
                     qb.select(TABLES.USERS + '.*');

@@ -92,9 +92,10 @@ module.exports = function (knex) {
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
+                row.string('company_id').notNullable().unique();
                 row.string('first_name');
                 row.string('last_name');
-                row.string('company');
+                //row.string('company');
                 row.string('phone');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.DISABLED);

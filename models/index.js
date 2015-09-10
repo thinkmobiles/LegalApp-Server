@@ -36,7 +36,6 @@ var Models = function ( PostGre ) {
     this.Field =  require('./fields')( PostGre, Model );
     this.Image =  require('./images')( PostGre, Model );
     this.User =  require('./user')( PostGre, Model );
-    this.UserCompanies =  require('./userCompanies')( PostGre, Model );
     this.Profile =  require('./profile')( PostGre, Model );
     this.Link =  require('./links')( PostGre, Model );
     this.Links =  require('./links')( PostGre, Model ); //TODO: remove Links and use Link
