@@ -424,7 +424,7 @@ var DocumentsHandler = function (PostGre) {
                     }
 
                     models.documentModel = documentModel;
-                    prepareSaveData(options, models, function (err, documentModel) {
+                    prepareDocumentToSave(options, models, function (err, documentModel) {
                         if (err) {
                             return callback(err);
                         }
