@@ -31,6 +31,15 @@ module.exports = function (app) {
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
     });
+    app.get('/oauth2', function (req, res, next) {
+        console.log('----------------------------------');
+        console.log('>>> oauth2');
+        console.log('query');
+        console.log(req.query);
+        console.log('----------------------------------');
+
+        res.status(200).send({success: 'authorized'});
+    });
     app.get('/isAuth', session.isAuthenticatedUser);
     app.post('/signUp', users.signUp);
     app.post('/signIn', users.signIn);

@@ -281,7 +281,7 @@ var DocumentsHandler = function (PostGre) {
                 }
 
                 delete options.currentUserId; //dont need to fetch the current user;
-                getModelsToCreateAndSign(options, function (err, models) {
+                getModelsToCreateAndSignKnex(options, function (err, models) {
                     if (process.env.NODE_ENV !== 'production') {
                         console.timeEnd('>>> getModelsToCreateAndSign time');
                     }
@@ -337,7 +337,7 @@ var DocumentsHandler = function (PostGre) {
             if (err) {
                 return callback(err);
             }
-            callback(null, models.documentModel);
+            callback(null, models.documentModel, models); //TODO: ... remove models, use only documentModel
         });
 
     };
@@ -778,6 +778,238 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
+    function getModelsToCreateAndSignKnex(options, callback) {
+        var userId = options.user_id;
+        var currentUserId = options.currentUserId;
+        var assignedId = options.assigned_id;
+        var templateId = options.template_id;
+        var values;
+        var userIds = [
+            userId
+        ];
+
+        if (!templateId || !userId) {
+            return callback(badRequests.NotEnParams({reqParams: ['template_id', 'user_id']}));
+        }
+
+        if (currentUserId) {
+            userIds.push(currentUserId);
+        }
+
+        if (assignedId && (assignedId !== currentUserId)) {
+            userIds.push(assignedId);
+        }
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        }
+
+        async.parallel({
+
+            usersKnex: function (cb) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> usersKnex time');
+                }
+                knex(TABLES.USERS)
+                    .innerJoin(TABLES.PROFILES, 'users.id', 'profiles.user_id')
+                    .innerJoin(TABLES.COMPANIES, 'companies.id', 'profiles.company_id')
+                    .whereIn('users.id', userIds)
+                    .select([
+                        'users.status',
+                        'users.email as user_email',
+                        'profiles.first_name',
+                        'profiles.last_name',
+                        'profiles.phone',
+                        'profiles.permissions',
+                        'profiles.sign_authority',
+                        'companies.id as company_id',
+                        'companies.email as company_email',
+                        'companies.name as company_name',
+                        'companies.country as company_country',
+                        'companies.city as company_city',
+                        'companies.address as company_address',
+                        'users.id as id'
+                    ])
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> usersKnex time');
+                        }
+
+                        var userModels = rows.map(function (row) {
+                            var userData = {
+                                id: row.id,
+                                email: row.user_email,
+                                status: row.status
+                            };
+                            var profileData = {
+                                first_name: row.first_name,
+                                last_name: row.last_name,
+                                phone: rows.phone,
+                                permissions: rows.permissions,
+                                sign_authority: rows.sign_authority
+                            };
+
+                            var profileModel = ProfileModel.forge(profileData);
+                            var user = UserModel.forge(userData);
+
+                            return user;
+                        });
+
+
+                        var currentUserModel = _.find(userModels, {id: currentUserId});
+                        var assignedUserModel = _.find(userModels, {id: assignedId});
+                        var userModel = _.find(userModels, {id: userId});
+                        var result = {
+                            rows: rows,
+                            currentUserModel: currentUserModel,
+                            assignedUserModel: assignedUserModel,
+                            userModel: userModel,
+                            userModels: userModels
+                        };
+
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, result);
+                    });
+            },
+
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                if (values) {
+                    fetchOptions.withRelated = ['link.linkFields'];
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> templateModel time');
+                }
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> templateModel time');
+                        }
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            linkedTemplates: function (cb) {
+                var columns = [
+                    'linked_id',    // linked_templates
+                    'template_id',  // linked_templates
+                    'name',         // templates
+                    'html_content', // templates
+                    'link_id'       // templates
+                ];
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> linkedTemplates time');
+                }
+                knex(TABLES.LINKED_TEMPLATES)
+                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
+                    .where('template_id', templateId)
+                    .select(columns)
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> linkedTemplates time');
+                        }
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!rows || !rows.length) {
+                            return cb(null, null);
+                        }
+
+                        cb(null, rows);
+                    });
+            },
+
+            users: function (cb) {
+                var fetchOptions = {
+                    withRelated: ['profile', 'company']
+                };
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> users time');
+                }
+                UserModel
+                    .forge()
+                    .query(function (qb) {
+                        qb.whereIn('id', userIds);
+                    })
+                    .fetchAll(fetchOptions)
+                    .then(function (users) {
+                        var userModels = users.models;
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('>>> users time');
+                        }
+
+                        cb(null, userModels);
+                    })
+                    .catch(function (err) {
+                        cb(err);
+                    });
+            }
+
+        }, function (err, models) {
+            var users;
+            var currentUserModel;
+            var assignedUserModel;
+            var userModel;
+
+            if (err) {
+                return callback(err);
+            }
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.time('>>> map users time');
+            }
+
+            users = models.users;
+
+            currentUserModel = _.find(users, {id: currentUserId});
+            assignedUserModel = _.find(users, {id: assignedId});
+            userModel = _.find(users, {id: userId});
+
+            if (userId && !userModel) {
+                return callback(badRequests.NotFound({message: 'User was not found'}));
+            }
+
+            if (assignedId && !assignedUserModel) {
+                return callback(badRequests.NotFound({message: 'Assigned User was not found'}));
+            }
+
+            if (currentUserId && !currentUserModel) {
+                return callback(badRequests.NotFound({message: 'Current User User was not found'}));
+            }
+
+            models.currentUserModel = currentUserModel;
+            models.assignedUserModel = assignedUserModel;
+            models.userModel = userModel;
+
+            delete models.users;
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.timeEnd('>>> map users time');
+            }
+
+            callback(null, models);
+        });
+    };
+
     function sendToSignature(models) {
         var documentModel = models.documentModel;
         var currentUserModel = models.currentUserModel;
@@ -810,17 +1042,30 @@ var DocumentsHandler = function (PostGre) {
         mailer.onSendToSignature(mailerParams);
     };
 
+    this.testKnex = function (req, res, next) {
+        var options = req.body;
+        options.currentUserId = req.session.userId;
+
+        getModelsToCreateAndSignKnex(options, function (err, models) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send({models: models});
+        });
+
+    };
+
     this.newDocument = function (req, res, next) {
         var options = req.body;
         var currentUserId = req.session.userId;
 
         options.currentUserId = currentUserId;
 
-        createDocument(options, function (err, documentModel) {
+        createDocument(options, function (err, documentModel, models) {
             if (err) {
                 return next(err);
             }
-            res.status(201).send({success: 'success created', model: documentModel});
+            res.status(201).send({success: 'success created', model: documentModel, models: models}); //TODO: ... remove models, use only documentModel
         });
     };
 
