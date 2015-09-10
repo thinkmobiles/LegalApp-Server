@@ -281,7 +281,7 @@ var DocumentsHandler = function (PostGre) {
                 }
 
                 delete options.currentUserId; //dont need to fetch the current user;
-                getModelsToCreateAndSignKnex(options, function (err, models) {
+                getModelsToCreateAndSign(options, function (err, models) {
                     if (process.env.NODE_ENV !== 'production') {
                         console.timeEnd('>>> getModelsToCreateAndSign time');
                     }
@@ -614,7 +614,7 @@ var DocumentsHandler = function (PostGre) {
     }
 
     // This function is return the models what needs to create, sign and send the document
-    function getModelsToCreateAndSign(options, callback) {
+    function getModelsToCreateAndSignBookshelf(options, callback) {
         var userId = options.user_id;
         var currentUserId = options.currentUserId;
         var assignedId = options.assigned_id;
@@ -778,7 +778,7 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    function getModelsToCreateAndSignKnex(options, callback) {
+    function getModelsToCreateAndSign(options, callback) {
         var userId = options.user_id;
         var currentUserId = options.currentUserId;
         var assignedId = options.assigned_id;
@@ -806,9 +806,9 @@ var DocumentsHandler = function (PostGre) {
 
         async.parallel({
 
-            usersKnex: function (cb) {
+            users: function (cb) {
                 if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> usersKnex time');
+                    console.time('    >>> usersKnex time');
                 }
                 knex(TABLES.USERS)
                     .innerJoin(TABLES.PROFILES, 'users.id', 'profiles.user_id')
@@ -832,7 +832,11 @@ var DocumentsHandler = function (PostGre) {
                     ])
                     .exec(function (err, rows) {
                         if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> usersKnex time');
+                            console.timeEnd('    >>> usersKnex time');
+                        }
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.time('    >>> map usersKnex time');
                         }
 
                         var userModels = rows.map(function (row) {
@@ -844,19 +848,30 @@ var DocumentsHandler = function (PostGre) {
                             var profileData = {
                                 first_name: row.first_name,
                                 last_name: row.last_name,
-                                phone: rows.phone,
-                                permissions: rows.permissions,
-                                sign_authority: rows.sign_authority
+                                phone: row.phone,
+                                permissions: row.permissions,
+                                sign_authority: row.sign_authority
+                            };
+                            var companyData = {
+                                id: row.company_id,
+                                name: row.company_name,
+                                email: row.company_email,
+                                company_country: row.company_country,
+                                city: row.company_city,
+                                address: row.company_address
                             };
 
-                            var profileModel = ProfileModel.forge(profileData);
-                            var user = UserModel.forge(userData);
+                            var userModel = UserModel.forge(userData);
+                            var ProfileModel = userModel.related('profile');
+                            var CompanyModel = userModel.related('company');
 
-                            return user;
+                            ProfileModel.set(profileData);
+                            CompanyModel.set(companyData);
+
+                            return userModel;
                         });
 
-
-                        var currentUserModel = _.find(userModels, {id: currentUserId});
+                        /*var currentUserModel = _.find(userModels, {id: currentUserId});
                         var assignedUserModel = _.find(userModels, {id: assignedId});
                         var userModel = _.find(userModels, {id: userId});
                         var result = {
@@ -865,16 +880,91 @@ var DocumentsHandler = function (PostGre) {
                             assignedUserModel: assignedUserModel,
                             userModel: userModel,
                             userModels: userModels
-                        };
+                        };*/
 
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('    >>> map usersKnex time');
+                        }
                         if (err) {
                             return cb(err);
                         }
-                        cb(null, result);
+                        cb(null, userModels);
                     });
             },
 
             templateModel: function (cb) {
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('    >>> templatesKnex time');
+                }
+
+                knex(TABLES.TEMPLATES)
+                    .leftJoin(TABLES.LINKS_FIELDS, TABLES.TEMPLATES + '.link_id', TABLES.LINKS_FIELDS + '.link_id')
+                    .where(TABLES.TEMPLATES + '.id', templateId)
+                    .select([
+                        TABLES.LINKS_FIELDS + '.id as link_field_id',
+                        TABLES.LINKS_FIELDS + '.name as link_field_name',
+                        TABLES.LINKS_FIELDS + '.code as link_field_code',
+                        TABLES.LINKS_FIELDS + '.type as link_field_type',
+                        TABLES.TEMPLATES + '.name as template_name',
+                        TABLES.TEMPLATES + '.html_content',
+                        TABLES.TEMPLATES + '.id as id'
+                    ])
+                    .exec(function (err, rows) {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('    >>> templatesKnex time');
+                        }
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.time('    >>> map templatesKnex time');
+                        }
+
+                        var row;
+                        var templateData;
+                        var linkFieldsData;
+                        var templateModel;
+                        var linkModel;
+                        var linkFieldModels;
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        if (!rows && !rows.length) {
+                            return cb(badRequests.NotFound({message: 'Template was not found'}));
+                        }
+
+                        row = rows[0];
+                        templateData = {
+                            id: row.id,
+                            name: row.template_name,
+                            html_content: row.html_content
+                        };
+
+                        linkFieldsData = rows.map(function (row) {
+                            var linkField = {
+                                id  : row.link_field_id,
+                                name: row.link_field_name,
+                                code: row.link_field_code,
+                                type: row.link_field_type
+                            };
+
+                            return linkField;
+                        });
+
+                        templateModel = TemplateModel.forge(templateData);
+                        linkModel = templateModel.related('link');
+                        linkFieldModels = linkModel.related('linkFields');
+                        linkFieldModels.set(linkFieldsData);
+
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.timeEnd('    >>> map templatesKnex time');
+                        }
+                        cb(null, templateModel);
+                    });
+            },
+
+            /*templateModel: function (cb) {
                 var criteria = {
                     id: templateId
                 };
@@ -901,7 +991,7 @@ var DocumentsHandler = function (PostGre) {
                         cb(badRequests.NotFound({message: 'Template was not found'}));
                     })
                     .catch(cb);
-            },
+            },*/
 
             linkedTemplates: function (cb) {
                 var columns = [
@@ -913,7 +1003,7 @@ var DocumentsHandler = function (PostGre) {
                 ];
 
                 if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> linkedTemplates time');
+                    console.time('    >>> linkedTemplates time');
                 }
                 knex(TABLES.LINKED_TEMPLATES)
                     .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
@@ -921,7 +1011,7 @@ var DocumentsHandler = function (PostGre) {
                     .select(columns)
                     .exec(function (err, rows) {
                         if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> linkedTemplates time');
+                            console.timeEnd('    >>> linkedTemplates time');
                         }
 
                         if (err) {
@@ -936,7 +1026,7 @@ var DocumentsHandler = function (PostGre) {
                     });
             },
 
-            users: function (cb) {
+            /*users: function (cb) {
                 var fetchOptions = {
                     withRelated: ['profile', 'company']
                 };
@@ -962,7 +1052,7 @@ var DocumentsHandler = function (PostGre) {
                     .catch(function (err) {
                         cb(err);
                     });
-            }
+            }*/
 
         }, function (err, models) {
             var users;
@@ -975,7 +1065,7 @@ var DocumentsHandler = function (PostGre) {
             }
 
             if (process.env.NODE_ENV !== 'production') {
-                console.time('>>> map users time');
+                console.time('    >>> map users time');
             }
 
             users = models.users;
@@ -1003,7 +1093,7 @@ var DocumentsHandler = function (PostGre) {
             delete models.users;
 
             if (process.env.NODE_ENV !== 'production') {
-                console.timeEnd('>>> map users time');
+                console.timeEnd('    >>> map users time');
             }
 
             callback(null, models);
@@ -1046,7 +1136,7 @@ var DocumentsHandler = function (PostGre) {
         var options = req.body;
         options.currentUserId = req.session.userId;
 
-        getModelsToCreateAndSignKnex(options, function (err, models) {
+        getModelsToCreateAndSign(options, function (err, models) {
             if (err) {
                 return next(err);
             }
