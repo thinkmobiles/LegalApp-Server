@@ -339,9 +339,10 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.updateTemplate = function (req, res, next) {
-        var templateSaveData = self.prepareSaveData(req.body);
+        var options = req.body;
         var templateId = req.params.id;
-        //var companyId = req.session.companyId;
+        var permissions = req.session.permissions;
+        var templateSaveData;
         var criteria = {
             id: templateId
             //company_id: companyId
@@ -350,48 +351,39 @@ var TemplatesHandler = function (PostGre) {
             require: true
         };
 
+        templateId = 8;
+        options.name = 'IP Agreement2';
+        console.log(options);
+        console.log(req.headers);
+
+
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
         }
 
-        if (Object.keys(templateSaveData).length === 0) {
+        templateSaveData = self.prepareSaveData(options);
+
+        if (!Object.keys(templateSaveData).length) {
             return next(badRequests.NotEnParams({message: 'Nothing to update'}))
         }
 
-        async.waterfall([
-
-            //try to find the template:
-            function (cb) {
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            //try to update template:
-            function (templateModel, cb) {
-                templateModel
-                    .save(templateSaveData, {patch: true})
-                    .exec(function (err, tempModel) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, templateModel);
-                    });
-            }
-
-        ], function (err, templateModel) {
-            if (err) {
-                return next(err);
-            }
-            res.status(200).send({success: 'Success updated', model: templateModel});
-        });
+        TemplateModel
+            .forge({
+                id: templateId
+            })
+            .save(templateSaveData, {patch: true})
+            .then(function (templateModel) {
+                res.status(200).send({success: 'Success updated', model: templateModel});
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound({message: 'Template was not found'}));
+            })
+            .catch(function (err) {
+                if (badRequests.isNoRowsUpdatedError(err)) {
+                    return next(badRequests.NotFound({message: 'Template was not found'}));
+                }
+                next(err);
+            });
     };
 
     this.previewTemplate = function (req, res, next) {
