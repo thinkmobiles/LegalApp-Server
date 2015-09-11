@@ -274,37 +274,25 @@ var UsersHandler = function (PostGre) {
     };
 
     function normalizeUser(user, callback) {
-        var userData = {
-            id: user.id,
-            email: user.email,
-            status: user.status
-        };
-        var profileData = {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            phone: user.phone,
-            permissions: user.permissions,
-            sign_authority: user.sign_authority,
-            has_sign_image: user.has_sign_image
-        };
-        var companyData = {
-            id: user.company_id,
-            name: user.company_name
-        };
-        var avatarData = {
-            id: user.avatar_id,
-            name: user.avatar_name,
-            key: user.avatar_key
-        };
 
-        var userModel = UserModel.forge(userData);
-        var profileModel = userModel.related('profile');
-        var companyModel = userModel.related('company');
-        var avatarModel = userModel.related('avatar');
+        function UserObject(options) {
+            this.id = options.id;
+            this.email = options.email;
+            this.profile = {
+                first_name: options.first_name,
+                last_name: options.last_name,
+                phone: options.phone,
+                permissions: options.permissions,
+                sign_authority: options.sign_authority,
+                has_sign_image: options.has_sign_image
+            };
+            this.company = {
+                id: options.company_id,
+                name: options.company_name
+            }
 
-        profileModel.set(profileData);
-        companyModel.set(companyData);
-        avatarModel.set(avatarData);
+        }
+        var userModel = new UserObject(user);
 
         if (callback && (typeof callback === 'function')) {
             callback(null, userModel);
@@ -338,10 +326,6 @@ var UsersHandler = function (PostGre) {
             TABLES.PROFILES + '.has_sign_image',
             TABLES.COMPANIES + '.id as company_id',
             TABLES.COMPANIES + '.name as company_name',
-            TABLES.IMAGES + '.id as avatar_id',
-            TABLES.IMAGES + '.name as avatar_name',
-            TABLES.IMAGES + '.key as avatar_key',
-            TABLES.USERS + '.status',
             TABLES.USERS + '.email',
             TABLES.USERS + '.id'
         ];
@@ -352,11 +336,6 @@ var UsersHandler = function (PostGre) {
         knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
-            /*.leftJoin(TABLES.IMAGES, function () {
-                this.on(TABLES.IMAGES + '.imageable_type', TABLES.USERS)
-                    .on(TABLES.IMAGES + '.imageable_id', TABLES.USERS + '.id')
-            })*/
-            .join(knex.raw("left join images on images.imageable_type='users' and images.imageable_id=users.id"))
             .select(columns)
             .exec(function (err, rows) {
                 if (process.env.NODE_ENV !== 'production') {
@@ -1091,24 +1070,24 @@ var UsersHandler = function (PostGre) {
             withoutCompany: companyId
         };
         var fetchOptions = {
-            withRelated: ['profile', 'avatar', 'company']
+            withRelated: ['profile', 'company']
         };
 
-        /*getUsersByCriteria(queryOptions, function (err, rows) {
+        getUsersByCriteria(queryOptions, function (err, rows) {
             if (err) {
                 return next(err);
             }
             res.status(200).send(rows);
-        });*/
+        });
 
-        UserModel
+        /*UserModel
          .findCollaborators(queryOptions, fetchOptions)
          .exec(function (err, result) {
              if (err) {
                 return next(err);
              }
              res.status(200).send(result.models);
-         });
+         });*/
     };
 
     this.getUser = function (req, res, next) {
