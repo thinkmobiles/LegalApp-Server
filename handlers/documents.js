@@ -34,6 +34,8 @@ var DocumentsHandler = function (PostGre) {
     var attachmentsHandler = new AttachmentsHandler(PostGre);
     var self = this;
 
+    this.HTML_BRAKE_PAGE = '<div class="brakePage"></div>';
+
     function toUnicode(theString) {
         var unicodeString = '';
         for (var i = 0; i < theString.length; i++) {
@@ -219,7 +221,7 @@ var DocumentsHandler = function (PostGre) {
     function createDocumentContent(htmlText, fields, values, linkedTemplates) {
 
         if (linkedTemplates && linkedTemplates.length) {
-            htmlText += '<div class="brakePage"></div>';
+            htmlText += '<div class="brakePage"></div>'; //TODO: this.HTML_BRAKE_PAGE;
             htmlText += linkedTemplates[0].html_content;
         }
 
@@ -406,87 +408,6 @@ var DocumentsHandler = function (PostGre) {
             }
             callback(null, documentModel);
         });
-
-        /*DocumentModel
-            .find(criteria, fetchOptions)
-            .then(function (documentModel) {
-                var templateId = documentModel.get('template_id');
-                var companyId = documentModel.get('company_id');
-                var userId = options.user_id;
-
-                if (options.companyId && (options.companyId !== companyId)) {
-                    return callback(badRequests.AccessError());
-                }
-
-                async.parallel({
-                    templateModel: function (cb) {
-                        var criteria = {
-                            id: templateId
-                        };
-                        var fetchOptions = {
-                            require: true
-                        };
-
-                        if (values) {
-                            fetchOptions.withRelated = ['link.linkFields'];
-                        }
-
-                        TemplateModel
-                            .find(criteria, fetchOptions)
-                            .then(function (templateModel) {
-                                cb(null, templateModel);
-                            })
-                            .catch(TemplateModel.NotFoundError, function (err) {
-                                cb(badRequests.NotFound({message: 'Template was not found'}));
-                            })
-                            .catch(function (err) {
-                                console.log(err);
-                                console.log(err.stack);
-                                cb(err);
-                            });
-
-                    },
-                    userModel: function (cb) {
-                        var criteria = {
-                            id: userId
-                        };
-                        var fetchOptions = {
-                            require: true,
-                            withRelated: ['profile', 'company']
-                        };
-
-                        if (!userId) {
-                            return cb();
-                        }
-
-                        UserModel
-                            .find(criteria, fetchOptions)
-                            .then(function (userModel) {
-                                cb(null, userModel);
-                            })
-                            .catch(UserModel.NotFoundError, function (err) {
-                                cb(badRequests.NotFound({message: 'The User was not found'}));
-                            })
-                            .catch(cb);
-                    }
-                }, function (err, models) {
-                    if (err) {
-                        return callback(err);
-                    }
-
-                    models.documentModel = documentModel;
-                    prepareDocumentToSave(options, models, function (err, documentModel) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        callback(null, documentModel, models);
-                    });
-                });
-            })
-            .catch(DocumentModel.NotFoundError, function (err) {
-                callback(badRequests.NotFound({message: 'Document was not found'}));
-            })
-            .catch(callback);*/
     };
 
     function prepareAndSave(options, models, callback) {
@@ -964,35 +885,6 @@ var DocumentsHandler = function (PostGre) {
                     });
             },
 
-            /*templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> templateModel time');
-                }
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> templateModel time');
-                        }
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-            },*/
-
             linkedTemplates: function (cb) {
                 var columns = [
                     'linked_id',    // linked_templates
@@ -1025,34 +917,6 @@ var DocumentsHandler = function (PostGre) {
                         cb(null, rows);
                     });
             },
-
-            /*users: function (cb) {
-                var fetchOptions = {
-                    withRelated: ['profile', 'company']
-                };
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> users time');
-                }
-                UserModel
-                    .forge()
-                    .query(function (qb) {
-                        qb.whereIn('id', userIds);
-                    })
-                    .fetchAll(fetchOptions)
-                    .then(function (users) {
-                        var userModels = users.models;
-
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> users time');
-                        }
-
-                        cb(null, userModels);
-                    })
-                    .catch(function (err) {
-                        cb(err);
-                    });
-            }*/
 
         }, function (err, models) {
             var users;

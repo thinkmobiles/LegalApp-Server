@@ -40,6 +40,61 @@ var TemplatesHandler = function (PostGre) {
             });
     }
 
+    function getTemplateWithStyle(options, callback) {
+        var templateId = options.templateId;
+
+        async.parallel({
+
+            // get the html_content
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            cssContent: function (cb) {
+
+                fs.readFile('public/stylesheets/pdfStyle.css', function (err, content) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, content);
+                });
+            }
+
+        }, function (err, results) {
+            var templateModel;
+            var cssContent;
+            var htmlContent;
+
+            if (err) {
+                return callback(err);
+            }
+
+            templateModel = results.templateModel;
+            cssContent = results.cssContent;
+
+            htmlContent = '<style>' + cssContent + '</style>' + templateModel.get('html_content');
+            templateModel.set('html_content', htmlContent);
+
+            callback(null, templateModel);
+
+        });
+    };
+
     this.docx2html = function (req, res, next) {
         var file = req.files.file;
         var filePath;
@@ -78,20 +133,20 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.createTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var options = req.body;
         var templateFile = req.files.templateFile;
         var name = options.name;
         var linkId = options.link_id;
         var description = options.description;
+        var marketingContent = options.marketing_content;
         var hasLinkedTemplate = false;
         var linkedTemplates = options.linked_templates;
         var linkedTemplatesArray;
         var originalFilename;
         var extension;
 
-        if (!name || !linkId || !templateFile || !description) {
-            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile', 'description']}));
+        if (!name || !linkId || !templateFile) {
+            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
         }
 
         originalFilename = templateFile.originalFilename;
@@ -140,15 +195,38 @@ var TemplatesHandler = function (PostGre) {
                 });
             },
 
+            //get linked template if need:
+            function (key, htmlContent, cb) {
+                if (!hasLinkedTemplate) {
+                    return cb(null, key, htmlContent);
+                }
+
+                knex(TABLES.TEMPLATES)
+                    .whereIn('id', linkedTemplatesArray)
+                    .select(['id', 'html_content'])
+                    .exec(function (err, rows) {
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        rows.forEach(function (row) {
+                            htmlContent += documentsHandler.HTML_BRAKE_PAGE;
+                            htmlContent += row.html_content;
+                        });
+
+                        cb(null, key, htmlContent);
+                    });
+            },
+
             //insert into templates:
             function (key, htmlContent, cb) {
                 var saveData = {
                     name: name,
+                    description: description,
                     link_id: linkId,
-                    //company_id: companyId,
                     html_content: htmlContent,
-                    has_linked_template: hasLinkedTemplate,
-                    description: description
+                    marketing_content: marketingContent,
+                    has_linked_template: hasLinkedTemplate
                 };
 
                 TemplateModel
@@ -193,7 +271,7 @@ var TemplatesHandler = function (PostGre) {
 
             },
 
-            //save linkedTemplates
+            //insert into linked_templates
             function (templateModel, cb) {
 
                 if (!linkedTemplatesArray) {
@@ -215,8 +293,7 @@ var TemplatesHandler = function (PostGre) {
                             return cb(err);
                         }
                         cb(null, templateModel);
-                    })
-
+                    });
             }
 
         ], function (err, templateModel) {
@@ -228,14 +305,8 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
-        //var companyId = req.session.companyId;
 
         TemplateModel
-            /*.forge()
-            .query(function (qb) {
-                qb.where({company_id: companyId});
-            })
-            .fetchAll()*/
             .findAll()
             .exec(function (err, result) {
                 var templateModels;
@@ -256,7 +327,6 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var templateId = req.params.id;
         var criteria = {
             id: templateId
@@ -375,24 +445,20 @@ var TemplatesHandler = function (PostGre) {
 
     this.previewTemplate = function (req, res, next) {
         var templateId = req.params.id;
-        var criteria = {
-            id: templateId
-        };
-        var fetchOptions = {
-            require: true
+        var options = {
+            templateId: templateId
         };
 
-        TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var html = templateModel.get('html_content');
+        getTemplateWithStyle(options, function (err, templateModel) {
+            var html;
 
-                res.status(200).send(html);
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+            if (err) {
+                return next(err);
+            }
+
+            html = templateModel.get('html_content');
+            res.status(200).send(html);
+        });
     };
 
     this.previewDocument = function (req, res, next) {
@@ -490,7 +556,7 @@ var TemplatesHandler = function (PostGre) {
 
             res.status(200).send({htmlContent : htmlContent});
         });
-    };
+    }; //TODO: use knex
 
 };
 
