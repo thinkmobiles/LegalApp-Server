@@ -278,14 +278,13 @@ var UsersHandler = function (PostGre) {
         var io = app.get('io');
         var options = req.body;
         var email = options.email;
-        //var password = options.password;
-        var company = options.company;
+        var companyName = options.company;
         var forgotToken;
         var userData;
         var status = STATUSES.NOT_CONFIRMED;
 
         //validate options:
-        if (!email /*|| !password*/ || !company) {
+        if (!email || !companyName) {
             return next(badRequests.NotEnParams({reqParams: ['email', /*'password',*/ 'company']}));
         }
 
@@ -321,7 +320,6 @@ var UsersHandler = function (PostGre) {
                 userData = {
                     email: email,
                     status: status,
-                    //password: getEncryptedPass(password),
                     forgot_token: forgotToken
                 };
 
@@ -333,37 +331,34 @@ var UsersHandler = function (PostGre) {
                 });
             },
 
-            //save the profile:
+            //create a new company with owner:
             function (userModel, cb) {
+                var companyOptions = {
+                    userId: userModel.id,
+                    name: companyName
+                };
+
+                companiesHandler.createCompanyWithOwner(companyOptions, function (err, companyModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, userModel, companyModel);
+                });
+            },
+
+            //save the profile:
+            function (userModel, companyModel, cb) {
                 var userId = userModel.id;
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
                 profileData.permissions = PERMISSIONS.CLIENT_ADMIN;
+                profileData.company_id = companyModel.id;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
                         return cb(err);
                     }
-                    userModel.set('profile', profileModel);
-                    cb(null, userModel);
-                });
-            },
-
-            //create a new company with ower:
-            function (userModel, cb) {
-                var companyOptions = {
-                    userId: userModel.id,
-                    name: company
-                };
-                //cb(null, userModel);
-
-                companiesHandler.createCompanyWithOwner(companyOptions, function (err, company) {
-                    if (err) {
-                        //return console.error(err);
-                        return cb(err);
-                    }
-                    userModel.set('company', company);
                     cb(null, userModel);
                 });
             },
@@ -384,7 +379,6 @@ var UsersHandler = function (PostGre) {
                         }
                         cb(null, userModel);
                     });
-
             }
 
         ], function (err, userModel) {
@@ -396,16 +390,13 @@ var UsersHandler = function (PostGre) {
 
             mailerOptions = {
                 email: email
-                //confirmToken: confirmToken
             };
-            //mailer.onSendConfirm(mailerOptions);
-            mailer.onSignUp(mailerOptions);
 
+            mailer.onSignUp(mailerOptions);
             io.emit('newUser', userModel);
 
             res.status(201).send({success: MESSAGES.SIGN_UP_ACCEPT});
         });
-
     };
 
     this.acceptUser = function (req, res, next) {
@@ -861,8 +852,6 @@ var UsersHandler = function (PostGre) {
         var email = options.email;
         var companyId = options.companyId;
         var permissions = options.permissions;
-
-        //var company;
         var userData;
         var forgotToken;
         var invitedUserId;
@@ -929,31 +918,15 @@ var UsersHandler = function (PostGre) {
                 var profileData = profilesHandler.prepareSaveData(options);
 
                 profileData.user_id = userId;
+                profileData.company_id = companyId;
                 profileData.permissions = options.permissions;
                 ProfileModel.upsert(profileData, function (err, profileModel) {
                     if (err) {
                         removeUser(userModel);
                         return cb(err);
                     }
-                    userModel.set('profile', profileModel);
                     cb(null, userModel);
                 });
-            },
-
-            //add current user to company
-            function (userModel, cb) {
-                var userId = userModel.id;
-                var companyData = {
-                    userId: userId,
-                    companyId: companyId
-                };
-
-                companiesHandler.insertIntoUserCompanies(companyData, function (err, resultModel) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    cb(null, userModel);
-                })
             }
 
         ], function (err, userModel) {
@@ -987,6 +960,21 @@ var UsersHandler = function (PostGre) {
         var fetchOptions = {
             withRelated: ['profile', 'avatar']
         };
+
+        /*UserModel
+            .forge()
+            .query(function (qb) {
+                qb.innerJoin('profiles', 'profiles.user_id', 'users.id')
+                    .where('company_id', companyId)
+            })
+            .fetchAll({withRelated: ['profile']})
+            .exec(function (err, result) {
+                console.log(result.models[0]);
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(result.models);
+            });*/
 
         UserModel
             .findCollaborators(queryOptions, fetchOptions)
@@ -1117,8 +1105,8 @@ var UsersHandler = function (PostGre) {
 
         query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
-            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
-            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
+            //.innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id');
 
         query.where(function (qb) {
 
@@ -1215,8 +1203,7 @@ var UsersHandler = function (PostGre) {
 
         query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
-            .innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
-            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.USER_COMPANIES + '.company_id');
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id');
 
         query.where(function () {
 

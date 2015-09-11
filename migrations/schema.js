@@ -56,13 +56,6 @@ module.exports = function (knex) {
                 row.timestamps();
             }),
 
-            /*createTable(TABLES.FIELDS, function (row) {
-                row.increments().primary();
-                row.string('name').notNullable();
-                row.string('type').notNullable().defaultTo(FIELD_TYPES.STRING);
-                row.timestamps();
-            }),*/
-
             createTable(TABLES.IMAGES, function (row) {
                 row.increments().primary();
                 row.integer('imageable_id').notNullable();
@@ -92,9 +85,10 @@ module.exports = function (knex) {
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
+                row.string('company_id').notNullable().unique();
                 row.string('first_name');
                 row.string('last_name');
-                row.string('company');
+                //row.string('company');
                 row.string('phone');
                 row.integer('permissions').notNullable().defaultTo(PERMISSIONS.USER);
                 row.boolean('sign_authority').notNullable().defaultTo(SIGN_AUTHORITY.DISABLED);
@@ -102,13 +96,6 @@ module.exports = function (knex) {
                 row.timestamps();
             }), 
 
-            createTable(TABLES.USER_COMPANIES, function (row) {
-                row.increments().primary();
-                row.integer('user_id').notNullable().index();
-                row.integer('company_id').notNullable().index();
-                row.timestamps();
-            }), 
-                
             createTable(TABLES.USERS, function (row) {
                 row.increments().primary();
                 row.string('email').unique();
@@ -196,6 +183,7 @@ module.exports = function (knex) {
             function (cb) {
                 var data = {
                     user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
+                    company_id: CONSTANTS.DEFAULT_COMPANY_ID,
                     first_name: CONSTANTS.DEFAULT_SUPERADMIN_FIRST_NAME,
                     last_name: CONSTANTS.DEFAULT_SUPERADMIN_LAST_NAME,
                     permissions: PERMISSIONS.SUPER_ADMIN,
@@ -219,16 +207,6 @@ module.exports = function (knex) {
                 };
 
                 insertData(TABLES.COMPANIES, data, cb);
-            },
-
-            //create default user_companies:
-            function (cb) {
-                var data = {
-                    user_id: CONSTANTS.DEFAULT_SUPERADMIN_ID,
-                    company_id: CONSTANTS.DEFAULT_COMPANY_ID
-                };
-
-                insertData(TABLES.USER_COMPANIES, data, cb);
             },
 
             function (cb) {
@@ -368,7 +346,6 @@ module.exports = function (knex) {
             dropTable(TABLES.ATTACHMENTS),
             dropTable(TABLES.COMPANIES),
             dropTable(TABLES.DOCUMENTS),
-            //dropTable(TABLES.FIELDS),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
             dropTable(TABLES.MESSAGES),
@@ -376,7 +353,6 @@ module.exports = function (knex) {
             dropTable(TABLES.LINKS_FIELDS),
             dropTable(TABLES.LINKS),
             dropTable(TABLES.PROFILES),
-            dropTable(TABLES.USER_COMPANIES),
             dropTable(TABLES.USERS),
             dropTable(TABLES.TEMPLATES),
             dropTable(TABLES.USERS_SECRET_KEY)
