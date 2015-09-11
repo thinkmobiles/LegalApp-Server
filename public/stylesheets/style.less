@@ -628,7 +628,24 @@ a {
 }
 
 #templateList{
-
+  width: 31%;
+  min-height: 630px;
+  float: left;
+  display: block;
+  ul{
+    li{
+      height: 35px;
+      line-height: 35px;
+      padding-left: 38px;
+      &.active{
+        background: #d0d0d1;
+      }
+      svg{
+        float: left;
+        margin-right: 10px;
+      }
+    }
+  }
 }
 
 .centerBlock {
@@ -699,21 +716,6 @@ a {
     resize: none;
     background: #eaeaea;
     border: none;
-  }
-}
-
-.addItemRight {
-  width: 30%;
-  height: 600px;
-  float: left;
-  background-color: lightgrey;
-  display: block;
-  div {
-    margin: 10px;
-
-    label {
-      float:left;
-    }
   }
 }
 
