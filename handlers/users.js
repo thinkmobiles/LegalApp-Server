@@ -273,6 +273,118 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    function normalizeUser(user, callback) {
+        var userData = {
+            id: user.id,
+            email: user.email,
+            status: user.status
+        };
+        var profileData = {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            permissions: user.permissions,
+            sign_authority: user.sign_authority,
+            has_sign_image: user.has_sign_image
+        };
+        var companyData = {
+            id: user.company_id,
+            name: user.company_name
+        };
+        var avatarData = {
+            id: user.avatar_id,
+            name: user.avatar_name,
+            key: user.avatar_key
+        };
+
+        var userModel = UserModel.forge(userData);
+        var profileModel = userModel.related('profile');
+        var companyModel = userModel.related('company');
+        var avatarModel = userModel.related('avatar');
+
+        profileModel.set(profileData);
+        companyModel.set(companyData);
+        avatarModel.set(avatarData);
+
+        if (callback && (typeof callback === 'function')) {
+            callback(null, userModel);
+        } else {
+            return userModel;
+        }
+    };
+
+    function mapUsers(rows, callback) {
+        async.map(rows, normalizeUser, function (err, userModels) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, userModels);
+        });
+    };
+
+    function getUsersByCriteria(queryOptions, callback) {
+        /*var queryOptions = { //TODO: query options page, count, orderBy ...
+         withoutCompany: companyId
+         };*/
+        /*var fetchOptions = {
+         withRelated: ['profile', 'avatar', 'company']
+         };*/
+        var columns = [
+            TABLES.PROFILES + '.first_name',
+            TABLES.PROFILES + '.last_name',
+            TABLES.PROFILES + '.phone',
+            TABLES.PROFILES + '.permissions',
+            TABLES.PROFILES + '.sign_authority',
+            TABLES.PROFILES + '.has_sign_image',
+            TABLES.COMPANIES + '.id as company_id',
+            TABLES.COMPANIES + '.name as company_name',
+            TABLES.IMAGES + '.id as avatar_id',
+            TABLES.IMAGES + '.name as avatar_name',
+            TABLES.IMAGES + '.key as avatar_key',
+            TABLES.USERS + '.status',
+            TABLES.USERS + '.email',
+            TABLES.USERS + '.id'
+        ];
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.time('>>> get usersKnex time');
+        }
+        knex(TABLES.USERS)
+            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
+            /*.leftJoin(TABLES.IMAGES, function () {
+                this.on(TABLES.IMAGES + '.imageable_type', TABLES.USERS)
+                    .on(TABLES.IMAGES + '.imageable_id', TABLES.USERS + '.id')
+            })*/
+            .join(knex.raw("left join images on images.imageable_type='users' and images.imageable_id=users.id"))
+            .select(columns)
+            .exec(function (err, rows) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.timeEnd('>>> get usersKnex time');
+                }
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> map usersKnex time');
+                }
+
+                mapUsers(rows, function (err, userModels) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> map usersKnex time');
+                    }
+
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, userModels);
+                });
+            });
+
+    };
+
     this.signUp = function (req, res, next) {
         var app = req.app;
         var io = app.get('io');
@@ -961,21 +1073,6 @@ var UsersHandler = function (PostGre) {
             withRelated: ['profile', 'avatar']
         };
 
-        /*UserModel
-            .forge()
-            .query(function (qb) {
-                qb.innerJoin('profiles', 'profiles.user_id', 'users.id')
-                    .where('company_id', companyId)
-            })
-            .fetchAll({withRelated: ['profile']})
-            .exec(function (err, result) {
-                console.log(result.models[0]);
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send(result.models);
-            });*/
-
         UserModel
             .findCollaborators(queryOptions, fetchOptions)
             .exec(function (err, result) {
@@ -997,15 +1094,21 @@ var UsersHandler = function (PostGre) {
             withRelated: ['profile', 'avatar', 'company']
         };
 
-        UserModel
-            .findCollaborators(queryOptions, fetchOptions)
-            .exec(function (err, result) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send(result.models);
-            });
+        /*getUsersByCriteria(queryOptions, function (err, rows) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send(rows);
+        });*/
 
+        UserModel
+         .findCollaborators(queryOptions, fetchOptions)
+         .exec(function (err, result) {
+             if (err) {
+                return next(err);
+             }
+             res.status(200).send(result.models);
+         });
     };
 
     this.getUser = function (req, res, next) {
