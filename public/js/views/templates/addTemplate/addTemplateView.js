@@ -4,14 +4,16 @@
 
 define([
     'text!templates/templates/addTemplate/addTemplateTemplate.html',
-    'text!templates/templates/addTemplate/linkNamesTemplate.html',
-    'text!templates/templates/addTemplate/tempNamesTemplate.html',
+    'text!templates/templates/addTemplate/descriptionTextTemplate.html',
+    'text!templates/forSelect/linkNamesTemplate.html',
+    'text!templates/forSelect/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
     'models/templateModel',
     'collections/linksCollection'
 
 ], function (
     TempTemplate,
+    DescriptionText,
     LinkNamTemp,
     TempNames,
     AddLinkView,
@@ -40,6 +42,7 @@ define([
                     }
                 })
             } else {
+                this.tempModel = new TempModel();
                 self.render();
             }
         },
@@ -50,7 +53,7 @@ define([
 
         events : {
             "click #addNewLink"    : "showLinksTable",
-            "click .linkName"      : "linkSelect",
+            //"click .linkName"      : "linkSelect",
             "click #tempSave"      : "saveTemplate",
             //"click #tempLinkTable" : "showHideTable",
             //"click .tempName"      : "addLinkedTemp",
@@ -97,11 +100,6 @@ define([
             $('#addTemplateContainer').append(this.addDialogView.el);
         },
 
-        //showHideTable: function(){
-        //    var target = this.$el.find('#linkContainer');
-        //    target.toggle();
-        //},
-
         saveTemplate: function(){
             var self = this;
             var this_el = this.$el;
@@ -111,6 +109,7 @@ define([
             var linkTableId;
             var requestType = 'POST';
             var url = '/templates';
+            var descriptionText;
 
             //if (this.linkedTemplates.length > 0){
             //    formData.append('linked_templates', this.linkedTemplates)
@@ -127,8 +126,13 @@ define([
             }
 
             if (this.editableView){
-                requestType = 'PUT'
+                requestType = 'PUT';
                 url += '/'+this.tempModel.get('id');
+            }
+
+            descriptionText = this.tempModel.get('description');
+            if (descriptionText) {
+                formData.append('description', descriptionText)
             }
 
             $.ajax({
@@ -147,6 +151,7 @@ define([
                 }
             });
 
+
             //****************************************************
             //var testModel = new TempModel();
             //testModel.save(formData,{
@@ -162,17 +167,25 @@ define([
             //****************************************************
         },
 
-        linkSelect: function(event){
-            var thisEl = this.$el;
-            var fakeInput = thisEl.find('#fakeLinkTable');
-            var target = $(event.target);
-            var linkID = target.data('id');
-            var resultTarget = thisEl.find('#tempLinkTable');
+        addTemplate: function(){
 
-            target.closest('#linkContainer').hide();
-            resultTarget.val(target.text());
-            fakeInput.val(linkID);
         },
+
+        editTemplate : function (){
+
+        },
+
+        //linkSelect: function(event){
+        //    var thisEl = this.$el;
+        //    var fakeInput = thisEl.find('#fakeLinkTable');
+        //    var target = $(event.target);
+        //    var linkID = target.data('id');
+        //    var resultTarget = thisEl.find('#tempLinkTable');
+        //
+        //    target.closest('#linkContainer').hide();
+        //    resultTarget.val(target.text());
+        //    fakeInput.val(linkID);
+        //},
 
         closeCurrentView: function(){
             this.remove();
@@ -186,7 +199,9 @@ define([
                         tempModel: this.tempModel.toJSON()
                     }));
             } else {
-                this.$el.html(this.mainTemplate({edit : false}))
+                this.$el.html(this.mainTemplate({
+                        edit : false
+                    }))
             }
             this.delegateEvents();
 
