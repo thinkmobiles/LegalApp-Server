@@ -63,9 +63,8 @@ function normalizeKnexDebug() {
 var DEBUG_KNEX = normalizeKnexDebug();
 var Bookshelf = require('bookshelf');
 var pg = require('pg');
-
 var knex = require('knex')({
-    debug: true,
+    debug: DEBUG_KNEX,
     client: 'pg',
     connection: {
         host: process.env.RDS_HOSTNAME,
