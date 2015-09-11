@@ -16,7 +16,7 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        id        : "addItemRight",
+        //id        : "addItemRight",
         className : "addItemRight",
 
         editRowTemp : _.template(EditRow),
