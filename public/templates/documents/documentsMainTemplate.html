@@ -1,44 +1,48 @@
 <div id="documents">
-
     <div id="searchContainer" class="addItemLeft">
+        <div>
+            <h2>Documents Search Filter</h2>
+            <div class="search">
+                <p>Search</p>
+                <div><label>Title</label><input type="text" class="templateName"></div>
+                <div><label>Created by</label><input type="text" class="userName"></div>
+                <div class="date">
+                    <label>From</label><input type="text" class="fromDate">
+                    <label>To</label><input type="text" class="toDate">
+                </div>
+            </div>
+            <div class="filter">
+                <p>Status</p>
+                <div class="radio_check"><input id="f0" type="radio" name="status" class="filterStatus" value="all" checked="checked" ><label for="f0"><span>All</span></label></div>
+                <div class="radio_check"><input id="f1" type="radio" name="status" class="filterStatus" value="1"><label for="f1"><span>WIP</span></label></div>
+                <div class="radio_check"><input id="f2" type="radio" name="status" class="filterStatus" value="2"><label for="f2"><span>Waiting for internal signature</span></label></div>
+                <div class="radio_check"><input id="f3" type="radio" name="status" class="filterStatus" value="3"><label for="f3"><span>Not signed</span></label></div>
+                <div class="radio_check"><input id="f4" type="radio" name="status" class="filterStatus" value="4"><label for="f4"><span>Executed</span></label></div>
+            </div>
+            <div class="sort">
+                <p>Sort</p>
+                <div class="radio_check"><input id="s1" type="radio" name="sort" value="name" class="orderBy"><label for="s1"><span>Title</span></label></div>
+                <div class="radio_check"><input id="s2" type="radio" name="sort" value="created_at" class="orderBy" checked="checked"><label for="s2"><span>Date creation</span></label></div>
 
-        <div class="search">
-            <p>Search</p>
-            <label>Title<input type="text" class="templateName"></label><br>
-            <label>Created by<input type="text" class="userName"></label><br>
-            Created<br>
-            <label>From<input type="text" class="fromDate"></label>
-            <label>To<input type="text" class="toDate"></label><br>
+                <p>Order</p>
+                <div class="radio_check"><input id="s3" type="radio" name="order" value="ASC" checked="checked" class="order"><label for="s3"><span>A-Z</span></label></div>
+                <div class="radio_check"><input id="s4" type="radio" name="order" value="DESC" class="order"><label for="s4"><span>Z-A</label></div>
+            </div>
+            <input class="searchBtn" type="submit" value="Search"/>
+            <a href="#" id="closeIco">
+                &#10006;
+            </a>
         </div>
-        <div class="filter">
-            <p>Status</p>
-            <input id="f0" type="radio" name="status" class="filterStatus" value="all" checked="checked" ><label for="f0">All</label><br>
-            <input id="f1" type="radio" name="status" class="filterStatus" value="1"><label for="f1">WIP</label><br>
-            <input id="f2" type="radio" name="status" class="filterStatus" value="2"><label for="f2">Waiting for internal signature</label><br>
-            <input id="f3" type="radio" name="status" class="filterStatus" value="3"><label for="f3">Not signed</label><br>
-            <input id="f4" type="radio" name="status" class="filterStatus" value="4"><label for="f4">Executed</label><br>
-        </div>
-        <div class="sort">
-            <p>Sort</p>
-            <input id="s1" type="radio" name="sort" value="name" class="orderBy"><label for="s1">Title</label><br>
-            <input id="s2" type="radio" name="sort" value="created_at" class="orderBy" checked="checked"><label for="s2">Date creation</label><br>
-
-            <p>Order</p>
-            <input id="s3" type="radio" name="order" value="ASC" checked="checked" class="order"><label for="s3">A-Z</label><br>
-            <input id="s4" type="radio" name="order" value="DESC" class="order"><label for="s4">Z-A</label><br>
-        </div>
-
-        <input class="searchBtn" type="submit" value="Search"/>
     </div>
-
     <div class="topButtons">
-        <button class="filters">Filter</button>
-        <button data-id="list" class="btnViewType">List View</button>
+        <button class="filters">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M23.839,23.839 C23.633,24.046 23.298,24.046 23.091,23.839 L18.415,19.163 C18.676,18.925 18.925,18.676 19.163,18.415 L23.839,23.091 C24.046,23.298 24.046,23.633 23.839,23.839 ZM10.579,21.157 C4.736,21.157 -0.000,16.421 -0.000,10.579 C-0.000,4.736 4.736,-0.000 10.579,-0.000 C16.421,-0.000 21.157,4.736 21.157,10.579 C21.157,16.421 16.421,21.157 10.579,21.157 ZM10.579,1.058 C5.320,1.058 1.058,5.320 1.058,10.579 C1.058,15.837 5.320,20.099 10.579,20.099 C15.837,20.099 20.099,15.837 20.099,10.579 C20.099,5.320 15.837,1.058 10.579,1.058 Z" class="cls-1"/>
+            </svg>
+        </button>
+        <button data-id="list" class="btnViewType active">List View</button>
         <button data-id="grid" class="btnViewType">Grid View</button>
     </div>
-
     <div id="templateList" class="addItemRight"></div>
     <div id="documentList"></div>
-
-
 </div>
