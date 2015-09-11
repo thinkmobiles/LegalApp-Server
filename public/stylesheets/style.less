@@ -637,8 +637,23 @@ a {
       height: 35px;
       line-height: 35px;
       padding-left: 38px;
+      .templateListName{
+        position: relative;
+        &:before{
+          content: '+';
+          position: absolute;
+          left: -18px;
+          top: -2px;
+        }
+      }
       &.active{
         background: #d0d0d1;
+        .templateListName{
+          &:before{
+            content: '-';
+            top: -2px;
+          }
+        }
       }
       svg{
         float: left;
