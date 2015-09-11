@@ -52,18 +52,18 @@ define([
             "click #addNewLink"    : "showLinksTable",
             "click .linkName"      : "linkSelect",
             "click #tempSave"      : "saveTemplate",
-            "click #tempLinkTable" : "showHideTable",
-            "click .tempName"      : "addLinkedTemp",
+            //"click #tempLinkTable" : "showHideTable",
+            //"click .tempName"      : "addLinkedTemp",
             "click .closeCurrentView" : "closeCurrentView"
         },
 
-        addLinkedTemp: function (event){
-            var target = $(event.target).closest('.tempName');
-            var name = target.text().trim();
-            var tempId = target.data('id');
-            this.$el.find('#tempLinkedTemp').val(name);
-            //this.linkedTemplates = [tempId];
-        },
+        //addLinkedTemp: function (event){
+        //    var target = $(event.target).closest('.tempName');
+        //    var name = target.text().trim();
+        //    var tempId = target.data('id');
+        //    this.$el.find('#tempLinkedTemp').val(name);
+        //    //this.linkedTemplates = [tempId];
+        //},
 
         appendLinksNames : function(){
             var linkColl;
@@ -97,10 +97,10 @@ define([
             $('#addTemplateContainer').append(this.addDialogView.el);
         },
 
-        showHideTable: function(){
-            var target = this.$el.find('#linkContainer');
-            target.toggle();
-        },
+        //showHideTable: function(){
+        //    var target = this.$el.find('#linkContainer');
+        //    target.toggle();
+        //},
 
         saveTemplate: function(){
             var self = this;
@@ -110,6 +110,7 @@ define([
             var linkedTemplateId;
             var linkTableId;
             var requestType = 'POST';
+            var url = '/templates';
 
             //if (this.linkedTemplates.length > 0){
             //    formData.append('linked_templates', this.linkedTemplates)
@@ -127,10 +128,11 @@ define([
 
             if (this.editableView){
                 requestType = 'PUT'
+                url += '/'+this.tempModel.get('id');
             }
 
             $.ajax({
-                url: '/templates',
+                url : url,
                 type: requestType,
                 data: formData,
                 contentType: false,
