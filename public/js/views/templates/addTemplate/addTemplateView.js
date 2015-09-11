@@ -4,14 +4,16 @@
 
 define([
     'text!templates/templates/addTemplate/addTemplateTemplate.html',
-    'text!templates/templates/addTemplate/linkNamesTemplate.html',
-    'text!templates/templates/addTemplate/tempNamesTemplate.html',
+    'text!templates/templates/addTemplate/descriptionTextTemplate.html',
+    'text!templates/forSelect/linkNamesTemplate.html',
+    'text!templates/forSelect/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
     'models/templateModel',
     'collections/linksCollection'
 
 ], function (
     TempTemplate,
+    DescriptionText,
     LinkNamTemp,
     TempNames,
     AddLinkView,
@@ -40,6 +42,7 @@ define([
                     }
                 })
             } else {
+                this.tempModel = new TempModel();
                 self.render();
             }
         },
@@ -47,23 +50,26 @@ define([
         mainTemplate  : _.template(TempTemplate),
         linksNamesTemplate  : _.template(LinkNamTemp),
         tempNamesTemplate   : _.template(TempNames),
+        descriptionField    : _.template(DescriptionText),
 
         events : {
             "click #addNewLink"    : "showLinksTable",
-            "click .linkName"      : "linkSelect",
+            //"click .linkName"      : "linkSelect",
             "click #tempSave"      : "saveTemplate",
-            "click #tempLinkTable" : "showHideTable",
-            "click .tempName"      : "addLinkedTemp",
-            "click .closeCurrentView" : "closeCurrentView"
+            //"click #tempLinkTable" : "showHideTable",
+            //"click .tempName"      : "addLinkedTemp",
+            "click .closeCurrentView" : "closeCurrentView",
+            "click #tempDescription"  : "showDescriptionField",
+            "click #descriptBtn"      : "insertDescriptionText"
         },
 
-        addLinkedTemp: function (event){
-            var target = $(event.target).closest('.tempName');
-            var name = target.text().trim();
-            var tempId = target.data('id');
-            this.$el.find('#tempLinkedTemp').val(name);
-            //this.linkedTemplates = [tempId];
-        },
+        //addLinkedTemp: function (event){
+        //    var target = $(event.target).closest('.tempName');
+        //    var name = target.text().trim();
+        //    var tempId = target.data('id');
+        //    this.$el.find('#tempLinkedTemp').val(name);
+        //    //this.linkedTemplates = [tempId];
+        //},
 
         appendLinksNames : function(){
             var linkColl;
@@ -86,6 +92,19 @@ define([
             tempContainer.html(this.tempNamesTemplate({tempNames : tempColl}));
         },
 
+        showDescriptionField : function(){
+            var self = this;
+
+            $('#addTemplateAppender').html(this.descriptionField);
+            $('#descriptBtn').click(function(){self.insertDescriptionText(self)});
+        },
+
+        insertDescriptionText: function(self){
+            var textForSave = $('#descriptBtnArea').val();
+
+            self.tempModel.set('description', textForSave);
+        },
+
         showLinksTable: function(){
 
             if (this.addDialogView){
@@ -94,28 +113,54 @@ define([
 
             this.addDialogView = new AddLinkView();
             this.addDialogView.on('renderParentLinks', this.appendLinksNames, this);
-            $('#addTemplateContainer').append(this.addDialogView.el);
-        },
-
-        showHideTable: function(){
-            var target = this.$el.find('#linkContainer');
-            target.toggle();
+            $('#addTemplateAppender').html(this.addDialogView.el);
         },
 
         saveTemplate: function(){
             var self = this;
             var this_el = this.$el;
             var form = this_el.find('#addTempForm')[0];
-            var formData = new FormData(form);
+            //var formData = new FormData(form);
+            //var formData = new FormData();
             var linkedTemplateId;
             var linkTableId;
             var requestType = 'POST';
+            var url = '/templates';
+            var descriptionText;
+            var file;
+            var data;
+            var name;
 
-            //if (this.linkedTemplates.length > 0){
-            //    formData.append('linked_templates', this.linkedTemplates)
-            //}
+            var inputData = new FormData();
+            name = this_el.find('#tempName').val()
+            inputData.append('name', name);
+
+            file = this_el.find('#tempFile')[0].files[0];
+
+            if (file){
+                inputData.append('templateFile', file);
+            }
 
             linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
+            if (linkedTemplateId){
+                inputData.append('linked_templates', [linkedTemplateId]);
+            }
+
+            linkTableId = +this_el.find('#tempLinkTable').data('id');
+            if (linkTableId){
+                inputData.append('link_id', linkTableId);
+            }
+
+            descriptionText = this.tempModel.get('description');
+            if (descriptionText) {
+                inputData.append('description', descriptionText);
+            }
+
+            //data = new FormData();
+
+            //data.append('data', JSON.stringify(inputData));
+
+            /*linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
             if (linkedTemplateId){
                 formData.append('linked_templates', [linkedTemplateId])
             }
@@ -126,51 +171,70 @@ define([
             }
 
             if (this.editableView){
-                requestType = 'PUT'
+                requestType = 'PUT';
+                url += '/'+this.tempModel.get('id');
             }
 
-            $.ajax({
-                url: '/templates',
-                type: requestType,
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response){
-                    alert('Template was added successfully');
-                    var model = response.model;
-                    self.parentContext.tempCollection.add(model);
-                },
-                error: function(){
-                    alert('error'); //todo -error-
-                }
-            });
+            descriptionText = this.tempModel.get('description');
+            if (descriptionText) {
+                formData.append('description', descriptionText)
+            }*/
 
-            //****************************************************
-            //var testModel = new TempModel();
-            //testModel.save(formData,{
+            //$.ajax({
+            //    url : url,
+            //    type: requestType,
+            //    data: formData,
+            //    contentType: false,
+            //    processData: false,
             //    success: function(response){
             //        alert('Template was added successfully');
             //        var model = response.model;
             //        self.parentContext.tempCollection.add(model);
             //    },
             //    error: function(){
-            //        alert('error');
+            //        alert('error'); //todo -error-
             //    }
             //});
+
+
+            //****************************************************
+            //var testModel = new TempModel();
+            this.tempModel.save(null,{
+                data       : inputData,
+                processData: false,
+                //cache      : false,
+                contentType: false,
+                success: function(response){
+                    alert('Template was added successfully');
+                    var model = response.get('model');
+                    self.parentContext.tempCollection.add(model);
+                },
+                error: function(){
+                    alert('error');
+                }
+            });
             //****************************************************
         },
 
-        linkSelect: function(event){
-            var thisEl = this.$el;
-            var fakeInput = thisEl.find('#fakeLinkTable');
-            var target = $(event.target);
-            var linkID = target.data('id');
-            var resultTarget = thisEl.find('#tempLinkTable');
+        addTemplate: function(){
 
-            target.closest('#linkContainer').hide();
-            resultTarget.val(target.text());
-            fakeInput.val(linkID);
         },
+
+        editTemplate : function (){
+
+        },
+
+        //linkSelect: function(event){
+        //    var thisEl = this.$el;
+        //    var fakeInput = thisEl.find('#fakeLinkTable');
+        //    var target = $(event.target);
+        //    var linkID = target.data('id');
+        //    var resultTarget = thisEl.find('#tempLinkTable');
+        //
+        //    target.closest('#linkContainer').hide();
+        //    resultTarget.val(target.text());
+        //    fakeInput.val(linkID);
+        //},
 
         closeCurrentView: function(){
             this.remove();
@@ -184,7 +248,9 @@ define([
                         tempModel: this.tempModel.toJSON()
                     }));
             } else {
-                this.$el.html(this.mainTemplate({edit : false}))
+                this.$el.html(this.mainTemplate({
+                        edit : false
+                    }))
             }
             this.delegateEvents();
 

@@ -40,6 +40,61 @@ var TemplatesHandler = function (PostGre) {
             });
     }
 
+    function getTemplateWithStyle(options, callback) {
+        var templateId = options.templateId;
+
+        async.parallel({
+
+            // get the html_content
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            cssContent: function (cb) {
+
+                fs.readFile('public/stylesheets/pdfStyle.css', function (err, content) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, content);
+                });
+            }
+
+        }, function (err, results) {
+            var templateModel;
+            var cssContent;
+            var htmlContent;
+
+            if (err) {
+                return callback(err);
+            }
+
+            templateModel = results.templateModel;
+            cssContent = results.cssContent;
+
+            htmlContent = '<style>' + cssContent + '</style>' + templateModel.get('html_content');
+            templateModel.set('html_content', htmlContent);
+
+            callback(null, templateModel);
+
+        });
+    };
+
     this.docx2html = function (req, res, next) {
         var file = req.files.file;
         var filePath;
@@ -78,20 +133,20 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.createTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var options = req.body;
         var templateFile = req.files.templateFile;
         var name = options.name;
         var linkId = options.link_id;
         var description = options.description;
+        var marketingContent = options.marketing_content;
         var hasLinkedTemplate = false;
         var linkedTemplates = options.linked_templates;
         var linkedTemplatesArray;
         var originalFilename;
         var extension;
 
-        if (!name || !linkId || !templateFile || !description) {
-            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile', 'description']}));
+        if (!name || !linkId || !templateFile) {
+            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
         }
 
         originalFilename = templateFile.originalFilename;
@@ -140,15 +195,38 @@ var TemplatesHandler = function (PostGre) {
                 });
             },
 
+            //get linked template if need:
+            function (key, htmlContent, cb) {
+                if (!hasLinkedTemplate) {
+                    return cb(null, key, htmlContent);
+                }
+
+                knex(TABLES.TEMPLATES)
+                    .whereIn('id', linkedTemplatesArray)
+                    .select(['id', 'html_content'])
+                    .exec(function (err, rows) {
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        rows.forEach(function (row) {
+                            htmlContent += documentsHandler.HTML_BRAKE_PAGE;
+                            htmlContent += row.html_content;
+                        });
+
+                        cb(null, key, htmlContent);
+                    });
+            },
+
             //insert into templates:
             function (key, htmlContent, cb) {
                 var saveData = {
                     name: name,
+                    description: description,
                     link_id: linkId,
-                    //company_id: companyId,
                     html_content: htmlContent,
-                    has_linked_template: hasLinkedTemplate,
-                    description: description
+                    marketing_content: marketingContent,
+                    has_linked_template: hasLinkedTemplate
                 };
 
                 TemplateModel
@@ -193,7 +271,7 @@ var TemplatesHandler = function (PostGre) {
 
             },
 
-            //save linkedTemplates
+            //insert into linked_templates
             function (templateModel, cb) {
 
                 if (!linkedTemplatesArray) {
@@ -215,8 +293,7 @@ var TemplatesHandler = function (PostGre) {
                             return cb(err);
                         }
                         cb(null, templateModel);
-                    })
-
+                    });
             }
 
         ], function (err, templateModel) {
@@ -228,14 +305,8 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
-        //var companyId = req.session.companyId;
 
         TemplateModel
-            /*.forge()
-            .query(function (qb) {
-                qb.where({company_id: companyId});
-            })
-            .fetchAll()*/
             .findAll()
             .exec(function (err, result) {
                 var templateModels;
@@ -256,7 +327,6 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var templateId = req.params.id;
         var criteria = {
             id: templateId
@@ -339,166 +409,86 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.updateTemplate = function (req, res, next) {
-        var templateSaveData = self.prepareSaveData(req.body);
+        var options = req.body;
         var templateId = req.params.id;
-        //var companyId = req.session.companyId;
-        var criteria = {
-            id: templateId
-            //company_id: companyId
-        };
-        var fetchOptions = {
-            require: true
-        };
+        var permissions = req.session.permissions;
+        var templateSaveData;
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
         }
 
-        if (Object.keys(templateSaveData).length === 0) {
+        templateSaveData = self.prepareSaveData(options);
+
+        if (!Object.keys(templateSaveData).length) {
             return next(badRequests.NotEnParams({message: 'Nothing to update'}))
         }
 
-        async.waterfall([
-
-            //try to find the template:
-            function (cb) {
-
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
-                    })
-                    .catch(cb);
-            },
-
-            //try to update template:
-            function (templateModel, cb) {
-                templateModel
-                    .save(templateSaveData, {patch: true})
-                    .exec(function (err, tempModel) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, templateModel);
-                    });
-            }
-
-        ], function (err, templateModel) {
-            if (err) {
-                return next(err);
-            }
-            res.status(200).send({success: 'Success updated', model: templateModel});
-        });
+        TemplateModel
+            .forge({
+                id: templateId
+            })
+            .save(templateSaveData, {patch: true})
+            .then(function (templateModel) {
+                res.status(200).send({success: 'Success updated', model: templateModel});
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound({message: 'Template was not found'}));
+            })
+            .catch(function (err) {
+                if (badRequests.isNoRowsUpdatedError(err)) {
+                    return next(badRequests.NotFound({message: 'Template was not found'}));
+                }
+                next(err);
+            });
     };
 
     this.previewTemplate = function (req, res, next) {
         var templateId = req.params.id;
-        var criteria = {
-            id: templateId
-        };
-        var fetchOptions = {
-            require: true
+        var options = {
+            templateId: templateId
         };
 
-        TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var html = templateModel.get('html_content');
+        getTemplateWithStyle(options, function (err, templateModel) {
+            var html;
 
-                res.status(200).send(html);
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+            if (err) {
+                return next(err);
+            }
+
+            html = templateModel.get('html_content');
+            res.status(200).send(html);
+        });
     };
 
     this.previewDocument = function (req, res, next) {
         var templateId = req.params.id;
         var options = req.body;
+        var templateOptions = {
+            templateId: templateId
+        };
         var values;
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
         } else {
-            return next(badRequests.NotEnParams('values'));
+            return next(badRequests.NotEnParams({reqParams: 'values'}));
         }
 
-        async.parallel({
-
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> templateModel time');
-                }
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> templateModel time');
-                        }
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-            },
-
-            linkedTemplates: function (cb) {
-                var columns = [
-                    'linked_id',    // linked_templates
-                    'template_id',  // linked_templates
-                    'name',         // templates
-                    'html_content', // templates
-                    'link_id'       // templates
-                ];
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> linkedTemplates time');
-                }
-                knex(TABLES.LINKED_TEMPLATES)
-                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
-                    .where('template_id', templateId)
-                    .select(columns)
-                    .exec(function (err, rows) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> linkedTemplates time');
-                        }
-
-                        if (err) {
-                            return cb(err);
-                        }
-
-                        if (!rows || !rows.length) {
-                            return cb(null, null);
-                        }
-
-                        cb(null, rows);
-                    });
-            }
-
-        }, function (err, models) {
-            var templateModel = models.templateModel;
-            var linkedTemplates = models.linkedTemplates;
-            var templateHtmlContent = templateModel.get('html_content');
-            var linkModel = templateModel.related('link');
-            var fields = [];
+        documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+            var templateHtmlContent;
+            var linkModel;
+            var fields;
             var htmlContent;
             var linkFieldsModels;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateHtmlContent = templateModel.get('html_content');
+            linkModel = templateModel.related('link');
+            fields = [];
 
             if (linkModel && linkModel.related('linkFields')) {
                 linkFieldsModels = linkModel.related('linkFields');
@@ -507,12 +497,11 @@ var TemplatesHandler = function (PostGre) {
                 });
             }
 
-            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
+            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
             res.status(200).send({htmlContent : htmlContent});
         });
     };
-
 };
 
 module.exports = TemplatesHandler;

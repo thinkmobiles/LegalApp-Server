@@ -16,38 +16,25 @@
         </div>
 
         <div>
-            <!--<label for="tempLinkedTemp">Linked template</label>
-            <input type="text" id="tempLinkedTemp" data-id="<%= edit && tempModel.link.id ? tempModel.link.id : 0%>" value="<%= edit && tempModel.link.name ? tempModel.link.name : 'Linked template'%>" placeholder="Linked template">
-            <div id="tempNames">
-                &lt;!&ndash;Templates names&ndash;&gt;
-            </div>-->
             <div class="sel_container">
-                <a href="javascript:;" id="tempLinkedTemp" class="sel_result" data-id="0"><%= edit && tempModel.linkedTemplates[0].name ? tempModel.linkedTemplates[0].name : 'Linked template'%></a>
+                <a href="javascript:;" id="tempLinkedTemp" class="sel_result" data-id="0"><%= edit && tempModel.linkedTemplates[0] ? tempModel.linkedTemplates[0].name : 'Linked template'%></a>
                 <ul id="tempNames" class="sel_list">
                 </ul>
             </div>
-
         </div>
 
         <div>
-
-        <!--<span id="tempLinkTable">Add Link Table</span>-->
-        <!--<input type="hidden" id="fakeLinkTable" name="link_id">
-        <input type="text" class="selOnInput" id="tempLinkTable" placeholder="Add Link Table" readonly>
-        <div id="linkContainer">
-            &lt;!&ndash;link names container&ndash;&gt;
-        </div>-->
             <div class="sel_container">
                 <a href="javascript:;" id="tempLinkTable" class="sel_result" data-id="0"><%= edit && tempModel.link.name ? tempModel.link.name : 'Link Table'%></a>
                 <ul id="linkContainer" class="sel_list">
                 </ul>
             </div>
-
         </div>
 
 
         <div>
-            <textarea id="tempDescription" name="description" placeholder="Description"></textarea>
+            <input type="button" id="tempDescription" value="Description">
+            <!--<textarea id="tempDescription" name="description" placeholder="Description"></textarea>-->
         </div>
 
         <div>

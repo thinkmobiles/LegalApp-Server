@@ -273,6 +273,97 @@ var UsersHandler = function (PostGre) {
             });
     };
 
+    function normalizeUser(user, callback) {
+
+        function UserObject(options) {
+            this.id = options.id;
+            this.email = options.email;
+            this.profile = {
+                first_name: options.first_name,
+                last_name: options.last_name,
+                phone: options.phone,
+                permissions: options.permissions,
+                sign_authority: options.sign_authority,
+                has_sign_image: options.has_sign_image
+            };
+            this.company = {
+                id: options.company_id,
+                name: options.company_name
+            }
+
+        }
+        var userModel = new UserObject(user);
+
+        if (callback && (typeof callback === 'function')) {
+            callback(null, userModel);
+        } else {
+            return userModel;
+        }
+    };
+
+    function mapUsers(rows, callback) {
+        async.map(rows, normalizeUser, function (err, userModels) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, userModels);
+        });
+    };
+
+    function getUsersByCriteria(queryOptions, callback) {
+        /*var queryOptions = { //TODO: query options page, count, orderBy ...
+         withoutCompany: companyId
+         };*/
+        /*var fetchOptions = {
+         withRelated: ['profile', 'avatar', 'company']
+         };*/
+        var columns = [
+            TABLES.PROFILES + '.first_name',
+            TABLES.PROFILES + '.last_name',
+            TABLES.PROFILES + '.phone',
+            TABLES.PROFILES + '.permissions',
+            TABLES.PROFILES + '.sign_authority',
+            TABLES.PROFILES + '.has_sign_image',
+            TABLES.COMPANIES + '.id as company_id',
+            TABLES.COMPANIES + '.name as company_name',
+            TABLES.USERS + '.email',
+            TABLES.USERS + '.id'
+        ];
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.time('>>> get usersKnex time');
+        }
+        knex(TABLES.USERS)
+            .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
+            .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
+            .select(columns)
+            .exec(function (err, rows) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.timeEnd('>>> get usersKnex time');
+                }
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('>>> map usersKnex time');
+                }
+
+                mapUsers(rows, function (err, userModels) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.timeEnd('>>> map usersKnex time');
+                    }
+
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, userModels);
+                });
+            });
+
+    };
+
     this.signUp = function (req, res, next) {
         var app = req.app;
         var io = app.get('io');
@@ -961,21 +1052,6 @@ var UsersHandler = function (PostGre) {
             withRelated: ['profile', 'avatar']
         };
 
-        /*UserModel
-            .forge()
-            .query(function (qb) {
-                qb.innerJoin('profiles', 'profiles.user_id', 'users.id')
-                    .where('company_id', companyId)
-            })
-            .fetchAll({withRelated: ['profile']})
-            .exec(function (err, result) {
-                console.log(result.models[0]);
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send(result.models);
-            });*/
-
         UserModel
             .findCollaborators(queryOptions, fetchOptions)
             .exec(function (err, result) {
@@ -994,18 +1070,24 @@ var UsersHandler = function (PostGre) {
             withoutCompany: companyId
         };
         var fetchOptions = {
-            withRelated: ['profile', 'avatar', 'company']
+            withRelated: ['profile', 'company']
         };
 
-        UserModel
-            .findCollaborators(queryOptions, fetchOptions)
-            .exec(function (err, result) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send(result.models);
-            });
+        getUsersByCriteria(queryOptions, function (err, rows) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send(rows);
+        });
 
+        /*UserModel
+         .findCollaborators(queryOptions, fetchOptions)
+         .exec(function (err, result) {
+             if (err) {
+                return next(err);
+             }
+             res.status(200).send(result.models);
+         });*/
     };
 
     this.getUser = function (req, res, next) {

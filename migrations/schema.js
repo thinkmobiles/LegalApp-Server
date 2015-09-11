@@ -85,7 +85,7 @@ module.exports = function (knex) {
             createTable(TABLES.PROFILES, function (row) {
                 row.increments().primary();
                 row.integer('user_id').notNullable().unique();
-                row.string('company_id').notNullable().unique();
+                row.integer('company_id').notNullable().index();
                 row.string('first_name');
                 row.string('last_name');
                 //row.string('company');
@@ -134,6 +134,7 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('description');
                 row.text('html_content');
+                row.text('marketing_content');
                 row.boolean('has_linked_template').notNullable().defaultTo(false);
                 row.timestamps();
             }),

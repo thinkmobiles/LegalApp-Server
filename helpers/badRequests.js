@@ -306,6 +306,10 @@ var BadRequestModule = function () {
         return new Errors(errOptions);
     };
 
+    this.isNoRowsUpdatedError = function (err) {
+        return (err.message && (err.message.indexOf('No rows were affected in the update, did you mean to pass the {method: "insert"} option?') !== -1));
+    };
+
 };
 
 module.exports = new BadRequestModule();

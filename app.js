@@ -45,11 +45,26 @@ app.set('io', io);
 
 //<editor-fold desc="PostGre">
 
+function normalizeKnexDebug() {
+    var DEBUG_KNEX = process.env.DEBUG_KNEX; // !!! typeof process.env.DEBUG_KNEX -> string
+    var debug;
+
+    if (DEBUG_KNEX === 'true') {
+        debug = true; //todo change this
+    } else if (DEBUG_KNEX === 'false') {
+        debug = false;
+    } else {
+        debug = false;
+    }
+
+    return debug;
+};
+
+var DEBUG_KNEX = normalizeKnexDebug();
 var Bookshelf = require('bookshelf');
 var pg = require('pg');
-
 var knex = require('knex')({
-    //debug: true,
+    debug: DEBUG_KNEX,
     client: 'pg',
     connection: {
         host: process.env.RDS_HOSTNAME,
