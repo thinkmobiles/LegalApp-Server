@@ -464,86 +464,31 @@ var TemplatesHandler = function (PostGre) {
     this.previewDocument = function (req, res, next) {
         var templateId = req.params.id;
         var options = req.body;
+        var templateOptions = {
+            templateId: templateId
+        };
         var values;
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
             values = options.values;
         } else {
-            return next(badRequests.NotEnParams('values'));
+            return next(badRequests.NotEnParams({reqParams: 'values'}));
         }
 
-        async.parallel({
-
-            templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
-
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> templateModel time');
-                }
-                TemplateModel
-                    .find(criteria, fetchOptions)
-                    .then(function (templateModel) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> templateModel time');
-                        }
-                        cb(null, templateModel);
-                    })
-                    .catch(TemplateModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'Template was not found'}));
-                    })
-                    .catch(cb);
-            },
-
-            linkedTemplates: function (cb) {
-                var columns = [
-                    'linked_id',    // linked_templates
-                    'template_id',  // linked_templates
-                    'name',         // templates
-                    'html_content', // templates
-                    'link_id'       // templates
-                ];
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> linkedTemplates time');
-                }
-                knex(TABLES.LINKED_TEMPLATES)
-                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
-                    .where('template_id', templateId)
-                    .select(columns)
-                    .exec(function (err, rows) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> linkedTemplates time');
-                        }
-
-                        if (err) {
-                            return cb(err);
-                        }
-
-                        if (!rows || !rows.length) {
-                            return cb(null, null);
-                        }
-
-                        cb(null, rows);
-                    });
-            }
-
-        }, function (err, models) {
-            var templateModel = models.templateModel;
-            var linkedTemplates = models.linkedTemplates;
-            var templateHtmlContent = templateModel.get('html_content');
-            var linkModel = templateModel.related('link');
-            var fields = [];
+        documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+            var templateHtmlContent;
+            var linkModel;
+            var fields;
             var htmlContent;
             var linkFieldsModels;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateHtmlContent = templateModel.get('html_content');
+            linkModel = templateModel.related('link');
+            fields = [];
 
             if (linkModel && linkModel.related('linkFields')) {
                 linkFieldsModels = linkModel.related('linkFields');
@@ -552,12 +497,11 @@ var TemplatesHandler = function (PostGre) {
                 });
             }
 
-            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
+            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
             res.status(200).send({htmlContent : htmlContent});
         });
-    }; //TODO: use knex
-
+    };
 };
 
 module.exports = TemplatesHandler;

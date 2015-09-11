@@ -218,12 +218,7 @@ var DocumentsHandler = function (PostGre) {
 
     };
 
-    function createDocumentContent(htmlText, fields, values, linkedTemplates) {
-
-        if (linkedTemplates && linkedTemplates.length) {
-            htmlText += '<div class="brakePage"></div>'; //TODO: this.HTML_BRAKE_PAGE;
-            htmlText += linkedTemplates[0].html_content;
-        }
+    function createDocumentContent(htmlText, fields, values) {
 
         if (fields && values) {
             fields.forEach(function (field) {
@@ -410,67 +405,6 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    function prepareAndSave(options, models, callback) {
-        var templateModel = models.templateModel;
-        var userModel = models.userModel;
-        var documentModel = models.documentModel;
-        var templateHtmlContent = templateModel.get('html_content');
-        var linkModel = templateModel.related('link');
-        var linkFieldsModels;
-        var fields = [];
-        var companyId;
-        var saveData = {
-            template_id: templateModel.id,
-            status: STATUSES.CREATED
-        };
-        var documentName;
-        var values;
-        var htmlContent;
-
-        if (documentModel && documentModel.id) {
-            saveData.id = documentModel.id; //update
-        } else {
-            documentName = generateDocumentName(templateModel, userModel);
-            saveData.name = documentName;
-        } //else create
-
-        if (userModel && userModel.id) {
-            saveData.user_id = userModel.id;
-            if (userModel.related('company') && userModel.related('company').length) {
-                companyId = userModel.related('company').models[0].id;
-                saveData.company_id = companyId;
-            }
-        }
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-            saveData.values = values;
-        }
-
-        if (linkModel && linkModel.related('linkFields')) {
-            linkFieldsModels = linkModel.related('linkFields');
-            linkFieldsModels.models.forEach(function (model) {
-                fields.push(model.toJSON());
-            });
-        }
-
-        if (values && templateHtmlContent) {
-            htmlContent = createDocumentContent(templateHtmlContent, fields, values);
-            saveData.html_content = htmlContent;
-        }
-
-        //console.log('htmlContent', htmlContent);
-
-        DocumentModel
-            .upsert(saveData, function (err, documentModel) {
-                if (err) {
-                    return callback(err);
-                }
-                callback(null, documentModel);
-            });
-
-    };
-
     function prepareDocumentToSave(options, models, callback) {
         var templateModel = models.templateModel;
         var userModel = models.userModel;
@@ -522,7 +456,7 @@ var DocumentsHandler = function (PostGre) {
 
         if (templateHtmlContent) {
             if (values) {
-                htmlContent = createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
+                htmlContent = createDocumentContent(templateHtmlContent, fields, values);
             } else {
                 htmlContent = templateHtmlContent;
             }
@@ -814,75 +748,19 @@ var DocumentsHandler = function (PostGre) {
             },
 
             templateModel: function (cb) {
-
+                var templateOptions = {
+                    templateId: templateId
+                };
                 if (process.env.NODE_ENV !== 'production') {
                     console.time('    >>> templatesKnex time');
                 }
 
-                knex(TABLES.TEMPLATES)
-                    .leftJoin(TABLES.LINKS_FIELDS, TABLES.TEMPLATES + '.link_id', TABLES.LINKS_FIELDS + '.link_id')
-                    .where(TABLES.TEMPLATES + '.id', templateId)
-                    .select([
-                        TABLES.LINKS_FIELDS + '.id as link_field_id',
-                        TABLES.LINKS_FIELDS + '.name as link_field_name',
-                        TABLES.LINKS_FIELDS + '.code as link_field_code',
-                        TABLES.LINKS_FIELDS + '.type as link_field_type',
-                        TABLES.TEMPLATES + '.name as template_name',
-                        TABLES.TEMPLATES + '.html_content',
-                        TABLES.TEMPLATES + '.id as id'
-                    ])
-                    .exec(function (err, rows) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('    >>> templatesKnex time');
-                        }
-
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.time('    >>> map templatesKnex time');
-                        }
-
-                        var row;
-                        var templateData;
-                        var linkFieldsData;
-                        var templateModel;
-                        var linkModel;
-                        var linkFieldModels;
-
-                        if (err) {
-                            return cb(err);
-                        }
-
-                        if (!rows && !rows.length) {
-                            return cb(badRequests.NotFound({message: 'Template was not found'}));
-                        }
-
-                        row = rows[0];
-                        templateData = {
-                            id: row.id,
-                            name: row.template_name,
-                            html_content: row.html_content
-                        };
-
-                        linkFieldsData = rows.map(function (row) {
-                            var linkField = {
-                                id  : row.link_field_id,
-                                name: row.link_field_name,
-                                code: row.link_field_code,
-                                type: row.link_field_type
-                            };
-
-                            return linkField;
-                        });
-
-                        templateModel = TemplateModel.forge(templateData);
-                        linkModel = templateModel.related('link');
-                        linkFieldModels = linkModel.related('linkFields');
-                        linkFieldModels.set(linkFieldsData);
-
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('    >>> map templatesKnex time');
-                        }
-                        cb(null, templateModel);
-                    });
+                getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, templateModel);
+                });
             },
 
             linkedTemplates: function (cb) {
@@ -995,6 +873,88 @@ var DocumentsHandler = function (PostGre) {
 
         mailer.onSendToSignature(mailerParams);
     };
+
+    function getTemplateModelWithLinks (options, callback) {
+        var templateId;
+        var columns = [
+            TABLES.LINKS_FIELDS + '.id as link_field_id',
+            TABLES.LINKS_FIELDS + '.name as link_field_name',
+            TABLES.LINKS_FIELDS + '.code as link_field_code',
+            TABLES.LINKS_FIELDS + '.type as link_field_type',
+            TABLES.TEMPLATES + '.name as template_name',
+            TABLES.TEMPLATES + '.html_content',
+            TABLES.TEMPLATES + '.id as id'
+        ];
+
+        if (!options || !options.templateId) {
+            return callback(badRequests.NotEnParams({reqParams: ['options', 'options.templateId']}));
+        }
+
+        templateId = options.templateId;
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.time('    >>> getTemplateModelWithLinks time');
+        }
+
+        knex(TABLES.TEMPLATES)
+            .leftJoin(TABLES.LINKS_FIELDS, TABLES.TEMPLATES + '.link_id', TABLES.LINKS_FIELDS + '.link_id')
+            .where(TABLES.TEMPLATES + '.id', templateId)
+            .select(columns)
+            .exec(function (err, rows) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.timeEnd('    >>> getTemplateModelWithLinks time');
+                }
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.time('    >>> map getTemplateModelWithLinks time');
+                }
+
+                var row;
+                var templateData;
+                var linkFieldsData;
+                var templateModel;
+                var linkModel;
+                var linkFieldModels;
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (!rows && !rows.length) {
+                    return callback(badRequests.NotFound({message: 'Template was not found'}));
+                }
+
+                row = rows[0];
+                templateData = {
+                    id: row.id,
+                    name: row.template_name,
+                    html_content: row.html_content
+                };
+
+                linkFieldsData = rows.map(function (row) {
+                    var linkField = {
+                        id  : row.link_field_id,
+                        name: row.link_field_name,
+                        code: row.link_field_code,
+                        type: row.link_field_type
+                    };
+
+                    return linkField;
+                });
+
+                templateModel = TemplateModel.forge(templateData);
+                linkModel = templateModel.related('link');
+                linkFieldModels = linkModel.related('linkFields');
+                linkFieldModels.set(linkFieldsData);
+
+                if (process.env.NODE_ENV !== 'production') {
+                    console.timeEnd('    >>> map getTemplateModelWithLinks time');
+                }
+                callback(null, templateModel);
+            });
+    };
+
+    this.getTemplateModelWithLinks = getTemplateModelWithLinks;
 
     this.testKnex = function (req, res, next) {
         var options = req.body;
@@ -1448,8 +1408,6 @@ var DocumentsHandler = function (PostGre) {
                     company: company,
                     document: documentJSON
                 };
-                console.log(documentJSON);
-                console.log(mailerParams.dstUser);
 
                 mailer.onSendToSignature(mailerParams);
 
