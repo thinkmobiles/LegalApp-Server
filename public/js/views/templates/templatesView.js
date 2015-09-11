@@ -38,7 +38,26 @@ define([
         events : {
             "click #addDiv"      : "goToAddTemplate",
             "click .hovCreateD"  : "goToPreview",
-            "click .btnViewType" : "changeViewType"
+            "click .btnViewType" : "changeViewType",
+            "click .hovEditT"    : "goToEditTemplate",
+            "click .sel_item"    : "selectSomething",
+            "click .sel_container" : "showHideSelect"
+        },
+
+        selectSomething: function(event){
+            var target = $(event.target);
+            var container = target.closest('.sel_container');
+            var result = container.find('.sel_result');
+            var newId;
+
+            result.text(target.text());
+            newId = target.attr('data-id');
+            result.attr('data-id', newId);
+        },
+
+        showHideSelect: function(event){
+            var target = $(event.target);
+            target.closest('.sel_container').toggleClass('active');
         },
 
         changeViewType: function(event){
@@ -52,8 +71,14 @@ define([
             this.$el.find('#addTemplateContainer').html(currentView.el);
         },
 
-        goToEditTemplate : function(){
+        goToEditTemplate : function(event){
+            var tempId = $(event.target).closest('.tempGrid').data('id');
+            var currentView = new AddTemplate({
+                    parentCont : this,
+                    tempId     : tempId
+            });
 
+            this.$el.find('#addTemplateContainer').html(currentView.el);
         },
 
         goToPreview: function(event){

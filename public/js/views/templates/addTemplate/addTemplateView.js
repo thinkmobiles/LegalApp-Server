@@ -7,7 +7,7 @@ define([
     'text!templates/templates/addTemplate/linkNamesTemplate.html',
     'text!templates/templates/addTemplate/tempNamesTemplate.html',
     'views/templates/addTemplate/addLinkTableView',
-    //'models/templateModel',
+    'models/templateModel',
     'collections/linksCollection'
 
 ], function (
@@ -15,21 +15,33 @@ define([
     LinkNamTemp,
     TempNames,
     AddLinkView,
-    //TempModel,
+    TempModel,
     LinksCollection) {
 
     var View;
     View = Backbone.View.extend({
 
         className       : "addItemLeft",
-        linkedTemplates : [],
+        //linkedTemplates : [],
+        editableView    : false,
 
         initialize: function (options) {
+            var self = this;
 
             this.parentContext = options.parentCont;
             this.linksCollection = new LinksCollection();
 
-            this.render();
+            if (options.tempId) {
+                this.editableView = true;
+                this.tempModel = new TempModel({id : options.tempId});
+                this.tempModel.fetch({
+                    success : function(){
+                        self.render();
+                    }
+                })
+            } else {
+                self.render();
+            }
         },
 
         mainTemplate  : _.template(TempTemplate),
@@ -43,8 +55,6 @@ define([
             "click #tempLinkTable" : "showHideTable",
             "click .tempName"      : "addLinkedTemp",
             "click .closeCurrentView" : "closeCurrentView"
-
-
         },
 
         addLinkedTemp: function (event){
@@ -52,7 +62,7 @@ define([
             var name = target.text().trim();
             var tempId = target.data('id');
             this.$el.find('#tempLinkedTemp').val(name);
-            this.linkedTemplates = [tempId];
+            //this.linkedTemplates = [tempId];
         },
 
         appendLinksNames : function(){
@@ -97,14 +107,31 @@ define([
             var this_el = this.$el;
             var form = this_el.find('#addTempForm')[0];
             var formData = new FormData(form);
+            var linkedTemplateId;
+            var linkTableId;
+            var requestType = 'POST';
 
-            if (this.linkedTemplates.length > 0){
-                formData.append('linked_templates', this.linkedTemplates)
+            //if (this.linkedTemplates.length > 0){
+            //    formData.append('linked_templates', this.linkedTemplates)
+            //}
+
+            linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
+            if (linkedTemplateId){
+                formData.append('linked_templates', [linkedTemplateId])
+            }
+
+            linkTableId = +this_el.find('#tempLinkTable').data('id');
+            if (linkTableId){
+                formData.append('link_id', linkTableId)
+            }
+
+            if (this.editableView){
+                requestType = 'PUT'
             }
 
             $.ajax({
                 url: '/templates',
-                type: "POST",
+                type: requestType,
                 data: formData,
                 contentType: false,
                 processData: false,
@@ -150,9 +177,15 @@ define([
         },
 
         render: function () {
-
             this.undelegateEvents();
-            this.$el.html(this.mainTemplate);
+            if (this.editableView){
+                this.$el.html(this.mainTemplate({
+                        edit     : true,
+                        tempModel: this.tempModel.toJSON()
+                    }));
+            } else {
+                this.$el.html(this.mainTemplate({edit : false}))
+            }
             this.delegateEvents();
 
             this.appendLinksNames();

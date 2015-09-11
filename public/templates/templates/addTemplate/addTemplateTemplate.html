@@ -1,32 +1,50 @@
 
-<h2>Add a Template</h2>
+<h2><%= edit ? 'Edit Template' : 'Add Template'%></h2>
     <button class="closeCurrentView">X</button>
 
     <form enctype="multipart/form-data" id="addTempForm" action="">
 
         <div>
-        <input type="text" id="tempName" name="name">
+            <label for="tempName">Document title</label>
+            <input type="text" id="tempName" name="name" value="<%= edit && tempModel.name ? tempModel.name : ''%>" placeholder="ie: Agreement">
         </div>
 
         <div>
-            <input type="file" id="tempFile" name="templateFile">
+            <label for="tempFile">Upload file</label>
+            <input type="file" id="tempFile" name="templateFile" style="display: none">
+            <input type="text" id="fakeTempFile" value="<%= edit && tempModel.templateFile.url ? tempModel.templateFile.url : ''%>"><label for="tempFile">Browse</label>
         </div>
 
         <div>
-            <input type="text" id="tempLinkedTemp" placeholder="Linked template">
+            <!--<label for="tempLinkedTemp">Linked template</label>
+            <input type="text" id="tempLinkedTemp" data-id="<%= edit && tempModel.link.id ? tempModel.link.id : 0%>" value="<%= edit && tempModel.link.name ? tempModel.link.name : 'Linked template'%>" placeholder="Linked template">
             <div id="tempNames">
-                <!--Templates names-->
+                &lt;!&ndash;Templates names&ndash;&gt;
+            </div>-->
+            <div class="sel_container">
+                <a href="javascript:;" id="tempLinkedTemp" class="sel_result" data-id="0"><%= edit && tempModel.linkedTemplates[0].name ? tempModel.linkedTemplates[0].name : 'Linked template'%></a>
+                <ul id="tempNames" class="sel_list">
+                </ul>
             </div>
+
         </div>
 
         <div>
+
         <!--<span id="tempLinkTable">Add Link Table</span>-->
+        <!--<input type="hidden" id="fakeLinkTable" name="link_id">
         <input type="text" class="selOnInput" id="tempLinkTable" placeholder="Add Link Table" readonly>
-        <input type="hidden" id="fakeLinkTable" name="link_id">
         <div id="linkContainer">
-            <!--link names container-->
+            &lt;!&ndash;link names container&ndash;&gt;
+        </div>-->
+            <div class="sel_container">
+                <a href="javascript:;" id="tempLinkTable" class="sel_result" data-id="0"><%= edit && tempModel.link.name ? tempModel.link.name : 'Link Table'%></a>
+                <ul id="linkContainer" class="sel_list">
+                </ul>
+            </div>
+
         </div>
-        </div>
+
 
         <div>
             <textarea id="tempDescription" name="description" placeholder="Description"></textarea>
