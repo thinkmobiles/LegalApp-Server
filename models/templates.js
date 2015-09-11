@@ -7,7 +7,7 @@ var async = require('async');
 module.exports = function (PostGre, ParentModel) {
     var TemplateModel = ParentModel.extend({
         tableName: TABLES.TEMPLATES,
-        hidden: ['html_content'/*, 'created_at', 'updated_at'*/],
+        hidden: ['html_content', 'marketing_content'/*, 'created_at', 'updated_at'*/],
         initialize: function () {
             this.on('destroying', this.removeDependencies);
         },

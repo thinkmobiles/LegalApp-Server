@@ -134,6 +134,7 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('description');
                 row.text('html_content');
+                row.text('marketing_content');
                 row.boolean('has_linked_template').notNullable().defaultTo(false);
                 row.timestamps();
             }),
