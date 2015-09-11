@@ -343,19 +343,6 @@ var TemplatesHandler = function (PostGre) {
         var templateId = req.params.id;
         var permissions = req.session.permissions;
         var templateSaveData;
-        var criteria = {
-            id: templateId
-            //company_id: companyId
-        };
-        var fetchOptions = {
-            require: true
-        };
-
-        templateId = 8;
-        options.name = 'IP Agreement2';
-        console.log(options);
-        console.log(req.headers);
-
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
