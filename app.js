@@ -50,7 +50,7 @@ function normalizeKnexDebug() {
     var debug;
 
     if (DEBUG_KNEX === 'true') {
-        debug = true;
+        debug = true; //todo change this
     } else if (DEBUG_KNEX === 'false') {
         debug = false;
     } else {
