@@ -50,7 +50,7 @@ function normalizeKnexDebug() {
     var debug;
 
     if (DEBUG_KNEX === 'true') {
-        debug = true;
+        debug = true; //todo change this
     } else if (DEBUG_KNEX === 'false') {
         debug = false;
     } else {
@@ -65,7 +65,7 @@ var Bookshelf = require('bookshelf');
 var pg = require('pg');
 
 var knex = require('knex')({
-    debug: DEBUG_KNEX,
+    debug: true,
     client: 'pg',
     connection: {
         host: process.env.RDS_HOSTNAME,
