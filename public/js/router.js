@@ -12,7 +12,7 @@ define([
 
         wrapperView : null,
         topBarView  : null,
-        view        : null,
+        //view        : null,
 
         routes: {
             "login(/:token)"               :  "login",
