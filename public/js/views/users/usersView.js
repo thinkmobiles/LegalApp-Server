@@ -23,7 +23,8 @@ define([
             "click .activeRow"               : "hideEdit",
             "click #adminClient>span "       : "changeCurrentState",
             "click .sel_item"                : "selectSomething",
-            "click .sel_container:not(#create_company>#newCompName)" : "showHideSelect"
+            "click .sel_container"           : "showHideSelect"
+            //"click .sel_container:not(#create_company>#newCompName)" : "showHideSelect"
         },
 
         initialize: function () {
@@ -32,8 +33,9 @@ define([
             this.render();
 
             this.usersCollection = new UsersCollection();
-            this.clientsCollection = new Backbone.Collection();
-            this.clientsCollection.url = "/clients";
+            this.clientsCollection = new UsersCollection({clients : true});
+            //this.clientsCollection = new Backbone.Collection();
+            //this.clientsCollection.url = "/clients";
 
             this.listenTo(this.stateModel, 'change:currentState', this.renderTrigger);
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);

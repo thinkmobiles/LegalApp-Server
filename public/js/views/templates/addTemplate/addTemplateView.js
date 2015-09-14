@@ -94,15 +94,24 @@ define([
 
         showDescriptionField : function(){
             var self = this;
+            var container = $('#addTemplateAppender');
 
-            $('#addTemplateAppender').html(this.descriptionField);
-            $('#descriptBtn').click(function(){self.insertDescriptionText(self)});
+            container.html(this.descriptionField({text : self.tempModel.get('description')}));
+            container.find('#descriptBtn').click(function(){self.insertDescriptionText(self)});
         },
 
         insertDescriptionText: function(self){
-            var textForSave = $('#descriptBtnArea').val();
+            var container = $('#addTemplateAppender');
+            var textForSave = container.find('#descriptBtnArea').val();
+            var textForButton;
+
+            if (textForSave !== ''){
+                textForButton = textForSave.slice(0,15)+'...';
+                self.$el.find('#tempDescription').val(textForButton);
+            }
 
             self.tempModel.set('description', textForSave);
+            container.html('');
         },
 
         showLinksTable: function(){
@@ -118,21 +127,15 @@ define([
 
         saveTemplate: function(){
             var self = this;
-            var this_el = this.$el;
-            var form = this_el.find('#addTempForm')[0];
-            //var formData = new FormData(form);
-            //var formData = new FormData();
+            var this_el = self.$el;
             var linkedTemplateId;
             var linkTableId;
-            var requestType = 'POST';
-            var url = '/templates';
             var descriptionText;
             var file;
-            var data;
             var name;
 
             var inputData = new FormData();
-            name = this_el.find('#tempName').val()
+            name = this_el.find('#tempName').val();
             inputData.append('name', name);
 
             file = this_el.find('#tempFile')[0].files[0];
@@ -142,7 +145,9 @@ define([
             }
 
             linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
-            if (linkedTemplateId){
+            if (linkedTemplateId === 0){
+                inputData.append('linked_templates', []);
+            } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
 
@@ -192,7 +197,7 @@ define([
             //        self.parentContext.tempCollection.add(model);
             //    },
             //    error: function(){
-            //        alert('error'); //todo -error-
+            //        alert('error');
             //    }
             //});
 
@@ -210,19 +215,19 @@ define([
                     self.parentContext.tempCollection.add(model);
                 },
                 error: function(){
-                    alert('error');
+                    alert('error'); //todo -error-
                 }
             });
             //****************************************************
         },
 
-        addTemplate: function(){
+        /*addTemplate: function(){
 
         },
 
         editTemplate : function (){
 
-        },
+        },*/
 
         //linkSelect: function(event){
         //    var thisEl = this.$el;
@@ -240,6 +245,33 @@ define([
             this.remove();
         },
 
+        docXupload : function(){
+            var self = this;
+            var this_el = self.$el;
+            var inputFile = this_el.find('#tempFile');
+
+            inputFile.on('change', function (event) {
+                event.preventDefault();
+
+                var file = inputFile[0].files[0];
+                var filesExt = 'docx';
+                var parts = $(inputFile).val().split('.');
+                var ourName = parts[parts.length - 1];
+
+                if (filesExt === ourName) {
+                    var fr = new FileReader();
+                    fr.onload = function () {
+                        this_el.find('#fakeTempFile').val(file.name);
+                    };
+                    fr.readAsDataURL(file);
+                } else {
+                    if (ourName) {
+                        alert('Invalid file type!');
+                    }
+                }
+            });
+        },
+
         render: function () {
             this.undelegateEvents();
             if (this.editableView){
@@ -254,6 +286,7 @@ define([
             }
             this.delegateEvents();
 
+            this.docXupload();
             this.appendLinksNames();
             this.appendTempNames();
 
