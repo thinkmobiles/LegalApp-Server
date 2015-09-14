@@ -7,7 +7,7 @@ var async = require('async');
 module.exports = function (PostGre, ParentModel) {
     var TemplateModel = ParentModel.extend({
         tableName: TABLES.TEMPLATES,
-        hidden: ['html_content', 'marketing_content'/*, 'created_at', 'updated_at'*/],
+        hidden: ['html_content', 'marketing_content', 'created_at', 'updated_at'],
         initialize: function () {
             this.on('destroying', this.removeDependencies);
         },
@@ -34,10 +34,12 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         toJSON: function () {
+            var uploader = PostGre.Models.Image.uploader;
             var attributes;
             var templateFile;
+            var templateFileName;
+            var name = null;
             var key;
-            var name;
             var bucket = BUCKETS.TEMPLATE_FILES;
             var url;
 
@@ -49,11 +51,13 @@ module.exports = function (PostGre, ParentModel) {
                 if (templateFile.id && templateFile.attributes.key && templateFile.attributes.name) {
                     name = templateFile.attributes.name;
                     key = templateFile.attributes.key;
-                    url = PostGre.Models.Image.uploader.getFileUrl(key, bucket);
+                    templateFileName = uploader.computeFileName(name, key);
+                    url = PostGre.Models.Image.uploader.getFileUrl(templateFileName, bucket);
                 }
 
                 attributes.templateFile = {
-                    url: url
+                    url: url,
+                    name: name
                 };
             }
 

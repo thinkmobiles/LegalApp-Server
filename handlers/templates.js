@@ -304,25 +304,23 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
+        //var companyId = req.session.companyId;
+        var templateModels;
+        var fetchParams = {
+            require: true,
+            withRelated: ['link', 'templateFile', 'linkedTemplates']
+        };
 
         TemplateModel
-            .findAll()
-            .exec(function (err, result) {
-                var templateModels;
+            .findAll(null, fetchParams)
+            .then(function (result) {
 
-                if (err) {
-                    return next(err);
-                }
+                (result && result.models) ?  templateModels = result.models : templateModels = [];
 
-                if (result && result.models) {
-                    templateModels = result.models;
-                } else {
-                    templateModels = [];
-                }
+                res.status(200).send(result);
 
-                res.status(200).send(templateModels);
-
-            });
+            })
+            .catch(next);
     };
 
     this.getTemplate = function (req, res, next) {

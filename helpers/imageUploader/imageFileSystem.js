@@ -337,6 +337,10 @@ var imagesUploader = function (dirConfig) {
         return filePath;
     }
 
+    function computeFileName(name, key) {
+        return key + '_' + name;
+    }
+
     return {
         uploadImage: uploadImage,
         duplicateImage: duplicateImage,
@@ -345,7 +349,8 @@ var imagesUploader = function (dirConfig) {
         getImageUrl: getImagePath,
         uploadFile: uploadFile,
         getFileUrl: getImagePath,
-        getFilePath: getFilePath
+        getFilePath: getFilePath,
+        computeFileName: computeFileName
     };
 };
 

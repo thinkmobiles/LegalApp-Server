@@ -38,7 +38,7 @@ var UsersHandler = function (PostGre) {
         var shaSum = crypto.createHash('sha256');
         shaSum.update(pass);
         return shaSum.digest('hex');
-    };
+    }
 
     function removeUser(options, callback) {
         var userId;
@@ -76,7 +76,7 @@ var UsersHandler = function (PostGre) {
                     }
                 });
         }
-    };
+    }
 
     function updateUserById(userId, options, callback) {
         var profile;
@@ -271,7 +271,7 @@ var UsersHandler = function (PostGre) {
                     callback(err);
                 }
             });
-    };
+    }
 
     function normalizeUser(user, callback) {
 
@@ -299,7 +299,7 @@ var UsersHandler = function (PostGre) {
         } else {
             return userModel;
         }
-    };
+    }
 
     function mapUsers(rows, callback) {
         async.map(rows, normalizeUser, function (err, userModels) {
@@ -308,15 +308,12 @@ var UsersHandler = function (PostGre) {
             }
             callback(null, userModels);
         });
-    };
+    }
 
     function getUsersByCriteria(queryOptions, callback) {
-        /*var queryOptions = { //TODO: query options page, count, orderBy ...
-         withoutCompany: companyId
-         };*/
-        /*var fetchOptions = {
-         withRelated: ['profile', 'avatar', 'company']
-         };*/
+        var userId;
+        var companyId;
+        var withoutCompany;
         var columns = [
             TABLES.PROFILES + '.first_name',
             TABLES.PROFILES + '.last_name',
@@ -330,13 +327,44 @@ var UsersHandler = function (PostGre) {
             TABLES.USERS + '.id'
         ];
 
+        if (queryOptions && queryOptions.companyId) {
+            companyId = queryOptions.companyId;
+        }
+
+        if (queryOptions && queryOptions.userId) {
+            userId = queryOptions.userId;
+        }
+
+        if (queryOptions && queryOptions.withoutCompany) {
+            withoutCompany = queryOptions.withoutCompany;
+        }
+
         if (process.env.NODE_ENV !== 'production') {
             console.time('>>> get usersKnex time');
         }
+
         knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
             .select(columns)
+            .where(function () {
+
+                if (withoutCompany) {
+
+                    this.andWhere(TABLES.PROFILES + '.company_id', '<>', withoutCompany)
+                }
+
+                if (companyId) {
+
+                    this.andWhere(TABLES.PROFILES + '.company_id', companyId);
+                }
+
+                if (userId) {
+
+                    this.andWhere(TABLES.USERS + '.id', userId);
+                }
+
+            })
             .exec(function (err, rows) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.timeEnd('>>> get usersKnex time');
@@ -1044,34 +1072,16 @@ var UsersHandler = function (PostGre) {
     this.getUsers = function (req, res, next) {
         var options = req.query;
         var userId = req.session.userId;
+        var uri = req.originalUrl;
+        var uId = req.params.id;
         var companyId = req.session.companyId;
-        var queryOptions = { //TODO: query options page, count, orderBy ...
-            companyId: companyId
-        };
-        var fetchOptions = {
-            withRelated: ['profile', 'avatar']
-        };
+        var queryOptions = {};  //TODO: query options page, count, orderBy ...
 
-        UserModel
-            .findCollaborators(queryOptions, fetchOptions)
-            .exec(function (err, result) {
-                if (err) {
-                    return next(err);
-                }
-                res.status(200).send(result.models);
-            });
-    };
+        (uri === '/clients') ? queryOptions.withoutCompany = companyId : queryOptions.companyId = companyId;
 
-    this.getClients = function (req, res, next) {
-        var options = req.query;
-        var userId = req.session.userId;
-        var companyId = req.session.companyId;
-        var queryOptions = { //TODO: query options page, count, orderBy ...
-            withoutCompany: companyId
-        };
-        var fetchOptions = {
-            withRelated: ['profile', 'company']
-        };
+        if (uId) {
+            queryOptions.userId = userId;
+        }
 
         getUsersByCriteria(queryOptions, function (err, rows) {
             if (err) {
@@ -1079,38 +1089,6 @@ var UsersHandler = function (PostGre) {
             }
             res.status(200).send(rows);
         });
-
-        /*UserModel
-         .findCollaborators(queryOptions, fetchOptions)
-         .exec(function (err, result) {
-             if (err) {
-                return next(err);
-             }
-             res.status(200).send(result.models);
-         });*/
-    };
-
-    this.getUser = function (req, res, next) {
-        var userId = req.params.id;
-        var companyId = req.session.companyId;
-        var queryOptions = {
-            userId: userId,
-            companyId: companyId
-        };
-        var fetchOptions = {
-            require: true,
-            withRelated: ['profile', 'avatar', 'signature']
-        };
-
-        UserModel
-            .findCollaborator(queryOptions, fetchOptions)
-            .then(function (userModel) {
-                res.status(200).send(userModel);
-            })
-            .catch(UserModel.NotFoundError, function () {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
     };
 
     this.updateUser = function (req, res, next) {
