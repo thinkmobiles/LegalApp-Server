@@ -11,6 +11,7 @@ require.config({
         Underscore      : './libs/underscore/underscore',
         Backbone        : './libs/backbone/backbone',
         less            : './libs/less/dist/less',
+        //customScroll    : './libs/less/dist/less',
         socketio        : '/socket.io/socket.io',
         views           : './views',
         models          : './models',

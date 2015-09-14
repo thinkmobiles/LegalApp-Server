@@ -21,6 +21,7 @@
     "text": "2.0.14",
     "requirejs": "2.1.18",
     "underscore": "1.8.3",
-    "less": "2.5.1"
+    "less": "2.5.1",
+    "malihu-custom-scrollbar-plugin": "3.0.9"
   }
 }

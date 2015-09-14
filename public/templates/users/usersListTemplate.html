@@ -18,8 +18,8 @@
 
 <tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
     <td class="rName"><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-    <% if (!state && user.company[0]) {%>
-        <td class="rComp"><%= user.company[0].name%></td>
+    <% if (!state) {%>
+        <td class="rComp"><%= user.company.name%></td>
     <%}%>
     <td class="rRole">
         <%if (user.profile.permissions % 10 === 3){%>Viewer<%} else {%>

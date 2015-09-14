@@ -3,7 +3,7 @@
  */
 
 define([
-    'text!templates/docInProgress/docInProgressTemplate.html',
+    'text!templates/documents/docInProgressTemplate.html',
     'models/documentModel'
 
 ], function (DocTemplate, DocModel) {
@@ -12,10 +12,8 @@ define([
 
     View = Backbone.View.extend({
 
-        el : '#wrapper',
-
         events: {
-            //"click #confirmButton" : "goToLogin"
+            "click #closeDialog" : "closeThisDialog"
         },
 
         initialize: function (params) {
@@ -26,10 +24,22 @@ define([
             this.documentModel.fetch();
         },
 
+        closeThisDialog: function (){
+            this.remove();
+        },
+
         render: function () {
             var docInfo = this.documentModel.toJSON();
 
-            this.$el.html(_.template(DocTemplate)(docInfo));
+            this.undelegateEvents();
+            this.$el.html(_.template(DocTemplate)({status : docInfo.status})).dialog({
+                closeOnEscape: false,
+                autoOpen: true,
+                dialogClass: "docInProgress",
+                modal: true,
+                width: "600px"
+            });
+            this.delegateEvents();
             return this;
         }
 

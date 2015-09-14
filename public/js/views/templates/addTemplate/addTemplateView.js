@@ -50,6 +50,7 @@ define([
         mainTemplate  : _.template(TempTemplate),
         linksNamesTemplate  : _.template(LinkNamTemp),
         tempNamesTemplate   : _.template(TempNames),
+        descriptionField    : _.template(DescriptionText),
 
         events : {
             "click #addNewLink"    : "showLinksTable",
@@ -57,7 +58,9 @@ define([
             "click #tempSave"      : "saveTemplate",
             //"click #tempLinkTable" : "showHideTable",
             //"click .tempName"      : "addLinkedTemp",
-            "click .closeCurrentView" : "closeCurrentView"
+            "click .closeCurrentView" : "closeCurrentView",
+            "click #tempDescription"  : "showDescriptionField",
+            "click #descriptBtn"      : "insertDescriptionText"
         },
 
         //addLinkedTemp: function (event){
@@ -89,6 +92,28 @@ define([
             tempContainer.html(this.tempNamesTemplate({tempNames : tempColl}));
         },
 
+        showDescriptionField : function(){
+            var self = this;
+            var container = $('#addTemplateAppender');
+
+            container.html(this.descriptionField({text : self.tempModel.get('description')}));
+            container.find('#descriptBtn').click(function(){self.insertDescriptionText(self)});
+        },
+
+        insertDescriptionText: function(self){
+            var container = $('#addTemplateAppender');
+            var textForSave = container.find('#descriptBtnArea').val();
+            var textForButton;
+
+            if (textForSave !== ''){
+                textForButton = textForSave.slice(0,15)+'...';
+                self.$el.find('#tempDescription').val(textForButton);
+            }
+
+            self.tempModel.set('description', textForSave);
+            container.html('');
+        },
+
         showLinksTable: function(){
 
             if (this.addDialogView){
@@ -97,25 +122,50 @@ define([
 
             this.addDialogView = new AddLinkView();
             this.addDialogView.on('renderParentLinks', this.appendLinksNames, this);
-            $('#addTemplateContainer').append(this.addDialogView.el);
+            $('#addTemplateAppender').html(this.addDialogView.el);
         },
 
         saveTemplate: function(){
             var self = this;
-            var this_el = this.$el;
-            var form = this_el.find('#addTempForm')[0];
-            var formData = new FormData(form);
+            var this_el = self.$el;
             var linkedTemplateId;
             var linkTableId;
-            var requestType = 'POST';
-            var url = '/templates';
             var descriptionText;
+            var file;
+            var name;
 
-            //if (this.linkedTemplates.length > 0){
-            //    formData.append('linked_templates', this.linkedTemplates)
-            //}
+            var inputData = new FormData();
+            name = this_el.find('#tempName').val();
+            inputData.append('name', name);
 
-            linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
+            file = this_el.find('#tempFile')[0].files[0];
+
+            if (file){
+                inputData.append('templateFile', file);
+            }
+
+            linkedTemplateId = +this_el.find('#tempLinkedTemp').attr('data-id');
+            if (linkedTemplateId === 0){
+                inputData.append('linked_templates', null);
+            } else {
+                inputData.append('linked_templates', [linkedTemplateId]);
+            }
+
+            linkTableId = +this_el.find('#tempLinkTable').attr('data-id');
+            if (linkTableId){
+                inputData.append('link_id', linkTableId);
+            }
+
+            descriptionText = this.tempModel.get('description');
+            if (descriptionText) {
+                inputData.append('description', descriptionText);
+            }
+
+            //data = new FormData();
+
+            //data.append('data', JSON.stringify(inputData));
+
+            /*linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
             if (linkedTemplateId){
                 formData.append('linked_templates', [linkedTemplateId])
             }
@@ -133,28 +183,14 @@ define([
             descriptionText = this.tempModel.get('description');
             if (descriptionText) {
                 formData.append('description', descriptionText)
-            }
+            }*/
 
-            $.ajax({
-                url : url,
-                type: requestType,
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response){
-                    alert('Template was added successfully');
-                    var model = response.model;
-                    self.parentContext.tempCollection.add(model);
-                },
-                error: function(){
-                    alert('error'); //todo -error-
-                }
-            });
-
-
-            //****************************************************
-            //var testModel = new TempModel();
-            //testModel.save(formData,{
+            //$.ajax({
+            //    url : url,
+            //    type: requestType,
+            //    data: formData,
+            //    contentType: false,
+            //    processData: false,
             //    success: function(response){
             //        alert('Template was added successfully');
             //        var model = response.model;
@@ -164,16 +200,34 @@ define([
             //        alert('error');
             //    }
             //});
+
+
+            //****************************************************
+            //var testModel = new TempModel();
+            this.tempModel.save(null,{
+                data       : inputData,
+                processData: false,
+                //cache      : false,
+                contentType: false,
+                success: function(response){
+                    alert('Template was added successfully');
+                    var model = response.get('model');
+                    self.parentContext.tempCollection.add(model);
+                },
+                error: function(){
+                    alert('error'); //todo -error-
+                }
+            });
             //****************************************************
         },
 
-        addTemplate: function(){
+        /*addTemplate: function(){
 
         },
 
         editTemplate : function (){
 
-        },
+        },*/
 
         //linkSelect: function(event){
         //    var thisEl = this.$el;
@@ -191,6 +245,33 @@ define([
             this.remove();
         },
 
+        docXupload : function(){
+            var self = this;
+            var this_el = self.$el;
+            var inputFile = this_el.find('#tempFile');
+
+            inputFile.on('change', function (event) {
+                event.preventDefault();
+
+                var file = inputFile[0].files[0];
+                var filesExt = 'docx';
+                var parts = $(inputFile).val().split('.');
+                var ourName = parts[parts.length - 1];
+
+                if (filesExt === ourName) {
+                    var fr = new FileReader();
+                    fr.onload = function () {
+                        this_el.find('#fakeTempFile').val(file.name);
+                    };
+                    fr.readAsDataURL(file);
+                } else {
+                    if (ourName) {
+                        alert('Invalid file type!');
+                    }
+                }
+            });
+        },
+
         render: function () {
             this.undelegateEvents();
             if (this.editableView){
@@ -205,6 +286,7 @@ define([
             }
             this.delegateEvents();
 
+            this.docXupload();
             this.appendLinksNames();
             this.appendTempNames();
 

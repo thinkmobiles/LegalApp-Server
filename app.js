@@ -63,7 +63,6 @@ function normalizeKnexDebug() {
 var DEBUG_KNEX = normalizeKnexDebug();
 var Bookshelf = require('bookshelf');
 var pg = require('pg');
-
 var knex = require('knex')({
     debug: DEBUG_KNEX,
     client: 'pg',

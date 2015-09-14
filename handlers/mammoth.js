@@ -1,8 +1,9 @@
 'use strict';
 
+var async = require('async');
+
 var badRequests = require('../helpers/badRequests');
 var mammoth = require('../helpers/mammoth');
-var async = require('async');
 
 var MammothHandler = function () {
     var mammothOptions = {

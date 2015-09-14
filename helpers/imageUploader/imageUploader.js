@@ -30,6 +30,7 @@ var imageUploader = function (config) {
         uploadImage: imageUploadImpl.uploadImage,
         duplicateImage: imageUploadImpl.duplicateImage,
         removeImage: imageUploadImpl.removeImage,
+        removeFile: imageUploadImpl.removeFile,
         getImageUrl: imageUploadImpl.getImageUrl,
         uploadFile: imageUploadImpl.uploadFile,
         getFileUrl: imageUploadImpl.getFileUrl,

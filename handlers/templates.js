@@ -40,6 +40,61 @@ var TemplatesHandler = function (PostGre) {
             });
     }
 
+    function getTemplateWithStyle(options, callback) {
+        var templateId = options.templateId;
+
+        async.parallel({
+
+            // get the html_content
+            templateModel: function (cb) {
+                var criteria = {
+                    id: templateId
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                TemplateModel
+                    .find(criteria, fetchOptions)
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            cssContent: function (cb) {
+
+                fs.readFile('public/stylesheets/pdfStyle.css', function (err, content) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, content);
+                });
+            }
+
+        }, function (err, results) {
+            var templateModel;
+            var cssContent;
+            var htmlContent;
+
+            if (err) {
+                return callback(err);
+            }
+
+            templateModel = results.templateModel;
+            cssContent = results.cssContent;
+
+            htmlContent = '<style>' + cssContent + '</style>' + templateModel.get('html_content');
+            templateModel.set('html_content', htmlContent);
+
+            callback(null, templateModel);
+
+        });
+    };
+
     this.docx2html = function (req, res, next) {
         var file = req.files.file;
         var filePath;
@@ -55,9 +110,9 @@ var TemplatesHandler = function (PostGre) {
             path: filePath
         };
 
-        mammothHandler.docx2html(converterParams, function(htmlContent){
-            if (!htmlContent){
-                return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+        mammothHandler.docx2html(converterParams, function (htmlContent) {
+            if (!htmlContent) {
+                return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
             }
             res.send(htmlContent);
         });
@@ -66,32 +121,48 @@ var TemplatesHandler = function (PostGre) {
     this.prepareSaveData = function (params) {
         var saveData = {};
 
-        if (params && params.name) {
+        if (!params) {
+            return false;
+        }
+
+        if (params.name) {
             saveData.name = params.name;
         }
 
-        if (params && params.link_id) {
+        if (params.description !== undefined) {
+            saveData.description = params.description;
+        }
+
+        if (params.link_id) {
             saveData.link_id = params.link_id;
+        }
+
+        if (params.linked_templates !== undefined) {
+            if (params.linked_templates.length) {
+                saveData.has_linked_template = true;
+            } else {
+                saveData.has_linked_template = false;
+            }
         }
 
         return saveData;
     };
 
     this.createTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var options = req.body;
         var templateFile = req.files.templateFile;
         var name = options.name;
         var linkId = options.link_id;
         var description = options.description;
+        var marketingContent = options.marketing_content;
         var hasLinkedTemplate = false;
         var linkedTemplates = options.linked_templates;
         var linkedTemplatesArray;
         var originalFilename;
         var extension;
 
-        if (!name || !linkId || !templateFile || !description) {
-            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile', 'description']}));
+        if (!name || !linkId || !templateFile) {
+            return next(badRequests.NotEnParams({reqParams: ['name', 'link_id', 'templateFile']}));
         }
 
         originalFilename = templateFile.originalFilename;
@@ -114,41 +185,63 @@ var TemplatesHandler = function (PostGre) {
 
             //save the docx file:
             function (cb) {
-                attachments.saveTheTemplateFile(templateFile, function (err, key) {
+                attachments.saveTheTemplateFile(templateFile, function (err, uploadResult) {
                     if (err) {
-                        console.error(err);
                         return cb(err);
                     }
-                    cb(null, key);
+                    cb(null, uploadResult);
                 });
             },
 
             //convert docx to html:
-            function (key, cb) {
+            function (uploadResult, cb) {
                 var bucket = BUCKETS.TEMPLATE_FILES;
-                var filePath = uploader.getFilePath(key, bucket);
+                var filePath = uploadResult.filePath;
                 var htmlContent = '';
                 var converterParams = {
                     path: filePath
                 };
 
-                mammothHandler.docx2html(converterParams, function(htmlContent){
-                    if (!htmlContent){
-                        return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+                mammothHandler.docx2html(converterParams, function (htmlContent) {
+                    if (!htmlContent) {
+                        return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
                     }
-                    cb(null, key, htmlContent);
+                    cb(null, uploadResult, htmlContent);
                 });
             },
 
+            //get linked template if need:
+            function (uploadResult, htmlContent, cb) {
+                if (!hasLinkedTemplate) {
+                    return cb(null, uploadResult, htmlContent);
+                }
+
+                knex(TABLES.TEMPLATES)
+                    .whereIn('id', linkedTemplatesArray)
+                    .select(['id', 'html_content'])
+                    .exec(function (err, rows) {
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        rows.forEach(function (row) {
+                            htmlContent += documentsHandler.HTML_BRAKE_PAGE;
+                            htmlContent += row.html_content;
+                        });
+
+                        cb(null, key, htmlContent);
+                    });
+            },
+
             //insert into templates:
-            function (key, htmlContent, cb) {
+            function (uploadResult, htmlContent, cb) {
                 var saveData = {
                     name: name,
+                    description: description,
                     link_id: linkId,
-                    //company_id: companyId,
                     html_content: htmlContent,
-                    has_linked_template: hasLinkedTemplate,
-                    description: description
+                    marketing_content: marketingContent,
+                    has_linked_template: hasLinkedTemplate
                 };
 
                 TemplateModel
@@ -156,17 +249,17 @@ var TemplatesHandler = function (PostGre) {
                         if (err) {
                             return cb(err);
                         }
-                        cb(null, templateModel, key);
+                        cb(null, templateModel, uploadResult);
                     });
             },
 
             //save into attachments:
-            function (templateModel, key, cb) {
+            function (templateModel, uploadResult, cb) {
                 var saveData = {
-                    attacheable_type: TABLES.TEMPLATES,
+                    attacheable_type: BUCKETS.TEMPLATE_FILES,
                     attacheable_id: templateModel.id,
-                    name: BUCKETS.TEMPLATE_FILES,
-                    key: key
+                    name: uploadResult.originalFilename,
+                    key: uploadResult.key
                 };
 
                 attachments.saveAttachment(saveData, function (err, attachmentModel) {
@@ -175,25 +268,9 @@ var TemplatesHandler = function (PostGre) {
                     }
                     cb(null, templateModel);
                 });
-
-                /*var saveData = {
-                 attacheable_type: TABLES.TEMPLATES,
-                 attacheable_id: templateModel.id,
-                 name: BUCKETS.TEMPLATE_FILES,
-                 key: key
-                 };
-
-                 AttachmentModel
-                 .upsert(saveData, function (err, attachmentModel) {
-                 if (err) {
-                 return cb(err);
-                 }
-                 cb(null, templateModel);
-                 });*/
-
             },
 
-            //save linkedTemplates
+            //insert into linked_templates
             function (templateModel, cb) {
 
                 if (!linkedTemplatesArray) {
@@ -215,8 +292,7 @@ var TemplatesHandler = function (PostGre) {
                             return cb(err);
                         }
                         cb(null, templateModel);
-                    })
-
+                    });
             }
 
         ], function (err, templateModel) {
@@ -248,7 +324,6 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplate = function (req, res, next) {
-        //var companyId = req.session.companyId;
         var templateId = req.params.id;
         var criteria = {
             id: templateId
@@ -330,11 +405,76 @@ var TemplatesHandler = function (PostGre) {
         });
     };
 
+    function updateLinkedTemplates(options, callback) {
+        console.log('updateLinkedTemplates');
+        var templateId = options.templateId;
+        var linkedId = options.linkedId;
+        var criteria = {
+            template_id: templateId
+        };
+        var saveData = {
+            linked_id: linkedId
+        };
+
+        LinkedTemplatesModel
+            .forge()
+            .query(function (qb) {
+                qb.where(criteria);
+            })
+            .fetch()
+            .exec(function (err, linkedTemplateModel) {
+                var model;
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (linkedTemplateModel) {
+                    model = linkedTemplateModel
+                } else {
+                    model = LinkedTemplatesModel.forge(criteria);
+                }
+
+                model
+                    .save(saveData)
+                    .exec(function (err, result) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, result);
+                    });
+            });
+    };
+
+    function removeLinkedTemplates(options, callback) {
+        console.log('removeLinkedTemplates');
+        var templateId = options.templateId;
+        var criteria = {
+            template_id: templateId
+        };
+
+        knex(TABLES.LINKED_TEMPLATES)
+            .where(criteria)
+            .del()
+            .exec(function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, result);
+            });
+    }
+
     this.updateTemplate = function (req, res, next) {
         var options = req.body;
         var templateId = req.params.id;
         var permissions = req.session.permissions;
+        var templateFile = req.files.templateFile;
+        var linkedTemplates = options.linked_templates;
+        var originalFilename;
+        var extension;
         var templateSaveData;
+
+        console.log(options);
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
@@ -342,85 +482,30 @@ var TemplatesHandler = function (PostGre) {
 
         templateSaveData = self.prepareSaveData(options);
 
-        if (!Object.keys(templateSaveData).length) {
-            return next(badRequests.NotEnParams({message: 'Nothing to update'}))
+        if (templateFile) {
+            originalFilename = templateFile.originalFilename;
+            extension = originalFilename.slice(-4);
+
+            if (extension !== 'docx') {
+                return next(badRequests.InvalidValue({message: 'Incorrect file type'}));
+            }
         }
 
-        TemplateModel
-            .forge({
-                id: templateId
-            })
-            .save(templateSaveData, {patch: true})
-            .then(function (templateModel) {
-                res.status(200).send({success: 'Success updated', model: templateModel});
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound({message: 'Template was not found'}));
-            })
-            .catch(function (err) {
-                if (badRequests.isNoRowsUpdatedError(err)) {
-                    return next(badRequests.NotFound({message: 'Template was not found'}));
-                }
-                next(err);
-            });
-    };
-
-    this.previewTemplate = function (req, res, next) {
-        var templateId = req.params.id;
-        var criteria = {
-            id: templateId
-        };
-        var fetchOptions = {
-            require: true
-        };
-
-        TemplateModel
-            .find(criteria, fetchOptions)
-            .then(function (templateModel) {
-                var html = templateModel.get('html_content');
-
-                res.status(200).send(html);
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
-    };
-
-    this.previewDocument = function (req, res, next) {
-        var templateId = req.params.id;
-        var options = req.body;
-        var values;
-
-        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
-            values = options.values;
-        } else {
-            return next(badRequests.NotEnParams('values'));
+        if (!Object.keys(templateSaveData).length && !templateFile) {
+            return next(badRequests.NotEnParams({message: 'Nothing to update'}));
         }
 
         async.parallel({
 
+            // find the template model:
             templateModel: function (cb) {
-                var criteria = {
-                    id: templateId
-                };
-                var fetchOptions = {
-                    require: true
-                };
 
-                if (values) {
-                    fetchOptions.withRelated = ['link.linkFields'];
-                }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> templateModel time');
-                }
                 TemplateModel
-                    .find(criteria, fetchOptions)
+                    .forge({
+                        id: templateId
+                    })
+                    .fetch({require: true})
                     .then(function (templateModel) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> templateModel time');
-                        }
                         cb(null, templateModel);
                     })
                     .catch(TemplateModel.NotFoundError, function (err) {
@@ -429,47 +514,236 @@ var TemplatesHandler = function (PostGre) {
                     .catch(cb);
             },
 
+            // find lined templates:
             linkedTemplates: function (cb) {
-                var columns = [
-                    'linked_id',    // linked_templates
-                    'template_id',  // linked_templates
-                    'name',         // templates
-                    'html_content', // templates
-                    'link_id'       // templates
-                ];
+                var updateOptions;
+                var updateMethod;
 
-                if (process.env.NODE_ENV !== 'production') {
-                    console.time('>>> linkedTemplates time');
+                if (linkedTemplates === undefined) {
+                    return cb();
                 }
-                knex(TABLES.LINKED_TEMPLATES)
-                    .innerJoin(TABLES.TEMPLATES, TABLES.LINKED_TEMPLATES + '.linked_id', TABLES.TEMPLATES + '.id')
-                    .where('template_id', templateId)
-                    .select(columns)
+
+                if (linkedTemplates.length) {
+                    updateOptions = {
+                        templateId: templateId,
+                        linkedId: linkedTemplates[0]
+                    };
+                    updateMethod = updateLinkedTemplates;
+                } else {
+                    updateOptions = {
+                        templateId : templateId
+                    };
+                    updateMethod = removeLinkedTemplates;
+                }
+
+
+                updateMethod(updateOptions, function (err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, result);
+                });
+            },
+
+            // find the attachment:
+            attachmentModels: function (cb) {
+                if (!templateFile) {
+                    return cb();
+                }
+
+                knex(TABLES.ATTACHMENTS)
+                    .where({
+                        attacheable_type: TABLES.TEMPLATES,
+                        attacheable_id: templateId
+                    })
+                    .select(['id', 'name', 'key'])
                     .exec(function (err, rows) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.timeEnd('>>> linkedTemplates time');
+                        if (err) {
+                            return cb(err);
                         }
+                        cb(null, rows);
+                    });
+            },
+
+            //save the docx file if need:
+            uploadResult: function (cb) {
+                if (!templateFile) {
+                    return cb(null, null);
+                }
+
+                attachments.saveTheTemplateFile(templateFile, function (err, uploadResult) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, uploadResult);
+                });
+            }
+
+        }, function (err, models) {
+            var templateModel;
+            var uploadResult;
+            var attachmentModels;
+            var linkedTemplates;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateModel = models.templateModel;
+            uploadResult = models.uploadResult;
+            attachmentModels = models.attachmentModels;
+            linkedTemplates = models.linkedTemplates;
+
+            //res.status(200).send({success: 'Success updated', model: models.templateModel, models: models});
+            async.waterfall([
+
+                //convert docx to html:
+                function (cb) {
+                    var bucket = BUCKETS.TEMPLATE_FILES;
+                    var filePath;
+                    var converterParams;
+
+                    if (!templateFile) {
+                        return cb(null, null, null);
+                    }
+
+                    filePath = uploadResult.filePath;
+                    converterParams = {
+                        path: filePath
+                    };
+
+                    mammothHandler.docx2html(converterParams, function (htmlContent) {
+                        if (!htmlContent) {
+                            return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
+                        }
+                        cb(null, htmlContent, uploadResult);
+                    });
+                },
+
+                //update attachments:
+                function (htmlContent, uploadResult, cb) {
+                    var saveData;
+
+                    if (!uploadResult) {
+                        return cb(null, htmlContent);
+                    }
+
+                    saveData = {
+                        name: uploadResult.originalFilename,
+                        key: uploadResult.key
+                    };
+
+                    if (attachmentModels && attachmentModels.length) {
+                        saveData.id = attachmentModels[0].id;
+                    } else {
+                        saveData.attacheable_id = templateId;
+                        saveData.attacheable_type = BUCKETS.TEMPLATE_FILES
+                    }
+
+                    attachments.saveAttachment(saveData, function (err, updatedAttachmentModel) {
+                        var bucket = BUCKETS.TEMPLATE_FILES;
+                        var attachment;
+                        var oldName;
+                        var oldKey;
+                        var oldFileName;
+                        var removeOptions;
 
                         if (err) {
                             return cb(err);
                         }
 
-                        if (!rows || !rows.length) {
-                            return cb(null, null);
+                        //remove the old docx file:
+                        if (attachmentModels && attachmentModels.length) {
+                            attachment = attachmentModels[0];
+                            oldName = attachment.name;
+                            oldKey = attachment.key;
+                            oldFileName = attachments.computeFileName(oldName, oldKey);
+                            removeOptions = {
+                                fileName: oldFileName,
+                                folderName: bucket
+                            };
+                            uploader.removeFile(removeOptions, function (err) {
+                                if (err) {
+                                    console.error(err);
+                                }
+                            });
                         }
 
-                        cb(null, rows);
+                        cb(null, htmlContent);
                     });
+                },
+
+                // update the templateModel:
+                function (htmlContent, cb) {
+                    if (htmlContent) {
+                        templateSaveData.html_content = htmlContent;
+                    }
+
+                    templateModel
+                        .save(templateSaveData, {patch: true})
+                        .exec(function (err, savedTemplateModel) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            cb(null, savedTemplateModel);
+                        });
+                }
+
+            ], function (err, templateModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send({success: 'Success updated', model: templateModel/*, models: models*/});
+            });
+        });
+    };
+
+    this.previewTemplate = function (req, res, next) {
+        var templateId = req.params.id;
+        var options = {
+            templateId: templateId
+        };
+
+        getTemplateWithStyle(options, function (err, templateModel) {
+            var html;
+
+            if (err) {
+                return next(err);
             }
 
-        }, function (err, models) {
-            var templateModel = models.templateModel;
-            var linkedTemplates = models.linkedTemplates;
-            var templateHtmlContent = templateModel.get('html_content');
-            var linkModel = templateModel.related('link');
-            var fields = [];
+            html = templateModel.get('html_content');
+            res.status(200).send(html);
+        });
+    };
+
+    this.previewDocument = function (req, res, next) {
+        var templateId = req.params.id;
+        var options = req.body;
+        var templateOptions = {
+            templateId: templateId
+        };
+        var values;
+
+        if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
+            values = options.values;
+        } else {
+            return next(badRequests.NotEnParams({reqParams: 'values'}));
+        }
+
+        documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+            var templateHtmlContent;
+            var linkModel;
+            var fields;
             var htmlContent;
             var linkFieldsModels;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateHtmlContent = templateModel.get('html_content');
+            linkModel = templateModel.related('link');
+            fields = [];
 
             if (linkModel && linkModel.related('linkFields')) {
                 linkFieldsModels = linkModel.related('linkFields');
@@ -478,12 +752,11 @@ var TemplatesHandler = function (PostGre) {
                 });
             }
 
-            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values, linkedTemplates);
+            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
-            res.status(200).send({htmlContent : htmlContent});
+            res.status(200).send({htmlContent: htmlContent});
         });
     };
-
 };
 
 module.exports = TemplatesHandler;

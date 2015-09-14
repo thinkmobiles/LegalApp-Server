@@ -15,7 +15,7 @@ module.exports = function (app) {
     router.post('/', session.authenticatedAdminsEditors, multipartMiddleware, templates.createTemplate);
     router.get('/', /*session.authenticatedUser,*/ templates.getTemplates);
     router.get('/:id', session.authenticatedUser, templates.getTemplate);
-    router.put('/:id', session.authenticatedAdminsEditors, templates.updateTemplate);
+    router.put('/:id', session.authenticatedAdminsEditors, multipartMiddleware, templates.updateTemplate);
     router.delete('/:id', session.authenticatedAdminsEditors, templates.removeTemplate);
     router.get('/:id/preview', session.authenticatedUser, templates.previewTemplate);
     router.post('/:id/previewDocument', session.authenticatedUser, templates.previewDocument);
