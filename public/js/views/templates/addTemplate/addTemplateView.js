@@ -144,14 +144,14 @@ define([
                 inputData.append('templateFile', file);
             }
 
-            linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
+            linkedTemplateId = +this_el.find('#tempLinkedTemp').attr('data-id');
             if (linkedTemplateId === 0){
-                inputData.append('linked_templates', []);
+                inputData.append('linked_templates', null);
             } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
 
-            linkTableId = +this_el.find('#tempLinkTable').data('id');
+            linkTableId = +this_el.find('#tempLinkTable').attr('data-id');
             if (linkTableId){
                 inputData.append('link_id', linkTableId);
             }
