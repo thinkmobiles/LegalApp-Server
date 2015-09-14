@@ -7,6 +7,7 @@ define([
     'text!templates/forSelect/baseLinksTemplate.html',
     'text!templates/templates/addTemplate/editableRow.html',
     'models/linkModel'
+
 ], function (
     AddTemplate,
     TypesList,
