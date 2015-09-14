@@ -101,8 +101,7 @@ define([
             var user = App.sessionData.get('first_name') +' '+ App.sessionData.get('last_name');
 
             this.$el.find('.userName').html(user);
-            this.getAvatar();
-
+            //this.getAvatar();
             return this;
         },
 

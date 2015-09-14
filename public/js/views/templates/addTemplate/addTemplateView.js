@@ -127,7 +127,7 @@ define([
 
         saveTemplate: function(){
             var self = this;
-            var this_el = this.$el;
+            var this_el = self.$el;
             var linkedTemplateId;
             var linkTableId;
             var descriptionText;

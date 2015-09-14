@@ -17,7 +17,6 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        //id        : "addItemRight",
         className : "addItemRight",
 
         editRowTemp : _.template(EditRow),
@@ -38,7 +37,6 @@ define([
             var container = this.$el.find('#linksList');
             var editRow = container.find('#editableRow');
             var resultRow = container.find('.activeRow');
-
             var eName = editRow.find('#editName').val().trim();
             var eCode = editRow.find('#editCode').val().trim();
             var eType = editRow.find('#editTable').val().trim();
@@ -57,7 +55,7 @@ define([
             var self = this;
             var linkModel;
             var saveData;
-            var thisEl = this.$el;
+            var thisEl = self.$el;
             var linksArray  = thisEl.find('.link_row');
             var arrayLength = linksArray.length;
             var tableName   = thisEl.find('#tabName').val().trim();
@@ -169,7 +167,6 @@ define([
                 eType_id : eType_id
             };
 
-            //container.find('#editableRow').remove();
             target.after(this.editRowTemp(eData));
         },
 
