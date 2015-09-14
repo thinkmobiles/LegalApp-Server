@@ -121,15 +121,23 @@ var TemplatesHandler = function (PostGre) {
     this.prepareSaveData = function (params) {
         var saveData = {};
 
-        if (params && params.name) {
+        if (!params) {
+            return false;
+        }
+
+        if (params.name) {
             saveData.name = params.name;
         }
 
-        if (params && params.link_id) {
+        if (params.description !== undefined) {
+            saveData.description = params.description;
+        }
+
+        if (params.link_id) {
             saveData.link_id = params.link_id;
         }
 
-        if (params && params.linked_templates) {
+        if (params.linked_templates !== undefined) {
             if (params.linked_templates.length) {
                 saveData.has_linked_template = true;
             } else {
@@ -400,6 +408,7 @@ var TemplatesHandler = function (PostGre) {
     };
 
     function updateLinkedTemplates(options, callback) {
+        console.log('updateLinkedTemplates');
         var templateId = options.templateId;
         var linkedId = options.linkedId;
         var criteria = {
@@ -440,6 +449,7 @@ var TemplatesHandler = function (PostGre) {
     };
 
     function removeLinkedTemplates(options, callback) {
+        console.log('removeLinkedTemplates');
         var templateId = options.templateId;
         var criteria = {
             template_id: templateId
@@ -466,7 +476,7 @@ var TemplatesHandler = function (PostGre) {
         var extension;
         var templateSaveData;
 
-        linkedTemplates = [];
+        console.log(options);
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
@@ -483,7 +493,7 @@ var TemplatesHandler = function (PostGre) {
             }
         }
 
-        if (!Object.keys(templateSaveData).length && !templateFile && !linkedTemplates) {
+        if (!Object.keys(templateSaveData).length && !templateFile) {
             return next(badRequests.NotEnParams({message: 'Nothing to update'}));
         }
 
@@ -511,7 +521,7 @@ var TemplatesHandler = function (PostGre) {
                 var updateOptions;
                 var updateMethod;
 
-                if (!linkedTemplates) {
+                if (linkedTemplates === undefined) {
                     return cb();
                 }
 
