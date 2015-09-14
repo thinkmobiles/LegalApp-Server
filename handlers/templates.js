@@ -229,30 +229,22 @@ var TemplatesHandler = function (PostGre) {
 
     this.getTemplates = function (req, res, next) {
         //var companyId = req.session.companyId;
+        var templateModels;
+        var fetchParams = {
+            require: true,
+            withRelated: ['link', 'templateFile', 'linkedTemplates']
+        };
 
         TemplateModel
-            /*.forge()
-            .query(function (qb) {
-                qb.where({company_id: companyId});
+            .findAll(null, fetchParams)
+            .then(function (result) {
+
+                (result && result.models) ?  templateModels = result.models : templateModels = [];
+
+                res.status(200).send(result);
+
             })
-            .fetchAll()*/
-            .findAll()
-            .exec(function (err, result) {
-                var templateModels;
-
-                if (err) {
-                    return next(err);
-                }
-
-                if (result && result.models) {
-                    templateModels = result.models;
-                } else {
-                    templateModels = [];
-                }
-
-                res.status(200).send(templateModels);
-
-            });
+            .catch(next);
     };
 
     this.getTemplate = function (req, res, next) {

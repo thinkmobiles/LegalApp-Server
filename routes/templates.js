@@ -13,7 +13,7 @@ module.exports = function (app) {
     var session = new SessionHandler(PostGre);
 
     router.post('/', session.authenticatedAdminsEditors, multipartMiddleware, templates.createTemplate);
-    router.get('/', session.authenticatedUser, templates.getTemplates);
+    router.get('/', /*session.authenticatedUser,*/ templates.getTemplates);
     router.get('/:id', session.authenticatedUser, templates.getTemplate);
     router.put('/:id', session.authenticatedAdminsEditors, templates.updateTemplate);
     router.delete('/:id', session.authenticatedAdminsEditors, templates.removeTemplate);
