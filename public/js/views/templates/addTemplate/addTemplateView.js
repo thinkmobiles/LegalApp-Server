@@ -145,7 +145,9 @@ define([
             }
 
             linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
-            if (linkedTemplateId){
+            if (linkedTemplateId === 0){
+                inputData.append('linked_templates', []);
+            } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
 
