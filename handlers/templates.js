@@ -110,9 +110,9 @@ var TemplatesHandler = function (PostGre) {
             path: filePath
         };
 
-        mammothHandler.docx2html(converterParams, function(htmlContent){
-            if (!htmlContent){
-                return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+        mammothHandler.docx2html(converterParams, function (htmlContent) {
+            if (!htmlContent) {
+                return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
             }
             res.send(htmlContent);
         });
@@ -127,6 +127,14 @@ var TemplatesHandler = function (PostGre) {
 
         if (params && params.link_id) {
             saveData.link_id = params.link_id;
+        }
+
+        if (params && params.linked_templates) {
+            if (params.linked_templates.length) {
+                saveData.has_linked_template = true;
+            } else {
+                saveData.has_linked_template = false;
+            }
         }
 
         return saveData;
@@ -169,36 +177,35 @@ var TemplatesHandler = function (PostGre) {
 
             //save the docx file:
             function (cb) {
-                attachments.saveTheTemplateFile(templateFile, function (err, key) {
+                attachments.saveTheTemplateFile(templateFile, function (err, uploadResult) {
                     if (err) {
-                        console.error(err);
                         return cb(err);
                     }
-                    cb(null, key);
+                    cb(null, uploadResult);
                 });
             },
 
             //convert docx to html:
-            function (key, cb) {
+            function (uploadResult, cb) {
                 var bucket = BUCKETS.TEMPLATE_FILES;
-                var filePath = uploader.getFilePath(key, bucket);
+                var filePath = uploadResult.filePath;
                 var htmlContent = '';
                 var converterParams = {
                     path: filePath
                 };
 
-                mammothHandler.docx2html(converterParams, function(htmlContent){
-                    if (!htmlContent){
-                        return next(badRequests.InvalidValue({message:'Nothing for convertation'}))
+                mammothHandler.docx2html(converterParams, function (htmlContent) {
+                    if (!htmlContent) {
+                        return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
                     }
-                    cb(null, key, htmlContent);
+                    cb(null, uploadResult, htmlContent);
                 });
             },
 
             //get linked template if need:
-            function (key, htmlContent, cb) {
+            function (uploadResult, htmlContent, cb) {
                 if (!hasLinkedTemplate) {
-                    return cb(null, key, htmlContent);
+                    return cb(null, uploadResult, htmlContent);
                 }
 
                 knex(TABLES.TEMPLATES)
@@ -219,7 +226,7 @@ var TemplatesHandler = function (PostGre) {
             },
 
             //insert into templates:
-            function (key, htmlContent, cb) {
+            function (uploadResult, htmlContent, cb) {
                 var saveData = {
                     name: name,
                     description: description,
@@ -234,17 +241,17 @@ var TemplatesHandler = function (PostGre) {
                         if (err) {
                             return cb(err);
                         }
-                        cb(null, templateModel, key);
+                        cb(null, templateModel, uploadResult);
                     });
             },
 
             //save into attachments:
-            function (templateModel, key, cb) {
+            function (templateModel, uploadResult, cb) {
                 var saveData = {
-                    attacheable_type: TABLES.TEMPLATES,
+                    attacheable_type: BUCKETS.TEMPLATE_FILES,
                     attacheable_id: templateModel.id,
-                    name: BUCKETS.TEMPLATE_FILES,
-                    key: key
+                    name: uploadResult.originalFilename,
+                    key: uploadResult.key
                 };
 
                 attachments.saveAttachment(saveData, function (err, attachmentModel) {
@@ -253,22 +260,6 @@ var TemplatesHandler = function (PostGre) {
                     }
                     cb(null, templateModel);
                 });
-
-                /*var saveData = {
-                 attacheable_type: TABLES.TEMPLATES,
-                 attacheable_id: templateModel.id,
-                 name: BUCKETS.TEMPLATE_FILES,
-                 key: key
-                 };
-
-                 AttachmentModel
-                 .upsert(saveData, function (err, attachmentModel) {
-                 if (err) {
-                 return cb(err);
-                 }
-                 cb(null, templateModel);
-                 });*/
-
             },
 
             //insert into linked_templates
@@ -408,11 +399,74 @@ var TemplatesHandler = function (PostGre) {
         });
     };
 
+    function updateLinkedTemplates(options, callback) {
+        var templateId = options.templateId;
+        var linkedId = options.linkedId;
+        var criteria = {
+            template_id: templateId
+        };
+        var saveData = {
+            linked_id: linkedId
+        };
+
+        LinkedTemplatesModel
+            .forge()
+            .query(function (qb) {
+                qb.where(criteria);
+            })
+            .fetch()
+            .exec(function (err, linkedTemplateModel) {
+                var model;
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (linkedTemplateModel) {
+                    model = linkedTemplateModel
+                } else {
+                    model = LinkedTemplatesModel.forge(criteria);
+                }
+
+                model
+                    .save(saveData)
+                    .exec(function (err, result) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, result);
+                    });
+            });
+    };
+
+    function removeLinkedTemplates(options, callback) {
+        var templateId = options.templateId;
+        var criteria = {
+            template_id: templateId
+        };
+
+        knex(TABLES.LINKED_TEMPLATES)
+            .where(criteria)
+            .del()
+            .exec(function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, result);
+            });
+    }
+
     this.updateTemplate = function (req, res, next) {
         var options = req.body;
         var templateId = req.params.id;
         var permissions = req.session.permissions;
+        var templateFile = req.files.templateFile;
+        var linkedTemplates = options.linked_templates;
+        var originalFilename;
+        var extension;
         var templateSaveData;
+
+        linkedTemplates = [];
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) && !(permissions === PERMISSIONS.EDITOR)) {
             return next(badRequests.AccessError());
@@ -420,27 +474,220 @@ var TemplatesHandler = function (PostGre) {
 
         templateSaveData = self.prepareSaveData(options);
 
-        if (!Object.keys(templateSaveData).length) {
-            return next(badRequests.NotEnParams({message: 'Nothing to update'}))
+        if (templateFile) {
+            originalFilename = templateFile.originalFilename;
+            extension = originalFilename.slice(-4);
+
+            if (extension !== 'docx') {
+                return next(badRequests.InvalidValue({message: 'Incorrect file type'}));
+            }
         }
 
-        TemplateModel
-            .forge({
-                id: templateId
-            })
-            .save(templateSaveData, {patch: true})
-            .then(function (templateModel) {
-                res.status(200).send({success: 'Success updated', model: templateModel});
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound({message: 'Template was not found'}));
-            })
-            .catch(function (err) {
-                if (badRequests.isNoRowsUpdatedError(err)) {
-                    return next(badRequests.NotFound({message: 'Template was not found'}));
+        if (!Object.keys(templateSaveData).length && !templateFile && !linkedTemplates) {
+            return next(badRequests.NotEnParams({message: 'Nothing to update'}));
+        }
+
+        async.parallel({
+
+            // find the template model:
+            templateModel: function (cb) {
+
+                TemplateModel
+                    .forge({
+                        id: templateId
+                    })
+                    .fetch({require: true})
+                    .then(function (templateModel) {
+                        cb(null, templateModel);
+                    })
+                    .catch(TemplateModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound({message: 'Template was not found'}));
+                    })
+                    .catch(cb);
+            },
+
+            // find lined templates:
+            linkedTemplates: function (cb) {
+                var updateOptions;
+                var updateMethod;
+
+                if (!linkedTemplates) {
+                    return cb();
                 }
-                next(err);
+
+                if (linkedTemplates.length) {
+                    updateOptions = {
+                        templateId: templateId,
+                        linkedId: linkedTemplates[0]
+                    };
+                    updateMethod = updateLinkedTemplates;
+                } else {
+                    updateOptions = {
+                        templateId : templateId
+                    };
+                    updateMethod = removeLinkedTemplates;
+                }
+
+
+                updateMethod(updateOptions, function (err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, result);
+                });
+            },
+
+            // find the attachment:
+            attachmentModels: function (cb) {
+                if (!templateFile) {
+                    return cb();
+                }
+
+                knex(TABLES.ATTACHMENTS)
+                    .where({
+                        attacheable_type: TABLES.TEMPLATES,
+                        attacheable_id: templateId
+                    })
+                    .select(['id', 'name', 'key'])
+                    .exec(function (err, rows) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null, rows);
+                    });
+            },
+
+            //save the docx file if need:
+            uploadResult: function (cb) {
+                if (!templateFile) {
+                    return cb(null, null);
+                }
+
+                attachments.saveTheTemplateFile(templateFile, function (err, uploadResult) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, uploadResult);
+                });
+            }
+
+        }, function (err, models) {
+            var templateModel;
+            var uploadResult;
+            var attachmentModels;
+            var linkedTemplates;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateModel = models.templateModel;
+            uploadResult = models.uploadResult;
+            attachmentModels = models.attachmentModels;
+            linkedTemplates = models.linkedTemplates;
+
+            //res.status(200).send({success: 'Success updated', model: models.templateModel, models: models});
+            async.waterfall([
+
+                //convert docx to html:
+                function (cb) {
+                    var bucket = BUCKETS.TEMPLATE_FILES;
+                    var filePath;
+                    var converterParams;
+
+                    if (!templateFile) {
+                        return cb(null, null, null);
+                    }
+
+                    filePath = uploadResult.filePath;
+                    converterParams = {
+                        path: filePath
+                    };
+
+                    mammothHandler.docx2html(converterParams, function (htmlContent) {
+                        if (!htmlContent) {
+                            return next(badRequests.InvalidValue({message: 'Nothing for convertation'}))
+                        }
+                        cb(null, htmlContent, uploadResult);
+                    });
+                },
+
+                //update attachments:
+                function (htmlContent, uploadResult, cb) {
+                    var saveData;
+
+                    if (!uploadResult) {
+                        return cb(null, htmlContent);
+                    }
+
+                    saveData = {
+                        name: uploadResult.originalFilename,
+                        key: uploadResult.key
+                    };
+
+                    if (attachmentModels && attachmentModels.length) {
+                        saveData.id = attachmentModels[0].id;
+                    } else {
+                        saveData.attacheable_id = templateId;
+                        saveData.attacheable_type = BUCKETS.TEMPLATE_FILES
+                    }
+
+                    attachments.saveAttachment(saveData, function (err, updatedAttachmentModel) {
+                        var bucket = BUCKETS.TEMPLATE_FILES;
+                        var attachment;
+                        var oldName;
+                        var oldKey;
+                        var oldFileName;
+                        var removeOptions;
+
+                        if (err) {
+                            return cb(err);
+                        }
+
+                        //remove the old docx file:
+                        if (attachmentModels && attachmentModels.length) {
+                            attachment = attachmentModels[0];
+                            oldName = attachment.name;
+                            oldKey = attachment.key;
+                            oldFileName = attachments.computeFileName(oldName, oldKey);
+                            removeOptions = {
+                                fileName: oldFileName,
+                                folderName: bucket
+                            };
+                            uploader.removeFile(removeOptions, function (err) {
+                                if (err) {
+                                    console.error(err);
+                                }
+                            });
+                        }
+
+                        cb(null, htmlContent);
+                    });
+                },
+
+                // update the templateModel:
+                function (htmlContent, cb) {
+                    if (htmlContent) {
+                        templateSaveData.html_content = htmlContent;
+                    }
+
+                    templateModel
+                        .save(templateSaveData, {patch: true})
+                        .exec(function (err, savedTemplateModel) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            cb(null, savedTemplateModel);
+                        });
+                }
+
+            ], function (err, templateModel) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send({success: 'Success updated', model: templateModel/*, models: models*/});
             });
+        });
     };
 
     this.previewTemplate = function (req, res, next) {
@@ -499,7 +746,7 @@ var TemplatesHandler = function (PostGre) {
 
             htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
-            res.status(200).send({htmlContent : htmlContent});
+            res.status(200).send({htmlContent: htmlContent});
         });
     };
 };

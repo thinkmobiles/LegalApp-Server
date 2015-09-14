@@ -1420,7 +1420,6 @@ var DocumentsHandler = function (PostGre) {
             }
             res.status(200).send({success: 'success', model: signedDocumentModel});
         });
-
     };
 
     this.createSignAndSend = function (req, res, next) {  //POST /documents/signAndSand;

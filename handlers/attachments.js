@@ -23,6 +23,10 @@ var Attachments = function (PostGre) {
         return Math.floor((Math.random() * number));
     };
 
+    function computeFileName(name, key) {
+        return key + '_' + name;
+    }
+
     function computeKey(name) {
         var ticks_ = new Date().valueOf();
         var key;
@@ -37,6 +41,8 @@ var Attachments = function (PostGre) {
     };
 
     this.computeKey = computeKey;
+
+    this.computeFileName = computeFileName;
 
     this.getFile = function(req, res){
         if (!req.files.file){
@@ -69,33 +75,33 @@ var Attachments = function (PostGre) {
             //save file to storage:
             function (buffer, cb) {
                 var bucket = BUCKETS.TEMPLATE_FILES;
-                var name = originalFilename;
-                var key = computeKey(name);
-                var fileData;
+                var key = computeKey();
+                var fileName = computeFileName(originalFilename, key);
+                var uploadOptions = {
+                    folderName: bucket,
+                    fileName: fileName,
+                    originalFileName: originalFilename,
+                    buffer: buffer
+                };
 
                 if (process.env.NODE_ENV !== 'production') {
                     console.log('--- Upload file ----------------');
-                    console.log('name', name);
-                    console.log('key', key);
-                    console.log('bucket', bucket);
+                    console.log(uploadOptions);
                     console.log('--------------------------------');
                 }
 
-                fileData = {
-                    data: buffer,
-                    name: key //looks like: 1439330842375_121_myFileName.docx
-                };
-
-                uploader.uploadFile(fileData, key, bucket, function (err, fileName) {
+                //uploader.uploadFile(bucket, fileName, buffer, function (err, fileName) {
+                uploader.uploadFile(uploadOptions, function (err, uploadResult) {
                     if (err) {
                         return cb(err);
                     }
-                    cb(null, key, name);
+                    uploadResult.key = key;
+                    uploadResult.originalFilename = originalFilename;
+                    cb(null, uploadResult);
                 });
             }
 
         ], function (err, result) {
-
 
             if (err) {
                 if (callback && (typeof callback === 'function')) {
@@ -128,7 +134,7 @@ var Attachments = function (PostGre) {
         name = data.name;
         key = data.key;
 
-        if (!attacheable_id || !attacheable_type || !name || !key) {
+        if (/*!attacheable_id || !attacheable_type ||*/ !name || !key) {
             if (callback && (typeof callback === 'function')) {
                 callback(badRequests.NotEnParams({reqParams: ['attacheable_type', 'attacheable_id', 'name', 'key']}));
             }
@@ -136,11 +142,24 @@ var Attachments = function (PostGre) {
         }
 
         saveData = {
-            attacheable_type: attacheable_type,
-            attacheable_id: attacheable_id,
             name: name,
             key: key
         };
+
+        if (data.id) {
+            saveData.id = data.id; //update
+        } //else - insert
+
+        if (attacheable_id) {
+            saveData.attacheable_id = attacheable_id;
+        }
+
+        if (attacheable_type) {
+            saveData.attacheable_type = attacheable_type
+        }
+
+        /*console.log('>>> saveAttachments');
+        console.log(saveData);*/
 
         AttachmentModel
             .upsert(saveData, function (err, attachmentModel) {
