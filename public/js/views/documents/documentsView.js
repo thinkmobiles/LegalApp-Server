@@ -3,13 +3,14 @@
  */
 
 define([
+    'views/documents/docInProgressView',
     'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
     'text!templates/documents/documentsGridTemplate.html',
     'text!templates/documents/templatesListTemplate.html'
 
 
-], function (MainTemplate, DocumentList, DocumentGrid, TemplateList) {
+], function (DocInProgressView, MainTemplate, DocumentList, DocumentGrid, TemplateList) {
 
     var View;
     View = Backbone.View.extend({
@@ -56,7 +57,8 @@ define([
             if (targetStatus === 1) {
                 Backbone.history.navigate('documents/preview/' + targetId, {trigger: true});
             } else {
-                Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
+                new DocInProgressView({id : targetId, status : targetStatus});
+                //Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
             }
         },
 

@@ -19,7 +19,7 @@ define([
             "users"                       :  "users",
             "settings"                    :  "settings",
             "newUsers"                    :  "newUsers",
-            "documents/inProgress/:id"    :  "docInProgress",
+            //"documents/inProgress/:id"    :  "docInProgress",
             ":docType/preview/:id"        :  "forPreview",
             "templates/:viewType"         :  "templates",
             "documents/:token/signature"  :  "signature",
@@ -136,9 +136,9 @@ define([
             this.loadWrapperView('settings', null, REDIRECT.whenNOTAuthorized);
         },
 
-        docInProgress: function(id){
-            this.loadWrapperView('docInProgress', {id : id}, REDIRECT.whenNOTAuthorized);
-        },
+        //docInProgress: function(id){
+        //    this.loadWrapperView('docInProgress', {id : id}, REDIRECT.whenNOTAuthorized);
+        //},
 
         help: function(){
             this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);
