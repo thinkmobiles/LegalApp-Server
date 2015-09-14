@@ -122,9 +122,9 @@ define([
         },
 
         initializeBadges: function () {
-            var role = App.sessionData.role;
+            var permissions = App.sessionData.get('permissions');
 
-            if ((role === ROLES.SUPER_ADMIN) || (role === ROLES.ADMIN)) {
+            if ((permissions === ROLES.SUPER_ADMIN) || (permissions === ROLES.ADMIN)) {
                 $.ajax({
                     url: "/users/count",
                     type: "GET",
