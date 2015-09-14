@@ -201,6 +201,10 @@ define([
             this.renderDocumentsList(items);
             this.getDocumentsByTemplateId();
 
+            this.$el.find('#documentList').mCustomScrollbar({
+                axis:"x"
+            });
+
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",
                 changeMonth : true,
