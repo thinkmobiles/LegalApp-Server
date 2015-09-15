@@ -33,13 +33,26 @@ module.exports = function (PostGre, ParentModel) {
                 .through(PostGre.Models.LinkedTemplates, 'template_id', 'linked_id');
         },
 
-        getFullTemplate: function (callback, filter) {
+        getFullTemplate: function () {
+            var argumentsLength = arguments.length;
+            var filter;
+            var callback;
+            var queryString;
+
+            if (argumentsLength === 2) {
+                filter = arguments[0];
+                callback = arguments[1];
+            } else if (argumentsLength === 1) {
+                callback = arguments[0];
+            }
 
             if (typeof callback !== 'function') {
                 throw new Error(typeof callback + ' is not a function')
             }
-            var queryStr = 'SELECT array_to_json(array_agg(row_to_json(templ))) ' +
-                'FROM (SELECT t.id, t.company_id, t.link_id, t.name, t.description, t.has_linked_template, ' +
+
+            queryString = 'SELECT array_to_json(array_agg(row_to_json(templ))) ' +
+                //'FROM (SELECT t.id, t.company_id, t.link_id, t.name, t.description, t.has_linked_template, ' +
+                'FROM (SELECT t.id, t.link_id, t.name, t.description, t.has_linked_template, ' +
                 '( ' +
                 'SELECT row_to_json(l) ' +
                 'FROM ( ' +
@@ -51,7 +64,11 @@ module.exports = function (PostGre, ParentModel) {
                 '( ' +
                 'SELECT row_to_json(u) ' +
                 'FROM ( ' +
-                'SELECT \'http://localhost:8850/uploads/development\' || a.name || a.key AS url ' +
+                //'SELECT \'http://localhost:8850/uploads/development\' || a.name || a.key AS url ' +
+                'SELECT ' +
+                '  \'http://localhost:8850/uploads/development/templates/\' || a.key || \'_\' || a.name AS url, ' + //TODO: need fix
+                '  a.name, ' +
+                '  a.key ' +
                 'FROM attachments a ' +
                 'WHERE a.attacheable_id = t.id AND a.attacheable_type = \'templates\' ' +
                 ') u ' +
@@ -59,7 +76,8 @@ module.exports = function (PostGre, ParentModel) {
                 '( ' +
                 'SELECT array_to_json(array_agg(row_to_json(lt))) ' +
                 'FROM ( ' +
-                'SELECT t1.id, t1.company_id, t1.link_id, t1.name, t1.description, t1.has_linked_template ' +
+                //'SELECT t1.id, t1.company_id, t1.link_id, t1.name, t1.description, t1.has_linked_template ' +
+                'SELECT t1.id, t1.link_id, t1.name, t1.description, t1.has_linked_template ' +
                 'FROM linked_templates lt ' +
                 'LEFT JOIN templates t1 ON lt.linked_id = t1.id ' +
                 'WHERE lt.template_id = t.id ' +
@@ -71,17 +89,24 @@ module.exports = function (PostGre, ParentModel) {
 
             if (filter) {
                 if (filter.id) {
-                    queryStr += 'WHERE templ.id = ' + filter.id
+                    queryString += 'WHERE templ.id = ' + filter.id
                 }
             }
 
              PostGre.knex
-                 .raw(queryStr)
+                 .raw(queryString)
                  .then(function (queryResult) {
-                     callback(null,  queryResult.rows[0].array_to_json)
+                     var users;
+
+                     if (queryResult && queryResult.rows && queryResult.rows.length) {
+                         users = queryResult.rows[0].array_to_json;
+                     } else {
+                         users = [];
+                     }
+                     callback(null, users);
                  })
                  .catch(function (err) {
-                     callback(err)
+                     callback(err);
                  })
         },
 

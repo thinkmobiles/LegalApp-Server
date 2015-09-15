@@ -1,5 +1,21 @@
 'use strict';
+var uploaderConfig;
+var amazonS3conf;
 
+if (process.env.UPLOADER_TYPE === 'AmazonS3') {
+    amazonS3conf = require('../config/aws');
+    uploaderConfig = {
+        type: process.env.UPLOADER_TYPE,
+        awsConfig: amazonS3conf
+    };
+} else {
+    uploaderConfig = {
+        type: process.env.UPLOADER_TYPE,
+        directory: process.env.AMAZON_S3_BUCKET
+    };
+}
+
+var uploader = require('../helpers/imageUploader/imageUploader')(uploaderConfig);
 var Models = function ( PostGre ) {
 
     PostGre.plugin('visibility'); //https://github.com/tgriesser/bookshelf/wiki/Plugin:-Visibility
@@ -44,5 +60,7 @@ var Models = function ( PostGre ) {
     this.Message =  require('./message')( PostGre, Model );
     this.SecretKey =  require('./secretKey')( PostGre, Model );
     this.LinkedTemplates =  require('./linkedTemplates')( PostGre, Model );
+
+    this.uploader = uploader;
 };
 module.exports = Models;

@@ -307,11 +307,9 @@ var TemplatesHandler = function (PostGre) {
         var templateModel = new TemplateModel();
 
         templateModel.getFullTemplate(function (err, result) {
-
             if (err) {
                 return next(err)
             }
-
             res.status(200).send(result)
         })
     };
@@ -323,15 +321,12 @@ var TemplatesHandler = function (PostGre) {
             id: templateId
         };
 
-        templateModel.getFullTemplate(function (err, result) {
-
+        templateModel.getFullTemplate(criteria, function (err, result) {
             if (err) {
                 return next(err)
             }
-
             res.status(200).send(result)
-
-        }, criteria);
+        });
     };
 
     this.removeTemplate = function (req, res, next) {
