@@ -304,45 +304,34 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplates = function (req, res, next) {
-        //var companyId = req.session.companyId;
-        var templateModels;
-        var fetchParams = {
-            require: true,
-            withRelated: ['link', 'templateFile', 'linkedTemplates']
-        };
+        var templateModel = new TemplateModel();
 
-        TemplateModel
-            .findAll(null, fetchParams)
-            .then(function (result) {
+        templateModel.getFullTemplate(function (err, result) {
 
-                (result && result.models) ?  templateModels = result.models : templateModels = [];
+            if (err) {
+                return next(err)
+            }
 
-                res.status(200).send(result);
-
-            })
-            .catch(next);
+            res.status(200).send(result)
+        })
     };
 
     this.getTemplate = function (req, res, next) {
         var templateId = req.params.id;
+        var templateModel = new TemplateModel();
         var criteria = {
             id: templateId
         };
-        var fetchParams = {
-            require: true,
-            withRelated: ['link', 'templateFile', 'linkedTemplates']
-        };
 
-        TemplateModel
-            .find(criteria, fetchParams)
-            .then(function (templateModel) {
-                res.status(200).send(templateModel);
-            })
-            .catch(TemplateModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
+        templateModel.getFullTemplate(function (err, result) {
 
+            if (err) {
+                return next(err)
+            }
+
+            res.status(200).send(result)
+
+        }, criteria);
     };
 
     this.removeTemplate = function (req, res, next) {
