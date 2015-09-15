@@ -56,7 +56,8 @@ module.exports = function (PostGre, ParentModel) {
                 '( ' +
                 'SELECT row_to_json(l) ' +
                 'FROM ( ' +
-                'SELECT l.id, l.name, l.company_id ' +
+                //'SELECT l.id, l.name, l.company_id ' +
+                'SELECT l.id, l.name ' +
                 'FROM links l  WHERE l.id = t.link_id ' +
                 ') l ' +
 
