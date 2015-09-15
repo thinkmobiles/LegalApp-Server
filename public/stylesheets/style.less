@@ -38,6 +38,12 @@
   url('fonts/Palatino-Roman.svg#Palatino-Roman') format('svg');
   font-weight: 400;
 }
+.transition(@property: all, @duration:0.2s, @ease:ease-out) {
+  -webkit-transition: @property @duration @ease ;
+  -moz-transition: @property @duration @ease ;
+  -o-transition: @property @duration @ease ;
+  transition: @property @duration @ease ;
+}
 .box-sizing (@type: border-box) {
   -webkit-box-sizing: @type;
   -moz-box-sizing:    @type;
@@ -55,13 +61,7 @@
 .font-plr(){
   font-family: 'PLR';
 }
-.transition{
-  -webkit-transition: all 0.8s ease 0s;
-  -moz-transition: all 0.8s ease 0s;
-  -ms-transition: all 0.8s ease 0s;
-  -o-transition: all 0.8s ease 0s;
-  transition: all 0.8s ease 0s;
-}
+
 a:hover, input[type="button"]{
   .transition;
 }
@@ -88,7 +88,7 @@ a {
 }
 #leftMenu {
   width: 6.8%;
-  height: calc(~"100vh - 123px");
+  height: ~"calc(100vh - 123px)";
   float: left;
   display: none;
 }
@@ -626,31 +626,7 @@ a {
     }
   }
 }
-.mCustomScrollBox {
-  &.mCSB_inside > .mCSB_container{
-    margin-right: 15px;
-  }
-  .mCS-dark.mCSB_scrollTools {
-  top: 8px;
-  bottom: 8px;
-  .mCSB_draggerRail{
-    background-color: #878787;
-    background-color: rgba(135,135,135,0.15);
-  }
-  .mCSB_dragger {
-    .mCSB_dragger_bar {
-      background-color: rgb(160,160,160);
-      background-color: rgba(160,160,160,0.8);
-      width: 2px;
-    }
-    &:hover, &:active, &:focus{
-      .mCSB_dragger_bar{
-        background-color: #e51a36;
-      }
-    }
-  }
-  }
-}
+
 .topButtons{
   height: 60px;
   color: #7c7b7b;
@@ -746,18 +722,16 @@ a {
     width: 100%;
     li {
       //line-height: 35px;
-      background-image: url("../images/list-view-doc-ico.png");
-      background-repeat: no-repeat;
-      background-position: 15px 50%;
+
+      background-color: transparent;
       display: table-row;
       width: 100%;
-      &:hover{
-        background-color: #fff;
-        div{
-          visibility: visible;
-        }
-      }
       span{
+        .transition(@duration:0.8s);
+        background-image: url("../images/list-view-doc-ico.png");
+        background-repeat: no-repeat;
+        background-position: 15px 50%;
+        background-color: transparent;
         padding-top: 8px;
         padding-bottom: 7px;
         display: table-cell;
@@ -767,21 +741,34 @@ a {
         .font-osr;
         font-size: 16px;
         line-height: 20px;
-
       }
       div{
         min-width: 30px;
-        background: url("../images/list-view-doc-edit-ico.png") no-repeat 50% 50% #fff;
+        background-image: url("../images/list-view-doc-edit-ico.png");
+        background-repeat: no-repeat;
+        background-position: 500% 50%;
+        background-color: transparent;
         height: 100%;
         display: table-cell;
         overflow: hidden;
-        visibility: hidden;
+        .transition(@duration:0.8s);
         vertical-align: middle;
         a{
           display: block;
           text-indent: -99em;
 
         }
+      }
+      &:hover{
+        span{
+          background-color: #fff;
+        }
+        div{
+          background-color: #fff;
+          background-position: 50% 50%;
+
+        }
+
       }
     }
   }
@@ -803,7 +790,7 @@ a {
           width: 100%;
           height: 100%;
           background-color: transparent;
-          transition: background-color 1s linear;
+          .transition(background-color, 1s, linear);
           border-radius: 10px;
           display: block;
           color: #fff;
@@ -840,6 +827,31 @@ a {
   }
 
 
+}
+.mCustomScrollBox {
+  &.mCSB_inside > .mCSB_container{
+    margin-right: 15px;
+  }
+  .mCS-dark.mCSB_scrollTools {
+    top: 8px;
+    bottom: 8px;
+    .mCSB_draggerRail{
+      background-color: #878787;
+      background-color: rgba(135,135,135,0.15);
+    }
+    .mCSB_dragger {
+      .mCSB_dragger_bar {
+        background-color: rgb(160,160,160);
+        background-color: rgba(160,160,160,0.8);
+        width: 2px;
+      }
+      &:hover, &:active, &:focus{
+        .mCSB_dragger_bar{
+          background-color: #e51a36;
+        }
+      }
+    }
+  }
 }
 .centerBlock {
   background-color: #3d3d3d;
@@ -883,7 +895,7 @@ a {
       input[type="button"]{
         position: absolute;
         bottom: 35px;
-        width: calc(~'100% - 88px');
+        width: ~'calc(100% - 88px)';
         text-align: center;
         color: #fff;
         .font-ose;
@@ -1102,7 +1114,7 @@ a {
       }
     }
     .editUser-right{
-      width: calc(~"16% - 2px");
+      width: ~"calc(16% - 2px)";
       border-left: 2px solid #d0d0d1;
       text-align: center;
       float: left;
