@@ -86,10 +86,12 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         toJSON: function () {
+            var uploader = PostGre.Models.Image.uploader;
             var attributes;
             var templateFile;
+            var templateFileName;
+            var name = null;
             var key;
-            var name;
             var bucket = BUCKETS.TEMPLATE_FILES;
             var url;
 
@@ -101,11 +103,13 @@ module.exports = function (PostGre, ParentModel) {
                 if (templateFile.id && templateFile.attributes.key && templateFile.attributes.name) {
                     name = templateFile.attributes.name;
                     key = templateFile.attributes.key;
-                    url = PostGre.Models.Image.uploader.getFileUrl(key, bucket);
+                    templateFileName = uploader.computeFileName(name, key);
+                    url = PostGre.Models.Image.uploader.getFileUrl(templateFileName, bucket);
                 }
 
                 attributes.templateFile = {
-                    url: url
+                    url: url,
+                    name: name
                 };
             }
 

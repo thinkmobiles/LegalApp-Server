@@ -34,6 +34,10 @@ define([
                 state  : this.state
             }));
 
+            //this.$el.find('#listTable').mCustomScrollbar({
+            //    axis:"x"
+            //});
+
             return this;
         }
 

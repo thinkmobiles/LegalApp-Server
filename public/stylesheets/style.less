@@ -82,7 +82,7 @@ a {
   color: #00B7FF;
 }
 #leftMenu {
-  width: 8%;
+  width: 6.8%;
   height: calc(~"100vh - 123px");
   float: left;
   display: none;
@@ -93,7 +93,7 @@ a {
 
 #leftTopBar {
   background-color: #e31937;
-  width: 38%;
+  width: 37.9%;
   float: left;
   height: 100%;
   span{
@@ -165,7 +165,7 @@ a {
   ul{
     padding: 0 17px;
     border: 1px solid #e6e6e7;
-    height: calc(~'100vh-123px');
+    height: ~"calc(100vh-123px)";
     border-left: none;
     li{
       border-bottom: 1px solid #ededed;
@@ -455,7 +455,7 @@ a {
   }
 }
 .addItemLeft{
-  width: 30%;
+  width: 31.1%;
   float: left;
   color: #eaeaea;
 }
@@ -464,7 +464,7 @@ a {
   min-height: 670px;
   position: relative;
   & > div{
-    padding: 20px;
+    padding: 6% 4.3%;
     & > div{
       overflow: hidden;
     }
@@ -509,11 +509,26 @@ a {
     input[type="radio"]{
       display: none;
     }
+    .filter{
+      .radio_check{
+        &:nth-child(2n+1){
+          width: 46%;
+        }
+      }
+    }
+    .sort {
+      .radio_check {
+        &+.radio_check {
+          width: 46%;
+        }
+      }
+    }
     .radio_check{
       margin: 2px 0 2px;
       overflow: hidden;
-      width: 50%;
+      width: 54%;
       float: left;
+
       label {
         display: inline-block;
         width: 22px;
@@ -548,17 +563,17 @@ a {
       label{
         display: block;
         float: left;
-        width: 25%;
+        width: 23.4%;
         line-height: 50px;
       }
       input[type="text"]{
-        width: 67%;
+        width: 68.6%;
       }
       .date{
         overflow: hidden;
         input{
           float: left;
-          width: 25%;
+          width: 24.47%;
           background-image: url('../images/calendar-ico.svg');
           background-repeat: no-repeat;
           background-position: 91% center;
@@ -568,9 +583,10 @@ a {
           }
         }
         input+label{
-          width: 7% !important;
-          text-align: right;
-          padding-right: 2%;
+          width: 11.5%;
+          text-align: center;
+          box-sizing: border-box;
+          padding-left: 1.7%;
         }
       }
     }
@@ -637,12 +653,16 @@ a {
       height: 35px;
       line-height: 35px;
       padding-left: 38px;
+      margin-bottom: 6px;
       .templateListName{
         position: relative;
+        .font-osr;
+        font-size: 16px;
         &:before{
           content: '+';
           position: absolute;
-          left: -18px;
+          left: -14px;
+          font-size: 18px;
           top: -2px;
         }
       }
@@ -651,7 +671,15 @@ a {
         .templateListName{
           &:before{
             content: '-';
-            top: -2px;
+            left: -13px;
+          }
+          &:after{
+            position: absolute;
+            content: "♦";
+            color: #d0d0d1;
+            right: -5px;
+            font-size: 1.5em;
+            top: -1px;
           }
         }
       }
@@ -662,7 +690,105 @@ a {
     }
   }
 }
+#documentList{
+  float: left;
+  width: 31.1%;
+  background-color: rgba(220,220,220, 0.4);
+  height: 615px;
+  .doc-list {
+    li {
+      //line-height: 35px;
+      background: url("../images/list-view-doc-ico.png") no-repeat 15px 50%;
+      &:hover{
+        background-color: #fff;
+        div{
+          visibility: visible;
+        }
+      }
+      span{
+        padding-top: 8px;
+        padding-bottom: 7px;
+        display: table-cell;
+        padding-left: 50px;
+        max-width: 90%;
+        min-width: 300px;
+        .font-osr;
+        font-size: 16px;
+        line-height: 20px;
 
+      }
+      div{
+        min-width: 30px;
+        background: url("../images/list-view-doc-edit-ico.png") no-repeat 50% 50%;
+        height: 100%;
+        display: table-cell;
+        overflow: hidden;
+        visibility: hidden;
+        vertical-align: middle;
+        a{
+          display: block;
+          text-indent: -99em;
+
+        }
+      }
+    }
+  }
+    .doc-grid{
+      >li{
+        float: left;
+        width: ((100% - 2.5%)/3);
+        box-sizing: border-box;
+        height: 200px;
+        >div {
+          background-image: url("../images/bb.png");
+          background-position: center;
+          background-repeat: no-repeat;
+          margin: 10px auto;
+          width: 120px;
+          height: 120px;
+          a {
+            .font-osr;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            transition: background-color 1s linear;
+            border-radius: 10px;
+            display: block;
+            color: #fff;
+            visibility: hidden;
+            text-align: center;
+            text-decoration: none;
+            span {
+              line-height: 8em;
+              position: relative;
+              &:after{
+                content: "";
+                border-bottom: 1px solid #e31937;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+              }
+            }
+          }
+          &:hover a{
+            background-color: rgba(61, 61, 61, .8);
+            visibility: visible;
+          }
+        }
+        >span{
+          .font-osr;
+          display: block;
+          color:#3d3d3d;
+          padding: 0 5%;
+          text-align: center;
+          word-wrap: break-word;
+        }
+      }
+    }
+
+
+}
 .centerBlock {
   background-color: #3d3d3d;
   >div {

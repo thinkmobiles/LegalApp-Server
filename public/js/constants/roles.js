@@ -4,9 +4,12 @@
 
 define(function () {
     return {
-        owner     : 0,
-        admin     : 1,
-        editor    : 2,
-        viewer    : 3
+        SUPER_ADMIN  :  0, //owner
+        ADMIN        :  1,
+        EDITOR       :  2,
+        VIEWER       :  3,
+        CLIENT_ADMIN : 11,
+        CLIENT_EDITOR: 12,
+        CLIENT_VIEWER: 13
     }
 });

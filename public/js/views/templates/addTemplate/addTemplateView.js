@@ -146,7 +146,7 @@ define([
 
             linkedTemplateId = +this_el.find('#tempLinkedTemp').attr('data-id');
             if (linkedTemplateId === 0){
-                inputData.append('linked_templates', null);
+                inputData.append('linked_templates', '');
             } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
