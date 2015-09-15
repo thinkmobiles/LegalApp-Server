@@ -462,6 +462,7 @@ a {
 #searchContainer{
   background: #3d3d3d;
   min-height: 670px;
+  height: calc(100vh - 123px);
   position: relative;
   & > div{
     padding: 6% 4.3%;
@@ -677,8 +678,9 @@ a {
             position: absolute;
             content: "♦";
             color: #d0d0d1;
-            right: -5px;
+            left: 100%;
             font-size: 1.5em;
+            margin-left: -.4em;
             top: -1px;
           }
         }
@@ -694,7 +696,8 @@ a {
   float: left;
   width: 31.1%;
   background-color: rgba(220,220,220, 0.4);
-  height: 615px;
+  min-height: 615px;
+  height: calc(100vh - 123px);
   .doc-list {
     li {
       //line-height: 35px;
