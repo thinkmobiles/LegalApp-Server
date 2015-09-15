@@ -192,18 +192,6 @@ textarea {
   src: url('fonts/Palatino-Roman.eot?#iefix') format('embedded-opentype'), url('fonts/Palatino-Roman.otf') format('opentype'), url('fonts/Palatino-Roman.woff') format('woff'), url('fonts/Palatino-Roman.ttf') format('truetype'), url('fonts/Palatino-Roman.svg#Palatino-Roman') format('svg');
   font-weight: 400;
 }
-.font-osr {
-  font-family: 'OSR';
-}
-.font-oss {
-  font-family: 'OSS';
-}
-.font-ose {
-  font-family: 'OSE';
-}
-.font-plr {
-  font-family: 'PLR';
-}
 .transition {
   -webkit-transition: all 0.8s ease 0s;
   -moz-transition: all 0.8s ease 0s;
@@ -376,6 +364,16 @@ a {
   height: 200px;
   width: 27%;
   padding: 20px 30px;
+}
+#wrapper {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#wrapper #documents:after {
+  display: block;
+  content: '';
+  clear: both;
 }
 #loginDiv {
   margin: -300px 0 0 -225px;
@@ -616,11 +614,14 @@ a {
 #searchContainer {
   background: #3d3d3d;
   min-height: 670px;
-  height: calc(-23vh);
+  height: calc(100vh - 123px);
   position: relative;
 }
 #searchContainer > div {
-  padding: 6% 4.3%;
+  padding: 6% 4.3% 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 #searchContainer > div > div {
   overflow: hidden;
@@ -638,6 +639,7 @@ a {
   text-transform: uppercase;
   padding: 20px 0 7px;
   margin-bottom: 11px;
+  clear: both;
 }
 #searchContainer > div #closeIco {
   position: absolute;
@@ -733,14 +735,16 @@ a {
 #searchContainer > div .search .date input + label {
   width: 11.5%;
   text-align: center;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   padding-left: 1.7%;
 }
 #searchContainer > div input[type="submit"] {
-  position: absolute;
-  bottom: 20px;
-  width: calc(100% - 40px);
+  width: 100%;
   text-align: center;
+  clear: both;
+  margin-top: 22px;
   color: #fff;
   font-family: 'OSE';
   font-size: 18px;
@@ -751,6 +755,27 @@ a {
 }
 #searchContainer > div input[type="submit"]:hover {
   background-color: #e31937;
+}
+.mCustomScrollBox.mCSB_inside > .mCSB_container {
+  margin-right: 15px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools {
+  top: 8px;
+  bottom: 8px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_draggerRail {
+  background-color: #878787;
+  background-color: rgba(135, 135, 135, 0.15);
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar {
+  background-color: #a0a0a0;
+  background-color: rgba(160, 160, 160, 0.8);
+  width: 2px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:hover .mCSB_dragger_bar,
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:active .mCSB_dragger_bar,
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:focus .mCSB_dragger_bar {
+  background-color: #e51a36;
 }
 .topButtons {
   height: 60px;
@@ -785,7 +810,8 @@ a {
 }
 #templateList {
   width: 31%;
-  min-height: 630px;
+  min-height: 610px;
+  height: calc(100vh - 183px);
   float: left;
   display: block;
 }
@@ -822,6 +848,7 @@ a {
   font-size: 1.5em;
   margin-left: -0.4em;
   top: -1px;
+  z-index: 1;
 }
 #templateList ul li svg {
   float: left;
@@ -831,11 +858,19 @@ a {
   float: left;
   width: 31.1%;
   background-color: rgba(220, 220, 220, 0.4);
-  min-height: 615px;
-  height: calc(-23vh);
+  min-height: 610px;
+  height: calc(100vh - 183px);
+}
+#documentList .doc-list {
+  display: table;
+  width: 100%;
 }
 #documentList .doc-list li {
-  background: url("../images/list-view-doc-ico.png") no-repeat 15px 50%;
+  background-image: url("../images/list-view-doc-ico.png");
+  background-repeat: no-repeat;
+  background-position: 15px 50%;
+  display: table-row;
+  width: 100%;
 }
 #documentList .doc-list li:hover {
   background-color: #fff;
@@ -856,7 +891,7 @@ a {
 }
 #documentList .doc-list li div {
   min-width: 30px;
-  background: url("../images/list-view-doc-edit-ico.png") no-repeat 50% 50%;
+  background: url("../images/list-view-doc-edit-ico.png") no-repeat 50% 50% #ffffff;
   height: 100%;
   display: table-cell;
   overflow: hidden;
@@ -870,6 +905,8 @@ a {
 #documentList .doc-grid > li {
   float: left;
   width: 32.5%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   height: 200px;
 }
