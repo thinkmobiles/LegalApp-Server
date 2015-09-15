@@ -315,7 +315,7 @@ var TemplatesHandler = function (PostGre) {
     };
 
     this.getTemplate = function (req, res, next) {
-        var templateId = req.params.id;
+        /*var templateId = req.params.id;
         var templateModel = new TemplateModel();
         var criteria = {
             id: templateId
@@ -326,7 +326,27 @@ var TemplatesHandler = function (PostGre) {
                 return next(err)
             }
             res.status(200).send(result)
-        });
+        });*/
+
+        var templateId = req.params.id;
+        var criteria = {
+            id: templateId
+        };
+        var fetchParams = {
+            require: true,
+            withRelated: ['link.linkFields', 'templateFile', 'linkedTemplates']
+        };
+
+        TemplateModel
+            .find(criteria, fetchParams)
+            .then(function (templateModel) {
+                res.status(200).send(templateModel);
+            })
+            .catch(TemplateModel.NotFoundError, function (err) {
+                next(badRequests.NotFound());
+            })
+            .catch(next);
+
     };
 
     this.removeTemplate = function (req, res, next) {
