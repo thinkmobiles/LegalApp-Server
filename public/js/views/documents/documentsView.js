@@ -32,6 +32,8 @@ define([
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
             this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
+            //this.docTitles = new Backbone.Collection({});
+
             $.ajax({
                 url     : '/documents/list',
                 success : function(response){
