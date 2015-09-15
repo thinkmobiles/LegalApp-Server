@@ -221,8 +221,7 @@ define([
 
             this.$el.find('#documentList').mCustomScrollbar({
                 axis:"y",
-                theme:"dark",
-                setHeight: "700px"
+                theme:"dark"
             });
 
             this.$el.find('.fromDate, .toDate').datepicker({
