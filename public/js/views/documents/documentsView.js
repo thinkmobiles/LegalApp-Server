@@ -121,7 +121,7 @@ define([
         },
 
         createOurView: function(){
-            var documentsContainer = this.$el.find("#documentList");
+            var documentsContainer = this.$el.find("#mCSB_1_container");
             var curColl = this.currentCollByIds;
             var viewType = this.stateModel.get('viewType');
             var templateName = 'document_'+viewType;
@@ -133,14 +133,16 @@ define([
             //    documentsContainer.html(this.documentGrid({documents: curColl}));
             //}
 
-            documentsContainer.mCustomScrollbar({
+            /*documentsContainer.mCustomScrollbar({
                 axis:"y",
                 theme:"dark",
                 setHeight: "70px",
                 onInit:function(){
                     alert("scrollbars initialized");
                 }
-            });
+            });*/
+
+            documentsContainer.mCustomScrollbar("update");
 
             Backbone.history.navigate("documents/"+viewType);
 
@@ -217,11 +219,11 @@ define([
             this.renderDocumentsList(items);
             this.getDocumentsByTemplateId();
 
-            //this.$el.find('#documentList').mCustomScrollbar({
-            //    axis:"y",
-            //    theme:"dark",
-            //    setHeight: "70px"
-            //});
+            this.$el.find('#documentList').mCustomScrollbar({
+                axis:"y",
+                theme:"dark",
+                setHeight: "700px"
+            });
 
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",
