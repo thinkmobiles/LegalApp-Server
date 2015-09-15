@@ -116,7 +116,7 @@ define([
                     var fName = userInfo.profile.first_name;
                     var lName = userInfo.profile.last_name;
                     //$('#topBarLogo').attr('src',imageSRC);
-                    //$('#topBarLogo').attr('src', avatar);
+                    $('#topBarLogo').attr('src', imageSRC);
                     alert('Profile updated successfully');
 
                     //App.sessionData.set({

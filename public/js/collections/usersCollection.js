@@ -8,9 +8,13 @@ define([
     var UserCollection = Backbone.Collection.extend({
         model: UserModel,
 
-        /*url: function () {
-            return "/users"
-        },*/
+        //url: function () {
+        //    if (this.clients) {
+        //        return "/users"
+        //    } else {
+        //        return "/clients"
+        //    }
+        //},
 
         url: "/users",
 
@@ -18,6 +22,10 @@ define([
 
             if (options && options.status) {
                 this.url = "/users/search?status=" + options.status;
+            }
+
+            if (options && options.clients) {
+                this.url = "/clients";
             }
 
             this.fetch({

@@ -35,7 +35,7 @@ define([],function () {
             App.sessionData.set(sessionInfo);
 
             $('body').addClass('loggedState');
-            App.Events.trigger('authorized', data);
+            App.Events.trigger('authorized');
 
             return Backbone.history.navigate(url, {trigger: true});
         } else {

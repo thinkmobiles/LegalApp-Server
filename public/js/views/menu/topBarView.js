@@ -6,8 +6,9 @@ define([
     'text!templates/menu/topBarTemplate.html',
     'text!templates/menu/leftBarTemplate.html',
     'views/menu/iWantToView',
-    'views/menu/contactUsView'
-], function (TopTemplate, LeftTemplate, WantView, ContactView) {
+    'views/menu/contactUsView',
+    'constants/roles'
+], function (TopTemplate, LeftTemplate, WantView, ContactView, ROLES) {
 
     var View;
     View = Backbone.View.extend({
@@ -101,8 +102,7 @@ define([
             var user = App.sessionData.get('first_name') +' '+ App.sessionData.get('last_name');
 
             this.$el.find('.userName').html(user);
-            this.getAvatar();
-
+            //this.getAvatar();
             return this;
         },
 
@@ -122,16 +122,20 @@ define([
         },
 
         initializeBadges: function () {
-            $.ajax({
-                url: "/users/count",
-                type: "GET",
-                data: {
-                    status: -1
-                },
-                success: function (response) {
-                    App.Badge.set('pendingUsers', response.count);
-                }
-            });
+            var permissions = App.sessionData.get('permissions');
+
+            if ((permissions === ROLES.SUPER_ADMIN) || (permissions === ROLES.ADMIN)) {
+                $.ajax({
+                    url: "/users/count",
+                    type: "GET",
+                    data: {
+                        status: -1
+                    },
+                    success: function (response) {
+                        App.Badge.set('pendingUsers', response.count);
+                    }
+                });
+            }
         }
     });
     return View;

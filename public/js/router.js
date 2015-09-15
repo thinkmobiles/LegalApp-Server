@@ -12,27 +12,26 @@ define([
 
         wrapperView : null,
         topBarView  : null,
-        //view        : null,
 
         routes: {
-            "login(/:token)"               :  "login",
-            "signup"                       :  "signup",
-            "users"                        :  "users",
-            "settings"                     :  "settings",
-            "newUsers"                     :  "newUsers",
-            "documents/inProgress/:id"     :  "docInProgress",
-            ":docType/preview/:id"         :  "forPreview",
-            "templates/:viewType"          :  "templates",
-            "documents/:token/signature"   :  "signature",
-            "documents/:viewType"          :  "documents",
-            "taskList"                     :  "taskList",
-            "userProfile"                  :  "userProfile",
-            "forgotPassword"               :  "forgotPassword",
-            "resetPassword/:token"         :  "resetPassword",
-            "termsAndConditions"           :  "termsAndConditions",
-            "confirmEmail(/:token)"        :  "confirmEmail",
-            "help"                         :  "help",
-            "*any"                         :  "any"
+            "login(/:token)"              :  "login",
+            "signup"                      :  "signup",
+            "users"                       :  "users",
+            "settings"                    :  "settings",
+            "newUsers"                    :  "newUsers",
+            //"documents/inProgress/:id"    :  "docInProgress",
+            ":docType/preview/:id"        :  "forPreview",
+            "templates/:viewType"         :  "templates",
+            "documents/:token/signature"  :  "signature",
+            "documents/:viewType"         :  "documents",
+            "taskList"                    :  "taskList",
+            "userProfile"                 :  "userProfile",
+            "forgotPassword"              :  "forgotPassword",
+            "resetPassword/:token"        :  "resetPassword",
+            "termsAndConditions"          :  "termsAndConditions",
+            "confirmEmail(/:token)"       :  "confirmEmail",
+            "help"                        :  "help",
+            "*any"                        :  "any"
         },
 
         initialize: function () {
@@ -137,9 +136,9 @@ define([
             this.loadWrapperView('settings', null, REDIRECT.whenNOTAuthorized);
         },
 
-        docInProgress: function(id){
-            this.loadWrapperView('docInProgress', {id : id}, REDIRECT.whenNOTAuthorized);
-        },
+        //docInProgress: function(id){
+        //    this.loadWrapperView('docInProgress', {id : id}, REDIRECT.whenNOTAuthorized);
+        //},
 
         help: function(){
             this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);

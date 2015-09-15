@@ -127,7 +127,7 @@ define([
 
         saveTemplate: function(){
             var self = this;
-            var this_el = this.$el;
+            var this_el = self.$el;
             var linkedTemplateId;
             var linkTableId;
             var descriptionText;
@@ -144,12 +144,14 @@ define([
                 inputData.append('templateFile', file);
             }
 
-            linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
-            if (linkedTemplateId){
+            linkedTemplateId = +this_el.find('#tempLinkedTemp').attr('data-id');
+            if (linkedTemplateId === 0){
+                inputData.append('linked_templates', '');
+            } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
 
-            linkTableId = +this_el.find('#tempLinkTable').data('id');
+            linkTableId = +this_el.find('#tempLinkTable').attr('data-id');
             if (linkTableId){
                 inputData.append('link_id', linkTableId);
             }

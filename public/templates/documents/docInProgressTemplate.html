@@ -1,0 +1,8 @@
+<div id="docMessage">
+    <%if (status === '4'){%>
+        <span>You can download pdf by link</span>
+    <%} else {%>
+        <span>You can not download a document, it has not yet been signed by all</span>
+    <%}%>
+</div>
+<input type="button" id="closeDialog" value="<%= status === '4' ? 'Cancel' : 'OK'%>">

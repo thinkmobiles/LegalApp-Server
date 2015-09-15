@@ -11,6 +11,7 @@ require.config({
         Underscore      : './libs/underscore/underscore',
         Backbone        : './libs/backbone/backbone',
         less            : './libs/less/dist/less',
+        customScroll    : './libs/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min',
         socketio        : '/socket.io/socket.io',
         views           : './views',
         models          : './models',
@@ -20,7 +21,8 @@ require.config({
     },
     shim: {
         'jQueryUI'      : ['jQuery'],
-        'Backbone'      : ['Underscore', 'jQueryUI'],
+        'customScroll'  : ['jQuery'],
+        'Backbone'      : ['Underscore', 'jQueryUI','customScroll'],
         'app'           : ['Backbone','less']
     }
 });

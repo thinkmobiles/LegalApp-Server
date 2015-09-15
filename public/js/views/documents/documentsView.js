@@ -3,13 +3,14 @@
  */
 
 define([
+    'views/documents/docInProgressView',
     'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
     'text!templates/documents/documentsGridTemplate.html',
     'text!templates/documents/templatesListTemplate.html'
 
 
-], function (MainTemplate, DocumentList, DocumentGrid, TemplateList) {
+], function (DocInProgressView, MainTemplate, DocumentList, DocumentGrid, TemplateList) {
 
     var View;
     View = Backbone.View.extend({
@@ -56,7 +57,8 @@ define([
             if (targetStatus === 1) {
                 Backbone.history.navigate('documents/preview/' + targetId, {trigger: true});
             } else {
-                Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
+                new DocInProgressView({id : targetId, status : targetStatus});
+                //Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
             }
         },
 
@@ -64,6 +66,13 @@ define([
             var items = data || this.groupCollection;
 
             this.$el.find('#templateList').html(this.templateList({templates : items}));
+            //*************************************
+            //this.$el.find('#documentList').mCustomScrollbar({
+            //    axis:"y",
+            //    theme:"dark",
+            //    setHeight: "70px"
+            //});
+            //*************************************
         },
 
         showHideFilters: function (event) {
@@ -123,6 +132,15 @@ define([
             //} else {
             //    documentsContainer.html(this.documentGrid({documents: curColl}));
             //}
+
+            documentsContainer.mCustomScrollbar({
+                axis:"y",
+                theme:"dark",
+                setHeight: "70px",
+                onInit:function(){
+                    alert("scrollbars initialized");
+                }
+            });
 
             Backbone.history.navigate("documents/"+viewType);
 
@@ -198,6 +216,12 @@ define([
             this.$el.html(this.mainTemplate());
             this.renderDocumentsList(items);
             this.getDocumentsByTemplateId();
+
+            //this.$el.find('#documentList').mCustomScrollbar({
+            //    axis:"y",
+            //    theme:"dark",
+            //    setHeight: "70px"
+            //});
 
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",

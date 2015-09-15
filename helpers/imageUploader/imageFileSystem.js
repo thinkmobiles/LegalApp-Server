@@ -9,6 +9,7 @@ var imagesUploader = function (dirConfig) {
     var fs = require('fs');
     var path = require('path');
     var os = require('os');
+    var mkdirp = require('mkdirp');
 
     var osPathData = getDirAndSlash();
 
@@ -217,13 +218,117 @@ var imagesUploader = function (dirConfig) {
         });
     }
 
-    function uploadFile(fileData, fileName, folderName, callback) {
+    function removeFile(options, callback) {
+        var folderName;
+        var fileName;
+        var dir;
+        var filePath;
+        var err;
+
+        if (!options || !options.fileName || !options.folderName) {
+            if (callback && (typeof callback === 'function')) {
+                err = new Error('Not enough incoming params');
+                err.status = 400;
+                return callback(err);
+            }
+            return;
+        }
+
+        folderName = options.folderName;
+        fileName = options.fileName;
+        dir = path.join(dirConfig, folderName);
+        filePath = path.join(dir, fileName);
+
+        fs.unlink(filePath, function (err, result) {
+            if (callback && typeof callback === 'function') {
+                callback(err, result);
+            }
+        });
+    }
+
+    function writeFile(options, callback) {
+        var fileName = options.fileName;
+        var folderName = options.folderName;
+        var filePath = options.filePath;
+        var buffer = options.buffer;
+
+        try {
+            fs.writeFile(filePath, buffer, function (err, data) {
+                if (callback && typeof callback === 'function') {
+                    callback(err, options);
+                }
+            });
+        }
+        catch (err) {
+            console.log('ERROR:', err);
+            if (callback && typeof callback === 'function') {
+                callback(err);
+            }
+        }
+    }
+
+    function saveFile(folderName, fileName, buffer, callback) {
+        var dir = path.join(dirConfig, folderName);
+
+        mkdirp(dir, function (err) {
+            var filePath = path.join(dir, fileName);
+            var writeOptions = {
+                fileName: fileName,
+                folderName: folderName,
+                filePath: filePath,
+                buffer: buffer
+            };
+
+            if (err) {
+                if (callback && (typeof callback === 'function')) {
+                    return callback(err);
+                }
+                return;
+            }
+
+            writeFile(writeOptions, callback);
+        });
+    }
+
+    /*function uploadFile(fileData, fileName, folderName, callback) {
         var slash = osPathData.slash;
         var dir = osPathData.dir + slash;
 
         //fileData.name = fileName;
+        var name = fileData.name;
+        var buffer = fileData.data;
+        var fileName;
 
-        saveImage(fileData, dir, folderName, slash, callback);
+        if (!name|| !buffer) {
+            if (callback && (typeof callback === 'function')) callback(Error('Invalid value of fileData'));
+        }
+
+        //saveImage(fileData, dir, folderName, slash, callback);
+        fileName = computeFileName(name, key);
+        saveFile(buffer, folderName, fileName, callback);
+    }*/
+
+    //function uploadFile(folderName, fileName, buffer, callback) {
+    function uploadFile(options, callback) {
+        var folderName;
+        var fileName;
+        var buffer;
+        var err;
+
+        if (!options || !options.fileName || !options.folderName || !options.buffer) {
+            if (callback && (typeof callback === 'function')) {
+                err = new Error('Not enough incoming params');
+                err.status = 400;
+                return callback(err);
+            }
+            return;
+        }
+
+        folderName = options.folderName;
+        fileName = options.fileName;
+        buffer = options.buffer;
+
+        saveFile(folderName, fileName, buffer, callback);
     }
 
     function getFilePath(fileName, folder) {
@@ -232,14 +337,20 @@ var imagesUploader = function (dirConfig) {
         return filePath;
     }
 
+    function computeFileName(name, key) {
+        return key + '_' + name;
+    }
+
     return {
         uploadImage: uploadImage,
         duplicateImage: duplicateImage,
         removeImage: removeImage,
+        removeFile: removeFile,
         getImageUrl: getImagePath,
         uploadFile: uploadFile,
         getFileUrl: getImagePath,
-        getFilePath: getFilePath
+        getFilePath: getFilePath,
+        computeFileName: computeFileName
     };
 };
 

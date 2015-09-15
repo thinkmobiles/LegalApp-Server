@@ -41,7 +41,7 @@ define([
             var sessionData = App.sessionData;
             var socketAuth = {
                 userId     : sessionData.get('userId'),
-                permissions: sessionData.get('role')
+                permissions: sessionData.get('permissions')
             };
 
             socket.emit('authorize', socketAuth);
@@ -51,7 +51,7 @@ define([
             var sessionData = App.sessionData;
             var socketAuth = {
                 userId     : sessionData.get('userId'),
-                permissions: sessionData.get('role')
+                permissions: sessionData.get('permissions')
             };
 
             socket.emit('logout', socketAuth);
