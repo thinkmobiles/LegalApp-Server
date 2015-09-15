@@ -26,14 +26,14 @@ define([
 
             if (options && options.clients) {
                 this.url = "/clients";
+            } else {
+                this.fetch({
+                    reset: true,
+                    success: function (coll) {
+                        //console.log(coll.toJSON())
+                    }
+                });
             }
-
-            this.fetch({
-                reset: true,
-                success: function(coll){
-                    //console.log(coll.toJSON())
-                }
-            });
         }
     });
 
