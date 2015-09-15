@@ -1,9 +1,9 @@
 <ul class="doc-grid document-items">
     <%documents.forEach(function(doc){%>
-    <li data-val="<%= doc.status%>" data-id="<%=doc.id%>">
+    <li class="documentItem" data-val="<%= doc.status%>" data-id="<%=doc.id%>">
         <!--<img src=".././images/bb.png">-->
         <div>
-            <a href="#"><span>Edit</span></a>
+            <a href="javascript:;"><span class="docClick">Edit</span></a>
         </div>
         <span><%= doc.name%> <%= doc.created_at%></span>
     </li>

@@ -46,7 +46,8 @@ define([
             "click .searchBtn"   : "getSearchParams",
             "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
-            "click .documentItem": "goToPreview"
+            "click .docClick"    : "goToPreview"
+            //"click .documentItem": "goToPreview"
         },
 
 
@@ -58,7 +59,6 @@ define([
                 Backbone.history.navigate('documents/preview/' + targetId, {trigger: true});
             } else {
                 new DocInProgressView({id : targetId, status : targetStatus});
-                //Backbone.history.navigate('documents/inProgress/' + targetId, {trigger: true});
             }
         },
 
@@ -66,13 +66,6 @@ define([
             var items = data || this.groupCollection;
 
             this.$el.find('#templateList').html(this.templateList({templates : items}));
-            //*************************************
-            //this.$el.find('#documentList').mCustomScrollbar({
-            //    axis:"y",
-            //    theme:"dark",
-            //    setHeight: "70px"
-            //});
-            //*************************************
         },
 
         showHideFilters: function (event) {
