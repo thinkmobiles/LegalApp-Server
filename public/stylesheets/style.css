@@ -192,20 +192,12 @@ textarea {
   src: url('fonts/Palatino-Roman.eot?#iefix') format('embedded-opentype'), url('fonts/Palatino-Roman.otf') format('opentype'), url('fonts/Palatino-Roman.woff') format('woff'), url('fonts/Palatino-Roman.ttf') format('truetype'), url('fonts/Palatino-Roman.svg#Palatino-Roman') format('svg');
   font-weight: 400;
 }
-.transition {
-  -webkit-transition: all 0.8s ease 0s;
-  -moz-transition: all 0.8s ease 0s;
-  -ms-transition: all 0.8s ease 0s;
-  -o-transition: all 0.8s ease 0s;
-  transition: all 0.8s ease 0s;
-}
 a:hover,
 input[type="button"] {
-  -webkit-transition: all 0.8s ease 0s;
-  -moz-transition: all 0.8s ease 0s;
-  -ms-transition: all 0.8s ease 0s;
-  -o-transition: all 0.8s ease 0s;
-  transition: all 0.8s ease 0s;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
 }
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -756,27 +748,6 @@ a {
 #searchContainer > div input[type="submit"]:hover {
   background-color: #e31937;
 }
-.mCustomScrollBox.mCSB_inside > .mCSB_container {
-  margin-right: 15px;
-}
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools {
-  top: 8px;
-  bottom: 8px;
-}
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_draggerRail {
-  background-color: #878787;
-  background-color: rgba(135, 135, 135, 0.15);
-}
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar {
-  background-color: #a0a0a0;
-  background-color: rgba(160, 160, 160, 0.8);
-  width: 2px;
-}
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:hover .mCSB_dragger_bar,
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:active .mCSB_dragger_bar,
-.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:focus .mCSB_dragger_bar {
-  background-color: #e51a36;
-}
 .topButtons {
   height: 60px;
   color: #7c7b7b;
@@ -866,19 +837,19 @@ a {
   width: 100%;
 }
 #documentList .doc-list li {
-  background-image: url("../images/list-view-doc-ico.png");
-  background-repeat: no-repeat;
-  background-position: 15px 50%;
+  background-color: transparent;
   display: table-row;
   width: 100%;
 }
-#documentList .doc-list li:hover {
-  background-color: #fff;
-}
-#documentList .doc-list li:hover div {
-  visibility: visible;
-}
 #documentList .doc-list li span {
+  -webkit-transition: all 0.8s ease-out;
+  -moz-transition: all 0.8s ease-out;
+  -o-transition: all 0.8s ease-out;
+  transition: all 0.8s ease-out;
+  background-image: url("../images/list-view-doc-ico.png");
+  background-repeat: no-repeat;
+  background-position: 15px 50%;
+  background-color: transparent;
   padding-top: 8px;
   padding-bottom: 7px;
   display: table-cell;
@@ -891,16 +862,29 @@ a {
 }
 #documentList .doc-list li div {
   min-width: 30px;
-  background: url("../images/list-view-doc-edit-ico.png") no-repeat 50% 50% #ffffff;
+  background-image: url("../images/list-view-doc-edit-ico.png");
+  background-repeat: no-repeat;
+  background-position: 500% 50%;
+  background-color: transparent;
   height: 100%;
   display: table-cell;
   overflow: hidden;
-  visibility: hidden;
+  -webkit-transition: all 0.8s ease-out;
+  -moz-transition: all 0.8s ease-out;
+  -o-transition: all 0.8s ease-out;
+  transition: all 0.8s ease-out;
   vertical-align: middle;
 }
 #documentList .doc-list li div a {
   display: block;
   text-indent: -99em;
+}
+#documentList .doc-list li:hover span {
+  background-color: #fff;
+}
+#documentList .doc-list li:hover div {
+  background-color: #fff;
+  background-position: 50% 50%;
 }
 #documentList .doc-grid > li {
   float: left;
@@ -923,6 +907,9 @@ a {
   width: 100%;
   height: 100%;
   background-color: transparent;
+  -webkit-transition: background-color 1s linear;
+  -moz-transition: background-color 1s linear;
+  -o-transition: background-color 1s linear;
   transition: background-color 1s linear;
   border-radius: 10px;
   display: block;
@@ -954,6 +941,27 @@ a {
   padding: 0 5%;
   text-align: center;
   word-wrap: break-word;
+}
+.mCustomScrollBox.mCSB_inside > .mCSB_container {
+  margin-right: 15px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools {
+  top: 8px;
+  bottom: 8px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_draggerRail {
+  background-color: #878787;
+  background-color: rgba(135, 135, 135, 0.15);
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar {
+  background-color: #a0a0a0;
+  background-color: rgba(160, 160, 160, 0.8);
+  width: 2px;
+}
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:hover .mCSB_dragger_bar,
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:active .mCSB_dragger_bar,
+.mCustomScrollBox .mCS-dark.mCSB_scrollTools .mCSB_dragger:focus .mCSB_dragger_bar {
+  background-color: #e51a36;
 }
 .centerBlock {
   background-color: #3d3d3d;
