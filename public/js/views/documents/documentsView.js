@@ -142,7 +142,7 @@ define([
                 }
             });*/
 
-            documentsContainer.mCustomScrollbar("update");
+            //documentsContainer.mCustomScrollbar("update");
 
             Backbone.history.navigate("documents/"+viewType);
 
