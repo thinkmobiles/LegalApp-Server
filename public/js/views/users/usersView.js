@@ -8,7 +8,8 @@ define([
     'collections/usersCollection',
     'views/users/addUserView',
     'views/users/editUserView',
-    'views/users/usersListView'
+    //'views/users/usersListView'
+    'text!templates/users/usersListTemplate.html'
 
 ], function (
     UsersTemplate,
@@ -16,7 +17,7 @@ define([
     UsersCollection ,
     AddUserView ,
     EditUserView,
-    UsrListView) {
+    UsrListTemp) {
 
     var View;
 
@@ -26,6 +27,7 @@ define([
 
         companyTemp : _.template(CompanyName),
         mainTemp    : _.template(UsersTemplate),
+        listTemp    : _.template(UsrListTemp),
 
         events: {
             "click #addNewUser"              : "showAddTemplate",
@@ -41,16 +43,15 @@ define([
         initialize: function () {
             this.stateModel = new Backbone.Model();
             this.stateModel.set('isOurCompUsers', true);
+            this.usersCollection = new UsersCollection();
+
             this.render();
 
-            this.usersCollection = new UsersCollection();
-            this.clientsCollection = new UsersCollection({clients : true});
-            //this.clientsCollection = new Backbone.Collection();
-            //this.clientsCollection.url = "/clients";
-
             this.listenTo(this.stateModel, 'change:isOurCompUsers', this.changeView);
-            this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
-            this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
+            this.listenTo(this.usersCollection, 'appendUsers', this.renderUsersList);
+            //this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
+
+            this.usersCollection.showMore({first : true});
         },
 
         selectSomething: function(event){
@@ -105,31 +106,36 @@ define([
             //    this.addView.currentState=theState;
             //}
 
-            if (theState) {
-                this.usersCollection.fetch({reset: true})
-            } else {
-                this.clientsCollection.fetch({reset: true})
-            }
+            this.usersCollection.showMore({
+                first   : true,
+                clients : !theState
+            });
+
+            //if (theState) {
+            //    this.usersCollection.fetch({reset: true})
+            //} else {
+            //    this.clientsCollection.fetch({reset: true})
+            //}
         },
 
-        renderUsersList : function(){
+        renderUsersList : function(is_new){
             var theState = this.stateModel.get('isOurCompUsers');
+            var isNew = is_new || false;
 
-            if (this.tableView){
+            /*if (this.tableView){
                 this.tableView.undelegateEvents()
             }
 
-            if (theState) {
-                this.tableView = new UsrListView({
-                    coll : this.usersCollection,
-                    state: true
-                });
-            } else {
-                this.tableView = new UsrListView({
-                    coll: this.clientsCollection,
-                    state : false
-                });
-            }
+            this.tableView = new UsrListView({
+                coll : this.usersCollection,
+                state: theState
+            });*/
+
+            this.$el.find('#usersTable').html(this.listTemp({
+                usrLst : this.usersCollection.toJSON(),
+                state  : theState
+            }));
+
         },
 
         //addTemplate : function(){
@@ -147,24 +153,19 @@ define([
             var userRow = $(event.target).closest('.userRow');
             var userID  = userRow.data('id');
             var container = userRow.closest('#listTable');
-            var theState = this.stateModel.get('currentState');
+            var theState = this.stateModel.get('isOurCompUsers');
             var editableUser;
 
             container.find('.activeRow').removeClass('activeRow');
             userRow.addClass('activeRow');
 
             if (this.editView){
-                //this.editView.undelegateEvents()
                 this.editView.remove()
             }
 
-            if (theState) {
-                editableUser = this.usersCollection.get(userID);
-            } else {
-                editableUser = this.clientsCollection.get(userID);
-            }
-
+            editableUser = this.usersCollection.get(userID);
             editableUser.currentState = theState;
+
             this.editView = new EditUserView({userModel : editableUser});
             this.editView.on('redirectList', this.changeView, this);
 
@@ -267,6 +268,7 @@ define([
                 company : company
             }));
 
+            //this.changeView();
             this.renderCompanies();
 
             return this;
