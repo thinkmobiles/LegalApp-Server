@@ -33,13 +33,13 @@ module.exports = function (PostGre, done) {
             });
         },
 
-        //user_companies:
+        /*//user_companies:
         function (count, cb) {
             factory.createMany(TABLES.USER_COMPANIES, {}, count, function (err, companies) {
                 console.log('User_companies created');
                 cb(err, count);
             });
-        },
+        },*/
 
         //create templates:
         function (count, cb) {
