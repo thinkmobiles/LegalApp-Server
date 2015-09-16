@@ -192,6 +192,7 @@ textarea {
   src: url('fonts/Palatino-Roman.eot?#iefix') format('embedded-opentype'), url('fonts/Palatino-Roman.otf') format('opentype'), url('fonts/Palatino-Roman.woff') format('woff'), url('fonts/Palatino-Roman.ttf') format('truetype'), url('fonts/Palatino-Roman.svg#Palatino-Roman') format('svg');
   font-weight: 400;
 }
+/* The element to apply the animation to */
 a:hover,
 input[type="button"] {
   -webkit-transition: all 0.2s ease-out;
@@ -842,10 +843,10 @@ a {
   width: 100%;
 }
 #documentList .doc-list li span {
-  -webkit-transition: all 0.8s ease-out;
-  -moz-transition: all 0.8s ease-out;
-  -o-transition: all 0.8s ease-out;
-  transition: all 0.8s ease-out;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
   background-image: url("../images/list-view-doc-ico.png");
   background-repeat: no-repeat;
   background-position: 15px 50%;
@@ -864,15 +865,16 @@ a {
   min-width: 30px;
   background-image: url("../images/list-view-doc-edit-ico.png");
   background-repeat: no-repeat;
-  background-position: 500% 50%;
+  background-position: 50% 50%;
+  background-size: 0 0;
   background-color: transparent;
   height: 100%;
   display: table-cell;
   overflow: hidden;
-  -webkit-transition: all 0.8s ease-out;
-  -moz-transition: all 0.8s ease-out;
-  -o-transition: all 0.8s ease-out;
-  transition: all 0.8s ease-out;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
   vertical-align: middle;
 }
 #documentList .doc-list li div a {
@@ -883,8 +885,9 @@ a {
   background-color: #fff;
 }
 #documentList .doc-list li:hover div {
+  animation-name: doc-hover;
+  animation-duration: .5s;
   background-color: #fff;
-  background-position: 50% 50%;
 }
 #documentList .doc-grid > li {
   float: left;
@@ -1440,4 +1443,118 @@ a {
 }
 .linked_state .main_type {
   display: none;
+}
+div#ui-datepicker-div.ui-datepicker {
+  width: auto;
+  padding: 0;
+}
+div#ui-datepicker-div.ui-datepicker,
+div#ui-datepicker-div.ui-datepicker * {
+  border: 0;
+  border-radius: 0;
+}
+div#ui-datepicker-div.ui-datepicker table {
+  background: #d6d4d4;
+  margin: 0;
+}
+div#ui-datepicker-div.ui-datepicker table thead {
+  position: relative;
+}
+div#ui-datepicker-div.ui-datepicker table thead th {
+  padding: 1.1em 1.2em;
+}
+div#ui-datepicker-div.ui-datepicker table thead th:first-child {
+  padding-left: .78em;
+}
+div#ui-datepicker-div.ui-datepicker table thead th:last-child {
+  padding-right: .78em;
+}
+div#ui-datepicker-div.ui-datepicker table thead:after {
+  display: block;
+  content: '';
+  height: 1px;
+  background: #979696;
+  position: absolute;
+  top: 92px;
+  left: 9px;
+  right: 9px;
+}
+div#ui-datepicker-div.ui-datepicker table tbody tr:last-child td {
+  padding-bottom: 2px;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td {
+  padding: 0;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td a {
+  text-align: center;
+  font-family: 'OSS';
+  font-size: 1.2em;
+  display: block;
+  width: 35px;
+  height: 35px;
+  line-height: 35px;
+  margin: auto;
+  padding: 0;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td a:hover {
+  color: #E31937;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td a.ui-state-default {
+  background: none;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td a.ui-state-active {
+  background: #fff;
+}
+div#ui-datepicker-div.ui-datepicker table tbody td a.ui-state-highlight {
+  background: #aeadad;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header {
+  background: #e31937;
+  position: relative;
+  padding: 0.7em 0;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a {
+  border: 1px solid transparent;
+  top: 10px;
+  border-radius: 50%;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-prev-hover,
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-next-hover {
+  background: none;
+  border: 1px solid #fff;
+  top: 10px;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-prev-hover {
+  left: 2px;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-next-hover {
+  right: 2px;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a span {
+  margin-left: 0;
+  margin-top: 0;
+  top: 23%;
+  background-image: url("../images/date-arrows.png");
+  background-color: transparent;
+  background-repeat: no-repeat;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-prev span {
+  left: 27%;
+  right: auto;
+  background-position: 0 0;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header a.ui-datepicker-next span {
+  right: 23%;
+  left: auto;
+  background-position: 100% 0;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title select {
+  text-transform: uppercase;
+  font-family: 'OSS';
+  background-color: #e31937;
+  color: #fff;
+}
+div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title select option {
+  background-color: #fff;
+  color: #000;
 }
