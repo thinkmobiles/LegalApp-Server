@@ -1,7 +1,7 @@
 <ul class="doc-list documentItems">
     <%documents.forEach(function(doc){%>
         <li class="documentItem" data-val="<%= doc.status%>" data-id="<%=doc.id%>">
-            <span><%= doc.name%> <%= doc.created_at%></span>
+            <span><%= doc.name%></span>
             <div>
                 <a class="docClick" href="javascript:;">Edit</a>
             </div>

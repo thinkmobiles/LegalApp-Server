@@ -7,10 +7,18 @@ define([
     'text!templates/documents/documentsMainTemplate.html',
     'text!templates/documents/documentsListTemplate.html',
     'text!templates/documents/documentsGridTemplate.html',
-    'text!templates/documents/templatesListTemplate.html'
+    'text!templates/documents/templatesListTemplate.html',
+    'collections/titlesCollection',
+    'collections/titledDocsCollection'
 
-
-], function (DocInProgressView, MainTemplate, DocumentList, DocumentGrid, TemplateList) {
+], function (
+    DocInProgressView,
+    MainTemplate,
+    DocumentList,
+    DocumentGrid,
+    TemplateList,
+    TitleColl,
+    TitledDocs) {
 
     var View;
     View = Backbone.View.extend({
@@ -28,15 +36,24 @@ define([
             var self = this;
 
             this.stateModel = new Backbone.Model();
-            this.stateModel.set('viewType', options.viewType);
+            this.stateModel.set({
+                viewType      : options.viewType,
+                activeId      : null
+            });
+
             this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
             this.listenTo(this.stateModel, 'change:searchParams', this.search);
 
-            $.ajax({
-                url     : '/documents/list',
-                success : function(response){
-                    self.groupCollection = response;
-                    self.render();
+            this.docCollection = new TitledDocs();
+            this.docTitles = new TitleColl();
+
+            this.docTitles.on('trueSearch', this.renderTitlesList, this);
+            this.docCollection.on('reset', this.renderDocuments, this);
+
+            this.docTitles.fetch({
+                reset   : true,
+                success : function (){
+                    self.render()
                 }
             });
         },
@@ -46,14 +63,14 @@ define([
             "click .searchBtn"   : "getSearchParams",
             "click .templateListName": "setActive",
             "click .btnViewType" : "changeViewType",
-            "click .docClick"    : "goToPreview"
-            //"click .documentItem": "goToPreview"
+            "click .docClick"    : "goToPreview",
+            "click #closeIco"    : "showHideFilters"
         },
 
 
         goToPreview: function(event){
             var target = $(event.target).closest('.documentItem');
-            var targetId = target.data('id');
+            var targetId = target.attr('data-id');
             var targetStatus = target.data('val');
             if (targetStatus === 1) {
                 Backbone.history.navigate('documents/preview/' + targetId, {trigger: true});
@@ -62,15 +79,26 @@ define([
             }
         },
 
-        renderDocumentsList: function (data) {
-            var items = data || this.groupCollection;
+        renderTitlesList: function (firstTitleId) {
+            var items = this.docTitles.toJSON();
+            var container = this.$el.find("#templateList");
+            var templatesContainer = container.find(".mCSB_container");
 
-            this.$el.find('#templateList').html(this.templateList({templates : items}));
+            templatesContainer.html(this.templateList({templates : items}));
+
+            if (firstTitleId) {
+                this.getDocumentsByTemplateId(firstTitleId);
+            }
         },
 
-        showHideFilters: function (event) {
-            var target = $(event.target);
-            var searchContainer = this.$el.find("#searchContainer");
+        //docReset : function(){
+        //
+        //},
+
+        showHideFilters: function () {
+            var this_el = this.$el;
+            var target = this_el.find('.filters');
+            var searchContainer = this_el.find("#searchContainer");
 
             searchContainer.toggleClass('hidden');
             target.toggleClass('active');
@@ -80,60 +108,52 @@ define([
             var target = $(event.target).closest('.templateItem');
             var container = target.closest('ul');
 
-            this.activeTemplateId = target.data('id');
+            //this.activeTemplateId = target.data('id');
+            var activeId = target.attr('data-id');
+            this.stateModel.set('activeId', activeId);
 
             container.find('.active').removeClass('active');
             target.addClass('active');
 
-            this.getDocumentsByTemplateId();
+            this.getDocumentsByTemplateId(activeId);
         },
 
         getDocumentsByTemplateId: function (argTemplateId) {
             var self = this;
 
-            if(!this.activeTemplateId){
-                this.activeTemplateId = this.$el.find('.templateItem').first().data('id');
-            }
+            //if(!this.activeTemplateId){
+            //    this.activeTemplateId = this.$el.find('.templateItem').first().data('id');
+            //}
 
-            var templateId = this.activeTemplateId || argTemplateId;
+            var templateId = this.stateModel.get('activeId') || argTemplateId;
             var searchParams = self.stateModel.get('searchParams');
 
-            $.ajax({
+            this.docCollection.tempId = templateId;
+            this.docCollection.searchParams = searchParams;
+            this.docCollection.showMore({first : true});
+
+            /*$.ajax({
                 url : '/documents/list/'+templateId,
                 data: searchParams,
                 success : function(response){
                     self.currentCollByIds = response;
-                    self.createOurView();
+                    self.renderDocuments();
                 },
                 error : function (response){
                     alert(response.responseJSON.error);
                     console.log(response);
-                    self.clearOurView();
                 }
-            });
+            });*/
         },
 
-        createOurView: function(){
-            var documentsContainer = this.$el.find("#mCSB_1_container");
-            var curColl = this.currentCollByIds;
+        renderDocuments: function(){
+            var container = this.$el.find("#documentList");
+            var documentsContainer = container.find(".mCSB_container");
+            var curColl = this.docCollection.toJSON();
             var viewType = this.stateModel.get('viewType');
             var templateName = 'document_'+viewType;
 
             documentsContainer.html(this[templateName]({documents: curColl}));
-            //if (viewType === 'list') {
-            //    documentsContainer.html(this.documentList({documents: curColl}));
-            //} else {
-            //    documentsContainer.html(this.documentGrid({documents: curColl}));
-            //}
-
-            /*documentsContainer.mCustomScrollbar({
-                axis:"y",
-                theme:"dark",
-                setHeight: "70px",
-                onInit:function(){
-                    alert("scrollbars initialized");
-                }
-            });*/
 
             //documentsContainer.mCustomScrollbar("update");
 
@@ -141,16 +161,18 @@ define([
 
         },
 
-        clearOurView: function(){
-            var documentsContainer = this.$el.find("#documentList");
-
-            documentsContainer.html('');
-        },
+        //clearOurView: function(){
+        //    var documentsContainer = this.$el.find("#documentList");
+        //
+        //    documentsContainer.html('');
+        //},
 
         changeViewType: function(event){
-            var targetView = $(event.target).data('id');
-            this.stateModel.set('viewType',targetView);
+            var target = $(event.target);
+            this.stateModel.set('viewType', target.attr('data-id'));
 
+            this.$el.find('.btnViewType.active').removeClass('active');
+            target.addClass('active');
         },
 
         getSearchParams: function () {
@@ -179,7 +201,10 @@ define([
             var self = this;
             //var searchParams = self.getSearchParams();
             var searchParams = self.stateModel.get('searchParams');
-            var url = '/documents/list';
+
+            this.docTitles.letsSearch(searchParams);
+
+            /*var url = '/documents/list';
 
             $.ajax({
                 url: url,
@@ -189,7 +214,7 @@ define([
                     var template;
 
                     self.groupCollection = response;
-                    self.renderDocumentsList(response);
+                    self.renderTitlesList(response);
 
                     if (templateId) {
                         self.getDocumentsByTemplateId(templateId);
@@ -202,20 +227,25 @@ define([
                     alert(response.responseJSON.error);
                     console.log(response);
                 }
-            });
+            });*/
         },
 
         render: function () {
-            var items = this.groupCollection;
+            var state = this.stateModel.get('viewType');
 
-            this.$el.html(this.mainTemplate());
-            this.renderDocumentsList(items);
-            this.getDocumentsByTemplateId();
+            this.$el.html(this.mainTemplate({state : state}));
 
             this.$el.find('#documentList').mCustomScrollbar({
                 axis:"y",
                 theme:"dark"
             });
+
+            this.$el.find('#templateList').mCustomScrollbar({
+                axis:"y",
+                theme:"dark"
+            });
+
+            this.renderTitlesList();
 
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",
