@@ -326,6 +326,11 @@ var UsersHandler = function (PostGre) {
             TABLES.USERS + '.email',
             TABLES.USERS + '.id'
         ];
+        var page = queryOptions.page || 1;
+        var limit = queryOptions.count; //|| 10;
+        var orderBy = queryOptions.orderBy || (TABLES.PROFILES + '.first_name');
+        var order = queryOptions.order || 'ASC';
+        var query;
 
         if (queryOptions && queryOptions.companyId) {
             companyId = queryOptions.companyId;
@@ -343,7 +348,7 @@ var UsersHandler = function (PostGre) {
             console.time('>>> get usersKnex time');
         }
 
-        knex(TABLES.USERS)
+        query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
             .select(columns)
@@ -364,7 +369,16 @@ var UsersHandler = function (PostGre) {
                     this.andWhere(TABLES.USERS + '.id', userId);
                 }
 
-            })
+            });
+
+        if (page && limit) {
+            query
+                .offset(( page - 1 ) * limit)
+                .limit(limit);
+        }
+
+        query
+            .orderBy(orderBy, order)
             .exec(function (err, rows) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.timeEnd('>>> get usersKnex time');
@@ -1075,7 +1089,10 @@ var UsersHandler = function (PostGre) {
         var uri = req.originalUrl;
         var uId = req.params.id;
         var companyId = req.session.companyId;
-        var queryOptions = {};  //TODO: query options page, count, orderBy ...
+        var queryOptions = {
+            page: options.page,
+            count: options.count
+        };
 
         (uri === '/clients') ? queryOptions.withoutCompany = companyId : queryOptions.companyId = companyId;
 
@@ -1165,7 +1182,6 @@ var UsersHandler = function (PostGre) {
 
         query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
-            //.innerJoin(TABLES.USER_COMPANIES, TABLES.USERS + '.id', TABLES.USER_COMPANIES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id');
 
         query.where(function (qb) {
@@ -1201,7 +1217,7 @@ var UsersHandler = function (PostGre) {
         if (page && limit) {
             query
                 .offset(( page - 1 ) * limit)
-                .limit(limit)
+                .limit(limit);
         }
 
         query
