@@ -11,8 +11,6 @@ define([
 
     View = Backbone.View.extend({
 
-        //id      : "listTable",
-        //tagName : "table",
         el : '#usersTable',
 
         events: {

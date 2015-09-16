@@ -49,6 +49,13 @@
   -moz-box-sizing:    @type;
   box-sizing:         @type;
 }
+//@keyframes doc-hover {
+//  from {background-size: 0 0;}
+//  to {background-size: 24px 24px}
+//}
+
+/* The element to apply the animation to */
+
 .font-osr(){
   font-family: 'OSR';
 }
@@ -727,7 +734,7 @@ a {
       display: table-row;
       width: 100%;
       span{
-        .transition(@duration:0.8s);
+        .transition();
         background-image: url("../images/list-view-doc-ico.png");
         background-repeat: no-repeat;
         background-position: 15px 50%;
@@ -746,12 +753,13 @@ a {
         min-width: 30px;
         background-image: url("../images/list-view-doc-edit-ico.png");
         background-repeat: no-repeat;
-        background-position: 500% 50%;
+        background-position: 50% 50%;
+        background-size: 0 0;
         background-color: transparent;
         height: 100%;
         display: table-cell;
         overflow: hidden;
-        .transition(@duration:0.8s);
+        .transition();
         vertical-align: middle;
         a{
           display: block;
@@ -764,8 +772,10 @@ a {
           background-color: #fff;
         }
         div{
+          animation-name: doc-hover;
+          animation-duration: .5s;
           background-color: #fff;
-          background-position: 50% 50%;
+          //background-position: 50% 50%;
 
         }
 
@@ -1389,5 +1399,134 @@ a {
 .linked_state {
   .main_type {
     display: none;
+  }
+}
+
+div#ui-datepicker-div.ui-datepicker{
+  width: auto;
+  padding: 0;
+  &,& *{
+    border: 0;
+    border-radius: 0;
+  }
+  table{
+    background: #d6d4d4;
+    margin: 0;
+    thead{
+      position: relative;
+      th{
+        padding: 1.1em 1.2em;
+        &:first-child{
+          padding-left: .78em;
+        }
+        &:last-child{
+          padding-right: .78em;
+        }
+      }
+      &:after{
+        display: block;
+        content: '';
+        height: 1px;
+        background: #979696;
+        position: absolute;
+        top: 92px;
+        left: 9px;
+        right: 9px;
+      }
+    }
+    tbody{
+      tr{
+        &:last-child{
+          td{
+            padding-bottom: 2px;
+          }
+        }
+      }
+      td{
+        padding: 0;
+        a{
+          text-align: center;
+          .font-oss;
+          font-size: 1.2em;
+          display: block;
+          width: 35px;
+          height: 35px;
+          line-height: 35px;
+          margin: auto;
+          padding: 0;
+          &:hover{
+            color: #E31937;
+          }
+          &.ui-state-default{
+            background: none;
+          }
+          &.ui-state-active{
+            background: #fff;
+          }
+          &.ui-state-highlight{
+            background: #aeadad;
+          }
+        }
+      }
+    }
+  }
+  .ui-widget-header{
+    background: #e31937;
+    position: relative;
+    padding: 0.7em 0;
+    a{
+      border: 1px solid transparent;
+      top: 10px;
+      border-radius: 50%;
+      &.ui-datepicker-prev-hover,
+      &.ui-datepicker-next-hover{
+        background: none;
+        border: 1px solid #fff;
+        top: 10px;
+
+      }
+      &.ui-datepicker-prev-hover{
+        left: 2px;
+      }
+      &.ui-datepicker-next-hover{
+        right: 2px;
+      }
+      span{
+        margin-left: 0;
+        margin-top: 0;
+        top: 23%;
+        background-image: url("../images/date-arrows.png");
+        background-color: transparent;
+        background-repeat: no-repeat;
+
+      }
+      &.ui-datepicker-prev{
+        span{
+          left: 27%;
+          right: auto;
+          background-position: 0 0;
+        }
+      }
+      &.ui-datepicker-next{
+        span{
+          right: 23%;
+          left: auto;
+          background-position: 100% 0;
+        }
+      }
+    }
+
+    .ui-datepicker-title{
+      select{
+        text-transform: uppercase;
+        .font-oss;
+        background-color: #e31937;
+        color:#fff;
+        option{
+          background-color: #fff;
+          color:#000;
+        }
+      }
+    }
   }
 }

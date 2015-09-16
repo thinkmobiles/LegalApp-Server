@@ -4,12 +4,19 @@
 
 define([
     'text!templates/users/usersTemplate.html',
+    'text!templates/forSelect/companyNamesTemplate.html',
     'collections/usersCollection',
     'views/users/addUserView',
     'views/users/editUserView',
     'views/users/usersListView'
 
-], function (UsersTemplate, UsersCollection , AddUserView , EditUserView, UsrListView) {
+], function (
+    UsersTemplate,
+    CompanyName,
+    UsersCollection ,
+    AddUserView ,
+    EditUserView,
+    UsrListView) {
 
     var View;
 
@@ -17,19 +24,23 @@ define([
 
         el : '#wrapper',
 
+        companyTemp : _.template(CompanyName),
+        mainTemp    : _.template(UsersTemplate),
+
         events: {
             "click #addNewUser"              : "showAddTemplate",
             "click .userRow:not(.activeRow)" : "showEditTemplate",
             "click .activeRow"               : "hideEdit",
             "click #adminClient>span "       : "changeCurrentState",
             "click .sel_item"                : "selectSomething",
-            "click .sel_container"           : "showHideSelect"
-            //"click .sel_container:not(#create_company>#newCompName)" : "showHideSelect"
+            "click .sel_container"           : "showHideSelect",
+            "click #goSaveCompany"           : "goSaveCompany",
+            "click #addInvite"               : "inviteUser"
         },
 
         initialize: function () {
             this.stateModel = new Backbone.Model();
-            this.stateModel.set('currentState', true);
+            this.stateModel.set('isOurCompUsers', true);
             this.render();
 
             this.usersCollection = new UsersCollection();
@@ -37,7 +48,7 @@ define([
             //this.clientsCollection = new Backbone.Collection();
             //this.clientsCollection.url = "/clients";
 
-            this.listenTo(this.stateModel, 'change:currentState', this.renderTrigger);
+            this.listenTo(this.stateModel, 'change:isOurCompUsers', this.changeView);
             this.listenTo(this.usersCollection, 'reset', this.renderUsersList);
             this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
         },
@@ -70,7 +81,7 @@ define([
             target.addClass('active');
 
             theState = !!+target.data('id');
-            this.stateModel.set('currentState', theState);
+            this.stateModel.set('isOurCompUsers', theState);
 
             if (theState){
                 sel_visible.addClass('hide');
@@ -87,12 +98,12 @@ define([
             }
         },
 
-        renderTrigger : function(){
-            var theState = this.stateModel.get('currentState');
+        changeView : function(){
+            var theState = this.stateModel.get('isOurCompUsers');
 
-            if (this.addView){
-                this.addView.currentState=theState;
-            }
+            //if (this.addView){
+            //    this.addView.currentState=theState;
+            //}
 
             if (theState) {
                 this.usersCollection.fetch({reset: true})
@@ -102,7 +113,7 @@ define([
         },
 
         renderUsersList : function(){
-            var theState = this.stateModel.get('currentState');
+            var theState = this.stateModel.get('isOurCompUsers');
 
             if (this.tableView){
                 this.tableView.undelegateEvents()
@@ -121,16 +132,16 @@ define([
             }
         },
 
-        addTemplate : function(){
-
-            if (this.addView){
-                this.addView.undelegateEvents()
-            }
-
-            this.addView = new AddUserView();
-            this.addView.on('redirectList', this.renderTrigger, this);
-            this.$el.find('#addUserContainer').html(this.addView.el);
-        },
+        //addTemplate : function(){
+        //
+        //    if (this.addView){
+        //        this.addView.undelegateEvents()
+        //    }
+        //
+        //    this.addView = new AddUserView();
+        //    this.addView.on('redirectList', this.changeView, this);
+        //    this.$el.find('#addUserContainer').html(this.addView.el);
+        //},
 
         showEditTemplate : function(event){
             var userRow = $(event.target).closest('.userRow');
@@ -155,15 +166,108 @@ define([
 
             editableUser.currentState = theState;
             this.editView = new EditUserView({userModel : editableUser});
-            this.editView.on('redirectList', this.renderTrigger, this);
+            this.editView.on('redirectList', this.changeView, this);
 
             userRow.after(this.editView.el);
         },
 
-        render: function () {
-            this.$el.html(_.template(UsersTemplate));
+        renderCompanies : function(){
+            var self = this;
 
-            this.addTemplate();
+            $.ajax({
+                url  : "/companies",
+                type : "GET",
+
+                success : function(response){
+                    self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
+                }
+            });
+        },
+
+        goSaveCompany: function(event){
+            event.preventDefault();
+            event.stopPropagation();
+
+            var self = this;
+            var this_el = this.$el;
+            var newCompany = this_el.find('#newCompName').val().trim();
+            var resultField = this_el.find('#selectedCompany');
+
+            $.ajax({
+                url : '/companies',
+                type : 'POST',
+                data : {name : newCompany},
+                success : function(response){
+                    var model = response.model;
+                    resultField.text(model.name);
+                    resultField.attr('data-id', model.id);
+                    resultField.closest('.sel_container').removeClass('active');
+                    self.renderCompanies();
+                },
+                error   : function(){}
+            });
+        },
+
+        inviteUser: function (){
+            var self   = this;
+            var theState = self.stateModel.get('isOurCompUsers');
+            var thisEL = self.$el;
+            var firstName = thisEL.find('#addFName');
+            var lastName  = thisEL.find('#addLName');
+            var phone = thisEL.find('#addPhone');
+            var email = thisEL.find('#addEmail');
+            var permissions = thisEL.find(".addRole").data('id');
+            var sel_company = thisEL.find("#selectedCompany");
+            var companyId = sel_company.attr('data-id');
+
+            var inviteData = {
+                first_name  : firstName.val().trim(),
+                last_name   : lastName.val().trim(),
+                phone       : phone.val().trim(),
+                email       : email.val().trim(),
+                permissions : theState ? permissions : (permissions+10)
+            };
+
+            if (!theState && +companyId === 0){
+                return alert("Enter, please, your client's company!");
+            }
+
+            if (!theState) {
+                inviteData.companyId = companyId;
+            }
+
+            this.userModel = new UserModel();
+
+            this.userModel.save(inviteData,{
+                wait : true,
+                success : function(){
+                    alert('User invited successfully');
+
+                    firstName.val('');
+                    lastName.val('');
+                    phone.val('');
+                    email.val('');
+                    sel_company.text('Select company');
+                    sel_company.attr('data-id', 0);
+
+                    self.trigger('redirectList');
+                },
+                error : function(){
+                    alert('Error'); // todo message
+                }
+            });
+        },
+
+        render: function () {
+            var role = App.sessionData.get('permissions');
+            var company = App.sessionData.get('companyId');
+
+            this.$el.html(this.mainTemp({
+                role    : role,
+                company : company
+            }));
+
+            this.renderCompanies();
 
             return this;
         },
