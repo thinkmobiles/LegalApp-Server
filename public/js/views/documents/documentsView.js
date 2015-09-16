@@ -129,7 +129,7 @@ define([
             var searchParams = self.stateModel.get('searchParams');
 
             this.docCollection.tempId = templateId;
-            this.docCollection.searchParams = searchParams;
+            this.docCollection.searchParams = searchParams || {};
             this.docCollection.showMore({first : true});
 
             /*$.ajax({
