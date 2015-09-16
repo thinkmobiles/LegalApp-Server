@@ -1639,28 +1639,34 @@ var DocumentsHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var permissions = req.session.permissions;
         var TEMPLATES = TABLES.TEMPLATES;
-        var query = knex(TEMPLATES);
+        var DOCUMENTS = TABLES.DOCUMENTS;
         var params = req.query;
         var page = params.page || 1;
         var limit = params.count;
         var subQuery;
         var subQueryString;
         var fields;
+        var query;
 
         if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
             !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
             params.companyId = companyId;
         }
 
-        subQuery = setDocumentsCountQuery(params);
-        subQueryString = knex.raw("(" + subQuery.toString() + ") as count");
+        //subQuery = setDocumentsCountQuery(params);
+        //subQueryString = knex.raw("(" + subQuery.toString() + ") as count");
         fields = [
             TEMPLATES + '.id',
-            TEMPLATES + '.name',
-            knex.raw(subQueryString)
+            TEMPLATES + '.name'//,
+            //knex.raw(subQueryString)
         ];
 
+        query = knex(TEMPLATES);
+
         query
+            .innerJoin(DOCUMENTS, TEMPLATES + '.id', DOCUMENTS + '.template_id')
+            .count(TEMPLATES + '.id')
+            .groupBy(TEMPLATES + '.id')
             .select(fields)
             .orderBy(TEMPLATES + '.name');
 
@@ -1688,6 +1694,8 @@ var DocumentsHandler = function (PostGre) {
         var status = params.status;
         var from = params.from;
         var to = params.to;
+        var page = params.page || 1;
+        var limit = params.count;
         var fromDate;
         var toDate;
         var orderBy;
@@ -1750,6 +1758,12 @@ var DocumentsHandler = function (PostGre) {
                 });
 
                 qb.orderBy(orderBy, order);
+
+                if (page && limit){
+                    qb.offset(( page - 1 ) * limit)
+                        .limit(limit);
+                }
+
             })
             .fetchAll()
             .exec(function (err, rows) {
