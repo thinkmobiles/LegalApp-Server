@@ -80,8 +80,11 @@ module.exports = function (db) {
             lastNameCounter++;
             return 'last_name_' + lastNameCounter;
         },
-        company: function () {
+        /*company: function () {
             return 'company_' + Math.round(Math.random() * 200)
+        },*/
+        company_id: function () {
+            return Math.round(Math.random() * 200)
         },
         phone: function () {
             return '101' + Math.round(Math.random() * 9) + '54' + Math.round(Math.random() * 9) + '777' + Math.round(Math.random() * 9)
@@ -94,7 +97,7 @@ module.exports = function (db) {
         }
     });
 
-    //user_companies:
+    /*//user_companies:
     factory.define(TABLES.USER_COMPANIES, UserCompanies, {
         user_id: function () {
             userCounter++;
@@ -103,7 +106,7 @@ module.exports = function (db) {
         company_id: function () {
             return Math.round(Math.random() * 200)
         }
-    });
+    });*/
 
     //users:
     factory.define(TABLES.USERS, User, {
