@@ -14,7 +14,7 @@ module.exports = function (app) {
     router.get('/search', session.authenticatedEditor, users.searchUsers);
     router.get('/count', session.authenticatedEditor, users.countUsers);
     router.post('/', session.authenticatedAdmin, users.inviteUser);
-    router.get('/:id', session.authenticatedUser, users.getUsers);
+    router.get('/:id', session.authenticatedUser, users.getUser);
     router.get('/:id/signature', session.authenticatedUser, users.getUserSignature);
     router.put('/:id', session.authenticatedAdmin, users.updateUser);
     router.post('/:id/accept', session.authenticatedAdmin, users.acceptUser);

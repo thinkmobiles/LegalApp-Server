@@ -50,7 +50,7 @@ module.exports = function (app) {
     app.put('/profile',  users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
-    app.get('/clients', session.authenticatedUser, users.getUsers);
+    app.get('/clients', session.authenticatedUser, users.getClients);
     app.put('/clients/:id', session.authenticatedAdmin, users.updateUser);
     app.patch('/clients/:id', session.authenticatedAdmin, users.updateUser);
     app.post('/helpMe', users.helpMe);
