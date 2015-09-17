@@ -32,8 +32,8 @@ describe('Database initialization', function () {
     });
 
     it('Fill Database with big data', function(done){
-        var start = require('./startToFillDb');
-        start(PostGre, done);
+        var startToFillDb = require('./startToFillDb');
+        startToFillDb(PostGre, done);
     });
 
     /*it('Create default data', function (done) {

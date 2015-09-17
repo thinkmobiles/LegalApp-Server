@@ -20,21 +20,22 @@ define([
         showMore: function (options) {
             var searchOptions = this.searchParams;
             var self = this;
-            var needReset = false;
+            var needAppend = true;
 
             if (options && options.first){
-                needReset = true;
+                needAppend = false;
                 self.page = 1;
             }
 
+            searchOptions.page = self.page;
+            searchOptions.count = 20;
+
             this.fetch({
                 data    : searchOptions,
-                reset   : needReset,
+                reset   : true,
                 success : function(){
                     self.page += 1;
-                    if (!self.first){
-                        self.trigger('showMore');
-                    }
+                    self.trigger('showMore', needAppend);
                 }
             });
         }

@@ -48,7 +48,7 @@ define([
             this.docTitles = new TitleColl();
 
             this.docTitles.on('trueSearch', this.renderTitlesList, this);
-            this.docCollection.on('reset', this.renderDocuments, this);
+            this.docCollection.on('showMore', this.renderDocuments, this);
 
             this.docTitles.fetch({
                 reset   : true,
@@ -129,7 +129,7 @@ define([
             var searchParams = self.stateModel.get('searchParams');
 
             this.docCollection.tempId = templateId;
-            this.docCollection.searchParams = searchParams;
+            this.docCollection.searchParams = searchParams || {};
             this.docCollection.showMore({first : true});
 
             /*$.ajax({
@@ -146,14 +146,23 @@ define([
             });*/
         },
 
-        renderDocuments: function(){
+        onScrollEnd: function (){
+            this.docCollection.showMore();
+        },
+
+        renderDocuments: function(needAppend){
             var container = this.$el.find("#documentList");
             var documentsContainer = container.find(".mCSB_container");
             var curColl = this.docCollection.toJSON();
             var viewType = this.stateModel.get('viewType');
             var templateName = 'document_'+viewType;
 
-            documentsContainer.html(this[templateName]({documents: curColl}));
+            if (needAppend){
+                documentsContainer.append(this[templateName]({documents: curColl}));
+            } else {
+                documentsContainer.html(this[templateName]({documents: curColl}));
+            }
+
 
             //documentsContainer.mCustomScrollbar("update");
 
@@ -232,12 +241,19 @@ define([
 
         render: function () {
             var state = this.stateModel.get('viewType');
+            var self = this;
 
             this.$el.html(this.mainTemplate({state : state}));
 
             this.$el.find('#documentList').mCustomScrollbar({
-                axis:"y",
-                theme:"dark"
+                axis      :"y",
+                theme     :"dark",
+                callbacks :{
+                    onTotalScroll : function(){
+                        self.docCollection.showMore();
+                    }
+                }
+
             });
 
             this.$el.find('#templateList').mCustomScrollbar({
