@@ -48,7 +48,7 @@ define([
             this.listenTo(this.usersCollection, 'appendUsers', this.renderUsersList);
             //this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
 
-            this.usersCollection.showMore({first : true});
+            //this.usersCollection.showMore({first : true});
         },
 
         selectSomething: function(event){
@@ -99,31 +99,27 @@ define([
         changeView : function(){
             var theState = this.stateModel.get('isOurCompUsers');
 
-            //if (this.addView){
-            //    this.addView.currentState=theState;
-            //}
-
             this.usersCollection.showMore({
                 first   : true,
                 clients : !theState
             });
-
-            //if (theState) {
-            //    this.usersCollection.fetch({reset: true})
-            //} else {
-            //    this.clientsCollection.fetch({reset: true})
-            //}
         },
 
         renderUsersList : function(is_new){
             var theState = this.stateModel.get('isOurCompUsers');
             var isNew = is_new || false;
 
-            this.$el.find('#listTable').html(this.listTemp({
-                usrLst : this.usersCollection.toJSON(),
-                state  : theState
-            }));
-
+            if (isNew){
+                this.$el.find('#listTable').html(this.listTemp({
+                    usrLst : this.usersCollection.currentPage,
+                    state  : theState
+                }));
+            } else {
+                this.$el.find('#listTable').append(this.listTemp({
+                    usrLst : this.usersCollection.currentPage,
+                    state  : theState
+                }));
+            }
         },
 
         //addTemplate : function(){
@@ -261,7 +257,7 @@ define([
                 scrollInertia: 0
             });
 
-            //this.changeView();
+            this.usersCollection.showMore({first : true});
             this.renderCompanies();
 
             return this;
