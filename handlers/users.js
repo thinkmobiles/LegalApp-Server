@@ -1100,7 +1100,8 @@ var UsersHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var queryOptions = {
             page: options.page,
-            count: options.count
+            count: options.count,
+            companyId: companyId
         };
 
         getUsersByCriteria(queryOptions, function (err, rows) {
