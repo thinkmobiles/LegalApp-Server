@@ -6,16 +6,13 @@ define([
     'text!templates/users/usersTemplate.html',
     'text!templates/forSelect/companyNamesTemplate.html',
     'collections/usersCollection',
-    'views/users/addUserView',
     'views/users/editUserView',
-    //'views/users/usersListView'
     'text!templates/users/usersListTemplate.html'
 
 ], function (
     UsersTemplate,
     CompanyName,
     UsersCollection ,
-    AddUserView ,
     EditUserView,
     UsrListTemp) {
 
@@ -122,16 +119,7 @@ define([
             var theState = this.stateModel.get('isOurCompUsers');
             var isNew = is_new || false;
 
-            /*if (this.tableView){
-                this.tableView.undelegateEvents()
-            }
-
-            this.tableView = new UsrListView({
-                coll : this.usersCollection,
-                state: theState
-            });*/
-
-            this.$el.find('#usersTable').html(this.listTemp({
+            this.$el.find('#listTable').html(this.listTemp({
                 usrLst : this.usersCollection.toJSON(),
                 state  : theState
             }));
@@ -177,8 +165,6 @@ define([
 
             $.ajax({
                 url  : "/companies",
-                type : "GET",
-
                 success : function(response){
                     self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
                 }
@@ -237,9 +223,10 @@ define([
                 inviteData.companyId = companyId;
             }
 
-            this.userModel = new UserModel();
+            //this.userModel = new UserModel();
 
-            this.userModel.save(inviteData,{
+            //this.userModel.save(inviteData,{
+            this.usersCollection.create(inviteData,{
                 wait : true,
                 success : function(){
                     alert('User invited successfully');
@@ -251,7 +238,7 @@ define([
                     sel_company.text('Select company');
                     sel_company.attr('data-id', 0);
 
-                    self.trigger('redirectList');
+                    //self.trigger('redirectList');
                 },
                 error : function(){
                     alert('Error'); // todo message
@@ -267,6 +254,12 @@ define([
                 role    : role,
                 company : company
             }));
+
+            this.$el.find('#tablesContent').mCustomScrollbar({
+                theme:"dark",
+                setHeight : '600px',
+                scrollInertia: 0
+            });
 
             //this.changeView();
             this.renderCompanies();

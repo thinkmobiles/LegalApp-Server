@@ -41,21 +41,15 @@ define([
                 activeId      : null
             });
 
-            this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
-            this.listenTo(this.stateModel, 'change:searchParams', this.search);
-
             this.docCollection = new TitledDocs();
             this.docTitles = new TitleColl();
 
-            this.docTitles.on('trueSearch', this.renderTitlesList, this);
-            this.docCollection.on('showMore', this.renderDocuments, this);
+            this.render();
 
-            this.docTitles.fetch({
-                reset   : true,
-                success : function (){
-                    self.render()
-                }
-            });
+            this.listenTo(this.stateModel, 'change:viewType', this.getDocumentsByTemplateId);
+            this.listenTo(this.stateModel, 'change:searchParams', this.search);
+            this.docTitles.on('showMore', this.renderTitlesList, this);
+            this.docCollection.on('showMore', this.renderDocuments, this);
         },
 
         events : {
@@ -84,10 +78,11 @@ define([
             var container = this.$el.find("#templateList");
             var templatesContainer = container.find(".mCSB_container");
 
-            templatesContainer.html(this.templateList({templates : items}));
-
             if (firstTitleId) {
+                templatesContainer.html(this.templateList({templates : items}));
                 this.getDocumentsByTemplateId(firstTitleId);
+            } else {
+                templatesContainer.append(this.templateList({templates : items}));
             }
         },
 
@@ -146,9 +141,9 @@ define([
             });*/
         },
 
-        onScrollEnd: function (){
+        /*onScrollEnd: function (){
             this.docCollection.showMore();
-        },
+        },*/
 
         renderDocuments: function(needAppend){
             var container = this.$el.find("#documentList");
@@ -163,18 +158,9 @@ define([
                 documentsContainer.html(this[templateName]({documents: curColl}));
             }
 
-
-            //documentsContainer.mCustomScrollbar("update");
-
             Backbone.history.navigate("documents/"+viewType);
 
         },
-
-        //clearOurView: function(){
-        //    var documentsContainer = this.$el.find("#documentList");
-        //
-        //    documentsContainer.html('');
-        //},
 
         changeViewType: function(event){
             var target = $(event.target);
@@ -208,35 +194,10 @@ define([
 
         search: function () {
             var self = this;
-            //var searchParams = self.getSearchParams();
-            var searchParams = self.stateModel.get('searchParams');
 
-            this.docTitles.letsSearch(searchParams);
+            this.docTitles.searchParams = self.stateModel.get('searchParams');
+            this.docTitles.showMore({first : true});
 
-            /*var url = '/documents/list';
-
-            $.ajax({
-                url: url,
-                data: searchParams,
-                success: function(response) {
-                    var templateId = self.activeTemplateId;
-                    var template;
-
-                    self.groupCollection = response;
-                    self.renderTitlesList(response);
-
-                    if (templateId) {
-                        self.getDocumentsByTemplateId(templateId);
-                        template = self.$el.find('#templateList [data-id=' + templateId + ']');
-                        $(template).addClass('active');
-                    }
-
-                },
-                error: function (response) {
-                    alert(response.responseJSON.error);
-                    console.log(response);
-                }
-            });*/
         },
 
         render: function () {
@@ -246,8 +207,10 @@ define([
             this.$el.html(this.mainTemplate({state : state}));
 
             this.$el.find('#documentList').mCustomScrollbar({
-                axis      :"y",
-                theme     :"dark",
+                theme               :"dark",
+                alwaysShowScrollbar : 2,
+                autoHideScrollbar   : true,
+                scrollInertia       : 0,
                 callbacks :{
                     onTotalScroll : function(){
                         self.docCollection.showMore();
@@ -257,11 +220,16 @@ define([
             });
 
             this.$el.find('#templateList').mCustomScrollbar({
-                axis:"y",
-                theme:"dark"
+                theme               :"dark",
+                alwaysShowScrollbar : 2,
+                autoHideScrollbar   : true,
+                scrollInertia       : 0,
+                callbacks :{
+                    onTotalScroll : function(){
+                        self.docTitles.showMore();
+                    }
+                }
             });
-
-            this.renderTitlesList();
 
             this.$el.find('.fromDate, .toDate').datepicker({
                 dateFormat  : "d M, yy",
@@ -269,11 +237,18 @@ define([
                 changeYear  : true
             });
 
+            this.docTitles.searchParams = {};
+            this.docTitles.showMore({first : true});
+
             return this;
         },
 
         afterRender: function (){
             var navContainer = $('.sidebar-menu');
+
+            /*this.docTitles.searchParams = {};
+            this.docTitles.showMore({first : true});*/
+
             navContainer.find('.active').removeClass('active');
             navContainer.find('#nav_document').addClass('active')
         }

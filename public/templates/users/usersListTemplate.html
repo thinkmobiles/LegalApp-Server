@@ -1,40 +1,28 @@
-<thead>
-<tr>
-    <th class="sortableData" data-sort="name" width="26%">NAME</th>
-    <% if (!state) {%>
-        <th class="sortableData" data-sort="company" width="25%">COMPANY</th>
-    <%}%>
-    <th class="sortableData" data-sort="role" width="13%">ROLE</th>
-    <th data-sort="signing" width="13%">SIGNING</th>
-    <th width="22%">DESCRIPTION</th>
-</tr>
-</thead>
-<tbody id="listTable">
-<!--<tr>-->
-    <!--<div></div>-->
-<!--</tr>-->
 
-<% usrLst.forEach(function(user){%>
+<!--<table>-->
+    <!--<tbody id="listTable">-->
 
-<tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
-    <td class="rName"><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-    <% if (!state) {%>
-        <td class="rComp"><%= user.company.name%></td>
-    <%}%>
-    <td class="rRole">
-        <%if (user.profile.permissions % 10 === 3){%>Viewer<%} else {%>
-            <%if (user.profile.permissions % 10 === 2){%>Editor<%} else {%>Admin<%}%>
+    <% usrLst.forEach(function(user){%>
+
+    <tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
+        <td class="rName"><%= user.profile.first_name%> <%= user.profile.last_name%></td>
+        <% if (!state) {%>
+            <td class="rComp"><%= user.company.name%></td>
         <%}%>
-    </td>
-    <td class="rCheck">
-        <input id="check-<%= user.id%>" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-<%= user.id%>"></label>
-    </td>
-    <td class="rDisk">
-        <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
-    </td>
-</tr>
+        <td class="rRole">
+            <%if (user.profile.permissions % 10 === 3){%>Viewer<%} else {%>
+                <%if (user.profile.permissions % 10 === 2){%>Editor<%} else {%>Admin<%}%>
+            <%}%>
+        </td>
+        <td class="rCheck">
+            <input id="check-<%= user.id%>" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-<%= user.id%>"></label>
+        </td>
+        <td class="rDisk">
+            <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
+        </td>
+    </tr>
 
-<% }) %>
+    <% }) %>
 
-</tbody>
-
+    <!--</tbody>-->
+<!--</table>-->

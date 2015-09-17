@@ -28,7 +28,7 @@ define([
             }
 
             searchOptions.page = self.page;
-            searchOptions.count = 20;
+            searchOptions.count = 100;
 
             this.fetch({
                 data    : searchOptions,

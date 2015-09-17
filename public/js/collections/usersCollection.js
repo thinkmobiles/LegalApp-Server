@@ -37,6 +37,11 @@ define([
             var self = this;
             var options = argOptions;
             var first;
+            var fetchOptions = {};
+            var paginationCollection = new Backbone.Collection();
+
+            paginationCollection.url = this.url;
+            paginationCollection.model = UserModel;
 
             if (options && options.first){
                 first = true;
@@ -51,13 +56,21 @@ define([
                 self.clients = false;
             }
 
-            this.fetch({
+            fetchOptions.page = self.page;
+            fetchOptions.count = 20;
+
+            paginationCollection.fetch({
+                data   : fetchOptions,
                 reset  : true,
                 success: function(){
                     self.page += 1;
-                    self.trigger('appendUsers', first)
+                    //self.trigger('appendUsers', first)
                 }
             });
+
+            this.add(paginationCollection);
+
+            return paginationCollection
         }
     });
 
