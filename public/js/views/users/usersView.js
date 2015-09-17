@@ -243,6 +243,7 @@ define([
         },
 
         render: function () {
+            var self = this;
             var role = App.sessionData.get('permissions');
             var company = App.sessionData.get('companyId');
 
@@ -252,9 +253,17 @@ define([
             }));
 
             this.$el.find('#tablesContent').mCustomScrollbar({
-                theme:"dark",
-                setHeight : '600px',
-                scrollInertia: 0
+                theme               :"dark",
+                alwaysShowScrollbar : 2,
+                autoHideScrollbar   : true,
+                scrollInertia       : 0,
+                setHeight           : 680,
+                callbacks :{
+                    onTotalScroll : function(){
+                        var theState = self.stateModel.get('isOurCompUsers');
+                        self.usersCollection.showMore({clients : !theState});
+                    }
+                }
             });
 
             this.usersCollection.showMore({first : true});

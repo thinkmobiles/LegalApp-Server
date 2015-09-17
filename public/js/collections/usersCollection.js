@@ -30,7 +30,12 @@ define([
         initialize: function(options){
 
             if (options && options.status) {
-                this.url = "/users/search?status=" + options.status;
+                this.url = "/users/search";
+
+                this.fetch({
+                    data  : {status : options.status},
+                    reset : true
+                })
             }
         },
 
@@ -57,7 +62,7 @@ define([
             paginationCollection.url = this.url();
 
             fetchOptions.page = self.page;
-            fetchOptions.count = 20;
+            fetchOptions.count = 50;
 
             paginationCollection.fetch({
                 data   : fetchOptions,
