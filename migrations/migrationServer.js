@@ -83,7 +83,7 @@ app.get('/databases/drop', function (req, res) {
 
 app.get('/test', function (req, res, next) {
 
-    defTempl.CreateDefaultTemplates(function (err) {
+    defTempl.createDefaultTemplates(function (err) {
 
         if(err) {
             return next(err)

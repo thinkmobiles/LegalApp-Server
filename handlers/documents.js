@@ -1643,6 +1643,14 @@ var DocumentsHandler = function (PostGre) {
         var params = req.query;
         var page = params.page || 1;
         var limit = params.count;
+
+        var name = params.name;
+        var status = params.status;
+        var from = params.from;
+        var to = params.to;
+        var fromDate;
+        var toDate;
+
         var subQuery;
         var subQueryString;
         var fields;
@@ -1665,7 +1673,61 @@ var DocumentsHandler = function (PostGre) {
 
         query
             .innerJoin(DOCUMENTS, TEMPLATES + '.id', DOCUMENTS + '.template_id')
-            .count(TEMPLATES + '.id')
+            .count(TEMPLATES + '.id');
+
+        if (name) {
+            name = name.toLowerCase();
+            query.whereRaw(
+                "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
+            );
+        }
+
+        if ((status !== undefined) && (status !== 'all')) {
+            query.andWhere(DOCUMENTS + '.status', status);
+        }
+
+        if (from) {
+            fromDate = new Date(from);
+            query.andWhere(DOCUMENTS + '.created_at', '>=', fromDate);
+        }
+
+        if (to) {
+            toDate = new Date(to);
+            query.andWhere(DOCUMENTS + '.created_at', '<=', toDate);
+        }
+
+        if (params.companyId) {
+            query.andWhere(DOCUMENTS + '.company_id', '=', params.companyId)
+        }
+
+            /*.where(function () {
+                if ((status !== undefined) && (status !== 'all')) {
+                    this.andWhere(DOCUMENTS + '.status', status);
+                }
+
+                if (name) {
+                    name = name.toLowerCase();
+                    this.whereRaw(
+                        "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
+                    );
+                }
+
+                if (from) {
+                    fromDate = new Date(from);
+                    this.where(DOCUMENTS + '.created_at', '>=', fromDate);
+                }
+
+                if (to) {
+                    toDate = new Date(to);
+                    this.where(DOCUMENTS + '.created_at', '<=', toDate);
+                }
+
+                if (params.companyId) {
+                    this.where(DOCUMENTS + '.company_id', '=', params.companyId)
+                }
+            })*/
+
+        query
             .groupBy(TEMPLATES + '.id')
             .select(fields)
             .orderBy(TEMPLATES + '.name');

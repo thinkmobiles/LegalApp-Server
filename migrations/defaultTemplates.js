@@ -4,8 +4,28 @@ var TABLES = require('../constants/tables');
 var FIELD_TYPES = require('../constants/fieldTypes');
 var PERMISSIONS = require('../constants/permissions');
 var CONSTANTS = require('../constants/index');
+var BUCKETS = require('../constants/buckets');
+var fs = require('fs');
 
 var async = require('async');
+var MammothHandler = require('../handlers/mammoth');
+var uploaderConfig;
+var amazonS3conf;
+
+if (process.env.UPLOADER_TYPE === 'AmazonS3') {
+    amazonS3conf = require('../config/aws');
+    uploaderConfig = {
+        type: process.env.UPLOADER_TYPE,
+        awsConfig: amazonS3conf
+    };
+} else {
+    uploaderConfig = {
+        type: process.env.UPLOADER_TYPE,
+        directory: '../public/uploads/' + process.env.NODE_ENV.toLowerCase()
+    };
+}
+
+var uploader = require('../helpers/imageUploader/imageUploader')(uploaderConfig);
 
 module.exports = function (knex) {
     var FIELDS = [
@@ -175,6 +195,7 @@ module.exports = function (knex) {
     var TEMPLATES = [
         {
             templateName: 'Employment k',
+            attachment: 'Template Example1.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -193,6 +214,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Contractor k',
+            attachment: 'Template Example2.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -215,6 +237,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'PIIA',
+            attachment: 'Template Example3.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -226,6 +249,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'ESOP',
+            attachment: 'Template Example4.docx',
             fields: [
                 FIELDS[1],
                 FIELDS[18],
@@ -234,6 +258,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Option Agreement',
+            attachment: 'Template Example5.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -248,6 +273,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Director(s) Resolution re ESOP',
+            attachment: 'Template Example6.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -257,6 +283,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Director(s) Resolution re Options',
+            attachment: 'Template Example7.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -272,6 +299,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'One-way NDA',
+            attachment: 'Template Example8.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -288,6 +316,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Privacy Policy',
+            attachment: 'Template Example9.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -296,6 +325,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Terms of Service',
+            attachment: 'Template Example10.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -303,16 +333,47 @@ module.exports = function (knex) {
             ] //3
         }
     ];
+    var mammothHandler = new MammothHandler();
 
+    function random(number) {
+        return Math.floor((Math.random() * number));
+    };
 
+    function computeFileName(name, key) {
+        return key + '_' + name;
+    }
 
-    function CreateDefaultTemplates(callback) {
-        var linkId;
-        var templName;
+    function computeKey(name) {
+        var ticks_ = new Date().valueOf();
+        var key;
+
+        if (name) {
+            key = ticks_ + '_' + random(1000) + '_' + name;
+        } else {
+            key = ticks_ + '_' + random(1000);
+        }
+
+        return key;
+    };
+
+    function createDefaultTemplates(callback) {
+        var bucket = BUCKETS.TEMPLATE_FILES;
+        var path = './files';
         var curDate = new Date();
+        var converterParams;
+        var originalFilename;
+        var uploadOptions;
+        var templName;
+        var linkId;
+        var fileName;
+        var key;
 
         async.eachSeries(TEMPLATES, function (templ, cb) {
             templName = templ.templateName;
+            originalFilename = templ.attachment;
+            converterParams = {
+                path: path + '/' + originalFilename
+            };
 
             async.series([
 
@@ -344,20 +405,228 @@ module.exports = function (knex) {
 
                 function (cB) {
 
-                    knex(TABLES.TEMPLATES)
-                        .insert({
-                            link_id: linkId,
-                            name: templName,
-                            description: 'Some description',
-                            html_content: 'Some html_content',
-                            marketing_content: 'Some marketing_content',
-                            updated_at: curDate,
-                            created_at: curDate
-                        })
-                        .then(function () {
-                            cB()
-                        })
-                        .catch(cB)
+                    async.waterfall([
+
+                        function(Cb) {
+                            fs.readFile(converterParams.path, function (err, data) {
+                                if (err) {
+                                    return Cb(err);
+                                }
+                                Cb(null, data);
+                            });
+                        },
+
+                        function (buffer, Cb) {
+                            bucket = BUCKETS.TEMPLATE_FILES;
+                            key = computeKey();
+                            fileName = computeFileName(originalFilename, key);
+                            uploadOptions = {
+                                folderName: bucket,
+                                fileName: fileName,
+                                originalFileName: originalFilename,
+                                buffer: buffer
+                            };
+
+                            if (process.env.NODE_ENV !== 'production') {
+                                console.log('--- Upload file ----------------');
+                                console.log(uploadOptions);
+                                console.log('--------------------------------');
+                            }
+
+                            //uploader.uploadFile(bucket, fileName, buffer, function (err, fileName) {
+                            uploader.uploadFile(uploadOptions, function (err) {
+                                if (err) {
+                                    return Cb(err);
+                                }
+
+                                Cb();
+                            });
+                        },
+
+                        function(Cb) {
+                            mammothHandler.docx2html(converterParams, function (htmlContent) {
+
+                                if (!htmlContent) {
+                                    return cB(new Error('Miss html'))
+                                }
+                                Cb(null, htmlContent)
+                            })
+                        },
+
+                        function(htmlContent, Cb) {
+                            knex(TABLES.TEMPLATES)
+                                .insert({
+                                    link_id: linkId,
+                                    name: templName,
+                                    description: 'Some description',
+                                    html_content: htmlContent,
+                                    marketing_content: 'Some marketing_content',
+                                    updated_at: curDate,
+                                    created_at: curDate
+                                }, 'id')
+                                .then(function (queryResult) {
+                                    Cb(null, queryResult[0])
+                                })
+                                .catch(Cb)
+                        },
+
+                        function (attachId, Cb) {
+
+                            knex(TABLES.ATTACHMENTS)
+                                .insert({
+                                    attacheable_id: attachId,
+                                    attacheable_type: 'template',
+                                    name: originalFilename,
+                                    key: key,
+                                    updated_at: curDate,
+                                    created_at: curDate
+                                })
+                                .then(function () {
+                                    Cb()
+                                })
+                                .catch(Cb)
+                        }
+
+                    ], function (err) {
+
+                        if (err) {
+                            return cB(err)
+                        }
+
+                        cB()
+                    })
+
+                   /* mammothHandler.docx2html(converterParams, function (htmlContent) {
+
+                        if (!htmlContent) {
+                            return cB(new Error('Miss html'))
+                        }
+
+                        async.waterfall([
+
+                            //get file from request:
+                            function (cb) {
+
+                                fs.readFile(converterParams.path, function (err, data) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+                                    cb(null, data);
+                                });
+                            },
+
+                            //save file to storage:
+                            function (buffer, cb) {
+                                bucket = BUCKETS.TEMPLATE_FILES;
+                                key = computeKey();
+                                fileName = computeFileName(originalFilename, key);
+                                uploadOptions = {
+                                    folderName: bucket,
+                                    fileName: fileName,
+                                    originalFileName: originalFilename,
+                                    buffer: buffer
+                                };
+
+                                if (process.env.NODE_ENV !== 'production') {
+                                    console.log('--- Upload file ----------------');
+                                    console.log(uploadOptions);
+                                    console.log('--------------------------------');
+                                }
+
+                                //uploader.uploadFile(bucket, fileName, buffer, function (err, fileName) {
+                                uploader.uploadFile(uploadOptions, function (err) {
+                                    if (err) {
+                                        return cb(err);
+                                    }
+
+                                    cb();
+                                });
+                            }
+
+                        ], function (err) {
+
+                            if (err) {
+                                if (callback && (typeof callback === 'function')) {
+                                    callback(err);
+                                }
+                            }
+
+                            knex(TABLES.TEMPLATES)
+                                .insert({
+                                    link_id: linkId,
+                                    name: templName,
+                                    description: 'Some description',
+                                    html_content: htmlContent,
+                                    marketing_content: 'Some marketing_content',
+                                    updated_at: curDate,
+                                    created_at: curDate
+                                }, 'id')
+                                .then(function (queryResult) {
+
+                                    knex(TABLES.ATTACHMENTS)
+                                        .insert({
+                                            attacheable_id: queryResult[0],
+                                            attacheable_type: 'template',
+                                            name: originalFilename,
+                                            key: key,
+                                            updated_at: curDate,
+                                            created_at: curDate
+                                        })
+                                        .then(function () {
+                                            cB()
+                                        })
+                                        .catch(cB)
+                                })
+                                .catch(cB)
+
+                        });
+
+                        /!*key = computeKey();
+                        fileName = computeFileName(originalFilename, key);
+                        uploadOptions = {
+                            folderName: bucket,
+                            fileName: fileName,
+                            originalFileName: originalFilename,
+                            buffer: 'buffer'
+                        };
+
+                        uploader.uploadFile(uploadOptions, function (err) {
+                            if (err) {
+                                return cB(err);
+                            }
+
+                            knex(TABLES.TEMPLATES)
+                                .insert({
+                                    link_id: linkId,
+                                    name: templName,
+                                    description: 'Some description',
+                                    html_content: htmlContent,
+                                    marketing_content: 'Some marketing_content',
+                                    updated_at: curDate,
+                                    created_at: curDate
+                                }, 'id')
+                                .then(function (queryResult) {
+
+                                    knex(TABLES.ATTACHMENTS)
+                                        .insert({
+                                            attacheable_id: queryResult[0],
+                                            attacheable_type: 'template',
+                                            name: originalFilename,
+                                            key: key,
+                                            updated_at: curDate,
+                                            created_at: curDate
+                                        })
+                                        .then(function () {
+                                            cB()
+                                        })
+                                        .catch(cB)
+                                })
+                                .catch(cB)
+                        });
+*!/
+
+                    })*/
+
                 },
 
                 function (cB) {
@@ -389,6 +658,6 @@ module.exports = function (knex) {
     }
 
     return {
-        CreateDefaultTemplates: CreateDefaultTemplates
+        createDefaultTemplates: createDefaultTemplates
     }
 };

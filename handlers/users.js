@@ -351,25 +351,19 @@ var UsersHandler = function (PostGre) {
         query = knex(TABLES.USERS)
             .innerJoin(TABLES.PROFILES, TABLES.USERS + '.id', TABLES.PROFILES + '.user_id')
             .innerJoin(TABLES.COMPANIES, TABLES.COMPANIES + '.id', TABLES.PROFILES + '.company_id')
-            .select(columns)
-            .where(function () {
+            .select(columns);
 
-                if (withoutCompany) {
+        if (withoutCompany) {
+            query.andWhere(TABLES.PROFILES + '.company_id', '<>', withoutCompany)
+        }
 
-                    this.andWhere(TABLES.PROFILES + '.company_id', '<>', withoutCompany)
-                }
+        if (companyId) {
+            query.andWhere(TABLES.PROFILES + '.company_id', companyId);
+        }
 
-                if (companyId) {
-
-                    this.andWhere(TABLES.PROFILES + '.company_id', companyId);
-                }
-
-                if (userId) {
-
-                    this.andWhere(TABLES.USERS + '.id', userId);
-                }
-
-            });
+        if (userId) {
+            query.andWhere(TABLES.USERS + '.id', userId);
+        }
 
         if (page && limit) {
             query
@@ -1083,6 +1077,21 @@ var UsersHandler = function (PostGre) {
 
     };
 
+    this.getUser = function (req, res, next) {
+        var userId = req.params.id;
+        var companyId = req.session.companyId;
+        var queryOptions = {
+            userId: userId
+        };
+
+        getUsersByCriteria(queryOptions, function (err, rows) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send(rows);
+        });
+    };
+
     this.getUsers = function (req, res, next) {
         var options = req.query;
         var userId = req.session.userId;
@@ -1094,11 +1103,22 @@ var UsersHandler = function (PostGre) {
             count: options.count
         };
 
-        (uri === '/clients') ? queryOptions.withoutCompany = companyId : queryOptions.companyId = companyId;
+        getUsersByCriteria(queryOptions, function (err, rows) {
+            if (err) {
+                return next(err);
+            }
+            res.status(200).send(rows);
+        });
+    };
 
-        if (uId) {
-            queryOptions.userId = userId;
-        }
+    this.getClients = function (req, res, next) {
+        var options = req.query;
+        var companyId = req.session.companyId;
+        var queryOptions = {
+            page: options.page,
+            count: options.count,
+            withoutCompany: companyId
+        };
 
         getUsersByCriteria(queryOptions, function (err, rows) {
             if (err) {
