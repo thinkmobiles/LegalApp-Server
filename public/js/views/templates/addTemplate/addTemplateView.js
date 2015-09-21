@@ -227,7 +227,6 @@ define([
             this.tempModel.save(null,{
                 data       : inputData,
                 processData: false,
-                //cache      : false,
                 contentType: false,
                 success: function(response){
                     alert('Template was added successfully');

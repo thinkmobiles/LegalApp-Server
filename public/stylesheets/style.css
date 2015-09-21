@@ -1558,3 +1558,12 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background-color: #fff;
   color: #000;
 }
+
+/*===============================todo VV ---- warning ---- bad low code*/
+.messageItem {
+  display: block;
+  float: left;
+  height: 150px;
+  border: 1px solid rgba(185, 190, 202, 0.55);
+}
+/*===============================todo AA ---- warning ----*/

@@ -34,7 +34,7 @@ define([
                 email             : '',
                 firstName         : '',
                 lastName          : '',
-                //iAcceptConditions : false,
+                company           : '',
                 errors            : false,
                 messages          : false
             };
@@ -78,7 +78,6 @@ define([
                 firstName     : firstName,
                 lastName      : lastName,
                 company       : company
-                //iAcceptConditions: iAcceptConditions
             };
 
             this.stateModel.set(stateModelUpdate);
@@ -88,18 +87,17 @@ define([
                     url: "/signUp",
                     type: "POST",
                     data: {
-                        email: stateModelUpdate.email,
+                        email     : stateModelUpdate.email,
                         first_name: stateModelUpdate.firstName,
-                        last_name: stateModelUpdate.lastName,
-                        company: stateModelUpdate.company
+                        last_name : stateModelUpdate.lastName,
+                        company   : stateModelUpdate.company
                     },
                     success: function () {
                         self.stateModel.set({
-                            email: '',
+                            email    : '',
                             firstName: '',
-                            lastName: '',
-                            company: ''
-                            //iAcceptConditions: false
+                            lastName : '',
+                            company  : ''
                         });
 
                         App.router.navigate("confirmEmail", {trigger: true});

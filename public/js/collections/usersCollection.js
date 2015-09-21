@@ -17,16 +17,6 @@ define([
             return this.clients ? '/clients' : '/users'
         },
 
-        //url: function () {
-        //    if (this.clients) {
-        //        return "/users"
-        //    } else {
-        //        return "/clients"
-        //    }
-        //},
-
-        //url: "/users",
-
         initialize: function(options){
 
             if (options && options.status) {
@@ -70,7 +60,7 @@ define([
                     self.trigger('appendUsers', first)
                 },
                 error : function (){
-                    alert('Some error');
+                    alert('Fetch error');
                 }
             });
         }

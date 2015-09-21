@@ -19,7 +19,6 @@ define([
             "users"                       :  "users",
             "settings"                    :  "settings",
             "newUsers"                    :  "newUsers",
-            //"documents/inProgress/:id"    :  "docInProgress",
             ":docType/preview/:id"        :  "forPreview",
             "templates/:viewType"         :  "templates",
             "documents/:token/signature"  :  "signature",
@@ -28,7 +27,6 @@ define([
             "userProfile"                 :  "userProfile",
             "forgotPassword"              :  "forgotPassword",
             "resetPassword/:token"        :  "resetPassword",
-            //"termsAndConditions"          :  "termsAndConditions",
             "confirmEmail(/:token)"       :  "confirmEmail",
             "help"                        :  "help",
             "*any"                        :  "any"
@@ -92,10 +90,6 @@ define([
             this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized);
         },
 
-        /*termsAndConditions: function () {
-            this.loadWrapperView('termsAndConditions', null, null);
-        },*/
-
         confirmEmail: function (token) {
             this.loadWrapperView('confirmEmail',{token : token}, REDIRECT.whenAuthorized);
         },
@@ -135,10 +129,6 @@ define([
         settings: function () {
             this.loadWrapperView('settings', null, REDIRECT.whenNOTAuthorized);
         },
-
-        //docInProgress: function(id){
-        //    this.loadWrapperView('docInProgress', {id : id}, REDIRECT.whenNOTAuthorized);
-        //},
 
         help: function(){
             this.loadWrapperView('help', null, REDIRECT.whenNOTAuthorized);
