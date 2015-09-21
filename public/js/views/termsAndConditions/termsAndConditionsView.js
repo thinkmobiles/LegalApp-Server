@@ -3,29 +3,58 @@
  */
 
 define([
-    'text!templates/termsAndConditions/termsAndConditionsTemplate.html',
-    'views/custom/signatureBoxView'
-], function (template , SigView) {
+    'text!templates/termsAndConditions/termsAndConditionsTemplate.html'
+], function (template) {
 
     var View;
     View = Backbone.View.extend({
-
-        el : '#wrapper',
 
         initialize: function () {
             this.render();
         },
 
         events : {
-            "click #testButton" : "testEvent"
+            "click #acceptBtn.active" : "iAcceptTerms"
         },
 
-        testEvent: function(){
-            new SigView();
+        iAcceptTerms: function(){
+            this.trigger('iAccept');
+            this.remove();
+        },
+
+        makeThisBtnActive: function() {
+
         },
 
         render: function () {
-            this.$el.html(_.template(template));
+            var self = this;
+
+            self.undelegateEvents();
+            self.$el.html(_.template(template)).dialog({
+                closeOnEscape: false,
+                autoOpen: true,
+                dialogClass: "termsOfServiceDialog",
+                modal: true,
+                width: "600px",
+                close : function(){
+                    self.remove()
+                }
+            });
+            self.delegateEvents();
+
+            this.$el.find('.panel-body').mCustomScrollbar({
+                theme               :"dark",
+                alwaysShowScrollbar : 2,
+                autoHideScrollbar   : true,
+                scrollInertia       : 0,
+                setHeight           : 680,
+                callbacks :{
+                    onTotalScroll : function(){
+                        self.$el.find('#acceptBtn').addClass('active');
+                    }
+                }
+            });
+
             return this;
         }
 

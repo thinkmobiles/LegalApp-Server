@@ -46,9 +46,6 @@ define([
 
             this.listenTo(this.stateModel, 'change:isOurCompUsers', this.changeView);
             this.listenTo(this.usersCollection, 'appendUsers', this.renderUsersList);
-            //this.listenTo(this.clientsCollection, 'reset', this.renderUsersList);
-
-            //this.usersCollection.showMore({first : true});
         },
 
         selectSomething: function(event){
@@ -122,17 +119,6 @@ define([
             }
         },
 
-        //addTemplate : function(){
-        //
-        //    if (this.addView){
-        //        this.addView.undelegateEvents()
-        //    }
-        //
-        //    this.addView = new AddUserView();
-        //    this.addView.on('redirectList', this.changeView, this);
-        //    this.$el.find('#addUserContainer').html(this.addView.el);
-        //},
-
         showEditTemplate : function(event){
             var userRow = $(event.target).closest('.userRow');
             var userID  = userRow.data('id');
@@ -187,7 +173,9 @@ define([
                     resultField.closest('.sel_container').removeClass('active');
                     self.renderCompanies();
                 },
-                error   : function(){}
+                error   : function(xhr){
+                    self.errorNotification(xhr);
+                }
             });
         },
 
@@ -219,9 +207,6 @@ define([
                 inviteData.companyId = companyId;
             }
 
-            //this.userModel = new UserModel();
-
-            //this.userModel.save(inviteData,{
             this.usersCollection.create(inviteData,{
                 wait : true,
                 success : function(){
@@ -234,10 +219,10 @@ define([
                     sel_company.text('Select company');
                     sel_company.attr('data-id', 0);
 
-                    //self.trigger('redirectList');
+                    self.renderUsersList();
                 },
-                error : function(){
-                    alert('Error'); // todo message
+                error : function(model, xhr){
+                    self.errorNotification(xhr);
                 }
             });
         },

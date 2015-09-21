@@ -3,13 +3,16 @@
  */
 
 define([
-    'text!templates/signup/signupTemplate.html'
-], function (template) {
+    'text!templates/signup/signupTemplate.html',
+    'views/termsAndConditions/termsAndConditionsView'
+], function (MainTemp, TermsView) {
 
     var View;
     View = Backbone.View.extend({
 
         el : '#wrapper',
+
+        mainTemplate  : _.template(MainTemp),
 
         initialize: function () {
 
@@ -22,7 +25,8 @@ define([
 
 
         events: {
-            "click #signupButton" : "signUp"
+            "click #signupButton" : "signUp",
+            "click .termsLink"    : "showTerms"
         },
 
         setDefaultData: function () {
@@ -30,7 +34,7 @@ define([
                 email             : '',
                 firstName         : '',
                 lastName          : '',
-                //iAcceptConditions : false,
+                company           : '',
                 errors            : false,
                 messages          : false
             };
@@ -39,6 +43,16 @@ define([
             } else {
                 this.stateModel = new Backbone.Model(defaultData);
             }
+        },
+
+        showTerms: function() {
+            var termView = new TermsView();
+
+            termView.on('iAccept', this.acceptTerms, this)
+        },
+
+        acceptTerms: function(){
+            this.$el.find('#iAgree').prop('checked', true);
         },
 
         afterRender: function () {
@@ -64,7 +78,6 @@ define([
                 firstName     : firstName,
                 lastName      : lastName,
                 company       : company
-                //iAcceptConditions: iAcceptConditions
             };
 
             this.stateModel.set(stateModelUpdate);
@@ -74,18 +87,17 @@ define([
                     url: "/signUp",
                     type: "POST",
                     data: {
-                        email: stateModelUpdate.email,
+                        email     : stateModelUpdate.email,
                         first_name: stateModelUpdate.firstName,
-                        last_name: stateModelUpdate.lastName,
-                        company: stateModelUpdate.company
+                        last_name : stateModelUpdate.lastName,
+                        company   : stateModelUpdate.company
                     },
                     success: function () {
                         self.stateModel.set({
-                            email: '',
+                            email    : '',
                             firstName: '',
-                            lastName: '',
-                            company: ''
-                            //iAcceptConditions: false
+                            lastName : '',
+                            company  : ''
                         });
 
                         App.router.navigate("confirmEmail", {trigger: true});
@@ -105,7 +117,7 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(template, this.stateModel.toJSON()));
+            this.$el.html(this.mainTemplate(this.stateModel.toJSON()));
 
             return this;
         }

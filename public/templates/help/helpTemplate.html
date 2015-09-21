@@ -4,17 +4,26 @@
         <p>*donates required fields</p>
         <div>
             <label for="helpSubject">Subject<span>*</span></label>
-            <input type="text" id="helpSubject">
+            <input type="text" id="helpSubject" placeholder="ie: some subject">
         </div>
         <div>
             <label for="helpEmail">Email<span>*</span></label>
-            <input type="text" id="helpEmail">
+            <input type="text" id="helpEmail" placeholder="ie: johnsmith@mail.com">
+        </div>
+        <div>
+            <label for="helpText">Text<span>*</span></label>
+            <textarea id="helpText" placeholder="ie: your text"></textarea>
         </div>
         <div>
             <input type="button" id="helpSend" value="Send">
         </div>
     </div>
 </div>
-<div class="textareaBlock">
-    <textarea id="helpText" placeholder="Your text"></textarea>
+<div class="messagesBlock">
+    <div class="topButtons">
+        <a href="javascript:;">"HelpMe"</a>
+        <a href="javascript:;">"ContactUs"</a>
+    </div>
+    <div id="helpMessContainer"></div>
+    <div id="helpContContainer" style="display: none"></div>
 </div>

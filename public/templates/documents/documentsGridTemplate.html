@@ -6,6 +6,12 @@
             <a href="javascript:;"><span class="docClick">Edit</span></a>
         </div>
         <span><%= doc.name%></span>
+        <div style="display: none">
+            <span>1) "<%= doc.name%>"</span>
+            <span>2) Created at: <%= doc.created_at%></span>
+            <span>3) Created by: <%= doc.assigned_id%></span>
+            <span>4) Status: <%= doc.status%></span>
+        </div>
     </li>
     <%})%>
 </ul>
