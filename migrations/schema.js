@@ -56,6 +56,15 @@ module.exports = function (knex) {
                 row.timestamps();
             }),
 
+            createTable(TABLES.EMPLOYEES, function (row) {
+                row.increments().primary();
+                row.integer('company_id').notNullable().index();
+                row.string('email').notNullable().index();
+                row.string('first_name');
+                row.string('last_name');
+                row.timestamps();
+            }),
+
             createTable(TABLES.IMAGES, function (row) {
                 row.increments().primary();
                 row.integer('imageable_id').notNullable();
@@ -348,6 +357,7 @@ module.exports = function (knex) {
             dropTable(TABLES.ATTACHMENTS),
             dropTable(TABLES.COMPANIES),
             dropTable(TABLES.DOCUMENTS),
+            dropTable(TABLES.EMPLOYEES),
             dropTable(TABLES.IMAGES),
             dropTable(TABLES.INVITES),
             dropTable(TABLES.MESSAGES),

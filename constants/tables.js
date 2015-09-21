@@ -2,6 +2,7 @@ module.exports = {
     ATTACHMENTS: 'attachments',
     COMPANIES: 'companies',
     DOCUMENTS: 'documents',
+    EMPLOYEES: 'employees',
     IMAGES: 'images',
     INVITES: 'invites',
     MESSAGES: 'messages',
