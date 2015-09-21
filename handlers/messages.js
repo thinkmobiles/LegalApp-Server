@@ -150,10 +150,6 @@ var MessageHandler = function (PostGre) {
             is_completed: isCompleted
         };
 
-
-        console.log('options', options);
-        console.log('isCompleted', isCompleted);
-
         if (isCompleted === undefined) {
             return next(badRequests.NotEnParams({reqParams: 'is_completed'}));
         }

@@ -25,6 +25,7 @@ module.exports = function (app) {
     var attachments = require('./attachments')(app);
     var companiesRouter = require('./companies')(app);
     var documentsRouter = require('./documents')(app);
+    var employeesRouter = require('./employees')(app);
     var fieldsRouter = require('./fields')(app);
     var linksFieldsRouter = require('./linksFields')(app);
     var linksRouter = require('./links')(app);
@@ -56,6 +57,7 @@ module.exports = function (app) {
 
     app.use('/companies', companiesRouter);
     app.use('/documents', documentsRouter);
+    app.use('/employees', employeesRouter);
     app.use('/fields', fieldsRouter);
     app.use('/linksFields', linksFieldsRouter);
     app.use('/links', linksRouter);

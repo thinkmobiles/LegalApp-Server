@@ -144,30 +144,6 @@ var Session = function (postGre) {
         }
     };
 
-    this.isAnonyme = function (req) {
-        if (req.session && req.session.userId && req.session.loggedIn) {
-            return false;
-        } else {
-            return true;
-        }
-    };
-
-    this.getPrivacyParams = function (req) {
-        var result = {};
-
-        if (req.session && req.session.userId) {
-            result.userId = req.session.userId;
-
-            if (req.session.userRole === SESSION_SUPER_ADMIN) {
-                result.isSuperAdmin = true;
-            }
-
-        } else {
-            result.isAnonyme = true;
-        }
-
-        return result;
-    };
 };
 
 module.exports = Session;
