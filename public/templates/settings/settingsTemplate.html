@@ -10,19 +10,31 @@
         <label for="edCompanyName">Company Name</label></br>
         <input type="text" id="edCompanyName" value="<%= tempCompany.name ? tempCompany.name : ''%>" placeholder="ie. McInnes Cooper">
 
+        <label for="edCompanyEmail">Email</label></br>
+        <input type="text" id="edCompanyEmail" value="<%= tempCompany.email ? tempCompany.email : ''%>" placeholder="ie. company@mail.com">
+
         <label for="edCompanyPhone">Phone</label></br>
         <input type="text" id="edCompanyPhone" value="<%= tempCompany.address ? tempCompany.address : ''%>" placeholder="ie. 000-000-000">
 
         <label for="edCompanyAdress">Adress</label></br>
         <input type="text" id="edCompanyAdress" value="<%= tempCompany.address ? tempCompany.address : ''%>" placeholder="ie. Adobe str.">
 
-        <label for="edCompanyEmail">Email</label></br>
-        <input type="text" id="edCompanyEmail" value="<%= tempCompany.email ? tempCompany.email : ''%>" placeholder="ie. company@mail.com">
+        <label for="edCompanyCountry">Country</label></br>
+        <input type="text" id="edCompanyCountry" value="<%= tempCompany.country ? tempCompany.country : ''%>" placeholder="ie. Germany">
+
+        <label for="edCompanyCity">City</label></br>
+        <input type="text" id="edCompanyCity" value="<%= tempCompany.city ? tempCompany.city : ''%>" placeholder="ie. Berlin">
+
+        <label for="edCompanyState">State/Province</label></br>
+        <input type="text" id="edCompanyState" value="<%= tempCompany.address ? tempCompany.address : ''%>" placeholder="ie. State">
+
+        <label for="edCompanyCode">Zip/Postal Code</label></br>
+        <input type="text" id="edCompanyCode" value="<%= tempCompany.address ? tempCompany.address : ''%>" placeholder="ie. Code">
 
         <div>
             <input style="display: none" type="file" id="inputImg" accept="image/*">
             <img id="compLogo" src="<%= tempCompany.logo.url%>">
-            <label for="inputImg">Upload picture</label>
+            <label for="inputImg">Replace Picture</label>
         </div>
     </div>
     <div class="tab-item">

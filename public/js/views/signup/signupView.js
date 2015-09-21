@@ -3,13 +3,16 @@
  */
 
 define([
-    'text!templates/signup/signupTemplate.html'
-], function (template) {
+    'text!templates/signup/signupTemplate.html',
+    'views/termsAndConditions/termsAndConditionsView'
+], function (MainTemp, TermsView) {
 
     var View;
     View = Backbone.View.extend({
 
         el : '#wrapper',
+
+        mainTemplate  : _.template(MainTemp),
 
         initialize: function () {
 
@@ -22,7 +25,8 @@ define([
 
 
         events: {
-            "click #signupButton" : "signUp"
+            "click #signupButton" : "signUp",
+            "click .termsLink"    : "showTerms"
         },
 
         setDefaultData: function () {
@@ -39,6 +43,16 @@ define([
             } else {
                 this.stateModel = new Backbone.Model(defaultData);
             }
+        },
+
+        showTerms: function() {
+            var termView = new TermsView();
+
+            termView.on('iAccept', this.acceptTerms, this)
+        },
+
+        acceptTerms: function(){
+            this.$el.find('#iAgree').prop('checked', true);
         },
 
         afterRender: function () {
@@ -105,7 +119,7 @@ define([
         },
 
         render: function () {
-            this.$el.html(_.template(template, this.stateModel.toJSON()));
+            this.$el.html(this.mainTemplate(this.stateModel.toJSON()));
 
             return this;
         }

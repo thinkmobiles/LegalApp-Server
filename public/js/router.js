@@ -28,7 +28,7 @@ define([
             "userProfile"                 :  "userProfile",
             "forgotPassword"              :  "forgotPassword",
             "resetPassword/:token"        :  "resetPassword",
-            "termsAndConditions"          :  "termsAndConditions",
+            //"termsAndConditions"          :  "termsAndConditions",
             "confirmEmail(/:token)"       :  "confirmEmail",
             "help"                        :  "help",
             "*any"                        :  "any"
@@ -92,9 +92,9 @@ define([
             this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized);
         },
 
-        termsAndConditions: function () {
+        /*termsAndConditions: function () {
             this.loadWrapperView('termsAndConditions', null, null);
-        },
+        },*/
 
         confirmEmail: function (token) {
             this.loadWrapperView('confirmEmail',{token : token}, REDIRECT.whenAuthorized);

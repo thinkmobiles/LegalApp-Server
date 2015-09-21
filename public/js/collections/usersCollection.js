@@ -53,11 +53,7 @@ define([
                 first = false;
             }
 
-            if (options && options.clients){
-                self.clients = true;
-            } else {
-                self.clients = false;
-            }
+            self.clients = (options && options.clients) ? true : false;
 
             paginationCollection.url = this.url();
 

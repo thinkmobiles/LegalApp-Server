@@ -4,9 +4,10 @@
 
 define([
     'text!templates/login/loginTemplate.html',
+    'views/termsAndConditions/termsAndConditionsView',
     'validation'
 
-], function (LoginTemplate, validation) {
+], function (LoginTemplate, TermConditions, validation) {
 
     var View;
     View = Backbone.View.extend({
@@ -26,6 +27,7 @@ define([
 
         events: {
             "click #loginButton"        : "login",
+            "click .termsLink"          : "showTerms",
             "focusin .form-field>input" : "clearField"
         },
 
@@ -38,6 +40,16 @@ define([
             };
 
             this.stateModel = new Backbone.Model(defaultData);
+        },
+
+        showTerms: function() {
+            var termView = new TermConditions();
+
+            termView.on('iAccept', this.acceptTerms, this)
+        },
+
+        acceptTerms: function(){
+            this.$el.find('#iAgree').prop('checked', true);
         },
 
         login: function (event) {

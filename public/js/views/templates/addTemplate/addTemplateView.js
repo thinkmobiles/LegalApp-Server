@@ -24,7 +24,6 @@ define([
     View = Backbone.View.extend({
 
         className       : "addItemLeft",
-        //linkedTemplates : [],
         editableView    : false,
 
         initialize: function (options) {
@@ -47,19 +46,16 @@ define([
             }
         },
 
-        mainTemplate  : _.template(TempTemplate),
-        linksNamesTemplate  : _.template(LinkNamTemp),
-        tempNamesTemplate   : _.template(TempNames),
-        descriptionField    : _.template(DescriptionText),
+        mainTemplate       : _.template(TempTemplate),
+        linksNamesTemplate : _.template(LinkNamTemp),
+        tempNamesTemplate  : _.template(TempNames),
+        descriptionField   : _.template(DescriptionText),
 
         events : {
-            "click #addNewLink"    : "showLinksTable",
-            //"click .linkName"      : "linkSelect",
-            "click #tempSave"      : "saveTemplate",
-            //"click #tempLinkTable" : "showHideTable",
-            //"click .tempName"      : "addLinkedTemp",
+            "click #addNewLink"       : "showLinksTable",
+            "click #tempSave"         : "saveTemplate",
             "click .closeCurrentView" : "closeCurrentView",
-            "click #tempDescription"  : "showDescriptionField",
+            "click .short_text"       : "showDescriptionField",
             "click #descriptBtn"      : "insertDescriptionText"
         },
 
@@ -92,25 +88,48 @@ define([
             tempContainer.html(this.tempNamesTemplate({tempNames : tempColl}));
         },
 
-        showDescriptionField : function(){
+        showDescriptionField : function(event){
             var self = this;
             var container = $('#addTemplateAppender');
+            var targetId = $(event.target).attr('id');
+            var textType;
+            if (targetId === 'tempDescription'){
+                textType = 'description'
+            } else {
+                textType = 'description'
+            }
 
-            container.html(this.descriptionField({text : self.tempModel.get('description')}));
-            container.find('#descriptBtn').click(function(){self.insertDescriptionText(self)});
+            container.html(this.descriptionField({
+                text    : self.tempModel.get(textType),
+                descrip : textType
+            }));
+            container.find('#descriptBtn').click(function(event){
+                var textType = $(event.target).attr('data-id');
+                self.insertDescriptionText(self, textType)
+            });
         },
 
-        insertDescriptionText: function(self){
+        insertDescriptionText: function(self, textType){
             var container = $('#addTemplateAppender');
             var textForSave = container.find('#descriptBtnArea').val();
             var textForButton;
+            var resultButton;
 
             if (textForSave !== ''){
                 textForButton = textForSave.slice(0,15)+'...';
-                self.$el.find('#tempDescription').val(textForButton);
+                if (textType === 'description') {
+                    resultButton = self.$el.find('#tempDescription');
+                    resultButton.text(textForButton);
+                    resultButton.attr('data-id', 1);
+                    self.tempModel.set('description', textForSave);
+                } else {
+                    resultButton = self.$el.find('#tempMarketing');
+                    resultButton.text(textForButton);
+                    resultButton.attr('data-id', 1);
+                    self.tempModel.set('marketing_content', textForSave);
+                }
             }
 
-            self.tempModel.set('description', textForSave);
             container.html('');
         },
 
@@ -130,9 +149,10 @@ define([
             var this_el = self.$el;
             var linkedTemplateId;
             var linkTableId;
-            var descriptionText;
             var file;
             var name;
+            var needDscr;
+            var needMrkt;
 
             var inputData = new FormData();
             name = this_el.find('#tempName').val();
@@ -156,9 +176,9 @@ define([
                 inputData.append('link_id', linkTableId);
             }
 
-            descriptionText = this.tempModel.get('description');
-            if (descriptionText) {
-                inputData.append('description', descriptionText);
+            needDscr = +this_el.find('#tempDescription').attr('data-id');
+            if (needDscr) {
+                inputData.append('description', this.tempModel.get('description'));
             }
 
             //data = new FormData();
