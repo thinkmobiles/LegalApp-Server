@@ -75,6 +75,7 @@ module.exports = function (knex) {
             createTable(TABLES.MESSAGES, function (row) {
                 row.increments().primary();
                 row.integer('owner_id').notNullable().index();
+                row.boolean('is_completed').notNullable().defaultTo(false);
                 row.string('email');
                 row.string('subject');
                 row.text('body');

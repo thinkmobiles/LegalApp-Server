@@ -9,6 +9,7 @@ var LinksHandler = require('../handlers/links');
 var ImageHandler = require('../handlers/images');
 var MammothHandler = require('../handlers/mammoth');
 var DocumentsHandler = require('../handlers/documents');
+var MessageHandler = require('../handlers/messages');
 
 module.exports = function (app) {
     var logWriter = require('../helpers/logWriter')();
@@ -19,6 +20,7 @@ module.exports = function (app) {
     var images = new ImageHandler(PostGre);
     var mammothHandler = new MammothHandler(PostGre);
     var documentsHandler = new DocumentsHandler(PostGre);
+    var messageHandler = new MessageHandler(PostGre);
     var usersRouter = require('./users')(app);
     var attachments = require('./attachments')(app);
     var companiesRouter = require('./companies')(app);
@@ -26,19 +28,11 @@ module.exports = function (app) {
     var fieldsRouter = require('./fields')(app);
     var linksFieldsRouter = require('./linksFields')(app);
     var linksRouter = require('./links')(app);
+    var messagesRouter = require('./messages')(app);
     var templatesRouter = require('./templates')(app);
 
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
-    });
-    app.get('/oauth2', function (req, res, next) {
-        console.log('----------------------------------');
-        console.log('>>> oauth2');
-        console.log('query');
-        console.log(req.query);
-        console.log('----------------------------------');
-
-        res.status(200).send({success: 'authorized'});
     });
     app.get('/isAuth', session.isAuthenticatedUser);
     app.post('/signUp', users.signUp);
@@ -47,13 +41,14 @@ module.exports = function (app) {
     app.get('/confirmEmail/:confirmToken', users.confirmEmail);
     app.post('/signOut', session.kill);
     app.get('/currentUser', session.authenticatedUser, users.getCurrentUser);
+    app.get('/currentUser/messages', session.authenticatedUser, messageHandler.getMessagesCurrentUser);
     app.put('/profile',  users.changeProfile);
     app.post('/forgotPassword', users.forgotPassword);
     app.post('/changePassword/:forgotToken', users.changePassword);
     app.get('/clients', session.authenticatedUser, users.getClients);
     app.put('/clients/:id', session.authenticatedAdmin, users.updateUser);
     app.patch('/clients/:id', session.authenticatedAdmin, users.updateUser);
-    app.post('/helpMe', users.helpMe);
+    app.post('/helpMe', users.helpMe); //TODO: move to messages;
 
     app.get('/getAvatar', session.authenticatedUser, images.getUserAvatar);
     app.get('/getLogo', session.authenticatedUser, images.getCompanyLogo);
@@ -64,6 +59,7 @@ module.exports = function (app) {
     app.use('/fields', fieldsRouter);
     app.use('/linksFields', linksFieldsRouter);
     app.use('/links', linksRouter);
+    app.use('/messages', messagesRouter);
     app.use('/users', usersRouter);
     app.use('/templates', templatesRouter);
     //app.use('/uploadFile', attachments);
