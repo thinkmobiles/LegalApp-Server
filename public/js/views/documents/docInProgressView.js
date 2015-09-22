@@ -40,6 +40,7 @@ define([
                 width: "600px"
             });
             this.delegateEvents();
+
             return this;
         }
 

@@ -26,10 +26,10 @@ define([
         },
 
         events : {
-            "click #addingBut"    : "addNewRow",
-            "click .baseType"     : "selectTypes",
-            "click #saveButton"   : "saveNewValues",
-            "dblclick .link_row"  : "changeThisRow",
+            "click #addingBut"        : "addNewRow",
+            "click .baseType"         : "selectTypes",
+            "click #saveButton"       : "saveNewValues",
+            "dblclick .link_row"      : "changeThisRow",
             "click .closeCurrentView" : "closeCurrentView"
         },
 
@@ -92,13 +92,13 @@ define([
 
             linkModel = new LinkModel();
             linkModel.save(saveData,{
-                wait  : true,
+                wait    : true,
                 success : function(){
                     self.trigger('renderParentLinks');
                     alert('Links were created successfully');
                 },
-                error   : function(){
-                    alert('Error');  //todo -error message-
+                error   : function(response, xhr){
+                    self.errorNotification(xhr)
                 }
             });
         },

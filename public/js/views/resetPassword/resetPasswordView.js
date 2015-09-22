@@ -24,14 +24,13 @@ define([
         },
 
         changePassword: function(){
-            var thisEl = this.$el;
-            var token  = this.token;
+            var self= this;
+            var thisEl = self.$el;
+            var token  = self.token;
             var password = thisEl.find('#newPass').val().trim();
             var confirmPassword = thisEl.find('#confirmPass').val().trim();
 
-            // ============ todo please
             if (password === confirmPassword) {
-            // =====================END
 
                 $.ajax({
                     url: "/changePassword/"+token,
@@ -45,8 +44,8 @@ define([
 
                         Backbone.history.navigate("login", {trigger: true});
                     },
-                    error: function () {
-                        alert('Password error');
+                    error: function (err) {
+                        self.errorNotification(err);
                     }
                 });
             } else {

@@ -20,7 +20,8 @@ define([
         },
 
         sendPass : function(){
-            var thisEl = this.$el;
+            var self = this;
+            var thisEl = self.$el;
             var currentEmail = thisEl.find('#currentEmail').val().trim();
             $.ajax({
                 url: "/forgotPassword",
@@ -32,8 +33,8 @@ define([
                     thisEl.find('#innerForgot').html("<p>Recovery password has been sent to "+currentEmail+" </p>");
                     thisEl.find('.hideRow').show();
                 },
-                error: function (err) {
-                   // todo
+                error: function (xhr) {
+                    self.errorNotification(xhr);
                 }
             });
         },

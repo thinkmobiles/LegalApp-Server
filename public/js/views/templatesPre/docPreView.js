@@ -30,7 +30,7 @@ define([
             saveData = {values : this.temporaryValues};
 
             $.ajax({
-                url         : "/templates/"+this.tempId+"/previewDocument",
+                url         : "/templates/" + this.tempId + "/previewDocument",
                 type        : "POST",
                 contentType : "application/json; charset=utf-8",
                 dataType    : "json",
@@ -39,8 +39,8 @@ define([
                 success : function(response){
                     self.$el.find('#forDocSigning').html(response.htmlContent);
                 },
-                error   : function(model, xhr){
-                    alert('Error');
+                error   : function(err){
+                    self.errorNotification(err)
                 }
             });
         },

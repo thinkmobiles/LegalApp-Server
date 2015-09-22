@@ -44,7 +44,7 @@ define([
             this.contactUsView = new ContactView();
         },
 
-        getAvatar : function (){
+        /*getAvatar : function (){
             var image = this.$el.find('#topBarLogo');
 
                 if (App.sessionData.get('authorized')) {
@@ -56,9 +56,11 @@ define([
                         }
                     });
                 }
-            },
+            },*/
 
         logout: function () {
+            var self = this;
+
             $.ajax({
                 url  : "/signOut",
                 type : "POST",
@@ -75,8 +77,7 @@ define([
                     App.router.navigate("login", {trigger: true});
                 },
                 error: function (err) {
-                    //App.error(err);
-                    alert('Error'+err);
+                    self.errorNotification(err);
                 }
             });
         },
@@ -102,8 +103,8 @@ define([
             var user = App.sessionData.get('first_name') +' '+ App.sessionData.get('last_name');
 
             this.$el.find('.userName').html(user);
-            //this.getAvatar();
-            return this;
+
+            //return this;
         },
 
         updatePendingUsersBadge: function () {
