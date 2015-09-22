@@ -1838,10 +1838,11 @@ var DocumentsHandler = function (PostGre) {
         var params = req.query;
         var name = params.name;
         var status = params.status;
+        var createdBy = params.createdBy;
         var from = params.from;
         var to = params.to;
         var page = params.page || 1;
-        var limit = params.count;
+        var limit = params.count || 20;
         var fromDate;
         var toDate;
         var orderBy;
@@ -1868,10 +1869,70 @@ var DocumentsHandler = function (PostGre) {
 
         order = params.order || 'ASC';
 
-        DocumentModel
+        var DOCUMENTS = TABLES.DOCUMENTS;
+        var USERS = TABLES.USERS;
+        var PROFILES = TABLES.PROFILES;
+        var columns = [
+            DOCUMENTS + '.name',
+            DOCUMENTS + '.template_id',
+            DOCUMENTS + '.status',
+            DOCUMENTS + '.created_by',
+            DOCUMENTS + '.employee_id',
+            DOCUMENTS + '.created_at',
+            DOCUMENTS + '.updated_at',
+            PROFILES + '.first_name as created_by_first_name',
+            PROFILES + '.last_name as created_by_last_name',
+            DOCUMENTS + '.id as id'
+        ];
+
+        knex(DOCUMENTS)
+            .leftJoin(PROFILES, PROFILES + '.user_id', DOCUMENTS + '.created_by')
+            .where(function() {
+
+                if (name) {
+                    name = name.toLowerCase();
+                    this.whereRaw(
+                        "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
+                    );
+                }
+
+                if ((status !== undefined) && (status !== 'all')) {
+                    status = parseInt(status);
+                    this.where('status', status);
+                }
+
+                if (createdBy) {
+                    this.where('created_by', createdBy);
+                }
+
+                if (from) {
+                    fromDate = new Date(from);
+                    this.where(DOCUMENTS + '.created_at', '>=', fromDate);
+                }
+
+                if (to) {
+                    toDate = new Date(to);
+                    this.where(DOCUMENTS + '.created_at', '<=', toDate);
+                }
+
+                if (byCompanyId) {
+                    this.where('company_id', byCompanyId);
+                }
+
+                this.where('template_id', templateId);
+            })
+            .orderBy(orderBy, order)
+            .offset(( page - 1 ) * limit)
+            .limit(limit)
+            .select(columns)
+            .exec(function (err, rows) {
+                res.status(200).send(rows);
+            });
+
+       /* DocumentModel
             .forge()
             .query(function (qb) {
-
+                qb.leftJoin('users', 'users.id', 'documents.created_by');
                 qb.andWhere(function () {
 
                     if (name) {
@@ -1914,7 +1975,7 @@ var DocumentsHandler = function (PostGre) {
             .fetchAll()
             .exec(function (err, rows) {
                 res.status(200).send(rows);
-            });
+            });*/
     };
 
     this.htmlToPdf = function (req, res, next) {  //for testing, DELETE this method when done
