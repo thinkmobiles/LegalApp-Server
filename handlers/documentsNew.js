@@ -1831,9 +1831,10 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.getDocumentsByTemplate = function (req, res, next) {
+        var DOCUMENTS = TABLES.DOCUMENTS;
+        var PROFILES = TABLES.PROFILES;
         var companyId = req.session.companyId;
         var permissions = req.session.permissions;
-        var DOCUMENTS = TABLES.DOCUMENTS;
         var templateId = req.params.templateId;
         var params = req.query;
         var name = params.name;
@@ -1848,6 +1849,18 @@ var DocumentsHandler = function (PostGre) {
         var orderBy;
         var order;
         var byCompanyId;
+        var columns = [
+            DOCUMENTS + '.name',
+            DOCUMENTS + '.template_id',
+            DOCUMENTS + '.status',
+            DOCUMENTS + '.created_by',
+            DOCUMENTS + '.employee_id',
+            DOCUMENTS + '.created_at',
+            DOCUMENTS + '.updated_at',
+            PROFILES + '.first_name as created_by_first_name',
+            PROFILES + '.last_name as created_by_last_name',
+            DOCUMENTS + '.id as id'
+        ];
 
         if (templateId) {
             templateId = parseInt(templateId);
@@ -1864,26 +1877,10 @@ var DocumentsHandler = function (PostGre) {
         if (params.orderBy) {
             orderBy = params.orderBy;
         } else {
-            orderBy = DOCUMENTS + '.name';
+            orderBy = DOCUMENTS + '.created_at';
         }
 
-        order = params.order || 'ASC';
-
-        var DOCUMENTS = TABLES.DOCUMENTS;
-        var USERS = TABLES.USERS;
-        var PROFILES = TABLES.PROFILES;
-        var columns = [
-            DOCUMENTS + '.name',
-            DOCUMENTS + '.template_id',
-            DOCUMENTS + '.status',
-            DOCUMENTS + '.created_by',
-            DOCUMENTS + '.employee_id',
-            DOCUMENTS + '.created_at',
-            DOCUMENTS + '.updated_at',
-            PROFILES + '.first_name as created_by_first_name',
-            PROFILES + '.last_name as created_by_last_name',
-            DOCUMENTS + '.id as id'
-        ];
+        order = params.order || 'DESC';
 
         knex(DOCUMENTS)
             .leftJoin(PROFILES, PROFILES + '.user_id', DOCUMENTS + '.created_by')
@@ -1928,54 +1925,6 @@ var DocumentsHandler = function (PostGre) {
             .exec(function (err, rows) {
                 res.status(200).send(rows);
             });
-
-       /* DocumentModel
-            .forge()
-            .query(function (qb) {
-                qb.leftJoin('users', 'users.id', 'documents.created_by');
-                qb.andWhere(function () {
-
-                    if (name) {
-                        name = name.toLowerCase();
-                        this.whereRaw(
-                            "LOWER(" + DOCUMENTS + ".name) LIKE '%" + name + "%' "
-                        );
-                    }
-
-                    if ((status !== undefined) && (status !== 'all')) {
-                        status = parseInt(status);
-                        this.where('status', status);
-                    }
-
-                    if (from) {
-                        fromDate = new Date(from);
-                        this.where(DOCUMENTS + '.created_at', '>=', fromDate);
-                    }
-
-                    if (to) {
-                        toDate = new Date(to);
-                        this.where(DOCUMENTS + '.created_at', '<=', toDate);
-                    }
-
-                    if (byCompanyId) {
-                        this.where('company_id', byCompanyId);
-                    }
-
-                    this.where('template_id', templateId);
-                });
-
-                qb.orderBy(orderBy, order);
-
-                if (page && limit){
-                    qb.offset(( page - 1 ) * limit)
-                        .limit(limit);
-                }
-
-            })
-            .fetchAll()
-            .exec(function (err, rows) {
-                res.status(200).send(rows);
-            });*/
     };
 
     this.htmlToPdf = function (req, res, next) {  //for testing, DELETE this method when done
