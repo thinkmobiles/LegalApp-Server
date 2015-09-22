@@ -274,30 +274,28 @@ var UsersHandler = function (PostGre) {
     }
 
     function normalizeUser(user, callback) {
-
-        function UserObject(options) {
-            this.id = options.id;
-            this.email = options.email;
-            this.profile = {
-                first_name: options.first_name,
-                last_name: options.last_name,
-                phone: options.phone,
-                permissions: options.permissions,
-                sign_authority: options.sign_authority,
-                has_sign_image: options.has_sign_image
-            };
-            this.company = {
-                id: options.company_id,
-                name: options.company_name
+        var userJSON = {
+            id: user.id,
+            email: user.email,
+            status: user.status,
+            profile: {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                phone: user.phone,
+                permissions: user.permissions,
+                sign_authority: user.sign_authority,
+                has_sign_image: user.has_sign_image
+            },
+            company: {
+                id: user.company_id,
+                name: user.company_name
             }
-
-        }
-        var userModel = new UserObject(user);
+        };
 
         if (callback && (typeof callback === 'function')) {
-            callback(null, userModel);
+            callback(null, userJSON);
         } else {
-            return userModel;
+            return userJSON;
         }
     }
 
@@ -324,10 +322,11 @@ var UsersHandler = function (PostGre) {
             TABLES.COMPANIES + '.id as company_id',
             TABLES.COMPANIES + '.name as company_name',
             TABLES.USERS + '.email',
+            TABLES.USERS + '.status',
             TABLES.USERS + '.id'
         ];
         var page = queryOptions.page || 1;
-        var limit = queryOptions.count; //|| 10;
+        var limit = queryOptions.count || 20;
         var orderBy = queryOptions.orderBy || (TABLES.PROFILES + '.first_name');
         var order = queryOptions.order || 'ASC';
         var query;
@@ -1094,13 +1093,12 @@ var UsersHandler = function (PostGre) {
 
     this.getUsers = function (req, res, next) {
         var options = req.query;
-        var userId = req.session.userId;
-        var uri = req.originalUrl;
-        var uId = req.params.id;
         var companyId = req.session.companyId;
         var queryOptions = {
             page: options.page,
             count: options.count,
+            orderBy: options.orderBy,
+            order: options.order,
             companyId: companyId
         };
 
@@ -1118,6 +1116,8 @@ var UsersHandler = function (PostGre) {
         var queryOptions = {
             page: options.page,
             count: options.count,
+            orderBy: options.orderBy,
+            order: options.order,
             withoutCompany: companyId
         };
 
