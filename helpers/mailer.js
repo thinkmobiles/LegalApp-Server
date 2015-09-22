@@ -93,9 +93,7 @@ var MailerModule = function () {
             }
         });
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(service, user, pass);
-        }
+        //console.error('mailer was blocked');
 
         smtpTransport.sendMail(mailOptions, function (err, responseResult) {
             if (err) {
@@ -104,7 +102,7 @@ var MailerModule = function () {
                     callback(err, null);
                 }
             } else {
-                console.log('Message sent: ' + responseResult.response);
+                console.log('Message sent: %s %s', mailOptions.to, responseResult.response);
                 if (callback && typeof callback === 'function') {
                     callback(null, responseResult);
                 }
@@ -190,7 +188,7 @@ var MailerModule = function () {
         templateOptions = {
             email: dstUser.email,
             srcUserName: srcUser.profile.last_name,
-            dstUserName: dstUser.profile.last_name,
+            dstUserName: (dstUser.profile) ? dstUser.profile.last_name : dstUser.last_name, //user or employee
             companyName: company.name,
             documentName: document.name || template.name, //TODO
             signatureLink: link

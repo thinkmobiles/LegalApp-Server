@@ -44,25 +44,38 @@ var EmployeeHandler = function (PostGre) {
         var companyId = req.session.companyId;
         var options = req.body;
         var saveData = prepareSaveData(options);
+        var email = saveData.email;
 
         if (Object.keys(saveData).length !== 3) {
             return next(badRequests.NotEnParams({reqParams: ['email', 'first_name', 'last_name']}));
         }
 
-        if (!EMAIL_REGEXP.test(saveData.email)) {
+        if (!EMAIL_REGEXP.test(email)) {
             return next(badRequests.InvalidEmail());
         }
 
         saveData.company_id = companyId;
 
-        EmployeeModel
-            .forge()
-            .save(saveData)
-            .exec(function (err, employeeModel) {
+        knex(TABLES.EMPLOYEES)
+            .where('email', email)
+            .exec(function (err, rows) {
                 if (err) {
                     return next(err);
                 }
-                res.status(201).send({success: 'created', model: employeeModel});
+
+                if (rows && rows.length) {
+                    return next(badRequests.EmailInUse());
+                }
+
+                EmployeeModel
+                    .forge()
+                    .save(saveData)
+                    .exec(function (err, employeeModel) {
+                        if (err) {
+                            return next(err);
+                        }
+                        res.status(201).send({success: 'created', model: employeeModel});
+                    });
             });
     };
 

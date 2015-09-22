@@ -42,7 +42,8 @@ module.exports = function (knex) {
                 row.string('name');
                 row.text('html_content');
                 row.integer('template_id').notNullable().index();
-                row.integer('company_id').index();
+                row.integer('company_id').notNullable().index();
+                row.integer('employee_id').notNullable().index();
                 row.integer('user_id').index();
                 row.string('access_token');
                 row.integer('assigned_id').index();
