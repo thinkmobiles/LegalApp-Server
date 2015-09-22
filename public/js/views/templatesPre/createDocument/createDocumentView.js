@@ -23,10 +23,7 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        //className   : "addItemLeft",
-
         initialize: function (options) {
-            //this.signersId = App.sessionData.get('userId');
             this.tempInfo = options.model;
             this.fillFields = false;
 
@@ -102,18 +99,19 @@ define([
         },
 
         saveDoc: function(){
-            var myModel = this.fillFields ? this.docModel : new DocModel();
+            var self = this;
+            var myModel = self.fillFields ? self.docModel : new DocModel();
             var data;
             var userId;
-            var values = this.collectValues();
+            var values = self.collectValues();
 
             data = {
-                template_id : this.tempInfo.id,
+                template_id : self.tempInfo.id,
                 values      : values
             };
 
-            if (!this.fillFields){
-                userId = this.$el.find('#createEmployee').attr('data-sig');
+            if (!self.fillFields){
+                userId = self.$el.find('#createEmployee').attr('data-sig');
                 data.user_id = +userId;
             }
 
@@ -122,8 +120,8 @@ define([
                     alert('Document was saved successfully');
                     Backbone.history.navigate('documents/list', {trigger : true});
                 },
-                error: function(){
-                    alert('error'); //todo -error-
+                error: function(response, xhr){
+                    self.errorNotification(xhr)
                 }
             });
         },
@@ -152,8 +150,9 @@ define([
         },
 
         signMyDoc: function(assignedUser, signatureImage){
+            var self = this;
             var data;
-            var values = this.collectValues();
+            var values = self.collectValues();
             var url;
             var docId;
             var userId;
@@ -167,13 +166,13 @@ define([
                 data.signature = signatureImage;
             }
 
-            if (this.fillFields){
-                docId = this.docModel.get('id');
-                url = '/documents/'+docId+'/signAndSend'
+            if (self.fillFields){
+                docId = self.docModel.get('id');
+                url = '/documents/' + docId + '/signAndSend';
             } else {
                 url ='/documents/signAndSend';
-                userId = this.$el.find('#createEmployee').attr('data-sig');
-                data.template_id = this.tempInfo.id;
+                userId = self.$el.find('#createEmployee').attr('data-sig');
+                data.template_id = self.tempInfo.id;
                 data.user_id = +userId;
             }
 
@@ -183,13 +182,12 @@ define([
                 contentType : "application/json; charset=utf-8",
                 dataType    : "json",
                 data        : JSON.stringify(data),
-                //data : data,
                 success : function(){
                     alert('A document was sent successfully');
                     Backbone.history.navigate('/documents/list', {trigger : true});
                 },
-                error : function(){
-                    alert('Error on sending');
+                error : function(err){
+                    self.errorNotification(err)
                 }
             });
         },
@@ -202,11 +200,11 @@ define([
                 data : {'signAuthority' : true},
                 success : function(result) {
                     self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
-                        autoOpen: true,
+                        autoOpen   : true,
                         dialogClass: "reSignDialog",
-                        modal: true,
-                        width: "600px",
-                        buttons: [
+                        modal      : true,
+                        width      : "600px",
+                        buttons    : [
                             {
                                 text: "Select and send",
                                 click: function(){
@@ -215,6 +213,9 @@ define([
                             }
                         ]
                     });
+                },
+                error : function(err) {
+                    self.errorNotification(err)
                 }
             });
         },
@@ -271,11 +272,14 @@ define([
                     $.ajax({
                         url      : "/users/search",
                         data     : {
-                            value : myTerm,
+                            value  : myTerm,
                             format : 'single'
                         },
-                        success  : function(response){
+                        success : function(response){
                             res(response);
+                        },
+                        error : function (err){
+                            self.errorNotification(err)
                         }
                     });
                 },

@@ -1566,4 +1566,11 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   height: 150px;
   border: 1px solid rgba(185, 190, 202, 0.55);
 }
+
+.photoBox {
+  height: 100%;
+  width: 150px;
+  background-color: #096ac8;
+  float: left;
+}
 /*===============================todo AA ---- warning ----*/

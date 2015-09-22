@@ -23,7 +23,6 @@ define([
             this.listenTo(this.currentModel,"change",this.render);
 
             this.getUserData();
-
         },
 
         events: {
@@ -32,6 +31,7 @@ define([
 
         getUserData: function(){
             var self = this;
+
             $.ajax({
                 url    : "/currentUser",
                 type   : "GET",
@@ -44,8 +44,8 @@ define([
                         company   : response.company[0].name
                     });
                 },
-                error  : function () {
-                    alert('error'); // todo -error-
+                error  : function (err) {
+                    self.errorNotification(err)
                 }
             });
         },
@@ -55,8 +55,6 @@ define([
 
             $.ajax({
                 url    : "/getAvatar",
-                type   : "GET",
-
                 success: function (response) {
                     custom.canvasDraw({ imageSrc : response}, self);
                 },
@@ -69,14 +67,14 @@ define([
         },
 
         saveProfile: function(){
-            var this_el = this.$el;
+            var self = this;
+            var this_el = self.$el;
             var profNameFirst = this_el.find('#profFName').val().trim();
             var profNameLast  = this_el.find('#profLName').val().trim();
             var profPhone = this_el.find('#profPhone').val().trim();
             var photoInput = this_el.find('#inputImg')[0].files.length;
             var newPass = this_el.find('#profPass').val().trim();
             var imageSRC;
-            //var logoContainer = $('#topBarLogo');
             var saveData={};
             var pass;
             var confirmPass;
@@ -115,13 +113,10 @@ define([
                     var avatar = userInfo.avatar.url;
                     var fName = userInfo.profile.first_name;
                     var lName = userInfo.profile.last_name;
-                    //$('#topBarLogo').attr('src',imageSRC);
+
                     $('#topBarLogo').attr('src', imageSRC);
                     alert('Profile updated successfully');
 
-                    //App.sessionData.set({
-                    //    user: profNameFirst+' '+profNameLast
-                    //});
                     App.sessionData.set({
                         avatar     : avatar,
                         first_name : fName,
@@ -130,7 +125,7 @@ define([
                     Backbone.history.navigate("users", {trigger: true});
                 },
                 error  : function (err) {
-                    alert('error: '+err); // todo -error-
+                    self.errorNotification(err)
                 }
             });
         },

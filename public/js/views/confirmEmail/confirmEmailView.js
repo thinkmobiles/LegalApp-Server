@@ -12,7 +12,6 @@ define([
     View = Backbone.View.extend({
 
         el : '#wrapper',
-        //id : 'addUserForm',
 
         events: {
             "click #confirmButton" : "goToLogin"
@@ -45,7 +44,6 @@ define([
                     thisEl.find('#confirmButton').text('go to login');
                 },
                 error: function () {
-                    //App.error(err);
                     thisEl.find('#confirmText').text('Wrong activation code!');
                 }
             });

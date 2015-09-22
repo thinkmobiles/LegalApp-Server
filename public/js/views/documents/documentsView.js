@@ -33,8 +33,6 @@ define([
         activeTemplateId: null,
 
         initialize: function (options) {
-            var self = this;
-
             this.stateModel = new Backbone.Model();
             this.stateModel.set({
                 viewType      : options.viewType,
@@ -86,10 +84,6 @@ define([
             }
         },
 
-        //docReset : function(){
-        //
-        //},
-
         showHideFilters: function () {
             var this_el = this.$el;
             var target = this_el.find('.filters');
@@ -102,9 +96,8 @@ define([
         setActive: function (event) {
             var target = $(event.target).closest('.templateItem');
             var container = target.closest('ul');
-
-            //this.activeTemplateId = target.data('id');
             var activeId = target.attr('data-id');
+
             this.stateModel.set('activeId', activeId);
 
             container.find('.active').removeClass('active');
@@ -115,35 +108,13 @@ define([
 
         getDocumentsByTemplateId: function (argTemplateId) {
             var self = this;
-
-            //if(!this.activeTemplateId){
-            //    this.activeTemplateId = this.$el.find('.templateItem').first().data('id');
-            //}
-
             var templateId = this.stateModel.get('activeId') || argTemplateId;
             var searchParams = self.stateModel.get('searchParams');
 
             this.docCollection.tempId = templateId;
             this.docCollection.searchParams = searchParams || {};
             this.docCollection.showMore({first : true});
-
-            /*$.ajax({
-                url : '/documents/list/'+templateId,
-                data: searchParams,
-                success : function(response){
-                    self.currentCollByIds = response;
-                    self.renderDocuments();
-                },
-                error : function (response){
-                    alert(response.responseJSON.error);
-                    console.log(response);
-                }
-            });*/
         },
-
-        /*onScrollEnd: function (){
-            this.docCollection.showMore();
-        },*/
 
         renderDocuments: function(needAppend){
             var container = this.$el.find("#documentList");
@@ -164,8 +135,8 @@ define([
 
         changeViewType: function(event){
             var target = $(event.target);
-            this.stateModel.set('viewType', target.attr('data-id'));
 
+            this.stateModel.set('viewType', target.attr('data-id'));
             this.$el.find('.btnViewType.active').removeClass('active');
             target.addClass('active');
         },
@@ -245,9 +216,6 @@ define([
 
         afterRender: function (){
             var navContainer = $('.sidebar-menu');
-
-            /*this.docTitles.searchParams = {};
-            this.docTitles.showMore({first : true});*/
 
             navContainer.find('.active').removeClass('active');
             navContainer.find('#nav_document').addClass('active')

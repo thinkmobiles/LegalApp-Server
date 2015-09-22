@@ -38,6 +38,9 @@ define([
                 success : function(){
                     self.remove();
                     alert('Your message was sent successfully');
+                },
+                error : function (xhr){
+                    self.errorNotification(xhr);
                 }
             });
         },

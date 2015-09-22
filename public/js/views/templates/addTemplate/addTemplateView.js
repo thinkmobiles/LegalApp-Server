@@ -233,8 +233,8 @@ define([
                     var model = response.get('model');
                     self.parentContext.tempCollection.add(model);
                 },
-                error: function(){
-                    alert('error'); //todo -error-
+                error: function(response, xhr){
+                    self.errorNotification(xhr)
                 }
             });
             //****************************************************

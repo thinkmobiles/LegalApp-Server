@@ -22,10 +22,6 @@ define([
             this.remove();
         },
 
-        makeThisBtnActive: function() {
-
-        },
-
         render: function () {
             var self = this;
 

@@ -103,7 +103,7 @@ define([
                         App.router.navigate("confirmEmail", {trigger: true});
                     },
                     error: function (err) {
-                        alert('Error');
+                        self.errorNotification(err);
                         //self.stateModel.set({
                         //    errors     : [err.responseJSON.error],
                         //});

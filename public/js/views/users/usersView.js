@@ -61,6 +61,7 @@ define([
 
         showHideSelect: function(event){
             var target = $(event.target);
+
             if (target.context.id !== 'newCompName'){
                 target.closest('.sel_container').toggleClass('active');
             }
@@ -146,9 +147,12 @@ define([
             var self = this;
 
             $.ajax({
-                url  : "/companies",
+                url     : "/companies",
                 success : function(response){
                     self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
+                },
+                error : function(err) {
+                    self.errorNotification(err);
                 }
             });
         },
@@ -163,7 +167,7 @@ define([
             var resultField = this_el.find('#selectedCompany');
 
             $.ajax({
-                url : '/companies',
+                url  : '/companies',
                 type : 'POST',
                 data : {name : newCompany},
                 success : function(response){
@@ -173,8 +177,8 @@ define([
                     resultField.closest('.sel_container').removeClass('active');
                     self.renderCompanies();
                 },
-                error   : function(xhr){
-                    self.errorNotification(xhr);
+                error   : function(err){
+                    self.errorNotification(err);
                 }
             });
         },
@@ -208,7 +212,7 @@ define([
             }
 
             this.usersCollection.create(inviteData,{
-                wait : true,
+                wait    : true,
                 success : function(){
                     alert('User invited successfully');
 
@@ -229,15 +233,16 @@ define([
 
         render: function () {
             var self = this;
+            var this_el = self.$el;
             var role = App.sessionData.get('permissions');
             var company = App.sessionData.get('companyId');
 
-            this.$el.html(this.mainTemp({
+            this_el.html(this.mainTemp({
                 role    : role,
                 company : company
             }));
 
-            this.$el.find('#tablesContent').mCustomScrollbar({
+            this_el.find('#tablesContent').mCustomScrollbar({
                 theme               :"dark",
                 alwaysShowScrollbar : 2,
                 autoHideScrollbar   : true,
@@ -246,6 +251,7 @@ define([
                 callbacks :{
                     onTotalScroll : function(){
                         var theState = self.stateModel.get('isOurCompUsers');
+
                         self.usersCollection.showMore({clients : !theState});
                     }
                 }
@@ -259,10 +265,12 @@ define([
 
         afterRender: function (){
             var navContainer = $('.sidebar-menu');
+
             navContainer.find('.active').removeClass('active');
             navContainer.find('#nav_users').addClass('active')
         }
 
     });
+
     return View;
 });

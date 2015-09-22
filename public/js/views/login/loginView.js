@@ -86,8 +86,6 @@ define([
 
             validation.checkPasswordField(errorObject, stateModelUpdate.password, 'password');
 
-            //this.stateModel.set(stateModelUpdate);
-
             if (errorObject.email || errorObject.password) {
                 stateModelUpdate.errorObject = errorObject;
                 this.stateModel.set(stateModelUpdate);
@@ -143,8 +141,8 @@ define([
 
         render: function () {
             var this_el = this.$el;
-            //var isInvite = false;
             var tempModel = this.stateModel.toJSON();
+
             tempModel.isInvite = false;
 
             if (this.token) {

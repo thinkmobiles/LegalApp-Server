@@ -36,11 +36,11 @@ define([
         },
 
         events : {
-            "click #addDiv"      : "goToAddTemplate",
-            "click .hovCreateD"  : "goToPreview",
-            "click .btnViewType" : "changeViewType",
-            "click .hovEditT"    : "goToEditTemplate",
-            "click .sel_item"    : "selectSomething",
+            "click #addDiv"        : "goToAddTemplate",
+            "click .hovCreateD"    : "goToPreview",
+            "click .btnViewType"   : "changeViewType",
+            "click .hovEditT"      : "goToEditTemplate",
+            "click .sel_item"      : "selectSomething",
             "click .sel_container" : "showHideSelect"
         },
 
@@ -57,11 +57,13 @@ define([
 
         showHideSelect: function(event){
             var target = $(event.target);
+
             target.closest('.sel_container').toggleClass('active');
         },
 
         changeViewType: function(event){
             var targetView = $(event.target).data('id');
+
             this.stateModel.set('viewType',targetView);
         },
 
@@ -84,6 +86,7 @@ define([
         goToPreview: function(event){
             var target_id = $(event.target).closest('.tempGrid').data('id');
             var url = '#templates/preview/'+target_id;
+
             if (target_id){
                 Backbone.history.navigate(url, {trigger: true});
             }
@@ -107,6 +110,7 @@ define([
 
         afterRender: function (){
             var navContainer = $('.sidebar-menu');
+
             navContainer.find('.active').removeClass('active');
             navContainer.find('#nav_template').addClass('active')
         }

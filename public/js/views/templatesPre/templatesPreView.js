@@ -83,22 +83,22 @@ define([
         },
 
         findPreview: function(id, container){
+            var self = this;
             var myDocContainer;
 
             if (container){
                 myDocContainer = container
             } else {
-                myDocContainer = this.$el.find('#previewContainer');
+                myDocContainer = self.$el.find('#previewContainer');
             }
 
             $.ajax({
-                url  : '/templates/'+id+'/preview',
-                type : 'GET',
+                url     : '/templates/' + id + '/preview',
                 success : function(response){
                     myDocContainer.html(response);
                 },
-                error : function(){
-                    alert('error'); //todo
+                error : function(err){
+                    self.errorNotification(err)
                 }
             });
 

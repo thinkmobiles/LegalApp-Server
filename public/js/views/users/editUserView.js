@@ -11,15 +11,11 @@ define([
     var View;
     View = Backbone.View.extend({
 
-        tagName: 'tr',
+        tagName   : 'tr',
         className : 'editUserRow',
 
         initialize: function (options) {
-            //var usId = options.userId;
-            //this.userCollection = options.userColl;
-
             this.userModel = options.userModel;
-            //this.userModel = this.userCollection.get(usId);
 
             this.listenTo(this.userModel, 'change:sign_image', this.showOurSign);
             this.listenTo(this.userModel, 'sync', this.changeDataInRow);
@@ -43,9 +39,10 @@ define([
         },
 
         drawSign: function (argsSign){
+            var self = this;
             var sign = argsSign;
-            var userId = this.userModel.get('id');
-            var container = this.$el.find('#signInfoBox');
+            var userId = self.userModel.get('id');
+            var container = self.$el.find('#signInfoBox');
             var signInfo = container.find('#signInfo');
             var signBox = container.find('#signBox');
 
@@ -60,8 +57,8 @@ define([
                         signInfo.hide();
                         signBox.html('<img id="currentSign" src="'+result+'"><a href="javascript:;" id="closeIco">&#10006;</a>');
                     },
-                    error    : function(){
-                        alert('Error');
+                    error    : function(err){
+                        self.errorNotification(err)
                     }
                 });
             }
@@ -111,7 +108,6 @@ define([
         },
 
         updateUser : function(){
-            var self = this;
             var thisEL = this.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
@@ -130,7 +126,6 @@ define([
 
             var updateData = {
                 profile    : profile
-                //sign_image : self.userModel.get('sign_image')
             };
 
             if (status_ch){
@@ -146,7 +141,7 @@ define([
             var self = this;
             var role = App.sessionData.get('permissions');
 
-            this.$el.html(_.template(EditTemp)({
+            self.$el.html(_.template(EditTemp)({
                 usrMdl : this.userModel.toJSON(),
                 role   : role
             }));

@@ -33,8 +33,8 @@ define([
                     self.currentHtml = response;
                     self.$el.find('#forDocSigning').html(response);
                 },
-                error : function (){
-                    alert('Error');
+                error : function (err){
+                    self.errorNotification(err);
                 }
             });
         },
@@ -45,16 +45,17 @@ define([
         },
 
         iAcceptDocument: function (signatureImg){
+            var self = this;
 
             $.ajax({
                 url:  '/documents/'+this.token+'/signature',
                 type : 'POST',
                 data : {signature : signatureImg},
                 success : function(){
-                    alert('Success');
+                    alert('Document was accepted successfully.');
                 },
-                errror: function(){
-                    alert('Error');
+                error: function(err){
+                    self.errorNotification(err)
                 }
             });
 
