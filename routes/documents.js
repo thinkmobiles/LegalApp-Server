@@ -31,7 +31,8 @@ module.exports = function (app) {
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);
     router.get('/:token/signature', /*session.authenticatedUser,*/ templatesHandler.getTheDocumentToSign);
-    router.post('/:token/signature', /*session.authenticatedUser,*//* documentsHandler.companiesSignatureMiddleware,*/ documentsHandler.addSignatureToDocument);
+    router.post('/:token/signature/company', session.authenticatedUser, documentsHandler.companiesSignatureMiddleware, documentsHandler.addSignatureToDocument);
+    router.post('/:token/signature/user', /*session.authenticatedUser,*//* documentsHandler.companiesSignatureMiddleware,*/ documentsHandler.addSignatureToDocument);
 
     return router;
 };
