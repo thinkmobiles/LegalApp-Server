@@ -40,6 +40,15 @@ var TemplatesHandler = function (PostGre) {
             });
     }
 
+    function getCssForTemplates(callback) {
+        fs.readFile(CONSTANTS.PDF_CSS_PATH, function (err, content) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, content);
+        });
+    };
+
     function getTemplateWithStyle(options, callback) {
         var templateId = options.templateId;
 
@@ -66,8 +75,7 @@ var TemplatesHandler = function (PostGre) {
             },
 
             cssContent: function (cb) {
-
-                fs.readFile('public/stylesheets/pdfStyle.css', function (err, content) {
+                getCssForTemplates(function (err, content) {
                     if (err) {
                         return cb(err);
                     }
@@ -750,9 +758,7 @@ var TemplatesHandler = function (PostGre) {
     this.previewDocument = function (req, res, next) {
         var templateId = req.params.id;
         var options = req.body;
-        var templateOptions = {
-            templateId: templateId
-        };
+
         var values;
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -761,7 +767,65 @@ var TemplatesHandler = function (PostGre) {
             return next(badRequests.NotEnParams({reqParams: 'values'}));
         }
 
-        documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+        async.parallel({
+
+            templateModel: function (cb) {
+                var templateOptions = {
+                    templateId: templateId
+                };
+
+                documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+                    if (err) {
+                        return next(err);
+                    }
+                    cb(null, templateModel);
+                });
+            },
+
+            cssContent: function (cb) {
+                getCssForTemplates(function (err, content) {
+                    if (err) {
+                        return next(err);
+                    }
+                    cb(null, content);
+                });
+            }
+
+        }, function (err, results) {
+            var templateModel;
+            var cssContent;
+            var templateHtmlContent;
+            var linkModel;
+            var linkFieldModels;
+            var fields;
+            var htmlContent;
+
+            if (err) {
+                return next(err);
+            }
+
+            templateModel = results.templateModel;
+            cssContent = results.cssContent;
+
+            templateHtmlContent = templateModel.get('html_content');
+            linkModel = templateModel.related('link');
+            fields = [];
+
+            if (linkModel && linkModel.related('linkFields')) {
+                linkFieldModels = linkModel.related('linkFields');
+                linkFieldModels.models.forEach(function (model) {
+                    fields.push(model.toJSON());
+                });
+            }
+
+            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
+            htmlContent = '<style>' + cssContent + '</style>' + htmlContent;
+
+            res.status(200).send({htmlContent: htmlContent});
+
+        });
+
+        /*documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
             var templateHtmlContent;
             var linkModel;
             var fields;
@@ -786,7 +850,7 @@ var TemplatesHandler = function (PostGre) {
             htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
             res.status(200).send({htmlContent: htmlContent});
-        });
+        });*/
     };
 };
 
