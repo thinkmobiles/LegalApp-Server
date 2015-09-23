@@ -70,7 +70,7 @@ define([
         changeCurrentState: function(event){
             var target = $(event.target);
             var container = target.closest('#adminClient');
-            var sel_visible = $('#hideCompany');
+            var selVisible = $('#hideCompany');
             var theState;
 
             container.find('.active').removeClass('active');
@@ -80,9 +80,9 @@ define([
             this.stateModel.set('isOurCompUsers', theState);
 
             if (theState){
-                sel_visible.addClass('hide');
+                selVisible.addClass('hide');
             } else {
-                sel_visible.removeClass('hide');
+                selVisible.removeClass('hide');
             }
         },
 
@@ -101,6 +101,8 @@ define([
                 first   : true,
                 clients : !theState
             });
+
+            this.clearAddForm();
         },
 
         renderUsersList : function(is_new){
@@ -172,6 +174,7 @@ define([
                 data : {name : newCompany},
                 success : function(response){
                     var model = response.model;
+
                     resultField.text(model.name);
                     resultField.attr('data-id', model.id);
                     resultField.closest('.sel_container').removeClass('active');
@@ -183,23 +186,41 @@ define([
             });
         },
 
+        clearAddForm : function() {
+            var this_el = this.$el;
+            var theRole = this_el.find("#addRole");
+            var theCompany = this_el.find('#selectedCompany');
+
+            this_el.find('#addFName').val('');
+            this_el.find('#addLName').val('');
+            this_el.find('#addPhone').val('');
+            this_el.find('#addEmail').val('');
+            theCompany.text('Select company');
+            theCompany.attr('data-id', 0);
+            theRole.text('Viewer');
+            theRole.attr('data-id', 3);
+        },
+
         inviteUser: function (){
             var self   = this;
             var theState = self.stateModel.get('isOurCompUsers');
             var thisEL = self.$el;
-            var firstName = thisEL.find('#addFName');
-            var lastName  = thisEL.find('#addLName');
-            var phone = thisEL.find('#addPhone');
-            var email = thisEL.find('#addEmail');
-            var permissions = thisEL.find(".addRole").data('id');
-            var sel_company = thisEL.find("#selectedCompany");
-            var companyId = sel_company.attr('data-id');
+            var firstName = thisEL.find('#addFName').val().trim();
+            var lastName  = thisEL.find('#addLName').val().trim();
+            var phone = thisEL.find('#addPhone').val().trim();
+            var email = thisEL.find('#addEmail').val().trim();
+            var permissions = thisEL.find("#addRole").attr('data-id');
+            var companyId = thisEL.find("#selectedCompany").attr('data-id');
+
+            if (!firstName || !lastName || !email || (!theState && companyId==='0')) {
+                return alert('Fill, please, all required fields!');
+            }
 
             var inviteData = {
-                first_name  : firstName.val().trim(),
-                last_name   : lastName.val().trim(),
-                phone       : phone.val().trim(),
-                email       : email.val().trim(),
+                first_name  : _.escape(firstName),
+                last_name   : _.escape(lastName),
+                phone       : phone,
+                email       : email,
                 permissions : theState ? permissions : (permissions+10)
             };
 
@@ -214,16 +235,10 @@ define([
             this.usersCollection.create(inviteData,{
                 wait    : true,
                 success : function(){
-                    alert('User invited successfully');
-
-                    firstName.val('');
-                    lastName.val('');
-                    phone.val('');
-                    email.val('');
-                    sel_company.text('Select company');
-                    sel_company.attr('data-id', 0);
-
+                    self.clearAddForm();
                     self.renderUsersList();
+
+                    alert('User invited successfully');
                 },
                 error : function(model, xhr){
                     self.errorNotification(xhr);

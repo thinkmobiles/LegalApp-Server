@@ -49,7 +49,7 @@ define([
                     }
                 });
             } else {
-                alert('CONFIRM ERROR'); //todo
+                alert('Password mismatch');
             }
         },
 

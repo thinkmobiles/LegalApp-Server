@@ -5,7 +5,6 @@
 define([
     'text!templates/menu/iWantToTemplate.html'
 ], function (WantTemp) {
-
     var View;
     View = Backbone.View.extend({
 
@@ -17,8 +16,8 @@ define([
         },
 
         events : {
-            'focusout #iWantTo' : 'closeView',
-            'click .templateName': 'closeView'
+            'focusout #iWantTo'   : 'closeView',
+            'click .templateName' : 'closeView'
         },
 
         closeView: function (){
@@ -31,10 +30,10 @@ define([
             this.$el.html(this.template())
                 .dialog({
                     closeOnEscape: false,
-                    autoOpen: true,
-                    dialogClass: "iWantDialog",
-                    modal: true,
-                    width: "600px",
+                    autoOpen     : true,
+                    dialogClass  : "iWantDialog",
+                    modal        : true,
+                    width        : "600px",
                     close : function(){
                         self.closeView();
                     }
@@ -64,13 +63,17 @@ define([
             var self = this;
 
             $.ajax({
-                url: '/documents/list?orderBy=count&page=1&count=5',
-                type : 'GET',
+                url  : '/documents/list',
+                data : {
+                    orderBy : 'count',
+                    page    : 1,
+                    count   : 5
+                },
                 success: function (response) {
                     self.renderItems(response);
                 },
-                error: function (response, xhr) {
-                    self.errorNotification(xhr);
+                error: function (err) {
+                    self.errorNotification(err);
                 }
             });
         }

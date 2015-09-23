@@ -44,20 +44,6 @@ define([
             this.contactUsView = new ContactView();
         },
 
-        /*getAvatar : function (){
-            var image = this.$el.find('#topBarLogo');
-
-                if (App.sessionData.get('authorized')) {
-                    $.ajax({
-                        url: "/getAvatar",
-
-                        success: function (res) {
-                            image.attr('src', res)
-                        }
-                    });
-                }
-            },*/
-
         logout: function () {
             var self = this;
 
@@ -103,8 +89,6 @@ define([
             var user = App.sessionData.get('first_name') +' '+ App.sessionData.get('last_name');
 
             this.$el.find('.userName').html(user);
-
-            //return this;
         },
 
         updatePendingUsersBadge: function () {

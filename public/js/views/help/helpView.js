@@ -36,55 +36,59 @@ define([
         },
 
         events : {
-            "click #helpSend" : "letsSendMail"
+            "click #helpSend"         : "letsSendMail",
+            "click #tabs-container a" : "changeTabs"
+        },
+
+        changeTabs : function(event){
+            var target = $(event.target);
+            var container = target.closest('#tabs-container');
+            var container2 = this.$el.find('#tab-items');
+            var n;
+
+            container.find('.active').removeClass('active');
+            target.addClass('active');
+
+            n = container.find('li').index(target.parent());
+
+            container2.find('.active').removeClass('active');
+            container2.find('.tab-item').eq(n).addClass('active');
         },
 
         renderHelpMessages: function(){
             var self = this;
-
-            //++++++++++++++++++++++++
-            for (var i=1; i<=5; i+=1){
-                this.helpCollection.add({
-                    id      : i,
-                    subject : 'my '+i+'-ij Subject',
-                    text    : 'erghfsdvbryhfvyudgvyudfgvdfbvytvjdfcbvydgdmhlgfbyufvbnbgfujbybjvbnuhbfgnb gbio tghiuty ttguh urtgfbhuighdfvu thuhbnuhbiovjt ighbuighb ohbkvnb bvj gbl ghb sighbg g'
-                });
-            }
-            //++++++++++++++++++++++++
-
             var currentCollection = this.helpCollection.toJSON();
             var container = this.$el.find('#helpMessContainer').find('.mCSB_container');
 
-            currentCollection.forEach(function(message){
-                container.append(self.mesgTemplate(message));
-            });
+            container.html('');
+            if (currentCollection.length === 0){
+                container.append('<p>Are no messages</p>');
+            } else {
+                currentCollection.forEach(function(message){
+                    container.append(self.mesgTemplate(message));
+                });
+            }
 
         },
 
         renderContactMessage: function(){
             var self = this;
-
-            //++++++++++++++++++++++++
-            for (var i=1; i<=5; i+=1){
-                this.contactCollection.add({
-                    id      : i,
-                    subject : 'my '+i+'-ij Subject',
-                    text    : 'erghfsdvbryhfvyudgvyudfgvdfbvytvjdfcbvydgdmhlgfbyufvbnbgfujbybjvbnuhbfgnb gbio tghiuty ttguh urtgfbhuighdfvu thuhbnuhbiovjt ighbuighb ohbkvnb bvj gbl ghb sighbg g'
-                });
-            }
-            //++++++++++++++++++++++++
-
             var currentCollection = this.contactCollection.toJSON();
             var container = this.$el.find('#helpContContainer').find('.mCSB_container');
 
-            currentCollection.forEach(function(message){
-                container.append(self.mesgTemplate(message));
-            });
-
+            container.html('');
+            if (currentCollection.length === 0){
+                container.append('<p>Are no messages</p>');
+            } else {
+                currentCollection.forEach(function(message){
+                    container.append(self.mesgTemplate(message));
+                });
+            }
         },
 
         letsSendMail: function(){
-            var this_el = this.$el;
+            var self = this;
+            var this_el = self.$el;
             var eMail = this_el.find('#helpEmail').val().trim();
             var subject = this_el.find('#helpSubject').val().trim();
             var emailText = this_el.find('#helpText').val().trim();
@@ -101,6 +105,9 @@ define([
                 data :  data,
                 success : function(){
                     alert('Your message was sent successfully');
+                },
+                error: function(err) {
+                    self.errorNotification(err);
                 }
             });
         },

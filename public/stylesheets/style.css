@@ -1564,6 +1564,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   display: block;
   float: left;
   height: 150px;
+  width: 100%;
   border: 1px solid rgba(185, 190, 202, 0.55);
 }
 
@@ -1572,5 +1573,13 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   width: 150px;
   background-color: #096ac8;
   float: left;
+}
+
+.tab-item {
+  display: none;
+}
+
+.tab-item.active {
+  display: block;
 }
 /*===============================todo AA ---- warning ----*/

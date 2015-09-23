@@ -42,7 +42,9 @@ define([
 
         events : {
             "click #createBtnNext" : "goToPreview",
-            "click #createBtnSave" : "saveDoc"
+            "click #createBtnSave" : "saveDoc",
+            "click #createNewBtn"  : "addContrAgent"
+
         },
 
         inviteDataToFields: function(contentObject){
@@ -54,6 +56,7 @@ define([
             var myTarget;
 
             employeeInput.attr('data-sig',contentObject.id);
+
             if (length){
                 for (var i=0; i<length; i+=1){
                     myTarget = $(myFields[i]);
@@ -74,6 +77,44 @@ define([
             });
 
             return values;
+        },
+
+        addContrAgent: function() {
+            var self = this;
+            var this_el = self.$el;
+            var firstName = this_el.find('#createNewFN').val().trim();
+            var lastName = this_el.find('#createNewLN').val().trim();
+            var email = this_el.find('#createNewEM').val().trim();
+            var employeeInput; //.attr('data-sig',contentObject.id);
+            var inviteData;
+
+            if (!firstName || !lastName || !email){
+                return alert('Fill, please, all fields');
+            }
+
+            employeeInput = this_el.find('#createEmployee');
+
+            inviteData = {
+                email      : email,
+                first_name : firstName,
+                last_name  : lastName
+            };
+
+            $.ajax({
+                url  : "/employees",
+                type : "POST",
+                data : inviteData,
+                success: function(res) {
+                    var model = res.model;
+
+                    employeeInput.attr('data-sig', model.id);
+                    employeeInput.val(firstName+' '+lastName);
+                    self.inviteDataToFields(model);
+                },
+                error: function(err) {
+                    self.errorNotification(err)
+                }
+            });
         },
 
         chooseThisSigner: function(context){
@@ -112,7 +153,7 @@ define([
 
             if (!self.fillFields){
                 userId = self.$el.find('#createEmployee').attr('data-sig');
-                data.user_id = +userId;
+                data.employee_id = +userId;
             }
 
             myModel.save(data,{
@@ -270,10 +311,9 @@ define([
                     var myTerm = req.term;
 
                     $.ajax({
-                        url      : "/users/search",
+                        url      : "/employees/search",
                         data     : {
-                            value  : myTerm,
-                            format : 'single'
+                            value  : myTerm
                         },
                         success : function(response){
                             res(response);

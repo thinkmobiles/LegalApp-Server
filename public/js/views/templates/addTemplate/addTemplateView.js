@@ -59,14 +59,6 @@ define([
             "click #descriptBtn"      : "insertDescriptionText"
         },
 
-        //addLinkedTemp: function (event){
-        //    var target = $(event.target).closest('.tempName');
-        //    var name = target.text().trim();
-        //    var tempId = target.data('id');
-        //    this.$el.find('#tempLinkedTemp').val(name);
-        //    //this.linkedTemplates = [tempId];
-        //},
-
         appendLinksNames : function(){
             var linkColl;
             var linksContainer = this.$el.find('#linkContainer');

@@ -20,10 +20,14 @@
     </div>
 </div>
 <div class="messagesBlock">
-    <div class="topButtons">
-        <a href="javascript:;">"HelpMe"</a>
-        <a href="javascript:;">"ContactUs"</a>
+    <div id="leftNavigate">
+        <ul id="tabs-container">
+            <li><a class="active" href="javascript:;">"Help me"</a></li>
+            <li><a href="javascript:;">"Contact us"</a></li>
+        </ul>
     </div>
-    <div id="helpMessContainer"></div>
-    <div id="helpContContainer" style="display: none"></div>
+    <div id="tab-items">
+        <div id="helpMessContainer" class="tab-item active"></div>
+        <div id="helpContContainer" class="tab-item"></div>
+    </div>
 </div>

@@ -1,7 +1,16 @@
 <div class="messageItem" id="<%= id%>">
-    <div class="photoBox"></div>
+    <div class="photoBox">
+        <img class="messAvatar" src="<%= owner.avatar.url%>">
+        <span><%= owner.profile.first_name%> <%= owner.profile.last_name%></span>
+    </div>
     <div class="infoBox">
-        <div><%= subject%></div>
-        <div><%= text%></div>
+        <div>
+            <h3><%= subject%></h3>
+            <span><%= created_at%></span>
+        </div>
+        <div><%= body%></div>
+    </div>
+    <div>
+        <div><%= is_completed%></div>
     </div>
 </div>
