@@ -39,14 +39,16 @@ define(
         var checkEmailField = function (errorObject, fieldValue, fieldName) {
             errorObject[fieldName] = null;
             if (!fieldValue) {
-                return errorObject[fieldName] = errorMessages.requiredMsg;
+                errorObject[fieldName] = errorMessages.requiredMsg;
+                return fieldName+' '+errorObject[fieldName];
             }
             if (hasInvalidChars(fieldValue)) {
                 errorObject[fieldName] = errorMessages.invalidCharsMsg;
-                return errorObject[fieldName];
+                return fieldName+' '+errorObject[fieldName];
             }
             if (!validateEmail(fieldValue)) {
-                return errorObject[fieldName] = errorMessages.invalidEmailMsg;
+                errorObject[fieldName] = errorMessages.invalidEmailMsg;
+                return fieldName+' '+errorObject[fieldName];
             } else {
                 return false;
             }

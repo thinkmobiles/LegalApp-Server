@@ -56,7 +56,7 @@ define([
                 success: function(){
                     self.page += 1;
                     self.currentPage = paginationCollection.toJSON();
-                    self.add(self.currentPage);
+                    self.add(self.currentPage, {silent : true});
                     self.trigger('appendUsers', first)
                 },
                 error : function (){
