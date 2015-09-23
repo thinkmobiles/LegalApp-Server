@@ -349,6 +349,33 @@ var TemplatesHandler = function (PostGre) {
 
     };
 
+    this.getTopTemplates = function (req, res, next) {
+        var TEMPLATES = TABLES.TEMPLATES;
+        var DOCUMENTS = TABLES.DOCUMENTS;
+        var params = req.query;
+        var page = params.page || 1;
+        var limit = params.count || 12;
+        var fields = [
+            TEMPLATES + '.id',
+            TEMPLATES + '.name'
+        ];
+
+        var query = knex(TEMPLATES)
+            .leftJoin(DOCUMENTS, TEMPLATES + '.id', DOCUMENTS + '.template_id')
+            .count(TEMPLATES + '.id')
+            .groupBy(TEMPLATES + '.id')
+            .select(fields)
+            .orderBy('count', 'DESC')
+            .offset(( page - 1 ) * limit)
+            .limit(limit)
+            .exec(function (err, rows) {
+                if (err) {
+                    return next(err);
+                }
+                res.status(200).send(rows);
+            });
+    };
+
     this.removeTemplate = function (req, res, next) {
         var permissions = req.session.permissions;
         var templateId = req.params.id;
