@@ -39,14 +39,17 @@ define(
         var checkEmailField = function (errorObject, fieldValue, fieldName) {
             errorObject[fieldName] = null;
             if (!fieldValue) {
-                errorObject[fieldName] = errorMessages.requiredMsg;
-                return;
+                return errorObject[fieldName] = errorMessages.requiredMsg;
             }
             if (hasInvalidChars(fieldValue)) {
                 errorObject[fieldName] = errorMessages.invalidCharsMsg;
-                return;
+                return errorObject[fieldName];
             }
-            if (!validateEmail(fieldValue)) errorObject[fieldName] = errorMessages.invalidEmailMsg;
+            if (!validateEmail(fieldValue)) {
+                return errorObject[fieldName] = errorMessages.invalidEmailMsg;
+            } else {
+                return false;
+            }
         };
 
 

@@ -87,7 +87,7 @@ define([
         },
 
         signature : function (token) {
-            this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized);
+            this.loadWrapperView('signature', {token : token}, null);
         },
 
         confirmEmail: function (token) {
