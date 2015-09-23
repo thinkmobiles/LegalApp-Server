@@ -41,7 +41,13 @@ define([
 
         initialize: function () {
             this.stateModel = new Backbone.Model();
-            this.stateModel.set('isOurCompUsers', true);
+            this.stateModel.set({
+                isOurCompUsers : true,
+                searchParams   : {
+                    orderBy : 'company_name',
+                    order   : 'ASC'
+                }
+            });
             this.usersCollection = new UsersCollection();
 
             this.render();
@@ -213,15 +219,21 @@ define([
             var email = thisEL.find('#addEmail').val().trim();
             var permissions = thisEL.find("#addRole").attr('data-id');
             var companyId = thisEL.find("#selectedCompany").attr('data-id');
+            var emailAlert;
 
             if (!firstName || !lastName || !email || (!theState && companyId==='0')) {
                 return alert('Fill, please, all required fields!');
             }
 
+            emailAlert = Validation.checkEmailField({}, email, 'Email');
+            if (emailAlert){
+                return alert(emailAlert);
+            }
+
             var inviteData = {
                 first_name  : _.escape(firstName),
                 last_name   : _.escape(lastName),
-                phone       : phone,
+                phone       : _.escape(phone),
                 email       : email,
                 permissions : theState ? permissions : (permissions+10)
             };

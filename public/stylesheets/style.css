@@ -1582,4 +1582,8 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
 .tab-item.active {
   display: block;
 }
+
+.docClick {
+  background-color: crimson;
+}
 /*===============================todo AA ---- warning ----*/
