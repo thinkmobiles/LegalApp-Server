@@ -21,7 +21,7 @@ define([
             "newUsers"                    :  "newUsers",
             ":docType/preview/:id"        :  "forPreview",
             "templates/:viewType"         :  "templates",
-            "documents/:token/signature"  :  "signature",
+            "signature/:type/:token"      :  "signature",
             "documents/:viewType"         :  "documents",
             "taskList"                    :  "taskList",
             "userProfile"                 :  "userProfile",
@@ -36,10 +36,10 @@ define([
                 new TopMenuView();
         },
 
-        loadWrapperView: function (argName, argParams, argRedirect) {
+        loadWrapperView: function (argName, argParams, argRedirect, argType) {
             var self = this;
             var name = argName;
-            var nameView = name+'View';
+            var nameView = argType ? name+argType+'View' : name + 'View';
             var params =  argParams;
             var redirect = argRedirect;
 
@@ -86,10 +86,6 @@ define([
             this.loadWrapperView('userProfile', null, REDIRECT.whenNOTAuthorized);
         },
 
-        signature : function (token) {
-            this.loadWrapperView('signature', {token : token}, null);
-        },
-
         confirmEmail: function (token) {
             this.loadWrapperView('confirmEmail',{token : token}, REDIRECT.whenAuthorized);
         },
@@ -117,6 +113,17 @@ define([
         forPreview: function (docType, id){
             if (docType === 'templates' || docType === 'documents') {
                 this.loadWrapperView('templatesPre', {docType: docType, id: id}, REDIRECT.whenNOTAuthorized);
+            } else {
+                Backbone.history.navigate("users", {trigger: true});
+            }
+        },
+
+        signature : function (type, token) {
+            if (type === 'company'){
+                this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized, 'Company');
+            }
+            if (type === 'user'){
+                this.loadWrapperView('signature', {token : token}, null, 'User');
             } else {
                 Backbone.history.navigate("users", {trigger: true});
             }

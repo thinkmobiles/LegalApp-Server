@@ -1,9 +1,12 @@
 /**
+ * Created by root on 23.09.15.
+ */
+/**
  * Created by root on 20.08.15.
  */
 
 define([
-    'text!templates/signature/signatureTemplate.html',
+    'text!templates/signature/signatureUserTemplate.html',
     'views/custom/signatureBoxView'
 
 ], function (SignatureTemp, SignView) {
