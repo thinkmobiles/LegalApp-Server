@@ -117,7 +117,7 @@ module.exports = function (PostGre, ParentModel) {
             if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) || (status === STATUSES.CREATED)) {
                 searchValue = companySignature;
                 saveData = {
-                    assigned_id: userId,
+                    //assigned_id: userId,
                     status: STATUSES.SENT_TO_SIGNATURE_CLIENT, //new status
                     company_signed_at: now,
                     access_token: tokenGenerator.generate(),
