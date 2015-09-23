@@ -21,6 +21,7 @@ var TemplatesHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var uploader = PostGre.Models.Image.uploader;
+    var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
     var AttachmentModel = Models.Attachment;
     var LinkedTemplatesModel = Models.LinkedTemplates;
@@ -48,6 +49,8 @@ var TemplatesHandler = function (PostGre) {
             callback(null, content);
         });
     };
+
+    this.getCssForTemplates = getCssForTemplates;
 
     function getTemplateWithStyle(options, callback) {
         var templateId = options.templateId;
@@ -824,33 +827,67 @@ var TemplatesHandler = function (PostGre) {
             res.status(200).send({htmlContent: htmlContent});
 
         });
+    };
 
-        /*documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
-            var templateHtmlContent;
-            var linkModel;
-            var fields;
+    this.getTheDocumentToSign = function (req, res, next) {
+        var token = req.params.token;
+        var companyId = req.session.companyId;
+
+        async.parallel({
+
+            documentModel: function (cb) {
+                var permissions = req.session.permissions;
+                var criteria = {
+                    access_token: token
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        var html = documentModel.get('html_content');
+
+                        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+                            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER) &&
+                            (documentModel.get('company_id') !== companyId)) {
+                                return cb(badRequests.AccessError());
+                        }
+                        cb(null, documentModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            cssContent: function (cb) {
+                getCssForTemplates(function (err, content) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, content);
+                });
+            }
+        }, function (err, results) {
+            var documentModel;
+            var cssContent;
             var htmlContent;
-            var linkFieldsModels;
 
             if (err) {
                 return next(err);
             }
 
-            templateHtmlContent = templateModel.get('html_content');
-            linkModel = templateModel.related('link');
-            fields = [];
+            documentModel = results.documentModel;
+            cssContent = results.cssContent;
+            htmlContent = documentModel.get('html_content');
+            htmlContent = '<style>' + cssContent + '</style>' + htmlContent;
 
-            if (linkModel && linkModel.related('linkFields')) {
-                linkFieldsModels = linkModel.related('linkFields');
-                linkFieldsModels.models.forEach(function (model) {
-                    fields.push(model.toJSON());
-                });
-            }
+            res.status(200).send(htmlContent);
+        });
 
-            htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
 
-            res.status(200).send({htmlContent: htmlContent});
-        });*/
     };
 };
 

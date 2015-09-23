@@ -4,11 +4,13 @@ var express = require('express');
 var router = express.Router();
 //var DocumentsHandler = require('../handlers/documents');
 var DocumentsHandler = require('../handlers/documentsNew');
+var TemplatesHandler = require('../handlers/templates');
 var SessionHandler = require('../handlers/sessions');
 
 module.exports = function (app) {
     var PostGre = app.get('PostGre');
-    var documentsHandler= new DocumentsHandler(PostGre);
+    var documentsHandler = new DocumentsHandler(PostGre);
+    var templatesHandler = new TemplatesHandler(PostGre);
     var session = new SessionHandler(PostGre);
 
     //router.post('/', session.authenticatedEditor, documentsHandler.newDocument);
@@ -28,7 +30,7 @@ module.exports = function (app) {
     router.post('/:id/signAndSend', session.authenticatedEditor, documentsHandler.signAndSend);
     router.get('/:id/preview', session.authenticatedUser, documentsHandler.previewDocument);
     router.get('/:id/send', session.authenticatedUser, documentsHandler.sendDocumentToSign);
-    router.get('/:token/signature', session.authenticatedUser, documentsHandler.getTheDocumentToSign);
+    router.get('/:token/signature', session.authenticatedUser, templatesHandler.getTheDocumentToSign);
     router.post('/:token/signature', session.authenticatedUser, documentsHandler.companiesSignatureMiddleware, documentsHandler.addSignatureToDocument);
 
     return router;
