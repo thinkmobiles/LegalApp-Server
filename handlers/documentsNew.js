@@ -2206,40 +2206,6 @@ var DocumentsHandler = function (PostGre) {
         });
     };
 
-    this.getTheDocumentToSign = function (req, res, next) {
-        var token = req.params.token;
-        var companyId = req.session.companyId;
-        var permissions = req.session.permissions;
-        var criteria = {
-            access_token: token
-        };
-        var fetchOptions = {
-            require: true
-        };
-        var check;
-
-        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
-            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER)) {
-            check = companyId;
-        }
-
-        DocumentModel
-            .find(criteria, fetchOptions)
-            .then(function (documentModel) {
-                var html = documentModel.get('html_content');
-                var docCompanyId = documentModel.get('company_id');
-
-                if (check && (check !== docCompanyId)) {
-                    return next(badRequests.AccessError());
-                }
-                res.status(200).send(html);
-            })
-            .catch(DocumentModel.NotFoundError, function (err) {
-                next(badRequests.NotFound());
-            })
-            .catch(next);
-    };
-
     this.addSignatureToDocument = function (req, res, next) {
         //var userId = req.session.userId;
         var currentUserId = req.session.userId;

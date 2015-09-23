@@ -21,6 +21,7 @@ var TemplatesHandler = function (PostGre) {
     var knex = PostGre.knex;
     var Models = PostGre.Models;
     var uploader = PostGre.Models.Image.uploader;
+    var DocumentModel = Models.Document;
     var TemplateModel = Models.Template;
     var AttachmentModel = Models.Attachment;
     var LinkedTemplatesModel = Models.LinkedTemplates;
@@ -39,6 +40,17 @@ var TemplatesHandler = function (PostGre) {
                 cb();
             });
     }
+
+    function getCssForTemplates(callback) {
+        fs.readFile(CONSTANTS.PDF_CSS_PATH, function (err, content) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, content);
+        });
+    };
+
+    this.getCssForTemplates = getCssForTemplates;
 
     function getTemplateWithStyle(options, callback) {
         var templateId = options.templateId;
@@ -66,8 +78,7 @@ var TemplatesHandler = function (PostGre) {
             },
 
             cssContent: function (cb) {
-
-                fs.readFile('public/stylesheets/pdfStyle.css', function (err, content) {
+                getCssForTemplates(function (err, content) {
                     if (err) {
                         return cb(err);
                     }
@@ -750,9 +761,7 @@ var TemplatesHandler = function (PostGre) {
     this.previewDocument = function (req, res, next) {
         var templateId = req.params.id;
         var options = req.body;
-        var templateOptions = {
-            templateId: templateId
-        };
+
         var values;
 
         if (options.values && (typeof options.values === 'object') && Object.keys(options.values).length) {
@@ -761,32 +770,124 @@ var TemplatesHandler = function (PostGre) {
             return next(badRequests.NotEnParams({reqParams: 'values'}));
         }
 
-        documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+        async.parallel({
+
+            templateModel: function (cb) {
+                var templateOptions = {
+                    templateId: templateId
+                };
+
+                documentsHandler.getTemplateModelWithLinks(templateOptions, function (err, templateModel) {
+                    if (err) {
+                        return next(err);
+                    }
+                    cb(null, templateModel);
+                });
+            },
+
+            cssContent: function (cb) {
+                getCssForTemplates(function (err, content) {
+                    if (err) {
+                        return next(err);
+                    }
+                    cb(null, content);
+                });
+            }
+
+        }, function (err, results) {
+            var templateModel;
+            var cssContent;
             var templateHtmlContent;
             var linkModel;
+            var linkFieldModels;
             var fields;
             var htmlContent;
-            var linkFieldsModels;
 
             if (err) {
                 return next(err);
             }
+
+            templateModel = results.templateModel;
+            cssContent = results.cssContent;
 
             templateHtmlContent = templateModel.get('html_content');
             linkModel = templateModel.related('link');
             fields = [];
 
             if (linkModel && linkModel.related('linkFields')) {
-                linkFieldsModels = linkModel.related('linkFields');
-                linkFieldsModels.models.forEach(function (model) {
+                linkFieldModels = linkModel.related('linkFields');
+                linkFieldModels.models.forEach(function (model) {
                     fields.push(model.toJSON());
                 });
             }
 
             htmlContent = documentsHandler.createDocumentContent(templateHtmlContent, fields, values);
+            htmlContent = '<style>' + cssContent + '</style>' + htmlContent;
 
             res.status(200).send({htmlContent: htmlContent});
+
         });
+    };
+
+    this.getTheDocumentToSign = function (req, res, next) {
+        var token = req.params.token;
+        var companyId = req.session.companyId;
+
+        async.parallel({
+
+            documentModel: function (cb) {
+                var permissions = req.session.permissions;
+                var criteria = {
+                    access_token: token
+                };
+                var fetchOptions = {
+                    require: true
+                };
+
+                DocumentModel
+                    .find(criteria, fetchOptions)
+                    .then(function (documentModel) {
+                        var html = documentModel.get('html_content');
+
+                        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+                            !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER) &&
+                            (documentModel.get('company_id') !== companyId)) {
+                                return cb(badRequests.AccessError());
+                        }
+                        cb(null, documentModel);
+                    })
+                    .catch(DocumentModel.NotFoundError, function (err) {
+                        cb(badRequests.NotFound());
+                    })
+                    .catch(cb);
+            },
+
+            cssContent: function (cb) {
+                getCssForTemplates(function (err, content) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, content);
+                });
+            }
+        }, function (err, results) {
+            var documentModel;
+            var cssContent;
+            var htmlContent;
+
+            if (err) {
+                return next(err);
+            }
+
+            documentModel = results.documentModel;
+            cssContent = results.cssContent;
+            htmlContent = documentModel.get('html_content');
+            htmlContent = '<style>' + cssContent + '</style>' + htmlContent;
+
+            res.status(200).send(htmlContent);
+        });
+
+
     };
 };
 
