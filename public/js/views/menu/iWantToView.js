@@ -63,7 +63,7 @@ define([
             var self = this;
 
             $.ajax({
-                url  : '/documents/list',
+                url  : '/templates/top',
                 data : {
                     orderBy : 'count',
                     page    : 1,

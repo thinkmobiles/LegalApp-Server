@@ -14,6 +14,7 @@ module.exports = function (app) {
 
     router.post('/', session.authenticatedAdminsEditors, multipartMiddleware, templates.createTemplate);
     router.get('/', session.authenticatedUser, templates.getTemplates);
+    router.get('/top', session.authenticatedUser, templates.getTopTemplates);
     router.get('/:id', session.authenticatedUser, templates.getTemplate);
     router.put('/:id', session.authenticatedAdminsEditors, multipartMiddleware, templates.updateTemplate);
     router.delete('/:id', session.authenticatedAdminsEditors, templates.removeTemplate);
