@@ -7,14 +7,16 @@ define([
     'text!templates/forSelect/companyNamesTemplate.html',
     'collections/usersCollection',
     'views/users/editUserView',
-    'text!templates/users/usersListTemplate.html'
+    'text!templates/users/usersListTemplate.html',
+    'validation'
 
 ], function (
     UsersTemplate,
     CompanyName,
     UsersCollection ,
     EditUserView,
-    UsrListTemp) {
+    UsrListTemp,
+    Validation) {
 
     var View;
 
