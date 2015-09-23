@@ -2,7 +2,8 @@
 
 var express = require('express');
 var router = express.Router();
-var DocumentsHandler = require('../handlers/documents');
+//var DocumentsHandler = require('../handlers/documents');
+var DocumentsHandler = require('../handlers/documentsNew');
 var SessionHandler = require('../handlers/sessions');
 
 module.exports = function (app) {

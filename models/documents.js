@@ -32,6 +32,10 @@ module.exports = function (PostGre, ParentModel) {
             return this.belongsTo(PostGre.Models.User, 'user_id');
         },
 
+        employee: function () {
+            return this.belongsTo(PostGre.Models.User, 'employee_id');
+        },
+
         checkAccessToSignature: function (userModel, callback) {
             var attributes = this.attributes;
             var status = attributes.status;
@@ -99,8 +103,6 @@ module.exports = function (PostGre, ParentModel) {
         },
 
         saveSignature: function (userId, imageSrc, callback) {
-           /* var profileModel;
-            var signAuthority;*/
             var documentModel = this;
             var attributes = this.attributes;
             var htmlContent = attributes.html_content;
@@ -111,21 +113,6 @@ module.exports = function (PostGre, ParentModel) {
             var searchValue;
             var saveData;
             var now = new Date();
-
-            /*console.log('>>> documentModel: ');
-            console.log(documentModel);*/
-
-            /*if (!userModel || !userModel.related('profile')) {
-                return callback(badRequests.NotEnParams({reqParams: 'userModel'}));
-            }
-
-            if (userModel && userModel.related('profile')) {
-                profileModel = userModel.related('profile');
-            } else {
-                return callback(badRequests.NotEnParams({reqParams: 'userModel.related("profile")'}));
-            }
-
-            signAuthority = profileModel.get('sign_authority');*/
 
             if ((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) || (status === STATUSES.CREATED)) {
                 searchValue = companySignature;
