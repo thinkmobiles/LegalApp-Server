@@ -11,7 +11,8 @@ define([
 
         page    : 1,
         clients : false,
-        currentPage : {},
+        currentPage   : {},
+        searchOptions : {},
 
         url  : function(){
             return this.clients ? '/clients' : '/users'
@@ -32,9 +33,16 @@ define([
         showMore: function(argOptions) {
             var self = this;
             var options = argOptions;
+
             var first;
-            var fetchOptions = {};
+            var fetchOptions;
             var paginationCollection = new Backbone.Collection();
+
+            if (options && options.searchOptions) {
+                self.searchOptions = options.searchOptions
+            }
+
+            fetchOptions = self.searchOptions;
 
             if (options && options.first){
                 first = true;

@@ -29,30 +29,34 @@ define([
         listTemp    : _.template(UsrListTemp),
 
         events: {
-            "click #addNewUser"              : "showAddTemplate",
-            "click .userRow:not(.activeRow)" : "showEditTemplate",
-            "click .activeRow"               : "hideEdit",
-            "click #adminClient>span "       : "changeCurrentState",
-            "click .sel_item"                : "selectSomething",
-            "click .sel_container"           : "showHideSelect",
-            "click #goSaveCompany"           : "goSaveCompany",
-            "click #addInvite"               : "inviteUser"
+            "click #addNewUser"                 : "showAddTemplate",
+            "click .userRow:not(.activeRow)"    : "showEditTemplate",
+            "click .activeRow"                  : "hideEdit",
+            "click #adminClient>span "          : "changeCurrentState",
+            "click .sel_item"                   : "selectSomething",
+            "click .sel_container"              : "showHideSelect",
+            "click #goSaveCompany"              : "goSaveCompany",
+            "click #addInvite"                  : "inviteUser",
+            "click .sortableData:not(.letsSort)": "changOrderBy",
+            "click .letsSort"                   : "changOrder"
+
+
         },
 
         initialize: function () {
             this.stateModel = new Backbone.Model();
             this.stateModel.set({
                 isOurCompUsers : true,
-                searchParams   : {
-                    orderBy : 'company_name',
-                    order   : 'ASC'
-                }
+                orderBy: 'company_name',
+                order  : 'ASC'
             });
+
             this.usersCollection = new UsersCollection();
 
             this.render();
 
             this.listenTo(this.stateModel, 'change:isOurCompUsers', this.changeView);
+            this.listenTo(this.stateModel, 'change:order change:orderBy', this.userListFirstRender);
             this.listenTo(this.usersCollection, 'appendUsers', this.renderUsersList);
         },
 
@@ -102,6 +106,20 @@ define([
             }
         },
 
+        userListFirstRender : function() {
+            var theState = this.stateModel.get('isOurCompUsers');
+            var searchOptions = {
+                order   : this.stateModel.get('order'),
+                orderBy : this.stateModel.get('orderBy')
+            };
+
+            this.usersCollection.showMore({
+                first         : true,
+                clients       : !theState,
+                searchOptions : searchOptions
+            });
+        },
+
         changeView : function(){
             var theState = this.stateModel.get('isOurCompUsers');
 
@@ -111,6 +129,32 @@ define([
             });
 
             this.clearAddForm();
+        },
+
+        changOrderBy: function(event) {
+            var target = $(event.target);
+            var container = target.closest('tr');
+            var orderBy = target.data('sort');
+
+            container.find('.letsSort').removeClass('letsSort');
+            target.addClass('letsSort');
+
+            this.stateModel.set('orderBy', orderBy);
+        },
+
+        changOrder: function(event) {
+            var target = $(event.target).closest('tr');
+            var sortClass = target.attr('class');
+
+            if (sortClass === 'sortUp') {
+                target.switchClass('sortUp','sortDn');
+                this.stateModel.set('order', 'DESC');
+            }
+
+            if (sortClass === 'sortDn') {
+                target.switchClass('sortDn','sortUp');
+                this.stateModel.set('order', 'ASC');
+            }
         },
 
         renderUsersList : function(is_new){
@@ -176,22 +220,27 @@ define([
             var newCompany = this_el.find('#newCompName').val().trim();
             var resultField = this_el.find('#selectedCompany');
 
-            $.ajax({
-                url  : '/companies',
-                type : 'POST',
-                data : {name : newCompany},
-                success : function(response){
-                    var model = response.model;
+            if (newCompany) {
 
-                    resultField.text(model.name);
-                    resultField.attr('data-id', model.id);
-                    resultField.closest('.sel_container').removeClass('active');
-                    self.renderCompanies();
-                },
-                error   : function(err){
-                    self.errorNotification(err);
-                }
-            });
+                $.ajax({
+                    url: '/companies',
+                    type: 'POST',
+                    data: {name: _.escape(newCompany)},
+                    success: function (response) {
+                        var model = response.model;
+
+                        resultField.text(model.name);
+                        resultField.attr('data-id', model.id);
+                        resultField.closest('.sel_container').removeClass('active');
+                        self.renderCompanies();
+                    },
+                    error: function (err) {
+                        self.errorNotification(err);
+                    }
+                });
+            } else {
+                alert('Enter, please, company name');
+            }
         },
 
         clearAddForm : function() {
@@ -286,7 +335,7 @@ define([
                 }
             });
 
-            this.usersCollection.showMore({first : true});
+            this.userListFirstRender();
             this.renderCompanies();
 
             return this;

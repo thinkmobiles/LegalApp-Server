@@ -59,22 +59,25 @@ define(
             errorObject[fieldName] = null;
             if (!fieldValue) {
                 errorObject[fieldName] = errorMessages.requiredMsg;
-                return;
+                return fieldName+' '+errorObject[fieldName];
             }
             if (hasInvalidChars(fieldValue)) {
                 errorObject[fieldName] = errorMessages.invalidCharsMsg;
-                return;
+                return fieldName+' '+errorObject[fieldName];
             }
             if (fieldValue.length < 6) {
                 errorObject[fieldName] = errorMessages.minLengthMsg(6);
-                return;
+                return fieldName+' '+errorObject[fieldName];
             }
             if (fieldValue.length > 35) {
                 errorObject[fieldName] = errorMessages.maxLengthMsg(35);
-                return;
+                return fieldName+' '+errorObject[fieldName];
             }
             if (!validatePass(fieldValue)) {
                 errorObject[fieldName] = errorMessages.invalidLoginMsg;
+                return fieldName+' '+errorObject[fieldName];
+            } else {
+                return false
             }
 
         };

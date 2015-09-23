@@ -108,7 +108,8 @@ define([
         },
 
         updateUser : function(){
-            var thisEL = this.$el;
+            var self = this;
+            var thisEL = self.$el;
             var firstName = thisEL.find('#editFName').val().trim();
             var lastName = thisEL.find('#editLName').val().trim();
             var permissions = thisEL.find(".addRole").data('id');
@@ -117,9 +118,13 @@ define([
             var status_ch = status.prop('checked');
             var profile;
 
+            if (!firstName || !lastName){
+                return alert('Fill, please, all fields');
+            }
+
             profile = {
-                first_name     : firstName,
-                last_name      : lastName,
+                first_name     : _.escape(firstName),
+                last_name      : _.escape(lastName),
                 permissions    : permissions,
                 sign_authority : signing
             };
@@ -133,7 +138,10 @@ define([
             }
 
             this.userModel.save(updateData,{
-                wait: true
+                wait: true,
+                error : function (response, xhr){
+                    self.errorNotification(xhr)
+                }
             });
         },
 

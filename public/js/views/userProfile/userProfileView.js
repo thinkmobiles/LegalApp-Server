@@ -4,8 +4,9 @@
 
 define([
     'text!templates/userProfile/userProfileTemplate.html',
+    'validation',
     'custom'
-], function (UsrProfTemp, custom) {
+], function (UsrProfTemp, Validation, custom) {
 
     var View;
     View = Backbone.View.extend({
@@ -78,16 +79,29 @@ define([
             var saveData={};
             var pass;
             var confirmPass;
+            var mailAlert;
+
+            if (!profNameFirst || !profNameLast){
+                return alert('First name and last name fields can not be empty'); // todo correct message
+            }
 
             saveData.profile = {
-                first_name : profNameFirst,
-                last_name  : profNameLast,
-                phone      : profPhone
+                first_name : _.escape(profNameFirst),
+                last_name  : _.escape(profNameLast),
+                phone      : _.escape(profPhone)
             };
 
             if (newPass) {
                 pass = this_el.find('#profCurPass').val().trim();
                 confirmPass = this_el.find('#profConfPass').val().trim();
+                mailAlert = Validation.checkPasswordField({}, newPass, 'Password');
+
+                if (mailAlert) {
+                    this_el.find('#profPass').val('');
+                    this_el.find('#profConfPass').val('');
+                    return alert(mailAlert);
+                }
+
                 if (newPass === confirmPass){
                     saveData.password = pass;
                     saveData.newPassword = newPass;
