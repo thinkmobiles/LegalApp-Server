@@ -111,9 +111,9 @@ var MailerModule = function () {
         var status = document.status;
         var link;
 
-        if (status === 3) {
+        if (status === 2) {
             link = process.env.HOST + '/#signature/company/' + document.access_token;
-        } else if (status === 4) {
+        } else if (status === 3) {
             link = process.env.HOST + '/#signature/user/' + document.access_token;
         } else {
             return console.error('Invalid status of document');
