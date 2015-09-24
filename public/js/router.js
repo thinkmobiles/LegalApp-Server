@@ -33,7 +33,7 @@ define([
         },
 
         initialize: function () {
-                new TopMenuView();
+            new TopMenuView();
         },
 
         loadWrapperView: function (argName, argParams, argRedirect, argType) {
