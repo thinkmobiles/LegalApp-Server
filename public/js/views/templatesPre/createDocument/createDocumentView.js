@@ -214,7 +214,7 @@ define([
                 url ='/documents/signAndSend';
                 userId = self.$el.find('#createEmployee').attr('data-sig');
                 data.template_id = self.tempInfo.id;
-                data.user_id = +userId;
+                data.employee_id = +userId;
             }
 
             $.ajax({

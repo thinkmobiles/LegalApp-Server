@@ -51,7 +51,7 @@ define([
                     if (needAppend) {
                         self.trigger('showMore', false);
                     } else {
-                        firstEl = self.at(0).get('id');
+                        //firstEl = self.at(0).get('id');
                         self.trigger('showMore', firstEl);
                     }
                 }
