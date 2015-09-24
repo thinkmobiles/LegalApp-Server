@@ -122,13 +122,13 @@ define([
 
         signature : function (type, token) {
             if (type === 'company'){
-                this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized, 'Company');
+                return this.loadWrapperView('signature', {token : token}, REDIRECT.whenNOTAuthorized, 'Company');
             }
             if (type === 'user'){
-                this.loadWrapperView('signature', {token : token}, null, 'User');
-            } else {
-                Backbone.history.navigate("users", {trigger: true});
+                return this.loadWrapperView('signature', {token : token}, null, 'User');
             }
+
+            Backbone.history.navigate("users", {trigger: true});
         },
 
         templates: function (viewType) {
