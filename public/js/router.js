@@ -14,7 +14,7 @@ define([
         topBarView  : null,
 
         routes: {
-            "login(/:token)"              :  "login",
+            "login(/:type/*value)"        :  "login",
             "signup"                      :  "signup",
             "users"                       :  "users",
             "settings"                    :  "settings",
@@ -42,10 +42,12 @@ define([
             var nameView = argType ? name+argType+'View' : name + 'View';
             var params =  argParams;
             var redirect = argRedirect;
+            var newUrl;
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
-                    return Backbone.history.navigate("login", {trigger: true});
+                    newUrl = "login/success/" + window.location.hash.slice(1);
+                    return Backbone.history.navigate(newUrl , {trigger: true});
                 }
             }
 
@@ -74,8 +76,8 @@ define([
             Backbone.history.navigate("users", {trigger: true});
         },
 
-        login: function (token) {
-            this.loadWrapperView('login', {token : token}, REDIRECT.whenAuthorized);
+        login: function (type, value) {
+            this.loadWrapperView('login', {type : type, value : value}, REDIRECT.whenAuthorized);
         },
 
         signup: function () {
