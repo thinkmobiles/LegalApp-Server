@@ -20,8 +20,6 @@ var imagesUploader = function (dirConfig) {
         switch (osType) {
             case "Windows":
             {
-                //dir = __dirname.replace("modules\\custom\\imageUploader", rootDir + "\\");
-                //dir = 'public\\';
                 dir = dirConfig.replace("\/", "//");
                 webDir = process.env.HOST;
                 slash = "\\";
@@ -29,8 +27,6 @@ var imagesUploader = function (dirConfig) {
                 break;
             case "Linux":
             {
-                //dir = __dirname.replace("modules/custom/imageUploader", rootDir + "\/");
-                //dir = 'public\/';
                 dir = dirConfig.replace("//", "\/");
                 webDir = process.env.HOST;
                 slash = "\/";
@@ -253,6 +249,9 @@ var imagesUploader = function (dirConfig) {
         var buffer = options.buffer;
 
         try {
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('>>> uploader: try to write file', filePath);
+            }
             fs.writeFile(filePath, buffer, function (err, data) {
                 if (callback && typeof callback === 'function') {
                     callback(err, options);
@@ -289,24 +288,6 @@ var imagesUploader = function (dirConfig) {
             writeFile(writeOptions, callback);
         });
     }
-
-    /*function uploadFile(fileData, fileName, folderName, callback) {
-        var slash = osPathData.slash;
-        var dir = osPathData.dir + slash;
-
-        //fileData.name = fileName;
-        var name = fileData.name;
-        var buffer = fileData.data;
-        var fileName;
-
-        if (!name|| !buffer) {
-            if (callback && (typeof callback === 'function')) callback(Error('Invalid value of fileData'));
-        }
-
-        //saveImage(fileData, dir, folderName, slash, callback);
-        fileName = computeFileName(name, key);
-        saveFile(buffer, folderName, fileName, callback);
-    }*/
 
     //function uploadFile(folderName, fileName, buffer, callback) {
     function uploadFile(options, callback) {

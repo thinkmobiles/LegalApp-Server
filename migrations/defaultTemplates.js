@@ -6,28 +6,41 @@ var PERMISSIONS = require('../constants/permissions');
 var CONSTANTS = require('../constants/index');
 var BUCKETS = require('../constants/buckets');
 var fs = require('fs');
+var path = require('path');
 
 var async = require('async');
 var MammothHandler = require('../handlers/mammoth');
 var uploaderConfig;
-var amazonS3conf;
+//var amazonS3conf = require('../config/aws');
 
-if (process.env.UPLOADER_TYPE === 'AmazonS3') {
-    amazonS3conf = require('../config/aws');
-    uploaderConfig = {
-        type: process.env.UPLOADER_TYPE,
-        awsConfig: amazonS3conf
-    };
-} else {
-    uploaderConfig = {
-        type: process.env.UPLOADER_TYPE,
-        directory: '../public/uploads/' + process.env.NODE_ENV.toLowerCase()
-    };
+function getUploaderConfig(options) {
+    var fsUploadDir = (options && options.fsUploadDir) ? options.fsUploadDir : path.join(__dirname, '..', process.env.AMAZON_S3_BUCKET);
+    var config;
+
+    if (process.env.UPLOADER_TYPE === 'AmazonS3') {
+        config = {
+            type: process.env.UPLOADER_TYPE,
+            awsConfig: amazonS3conf
+        };
+    } else {
+        config = {
+            type: process.env.UPLOADER_TYPE,
+            directory: fsUploadDir
+        };
+    }
+
+    console.log('>>> uploaderConfig');
+    console.log(uploaderConfig);
+
+    return config;
 }
 
-var uploader = require('../helpers/imageUploader/imageUploader')(uploaderConfig);
 
-module.exports = function (knex) {
+module.exports = function (knex, options) {
+    var uploaderConfig = getUploaderConfig(options);
+    var templateFilesDir = (options && options.templateFilesDir) ? options.templateFilesDir : path.join(__dirname, 'files');
+
+    var uploader = require('../helpers/imageUploader/imageUploader')(uploaderConfig);
     var FIELDS = [
         {
             name: 'Date of document',
@@ -191,11 +204,10 @@ module.exports = function (knex) {
         }
 
     ];
-
     var TEMPLATES = [
         {
             templateName: 'Employment k',
-            attachment: 'Template Example1.docx',
+            attachment: 'Employment k.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -214,7 +226,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Contractor k',
-            attachment: 'Template Example2.docx',
+            attachment: 'Contractor k.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -237,7 +249,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'PIIA',
-            attachment: 'Template Example3.docx',
+            attachment: 'PIIA.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -249,7 +261,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'ESOP',
-            attachment: 'Template Example4.docx',
+            attachment: 'ESOP.docx',
             fields: [
                 FIELDS[1],
                 FIELDS[18],
@@ -258,7 +270,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Option Agreement',
-            attachment: 'Template Example5.docx',
+            attachment: 'Option Agreement.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -273,7 +285,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Director(s) Resolution re ESOP',
-            attachment: 'Template Example6.docx',
+            attachment: 'Director(s) Resolution re ESOP.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -283,7 +295,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Director(s) Resolution re Options',
-            attachment: 'Template Example7.docx',
+            attachment: 'Director(s) Resolution re Options.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -299,7 +311,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'One-way NDA',
-            attachment: 'Template Example8.docx',
+            attachment: 'One-way NDA.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -316,7 +328,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Privacy Policy',
-            attachment: 'Template Example9.docx',
+            attachment: 'Privacy Policy.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -325,7 +337,7 @@ module.exports = function (knex) {
         },
         {
             templateName: 'Terms of Service',
-            attachment: 'Template Example10.docx',
+            attachment: 'Terms of Service.docx',
             fields: [
                 FIELDS[0],
                 FIELDS[1],
@@ -358,7 +370,7 @@ module.exports = function (knex) {
 
     function createDefaultTemplates(callback) {
         var bucket = BUCKETS.TEMPLATE_FILES;
-        var path = './files';
+        //var path = templateFilesDir;
         var curDate = new Date();
         var converterParams;
         var originalFilename;
@@ -368,11 +380,19 @@ module.exports = function (knex) {
         var fileName;
         var key;
 
+        console.log('>>> templateFilesDir');
+        console.log(templateFilesDir);
+
         async.eachSeries(TEMPLATES, function (templ, cb) {
-            templName = templ.templateName;
+            var filePath;// = path.join(templateFilesDir, originalFilename);
             originalFilename = templ.attachment;
+
+            templName = templ.templateName;
+            filePath = path.join(templateFilesDir, originalFilename);
+
             converterParams = {
-                path: path + '/' + originalFilename
+                //path: path + '/' + originalFilename
+                path: filePath
             };
 
             async.series([
@@ -494,139 +514,7 @@ module.exports = function (knex) {
                         }
 
                         cB()
-                    })
-
-                   /* mammothHandler.docx2html(converterParams, function (htmlContent) {
-
-                        if (!htmlContent) {
-                            return cB(new Error('Miss html'))
-                        }
-
-                        async.waterfall([
-
-                            //get file from request:
-                            function (cb) {
-
-                                fs.readFile(converterParams.path, function (err, data) {
-                                    if (err) {
-                                        return cb(err);
-                                    }
-                                    cb(null, data);
-                                });
-                            },
-
-                            //save file to storage:
-                            function (buffer, cb) {
-                                bucket = BUCKETS.TEMPLATE_FILES;
-                                key = computeKey();
-                                fileName = computeFileName(originalFilename, key);
-                                uploadOptions = {
-                                    folderName: bucket,
-                                    fileName: fileName,
-                                    originalFileName: originalFilename,
-                                    buffer: buffer
-                                };
-
-                                if (process.env.NODE_ENV !== 'production') {
-                                    console.log('--- Upload file ----------------');
-                                    console.log(uploadOptions);
-                                    console.log('--------------------------------');
-                                }
-
-                                //uploader.uploadFile(bucket, fileName, buffer, function (err, fileName) {
-                                uploader.uploadFile(uploadOptions, function (err) {
-                                    if (err) {
-                                        return cb(err);
-                                    }
-
-                                    cb();
-                                });
-                            }
-
-                        ], function (err) {
-
-                            if (err) {
-                                if (callback && (typeof callback === 'function')) {
-                                    callback(err);
-                                }
-                            }
-
-                            knex(TABLES.TEMPLATES)
-                                .insert({
-                                    link_id: linkId,
-                                    name: templName,
-                                    description: 'Some description',
-                                    html_content: htmlContent,
-                                    marketing_content: 'Some marketing_content',
-                                    updated_at: curDate,
-                                    created_at: curDate
-                                }, 'id')
-                                .then(function (queryResult) {
-
-                                    knex(TABLES.ATTACHMENTS)
-                                        .insert({
-                                            attacheable_id: queryResult[0],
-                                            attacheable_type: 'template',
-                                            name: originalFilename,
-                                            key: key,
-                                            updated_at: curDate,
-                                            created_at: curDate
-                                        })
-                                        .then(function () {
-                                            cB()
-                                        })
-                                        .catch(cB)
-                                })
-                                .catch(cB)
-
-                        });
-
-                        /!*key = computeKey();
-                        fileName = computeFileName(originalFilename, key);
-                        uploadOptions = {
-                            folderName: bucket,
-                            fileName: fileName,
-                            originalFileName: originalFilename,
-                            buffer: 'buffer'
-                        };
-
-                        uploader.uploadFile(uploadOptions, function (err) {
-                            if (err) {
-                                return cB(err);
-                            }
-
-                            knex(TABLES.TEMPLATES)
-                                .insert({
-                                    link_id: linkId,
-                                    name: templName,
-                                    description: 'Some description',
-                                    html_content: htmlContent,
-                                    marketing_content: 'Some marketing_content',
-                                    updated_at: curDate,
-                                    created_at: curDate
-                                }, 'id')
-                                .then(function (queryResult) {
-
-                                    knex(TABLES.ATTACHMENTS)
-                                        .insert({
-                                            attacheable_id: queryResult[0],
-                                            attacheable_type: 'template',
-                                            name: originalFilename,
-                                            key: key,
-                                            updated_at: curDate,
-                                            created_at: curDate
-                                        })
-                                        .then(function () {
-                                            cB()
-                                        })
-                                        .catch(cB)
-                                })
-                                .catch(cB)
-                        });
-*!/
-
-                    })*/
-
+                    });
                 },
 
                 function (cB) {
