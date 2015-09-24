@@ -2303,14 +2303,10 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.addSignatureToDocument = function (req, res, next) {
-        var currentUserId;
-        /*var currentUserId = req.session.userId;
-        var companyId = req.session.companyId;*/
         var token = req.params.token;
         var signImage = req.body.signature;
         var criteria = {
-            access_token: token/*,
-            company_id: companyId*/
+            access_token: token
         };
         var fetchOptions = {
             require: true,
@@ -2336,35 +2332,16 @@ var DocumentsHandler = function (PostGre) {
                     .catch(cb);
             },
 
-            /*//check: need to add signature or not
-            function (documentModel, cb) {
-                var status = documentModel.get('status');
-                var assignedId = documentModel.get('assigned_id');
-                var docUserId = documentModel.get('user_id');
-
-                if (((status === STATUSES.SENT_TO_SIGNATURE_COMPANY) && (assignedId === currentUserId)) ||
-                    ((status === STATUSES.SENT_TO_SIGNATURE_CLIENT) && (docUserId === currentUserId))) {
-                    cb(null, documentModel);
-                }
-                else {
-                    cb(badRequests.AccessError());
-                }
-            },*/
-
             //add Sign client or company
             function (documentModel, cb) {
-                documentModel.saveSignature(currentUserId, signImage, cb);
-                //TODO: //documentModel.saveSignature(currentUserId, signImage, cb);
-                //cb(null, documentModel);
+                documentModel.saveSignature(null, signImage, cb);
             },
 
             //send to employee (if need)
             function (documentModel, cb) {
                 var status = documentModel.get('status');
 
-                console.log('>>> status', status);
-
-                if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+                if (status === STATUSES.SIGNED_BY_CLIENT) {
                     return cb(null, documentModel);
                 }
 
@@ -2372,6 +2349,7 @@ var DocumentsHandler = function (PostGre) {
                     var srcUser;
                     var dstUser;
                     var document;
+                    var companyModel;
                     var company;
                     var mailerParams;
 
@@ -2382,8 +2360,9 @@ var DocumentsHandler = function (PostGre) {
 
                     srcUser = users.srcUser;
                     dstUser = users.dstUser;
-                    document = documentModel.toJSON();
-                    company = document.company;
+                    document = documentModel.attributes;
+                    companyModel = documentModel.related('company');
+                    company = companyModel.toJSON();
 
                     mailerParams = {
                         srcUser: srcUser,
