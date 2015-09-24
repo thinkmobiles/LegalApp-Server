@@ -58,6 +58,7 @@ define([
             this.listenTo(this.stateModel, 'change:isOurCompUsers', this.changeView);
             this.listenTo(this.stateModel, 'change:order change:orderBy', this.userListFirstRender);
             this.listenTo(this.usersCollection, 'appendUsers', this.renderUsersList);
+            this.listenTo(this.usersCollection, 'add', this.userListFirstRender);
         },
 
         selectSomething: function(event){
@@ -272,7 +273,7 @@ define([
             var lastName  = thisEL.find('#addLName').val().trim();
             var phone = thisEL.find('#addPhone').val().trim();
             var email = thisEL.find('#addEmail').val().trim();
-            var permissions = thisEL.find("#addRole").attr('data-id');
+            var permissions = +thisEL.find("#addRole").attr('data-id');
             var companyId = thisEL.find("#selectedCompany").attr('data-id');
             var emailAlert;
 
@@ -305,8 +306,6 @@ define([
                 wait    : true,
                 success : function(){
                     self.clearAddForm();
-                    self.renderUsersList();
-
                     alert('User invited successfully');
                 },
                 error : function(model, xhr){
