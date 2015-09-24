@@ -1,75 +1,108 @@
 var TABLES = require('../constants/tables');
 
 var async = require('async');
+var counts = {
+    users    : 1000,
+    employees: 2000,
+    companies: 200,
+    templates: 200,
+    links    : 200,
+    documents: 2000
+};
 
 module.exports = function (PostGre, done) {
-    var factory = require('./fillDatabase')(PostGre);
+    var factory = require('./fillDatabase')(PostGre, {counts: counts});
 
     async.waterfall([
 
         //create users:
         function (cb) {
-            factory.createMany(TABLES.USERS, {}, 1000, function (err, users) {
+            factory.createMany(TABLES.USERS, {}, counts.users, function (err, users) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Users created');
-                cb(err, users);
+                cb();
             });
         },
 
         //create profiles:
-        function (userModels, cb) {
-            var count = userModels.length;
-
-            factory.createMany(TABLES.PROFILES, {}, count, function (err, profiles) {
+        function (cb) {
+            factory.createMany(TABLES.PROFILES, {}, counts.users, function (err, profiles) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Profiles created');
-                cb(err, count);
+                cb();
             });
         },
 
         //companies:
-        function (count, cb) {
-            factory.createMany(TABLES.COMPANIES, {}, 200, function (err, companies) {
+        function (cb) {
+            factory.createMany(TABLES.COMPANIES, {}, counts.companies, function (err, companies) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Companies created');
-                cb(err, count);
+                cb();
             });
         },
 
-        /*//user_companies:
-        function (count, cb) {
-            factory.createMany(TABLES.USER_COMPANIES, {}, count, function (err, companies) {
-                console.log('User_companies created');
-                cb(err, count);
+        //create employees:
+        function (cb) {
+            factory.createMany(TABLES.EMPLOYEES, {}, counts.employees, function (err, employees) {
+                if (err){
+                    return cb(err);
+                }
+                console.log('Employees created');
+                cb();
             });
-        },*/
+        },
 
         //create templates:
-        function (count, cb) {
-            factory.createMany(TABLES.TEMPLATES, {}, count, function (err, templateModels) {
+        function (cb) {
+            factory.createMany(TABLES.TEMPLATES, {}, counts.templates, function (err, templateModels) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Templates created');
-                cb(err, count);
+                cb();
             });
         },
-        function (count, cb) {
-            factory.createMany(TABLES.LINKS, {}, count, function (err, links) {
+        function (cb) {
+            factory.createMany(TABLES.LINKS, {}, counts.links, function (err, links) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Links created');
-                cb(err, count);
+                cb();
             });
         },
-        function (count, cb) {
-            factory.createMany(TABLES.LINKS_FIELDS, {}, count, function (err, linkFields) {
-                console.log('Links_Fields created');
-                cb(err, count);
+        function (cb) {
+            factory.createMany(TABLES.LINKS_FIELDS, {}, counts.links, function (err, linkFields) {
+                if (err){
+                    return cb(err);
+                }
+                console.log('LinkFields created');
+                cb();
             });
         },
-        function (count, cb) {
-            factory.createMany(TABLES.DOCUMENTS, {}, 2000, function (err, documentModels) {
+        function (cb) {
+            factory.createMany(TABLES.DOCUMENTS, {}, counts.documents, function (err, documentModels) {
+                if (err){
+                    return cb(err);
+                }
                 console.log('Documents created');
-                cb(err, count);
+                cb();
             });
         },
-        function (count, cb) {
-            factory.createMany(TABLES.USERS_SECRET_KEY, {}, count, function (err, documentModels) {
-                console.log('Secret_keys created');
-                cb(err, count);
+        function (cb) {
+            factory.createMany(TABLES.USERS_SECRET_KEY, {}, counts.users, function (err, documentModels) {
+                if (err){
+                    return cb(err);
+                }
+                console.log('SecreKeys created');
+                cb();
             });
         }
 

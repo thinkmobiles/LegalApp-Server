@@ -184,7 +184,7 @@ var CompaniesHandler = function (PostGre) {
         var options = req.query;
         var searchTerm = options.search;
         var page = req.query.page || 1;
-        var limit = req.query.count || 10;
+        var limit = req.query.count;// || 10;
 
         CompanyModel
             .forge()
@@ -195,8 +195,11 @@ var CompaniesHandler = function (PostGre) {
                         "LOWER(name) LIKE '%" + searchTerm + "%' "
                     );
                 }
-                qb.offset(( page - 1 ) * limit)
-                    .limit(limit);
+
+                if (page && limit) {
+                    qb.offset(( page - 1 ) * limit)
+                        .limit(limit);
+                }
             })
             .fetchAll()
             .then(function (rows) {

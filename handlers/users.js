@@ -399,6 +399,8 @@ var UsersHandler = function (PostGre) {
 
     };
 
+    this.getUsersByCriteria = getUsersByCriteria;
+
     this.signUp = function (req, res, next) {
         var app = req.app;
         var io = app.get('io');
@@ -1087,7 +1089,12 @@ var UsersHandler = function (PostGre) {
             if (err) {
                 return next(err);
             }
-            res.status(200).send(rows);
+
+            if (!rows || !rows.length) {
+                return next(badRequests.NotFound({message: MESSAGES.NOT_FOUND_USER}));
+            }
+
+            res.status(200).send(rows[0]);
         });
     };
 

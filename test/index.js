@@ -2,6 +2,7 @@
 
 var TABLES = require('../constants/tables');
 
+var path = require('path');
 var async = require('async');
 var schemasModule = require('../migrations/schema');
 var schemas;
@@ -20,6 +21,23 @@ knex = PostGre.knex;
 schemas = schemasModule(knex);
 defaults = require('./defaults')(PostGre);
 
+console.log('__dirname');
+console.log(__dirname);
+console.log(process.env.AMAZON_S3_BUCKET);
+console.log(process.env.NODE_ENV);
+var fsUploadDir = path.join(__dirname, '..', process.env.AMAZON_S3_BUCKET);
+console.log(fsUploadDir);
+
+var templateFilesDir = path.join(__dirname, '..', 'migrations', 'files');
+console.log(templateFilesDir);
+
+var defaultTemplatesHandler;
+var defaultTemplatesHandlerOptions = {
+    fsUploadDir: fsUploadDir, //process.env.AMAZON_S3_BUCKET
+    templateFilesDir: templateFilesDir
+};
+defaultTemplatesHandler = require('../migrations/defaultTemplates')(knex, defaultTemplatesHandlerOptions);
+
 describe('Database initialization', function () {
     this.timeout(500000);
 
@@ -30,6 +48,10 @@ describe('Database initialization', function () {
     it('Create tables', function (done) {
         schemas.create(done);
     });
+
+   /* it('Create Default Templates', function (done) {
+        defaultTemplatesHandler.createDefaultTemplates(done);
+    });*/
 
     it('Fill Database with big data', function(done){
         var startToFillDb = require('./startToFillDb');

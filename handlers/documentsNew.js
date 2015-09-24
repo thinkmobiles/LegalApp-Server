@@ -17,6 +17,8 @@ var tokenGenerator = require('../helpers/randomPass');
 var mailer = require('../helpers/mailer');
 var wkhtmltopdf = require('wkhtmltopdf');
 var AttachmentsHandler = require('./attachments');
+var UsersHandler = require('./users');
+var fs = require('fs');
 var path = require('path');
 
 var DocumentsHandler = function (PostGre) {
@@ -33,6 +35,7 @@ var DocumentsHandler = function (PostGre) {
     var SecretKeyModel = Models.SecretKey;
     var LinkedTemplateModel = Models.LinkedTemplates;
     var attachmentsHandler = new AttachmentsHandler(PostGre);
+    var usersHandler = new UsersHandler(PostGre);
     var self = this;
 
     this.HTML_BRAKE_PAGE = '<div class="brakePage"></div>';
@@ -51,37 +54,52 @@ var DocumentsHandler = function (PostGre) {
         return unicodeString;
     }
 
+    function getCssForTemplates(callback) {
+        fs.readFile(CONSTANTS.PDF_CSS_PATH, function (err, content) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, content);
+        });
+    };
+
+    this.getCssForTemplates = getCssForTemplates;
+
     function saveHtmlToPdf(options, callback) {
-        var documentId = options.documentId;
-        var name = CONSTANTS.DEFAULT_DOCUMENT_NAME + '_' + documentId + '.pdf';
-        var key = attachmentsHandler.computeKey();
-        var fileName = key + '_' + name;
-        var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, fileName);
-        var result = {
-            name: name,
-            key: key
-        };
-        var html = options.html;
 
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('--- create pdf file ------------------------');
-            console.log('>>> name', name);
-            console.log('>>> key', key);
-            console.log('>>> filePath', filePath);
-            console.log('--------------------------------------------');
-        }
-
-        /*if (!options && !options.html) {
-         return callback(badRequests.NotEnParams({required: 'html'}));
-         }
-         html = options.html;*/
-
-        wkhtmltopdf(html, {output: filePath}, function (err) {
+        getCssForTemplates(function (err, cssContent) {
+            var documentId = options.documentId;
+            var html = options.html;
+            var name = CONSTANTS.DEFAULT_DOCUMENT_NAME + '_' + documentId + '.pdf';
+            var key = attachmentsHandler.computeKey();
+            var fileName = key + '_' + name;
+            var filePath = path.join(process.env.AMAZON_S3_BUCKET, BUCKETS.PDF_FILES, fileName);
+            var result = {
+                name: name,
+                key: key
+            };
 
             if (err) {
                 return callback(err);
             }
-            callback(null, result);
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('--- create pdf file ------------------------');
+                console.log('>>> name', name);
+                console.log('>>> key', key);
+                console.log('>>> filePath', filePath);
+                console.log('--------------------------------------------');
+            }
+
+            html = '<style>' + cssContent + '</style>' + html;
+
+            wkhtmltopdf(html, {output: filePath}, function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, result);
+            });
+
         });
     }
 
@@ -1019,6 +1037,84 @@ var DocumentsHandler = function (PostGre) {
                 }
                 callback(null, templateModel);
             });
+    };
+
+    function normalizeEmployee(employee, callback) {
+        var employeeJSON = {
+            id: employee.id,
+            email: employee.email,
+            profile: {
+                first_name: employee.first_name,
+                last_name: employee.last_name,
+                phone: employee.phone
+            },
+            company: {
+                id: employee.company_id,
+                name: employee.company_name
+            }
+        };
+
+        if (callback && (typeof callback === 'function')) {
+            callback(null, employeeJSON);
+        } else {
+            return employeeJSON;
+        }
+    }
+
+    function getUsersToSendMail(documentModel, callback) {
+        var status = documentModel.get('status');
+
+        async.parallel({
+
+            srcUser: function (cb) {
+                var userId = documentModel.get('assigned_id');
+                var criteria = {
+                    userId: userId
+                };
+
+                usersHandler.getUsersByCriteria(criteria, function (err, rows) {
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    if (!rows || !rows.length) {
+                        return cb(badRequests.NotFound({message: MESSAGES.NOT_FOUND_USER}));
+                    }
+                    cb(null, rows[0]);
+                });
+            },
+
+            dstUser: function (cb) {
+                var employeeId = documentModel.get('employee_id');
+                var criteria = {
+                    employee_id: employeeId
+                };
+
+                getEmployeeModel(criteria, function (err, employeeModel) {
+                    var employeeJSON;
+
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    if (!employeeModel || !employeeModel.id) {
+                        return cb(badRequests.NotFound({message: MESSAGES.NOT_FOUND_EMPLOYEE}));
+                    }
+
+                    employeeJSON = employeeModel.toJSON();
+                    employeeJSON = normalizeEmployee(employeeJSON);
+                    cb(null, employeeJSON);
+                });
+            }
+
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, results);
+        });
+
+
     };
 
     this.getTemplateModelWithLinks = getTemplateModelWithLinks;
@@ -2207,14 +2303,14 @@ var DocumentsHandler = function (PostGre) {
     };
 
     this.addSignatureToDocument = function (req, res, next) {
-        //var userId = req.session.userId;
-        var currentUserId = req.session.userId;
-        var companyId = req.session.companyId;
+        var currentUserId;
+        /*var currentUserId = req.session.userId;
+        var companyId = req.session.companyId;*/
         var token = req.params.token;
         var signImage = req.body.signature;
         var criteria = {
-            access_token: token,
-            company_id: companyId
+            access_token: token/*,
+            company_id: companyId*/
         };
         var fetchOptions = {
             require: true,
@@ -2235,12 +2331,12 @@ var DocumentsHandler = function (PostGre) {
                         cb(null, documentModel);
                     })
                     .catch(DocumentModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound());
+                        cb(badRequests.NotFound({message: MESSAGES.NOT_FOUND_DOCUMENT}));
                     })
                     .catch(cb);
             },
 
-            //check: need to add signature or not
+            /*//check: need to add signature or not
             function (documentModel, cb) {
                 var status = documentModel.get('status');
                 var assignedId = documentModel.get('assigned_id');
@@ -2253,75 +2349,51 @@ var DocumentsHandler = function (PostGre) {
                 else {
                     cb(badRequests.AccessError());
                 }
-            },
+            },*/
 
             //add Sign client or company
             function (documentModel, cb) {
-                //addImageSign(documentModel, currentUserId, signImage, cb);
                 documentModel.saveSignature(currentUserId, signImage, cb);
+                //TODO: //documentModel.saveSignature(currentUserId, signImage, cb);
+                //cb(null, documentModel);
             },
 
-            //send to client (if need)
+            //send to employee (if need)
             function (documentModel, cb) {
                 var status = documentModel.get('status');
-                var userId = documentModel.get('user_id');
-                var userIds = [
-                    currentUserId,
-                    userId
-                ];
-                var fetchOptions = {
-                    required: true,
-                    withRelated: ['profile', 'company']
-                };
 
-                if (status !== STATUSES.SENT_TO_SIGNATURE_CLIENT) {
+                console.log('>>> status', status);
+
+                if (status === STATUSES.SENT_TO_SIGNATURE_CLIENT) {
                     return cb(null, documentModel);
                 }
 
-                UserModel
-                    .forge()
-                    .query(function (qb) {
-                        qb.whereIn('id', userIds);
-                    })
-                    .fetchAll(fetchOptions)
-                    .then(function (userModels) {
-                        var users = userModels.models;
-                        var currentUserModel = _.find(users, {id: currentUserId});
-                        var userModel = _.find(users, {id: userId});
-                        var models = {
-                            userModel: userModel,
-                            assignedUserModel: userModel,
-                            currentUserModel: currentUserModel,
-                            documentModel: documentModel
-                        };
+                getUsersToSendMail(documentModel, function (err, users) {
+                    var srcUser;
+                    var dstUser;
+                    var document;
+                    var company;
+                    var mailerParams;
 
-                        sendToSignature(models);
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, documentModel);
 
-                        /*var srcUser = currentUserModel.toJSON();
-                         var dstUser = userModel.toJSON();
-                         var document = documentModel.toJSON();
-                         var company = document.company;
+                    srcUser = users.srcUser;
+                    dstUser = users.dstUser;
+                    document = documentModel.toJSON();
+                    company = document.company;
 
-                         var mailerParams = {
-                         srcUser: srcUser,
-                         dstUser: dstUser,
-                         company: company,
-                         //template: template,
-                         document: document
-                         };
+                    mailerParams = {
+                        srcUser: srcUser,
+                        dstUser: dstUser,
+                        company: company,
+                        document: document
+                    };
 
-                         mailer.onSendToSignature(mailerParams);*/
-                        //cb(null, users.models);
-                        cb(null, documentModel);
-                    })
-                    .catch(UserModel.NotFoundError, function (err) {
-                        cb(badRequests.NotFound({message: 'The assigned user was not found'}));
-                    })
-                    .catch(function (err) {
-                        console.log(err);
-                        console.log(err.stack);
-                        cb(err);
-                    });
+                    mailer.onSendToSignature(mailerParams);
+                });
             },
 
             //if Client signed the document need to CREATE PDF
@@ -2337,6 +2409,8 @@ var DocumentsHandler = function (PostGre) {
                 htmlContent = documentModel.get('html_content');
                 pdfOptions.html = htmlContent;
                 pdfOptions.documentId = documentModel.id;
+
+                console.log(pdfOptions);
 
                 saveHtmlToPdf(pdfOptions, function (err, result) {
                     if (err) {
@@ -2371,7 +2445,7 @@ var DocumentsHandler = function (PostGre) {
 
         ], function (err, savedDocumentModel) {
             if (err) {
-                return next(err)
+                return next(err);
             }
             res.status(201).send({success: 'Document was signed'});
         });

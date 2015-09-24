@@ -35,7 +35,7 @@ Knex.knex = Knex.initialize({
 
 var knex = Knex.knex;
 var schema = require('./schema')(knex);
-var defTempl = require('./defaultTemplates')(knex);
+var defaultTemplates = require('./defaultTemplates')(knex);
 
 var app = express();
 var server = http.createServer(app);
@@ -62,7 +62,7 @@ app.get('/', function (req, res) {
     html+='<a href="/databases/drop">Drop Tables</a><br/>';
     //html+='<a href="/seed/default">Seed Default</a><br/>';
     //html+='<a href="/seed/fake">Seed Fake</a><br/>';
-    html+='<a href="/test">Crate Default Templates</a><br/>';
+    html+='<a href="/createTemplates">Crate Default Templates</a><br/>';
 
     res.send(html);
 });
@@ -81,19 +81,14 @@ app.get('/databases/drop', function (req, res) {
     res.send('<b>Drop Take Success</b>');
 });
 
-app.get('/test', function (req, res, next) {
-
-    defTempl.createDefaultTemplates(function (err) {
-
+app.get('/createTemplates', function (req, res, next) {
+    defaultTemplates.createDefaultTemplates(function (err) {
         if(err) {
             return next(err)
         }
-
         res.status(200).send('<b>Crate Default Templates Take Success</b>')
-    })
-
+    });
 });
-
 
 server.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
