@@ -62,7 +62,7 @@ var MailerModule = function () {
         var mailOptions;
 
         templateOptions = {
-            url: process.env.HOST + '/#login/' + options.resetToken
+            url: process.env.HOST + '/#login/token/' + options.resetToken
         };
 
         mailOptions = {
