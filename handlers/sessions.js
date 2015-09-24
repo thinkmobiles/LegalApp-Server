@@ -45,9 +45,6 @@ var Session = function (postGre) {
 
     this.authenticatedUser = function (req, res, next) {
         if (req.session && req.session.userId && req.session.loggedIn) {
-            if (!req.session.rememberMe) {
-                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
-            }
             next();
         } else {
             return next(badRequests.UnAuthorized());
@@ -70,10 +67,6 @@ var Session = function (postGre) {
             return next(badRequests.UnAuthorized());
         }
 
-        if (!req.session.rememberMe) {
-            req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
-        }
-
         if ((availablePermissions.indexOf(permissions) !== -1)) {
             next();
         } else {
@@ -90,12 +83,29 @@ var Session = function (postGre) {
         var permissions = req.session.permissions;
 
         if (req.session && req.session.userId && req.session.loggedIn && (availablePermissions.indexOf(permissions) !== -1)) {
-            if (!req.session.rememberMe) {
-                req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
-            }
             next();
         } else {
             next(badRequests.AccessError());
+        }
+    };
+
+    this.checkRememberMe = function (req, res, next) {
+        console.log('>>> sessions.checkRememberMe');
+        if (req.session && req.session.userId && !req.session.rememberMe) {
+            req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
+            console.log('cookie expires at', req.session.cookie.expires);
+        }
+        next();
+    };
+
+    this.adminCompanyUser = function (req, res, next) {
+        if (req.session && req.session.userId && req.session.loggedIn) {
+            if (req.session.companyId !== CONSTANTS.DEFAULT_COMPANY_ID) {
+                return next(badRequests.AccessError());
+            }
+            next();
+        } else {
+            return next(badRequests.UnAuthorized());
         }
     };
 
@@ -135,15 +145,6 @@ var Session = function (postGre) {
             return false;
         }
     };
-
-    this.isEditor = function (req) {
-        if (req.session && req.session.userId && req.session.loggedIn && req.session.permissions === PERMISSIONS.EDITOR) {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
 };
 
 module.exports = Session;
