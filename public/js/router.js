@@ -14,26 +14,26 @@ define([
         topBarView  : null,
 
         routes: {
-            "login(/:token)"              :  "login",
-            "signup"                      :  "signup",
-            "users"                       :  "users",
-            "settings"                    :  "settings",
-            "newUsers"                    :  "newUsers",
-            ":docType/preview/:id"        :  "forPreview",
-            "templates/:viewType"         :  "templates",
-            "signature/:type/:token"      :  "signature",
-            "documents/:viewType"         :  "documents",
-            "taskList"                    :  "taskList",
-            "userProfile"                 :  "userProfile",
-            "forgotPassword"              :  "forgotPassword",
-            "resetPassword/:token"        :  "resetPassword",
-            "confirmEmail(/:token)"       :  "confirmEmail",
-            "help"                        :  "help",
-            "*any"                        :  "any"
+            "login(/:type/*value)"      :  "login",
+            "signup"                    :  "signup",
+            "users"                     :  "users",
+            "settings"                  :  "settings",
+            "newUsers"                  :  "newUsers",
+            ":docType/preview/:id"      :  "forPreview",
+            "templates/:viewType"       :  "templates",
+            "signature/:type/:token"    :  "signature",
+            "documents/:viewType"       :  "documents",
+            "taskList"                  :  "taskList",
+            "userProfile"               :  "userProfile",
+            "forgotPassword"            :  "forgotPassword",
+            "resetPassword/:token"      :  "resetPassword",
+            "confirmEmail(/:token)"     :  "confirmEmail",
+            "help"                      :  "help",
+            "*any"                      :  "any"
         },
 
         initialize: function () {
-                new TopMenuView();
+            new TopMenuView();
         },
 
         loadWrapperView: function (argName, argParams, argRedirect, argType) {
@@ -42,10 +42,12 @@ define([
             var nameView = argType ? name+argType+'View' : name + 'View';
             var params =  argParams;
             var redirect = argRedirect;
+            var newUrl;
 
             if (redirect === REDIRECT.whenNOTAuthorized) {
                 if (!App.sessionData.get('authorized')){
-                    return Backbone.history.navigate("login", {trigger: true});
+                    newUrl = "login/success/" + window.location.hash.slice(1);
+                    return Backbone.history.navigate(newUrl , {trigger: true});
                 }
             }
 
@@ -74,8 +76,8 @@ define([
             Backbone.history.navigate("users", {trigger: true});
         },
 
-        login: function (token) {
-            this.loadWrapperView('login', {token : token}, REDIRECT.whenAuthorized);
+        login: function (type, value) {
+            this.loadWrapperView('login', {type : type, value : value}, REDIRECT.whenAuthorized);
         },
 
         signup: function () {

@@ -203,7 +203,13 @@ define([
             $.ajax({
                 url     : "/companies",
                 success : function(response){
-                    self.$el.find('#companyNames').html(self.companyTemp({coll : response}));
+                    self.$el.find('#companyNames').find('.mCSB_container').html(self.companyTemp({coll : response}));
+
+                    /*self.$el.find('#companyNames').mCustomScrollbar({
+                        theme               :"dark",
+                        alwaysShowScrollbar : 2,
+                        autoHideScrollbar   : true
+                    });*/
                 },
                 error : function(err) {
                     self.errorNotification(err);
@@ -333,6 +339,13 @@ define([
                         self.usersCollection.showMore({clients : !theState});
                     }
                 }
+            });
+
+            this_el.find('#companyNames').mCustomScrollbar({
+                theme               :"dark",
+                alwaysShowScrollbar : 2,
+                autoHideScrollbar   : true,
+                scrollInertia       : 0
             });
 
             this.userListFirstRender();

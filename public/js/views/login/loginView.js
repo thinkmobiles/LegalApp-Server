@@ -17,7 +17,10 @@ define([
         typicalLogin : _.template(LoginTemplate),
 
         initialize: function (option) {
-            this.token = option.token;
+            if (option && option.type){
+                this.token = option.type==='token' && option.value ? option.value : false;
+                this.successUrl = option.type==='success' && option.value ? option.value : false;
+            }
 
             this.setDefaultData();
             this.listenTo(this.stateModel, 'change', this.render);
@@ -108,7 +111,7 @@ define([
 
                     App.sessionData.set(userInfo);
 
-                    App.router.navigate("users", {trigger: true});
+                    App.router.navigate(self.successUrl ? self.successUrl : "users", {trigger: true});
                     self.stateModel.set({
                         password    : '',
                         email       : '',

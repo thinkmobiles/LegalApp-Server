@@ -51,7 +51,7 @@ define([
             var self = this;
 
             $.ajax({
-                url:  '/documents/'+this.token+'/signature',
+                url:  '/documents/signature/user/'+this.token,
                 type : 'POST',
                 data : {signature : signatureImg},
                 success : function(){

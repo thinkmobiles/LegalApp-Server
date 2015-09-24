@@ -48,7 +48,7 @@ define([
             var self = this;
 
             $.ajax({
-                url:  '/signature/company/'+this.token,
+                url:  '/documents/signature/company/'+this.token,
                 type : 'POST',
                 data : {signature : signatureImg},
                 success : function(){
