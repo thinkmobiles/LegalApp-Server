@@ -14,22 +14,22 @@ define([
         topBarView  : null,
 
         routes: {
-            "login(/:type/*value)"        :  "login",
-            "signup"                      :  "signup",
-            "users"                       :  "users",
-            "settings"                    :  "settings",
-            "newUsers"                    :  "newUsers",
-            ":docType/preview/:id"        :  "forPreview",
-            "templates/:viewType"         :  "templates",
-            "signature/:type/:token"      :  "signature",
-            "documents/:viewType"         :  "documents",
-            "taskList"                    :  "taskList",
-            "userProfile"                 :  "userProfile",
-            "forgotPassword"              :  "forgotPassword",
-            "resetPassword/:token"        :  "resetPassword",
-            "confirmEmail(/:token)"       :  "confirmEmail",
-            "help"                        :  "help",
-            "*any"                        :  "any"
+            "login(/:type/*value)"      :  "login",
+            "signup"                    :  "signup",
+            "users"                     :  "users",
+            "settings"                  :  "settings",
+            "newUsers"                  :  "newUsers",
+            ":docType/preview/:id"      :  "forPreview",
+            "templates/:viewType"       :  "templates",
+            "signature/:type/:token"    :  "signature",
+            "documents/:viewType"       :  "documents",
+            "taskList"                  :  "taskList",
+            "userProfile"               :  "userProfile",
+            "forgotPassword"            :  "forgotPassword",
+            "resetPassword/:token"      :  "resetPassword",
+            "confirmEmail(/:token)"     :  "confirmEmail",
+            "help"                      :  "help",
+            "*any"                      :  "any"
         },
 
         initialize: function () {

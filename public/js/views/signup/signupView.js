@@ -4,8 +4,9 @@
 
 define([
     'text!templates/signup/signupTemplate.html',
-    'views/termsAndConditions/termsAndConditionsView'
-], function (MainTemp, TermsView) {
+    'views/termsAndConditions/termsAndConditionsView',
+    'validation'
+], function (MainTemp, TermsView, Validation) {
 
     var View;
     View = Backbone.View.extend({
@@ -35,8 +36,7 @@ define([
                 firstName         : '',
                 lastName          : '',
                 company           : '',
-                errors            : false,
-                messages          : false
+                errorObj          : false
             };
             if (this.stateModel) {
                 this.stateModel.set(defaultData);
@@ -65,11 +65,14 @@ define([
 
             var self = this;
             var thisEl = this.$el;
+            var errorObj = {};
             var email  = thisEl.find("#signupEmail").val().trim();
             var firstName = thisEl.find("#signupFName").val().trim();
             var lastName  = thisEl.find("#signupLName").val().trim();
             var company = thisEl.find("#signupCompany").val().trim();
             var iAcceptConditions = thisEl.find("#iAgree").prop('checked');
+
+            Validation.checkEmailField(errorObj, email, 'Email');
 
             var stateModelUpdate = {
                 errors        : false,
@@ -97,7 +100,8 @@ define([
                             email    : '',
                             firstName: '',
                             lastName : '',
-                            company  : ''
+                            company  : '',
+                            errorObj : false
                         });
 
                         App.router.navigate("confirmEmail", {trigger: true});
