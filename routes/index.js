@@ -32,6 +32,8 @@ module.exports = function (app) {
     var messagesRouter = require('./messages')(app);
     var templatesRouter = require('./templates')(app);
 
+    app.use(session.checkRememberMe);
+
     app.get('/', function (req, res, next) {
         res.sendfile('index.html');
     });
