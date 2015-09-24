@@ -90,10 +90,8 @@ var Session = function (postGre) {
     };
 
     this.checkRememberMe = function (req, res, next) {
-        console.log('>>> sessions.checkRememberMe');
         if (req.session && req.session.userId && !req.session.rememberMe) {
             req.session.cookie.expires = new Date(Date.now() + CONSTANTS.SESSION_MAX_AGE);
-            console.log('cookie expires at', req.session.cookie.expires);
         }
         next();
     };
