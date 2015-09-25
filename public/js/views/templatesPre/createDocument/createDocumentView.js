@@ -118,10 +118,12 @@ define([
         },
 
         chooseThisSigner: function(context){
-            var signersId = $('#signersContainer').find('input:checked').closest('li').data('id');
+            var container = $('.reSignDialog');
+            var signersId = container.find('input:checked').closest('li').data('id');
 
             if (signersId){
-                context.signMyDoc(signersId, false)
+                context.signMyDoc(signersId, false);
+                container.remove();
             } else {
                 alert('Choose some user!')
             }
@@ -211,7 +213,7 @@ define([
                 docId = self.docModel.get('id');
                 url = '/documents/' + docId + '/signAndSend';
             } else {
-                url ='/documents/signAndSend';
+                url = '/documents/signAndSend';
                 userId = self.$el.find('#createEmployee').attr('data-sig');
                 data.template_id = self.tempInfo.id;
                 data.employee_id = +userId;
@@ -235,21 +237,24 @@ define([
 
         showResignWindow: function(){
             var self = this;
+            var container = self.$el.find('#reAsignContainer');
 
             $.ajax({
                 url  : '/users/search',
                 data : {'signAuthority' : true},
                 success : function(result) {
-                    self.$el.find('#reAsignContainer').html(_.template(ReasignTemp)({signUsers : result})).dialog({
-                        autoOpen   : true,
-                        dialogClass: "reSignDialog",
-                        modal      : true,
-                        width      : "600px",
-                        buttons    : [
+                    container.html(_.template(ReasignTemp)({signUsers : result})).dialog({
+                        autoOpen     : true,
+                        dialogClass  : "reSignDialog",
+                        modal        : true,
+                        width        : "600px",
+                        closeOnEscape: true,
+                        buttons      : [
                             {
                                 text: "Select and send",
                                 click: function(){
-                                    self.chooseThisSigner(self)
+                                    self.chooseThisSigner(self);
+                                    $(this).dialog('close');
                                 }
                             }
                         ]
@@ -312,9 +317,7 @@ define([
 
                     $.ajax({
                         url      : "/employees/search",
-                        data     : {
-                            value  : myTerm
-                        },
+                        data     : {value : myTerm},
                         success : function(response){
                             res(response);
                         },
