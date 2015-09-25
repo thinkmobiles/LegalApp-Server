@@ -127,7 +127,6 @@ define([
             if (type === 'user'){
                 return this.loadWrapperView('signature', {token : token}, null, 'User');
             }
-
             Backbone.history.navigate("users", {trigger: true});
         },
 

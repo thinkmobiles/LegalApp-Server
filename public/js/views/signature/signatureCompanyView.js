@@ -40,19 +40,33 @@ define([
         },
 
         acceptDocument: function(){
-            var signatureView = new SignView();
-            signatureView.on('iAccept', this.iAcceptDocument, this);
+            var hasSignature = App.sessionData.get('has_sign_image');
+            var signatureView;
+
+            if (hasSignature) {
+                this.iAcceptDocument(false)
+            } else {
+                signatureView = new SignView();
+                signatureView.on('iAccept', this.iAcceptDocument, this);
+            }
         },
 
         iAcceptDocument: function (signatureImg){
             var self = this;
+            var acceptData = {};
+
+            if (signatureImg) {
+                acceptData.signature = signatureImg;
+            }
 
             $.ajax({
-                url:  '/documents/signature/company/'+this.token,
+                url  : '/documents/signature/company/'+this.token,
                 type : 'POST',
-                data : {signature : signatureImg},
-                success : function(){
+                data : acceptData,
+
+                success: function(){
                     alert('Document was accepted successfully.');
+                    Backbone.history.navigate('documents/list', {trigger : true});
                 },
                 error: function(err){
                     self.errorNotification(err)

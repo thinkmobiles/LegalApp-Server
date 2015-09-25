@@ -78,7 +78,9 @@ define([
 
             if (firstTitleId) {
                 templatesContainer.html(this.templateList({templates : items}));
-                this.getDocumentsByTemplateId(firstTitleId);
+                if (firstTitleId !== true) {
+                    this.getDocumentsByTemplateId(firstTitleId);
+                }
             } else {
                 templatesContainer.append(this.templateList({templates : items}));
             }
@@ -187,7 +189,6 @@ define([
                         self.docCollection.showMore();
                     }
                 }
-
             });
 
             this.$el.find('#templateList').mCustomScrollbar({

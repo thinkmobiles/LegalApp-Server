@@ -78,6 +78,7 @@ define([
         saveCanvas : function(){
             var mySignature = this.canvas.toDataURL("image/png");
             this.trigger('iAccept', mySignature);
+            this.remove();
         },
 
         render: function () {
