@@ -831,7 +831,7 @@ var TemplatesHandler = function (PostGre) {
 
     this.getTheDocumentToSign = function (req, res, next) {
         var token = req.params.token;
-        var companyId = req.session.companyId;
+        //var companyId = req.session.companyId;
 
         async.parallel({
 
@@ -849,11 +849,11 @@ var TemplatesHandler = function (PostGre) {
                     .then(function (documentModel) {
                         var html = documentModel.get('html_content');
 
-                        if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
+                        /*if (!(permissions === PERMISSIONS.SUPER_ADMIN) && !(permissions === PERMISSIONS.ADMIN) &&
                             !(permissions === PERMISSIONS.EDITOR) && !(permissions === PERMISSIONS.VIEWVER) &&
                             (documentModel.get('company_id') !== companyId)) {
                                 return cb(badRequests.AccessError());
-                        }
+                        }*/
                         cb(null, documentModel);
                     })
                     .catch(DocumentModel.NotFoundError, function (err) {

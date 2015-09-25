@@ -107,7 +107,6 @@ var MailerModule = function () {
         var dstUser = options.dstUser;
         var srcUser = options.srcUser;
         var company = options.company;
-        var template = options.template;
         var status = document.status;
         var link;
 
@@ -124,14 +123,14 @@ var MailerModule = function () {
             srcUserName  : srcUser.profile.last_name,
             dstUserName  : (dstUser.profile) ? dstUser.profile.last_name : dstUser.last_name, //user or employee
             companyName  : company.name,
-            documentName : document.name || template.name, //TODO
+            documentName : document.name,
             signatureLink: link
         };
 
         mailOptions = {
             from                : FROM,
             to                  : dstUser.email,
-            subject             : document.name || template.name, //TODO
+            subject             : document.name,
             generateTextFromHTML: true,
             html                : _.template(fs.readFileSync('public/templates/mailer/sendToSignature.html', "utf8"))(templateOptions)
         };
