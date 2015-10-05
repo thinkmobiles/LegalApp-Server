@@ -1344,13 +1344,65 @@ a {
   background-color: #cbcaca;
 }
 .tempGrid {
-  border-bottom: 1px solid black;
   width: 100px;
   height: 120px;
   display: block;
   float: left;
   margin: 10px 10px;
   text-align: center;
+}
+#allTemplatesCont {
+  padding: 30px 0 40px 80px;
+  overflow: hidden;
+}
+#allTemplatesCont .tempGrid {
+  position: relative;
+  text-align: center;
+  width: 106px;
+  margin: 10px 25px;
+}
+#allTemplatesCont .tempGrid > img {
+  display: block;
+  margin: 11px auto;
+}
+#allTemplatesCont .tempGrid > span {
+  font-family: 'OSR';
+  font-size: 16px;
+  color: #3d3d3d;
+}
+#allTemplatesCont .tempGrid .whenHover {
+  position: absolute;
+  top: 0;
+  width: 106px;
+  height: 102px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  opacity: 0;
+  -webkit-transition: all 0.5s ease-out;
+  -moz-transition: all 0.5s ease-out;
+  -o-transition: all 0.5s ease-out;
+  transition: all 0.5s ease-out;
+}
+#allTemplatesCont .tempGrid .whenHover button {
+  background: none;
+  color: #dcdcdc;
+  font-family: 'OSR';
+  font-size: 12px;
+  display: inline;
+}
+#allTemplatesCont .tempGrid .whenHover button:hover {
+  text-decoration: underline;
+  text-decoration-color: #E31937;
+  -moz-text-decoration-color: #E31937;
+}
+#allTemplatesCont .tempGrid .whenHover button.hovCreateD {
+  margin: 15px 15px 0;
+}
+#allTemplatesCont .tempGrid .whenHover button.hovEditT {
+  margin-top: 25px;
+}
+#allTemplatesCont .tempGrid:hover .whenHover {
+  opacity: 1;
 }
 .docGrid {
   width: 100px;
@@ -1558,7 +1610,6 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background-color: #fff;
   color: #000;
 }
-
 /*===============================todo VV ---- warning ---- bad low code*/
 .messageItem {
   display: block;
@@ -1567,22 +1618,18 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   width: 100%;
   border: 1px solid rgba(185, 190, 202, 0.55);
 }
-
 .photoBox {
   height: 100%;
   width: 150px;
   background-color: #096ac8;
   float: left;
 }
-
 .tab-item {
   display: none;
 }
-
 .tab-item.active {
   display: block;
 }
-
 .docClick {
   background-color: crimson;
 }
