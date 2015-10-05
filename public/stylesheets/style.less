@@ -1287,6 +1287,15 @@ a {
     text-align: center;
     width: 106px;
     margin: 10px 25px;
+    &.thisLinked:before{
+      content: '';
+      position: absolute;
+      background: url('../images/link-ico.png') no-repeat;
+      top: 0;
+      right: 0;
+      width: 31px;
+      height: 31px;
+    }
     & > img{
       display: block;
       margin: 11px auto;
