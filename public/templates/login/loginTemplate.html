@@ -6,8 +6,8 @@
             <%if(!isInvite){%>
             <div class="form-field">
                 <input type="email" id="loginEmail" class="<%=errorObject.email ? 'error_input' : ''%>" placeholder="Email Address">
-                <%if (errorObject.email){%>
-                    <span class="error_msg"><%=errorObject.email%></span>
+                <%if (errorObject.email || error){%>
+                    <span class="error_msg"><%= errorObject.email ? errorObject.email : error%></span>
                 <%}%>
             </div>
             <%}%>

@@ -39,7 +39,8 @@ define([
                 rememberMe  : false,
                 email       : '',
                 password    : '',
-                errorObject : false
+                errorObject : {},
+                error       : false
             };
 
             this.stateModel = new Backbone.Model(defaultData);
@@ -66,10 +67,13 @@ define([
             var errorObject = {};
 
             var stateModelUpdate = {
-                errorObject: false,
+                errorObject: {},
                 password   : thisEl.find("#loginPass").val().trim(),
-                rememberMe : thisEl.find('#rememberMe').prop('checked')
+                rememberMe : thisEl.find('#rememberMe').prop('checked'),
+                error      : false
             };
+
+            self.stateModel.set({error : false}, {silent : true});
 
             if (!this.token){
                 stateModelUpdate.email = thisEl.find("#loginEmail").val().trim();
@@ -77,7 +81,8 @@ define([
                 data = {
                     email      : stateModelUpdate.email,
                     password   : stateModelUpdate.password,
-                    rememberMe : stateModelUpdate.rememberMe
+                    rememberMe : stateModelUpdate.rememberMe,
+                    error      : false
                 }
             } else {
                 currentUrl += "/"+this.token;
@@ -115,7 +120,8 @@ define([
                     self.stateModel.set({
                         password    : '',
                         email       : '',
-                        errorObject : false
+                        errorObject : {},
+                        error       : false
                     });
                     App.Events.trigger('authorized');
                 },
@@ -127,8 +133,8 @@ define([
                     });
 
                     self.stateModel.set({
-                        //errors     : [err.responseJSON.error],
-                        password   : null
+                        error        : err.responseJSON.error,
+                        password     : null
                     });
                 }
             });

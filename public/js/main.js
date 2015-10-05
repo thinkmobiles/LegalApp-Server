@@ -10,7 +10,7 @@ require.config({
         jQueryUI        : './libs/jqueryui/jquery-ui',
         Underscore      : './libs/underscore/underscore',
         Backbone        : './libs/backbone/backbone',
-        //less            : './libs/less/dist/less',
+        less            : './libs/less/dist/less',
         customScroll    : './libs/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min',
         socketio        : '/socket.io/socket.io',
         views           : './views',
@@ -23,7 +23,7 @@ require.config({
         'jQueryUI'      : ['jQuery'],
         'customScroll'  : ['jQuery'],
         'Backbone'      : ['Underscore', 'jQueryUI','customScroll'],
-        'app'           : ['Backbone'/*,'less'*/]
+        'app'           : ['Backbone','less']
     }
 });
 
