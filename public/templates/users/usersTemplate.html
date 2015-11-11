@@ -52,26 +52,24 @@
         </div>
     </div>
     <div id="tableDiv">
+        <div id="tablesContent">
         <table id="usersTable" border="1">
             <thead>
             <tr class="sortUp">
                 <th class="sortableData letsSort" data-sort="first_name" width="12%">FIRST NAME</th>
                 <th class="sortableData" data-sort="last_name" width="12%">LAST NAME</th>
-                <% if (true) {%>
-                    <th class="sortableData" data-sort="company_name" width="12%">COMPANY</th>
-                <%}%>
+                <!--<% if (true) {%>-->
+                    <!--<th class="sortableData" data-sort="company_name" width="12%">COMPANY</th>-->
+                <!--<%}%>-->
                 <th width="10%">ROLE</th>
                 <th width="8%">SIGNING</th>
                 <th width="25%">EMAIL</th>
                 <th width="10%">STATUS</th>
             </tr>
             </thead>
+            <tbody id="listTable">
+            </tbody>
         </table>
-        <div id="tablesContent">
-            <table>
-                <tbody id="listTable">
-                </tbody>
-            </table>
         </div>
     </div>
 </div>

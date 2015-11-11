@@ -1,26 +1,25 @@
 <% usrLst.forEach(function(user){%>
 
 <tr class="userRow <%=!user.status ? 'notActiv' : ''%>" data-id="<%= user.id%>">
-    <td class="rName"><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-    <% if (!state) {%>
-        <td class="rComp"><%= user.company.name%></td>
-    <%}%>
-    <td class="rRole">
+    <td class="rName" width="12%"><%= user.profile.first_name%></td>
+    <td class="rLastName" width="16%"><%= user.profile.last_name%></td>
+    <!--<% if (!state) {%>-->
+        <!--<td class="rComp"><%= user.company.name%></td>-->
+    <!--<%}%>-->
+    <td class="rRole" width="10%">
         <%if (user.profile.permissions % 10 === 3){%>Viewer<%} else {%>
             <%if (user.profile.permissions % 10 === 2){%>Editor<%} else {%>Admin<%}%>
         <%}%>
     </td>
-    <td class="rCheck">
+    <td class="rCheck" width="8%">
         <input id="check-<%= user.id%>" type="checkbox" <%= user.profile.sign_authority ? 'checked' : ''%> disabled><label for="check-<%= user.id%>"></label>
     </td>
-    <td><%= user.email%></td>
-    <td class="rDisk">
-        <%if (user.profile.permissions % 10 === 3){%>Can view but not edit<%}%>
+    <td width="25%"><%= user.email%></td>
+    <td class="rDisk" width="12%">
+        <!--<%if (user.profile.permissions % 10 === 3){%>Active<%}%>-->
+        <span class="active">Active</span><br>
+        <span class="disable">Disable</span>
     </td>
 </tr>
 
 <% }) %>
-
-
-
-

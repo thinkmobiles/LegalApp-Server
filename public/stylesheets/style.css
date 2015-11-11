@@ -879,7 +879,6 @@ a {
 }
 #documentList .doc-list li div a {
   display: block;
-  text-indent: -99em;
 }
 #documentList .doc-list li:hover span {
   background-color: #fff;
@@ -941,11 +940,11 @@ a {
   -o-transform: translate(35px) rotate(25deg) scale(1.5);
   -ms-transform: translate(35px) rotate(25deg) scale(1.5);
   transform: translate(35px) rotate(25deg) scale(1.5);
-  -webkit-transition: all 0.3s ease-in-out;
-  -moz-transition: all 0.3s ease-in-out;
-  -o-transition: all 0.3s ease-in-out;
-  -ms-transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.6s ease-in-out;
+  -moz-transition: all 0.6s ease-in-out;
+  -o-transition: all 0.6s ease-in-out;
+  -ms-transition: all 0.6s ease-in-out;
+  transition: all 0.6s ease-in-out;
   z-index: 30;
 }
 #documentList .doc-grid > li .documentInfo:before {
@@ -1026,7 +1025,8 @@ a {
   color: #e31937;
 }
 .centerBlock > div div input[type="text"],
-.centerBlock > div div input[type="email"] {
+.centerBlock > div div input[type="email"],
+.centerBlock > div div textarea {
   background: #eaeaea;
   height: 50px;
   width: 92%;
@@ -1034,6 +1034,9 @@ a {
   padding: 0 4%;
   border: none;
   margin-bottom: 14px;
+}
+.centerBlock > div div textarea {
+  min-height: 320px;
 }
 .centerBlock > div div input[type="button"] {
   position: absolute;
@@ -1091,10 +1094,19 @@ a {
 }
 #usersTable td {
   font-family: 'OSR';
-  line-height: 44px;
+  line-height: 36px;
 }
 #usersTable td.rRole {
   font-family: 'OSS';
+}
+#usersTable td.rDisk {
+  font-family: 'OSS';
+}
+#usersTable td.rDisk span.active {
+  color: #7bdb73;
+}
+#usersTable td.rDisk span.disable {
+  color: #E31937;
 }
 #usersTable td.rCheck input[type="checkbox"] {
   display: none;
@@ -1106,7 +1118,7 @@ a {
   border: 1px solid #909090;
   position: relative;
   cursor: pointer;
-  margin: 7px auto 0px;
+  margin: 10px auto 0px;
 }
 #usersTable td.rCheck input[type="checkbox"]:checked + label {
   border-color: #e31937;
@@ -1581,6 +1593,33 @@ a {
   color: #bfbfbf;
   border-bottom: 3px solid #e31937;
 }
+#leftNavigate {
+  padding: 0 26px;
+  overflow: hidden;
+  margin-top: 45px;
+}
+#leftNavigate li {
+  width: 50%;
+  float: left;
+}
+#leftNavigate li:nth-child(2) {
+  float: right;
+  text-align: right;
+}
+#leftNavigate li a {
+  display: block;
+  color: #adadad;
+  text-decoration: none;
+  outline: none !important;
+  font-family: 'OSR';
+  font-size: 16px;
+  border-bottom: 3px solid #b7b7b7;
+  padding-bottom: 9px;
+}
+#leftNavigate li a.active {
+  color: #3d3d3d;
+  border-bottom: 3px solid #e31937;
+}
 .selOnInput {
   cursor: pointer;
 }
@@ -1627,16 +1666,6 @@ div#ui-datepicker-div.ui-datepicker table thead th:first-child {
 }
 div#ui-datepicker-div.ui-datepicker table thead th:last-child {
   padding-right: .78em;
-}
-div#ui-datepicker-div.ui-datepicker table thead:after {
-  display: block;
-  content: '';
-  height: 1px;
-  background: #979696;
-  position: absolute;
-  top: 92px;
-  left: 9px;
-  right: 9px;
 }
 div#ui-datepicker-div.ui-datepicker table tbody tr:last-child td {
   padding-bottom: 2px;
@@ -1717,19 +1746,67 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background-color: #fff;
   color: #000;
 }
-/*===============================todo VV ---- warning ---- bad low code*/
 .messageItem {
   display: block;
   float: left;
-  height: 150px;
+  height: auto;
   width: 100%;
-  border: 1px solid rgba(185, 190, 202, 0.55);
+  padding: 25px 0;
+  border-bottom: 10px solid #ededed;
 }
-.photoBox {
-  height: 100%;
-  width: 150px;
-  background-color: #096ac8;
+.messageItem .photoBox {
+  min-height: 100px;
+  width: 140px;
+  border-right: 1px solid #ededed;
   float: left;
+  text-align: center;
+}
+.messageItem .photoBox img {
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin: 10px auto;
+  border: 2px solid #ededed;
+  border-radius: 50%;
+}
+.messageItem .photoBox span {
+  font-family: 'OSS';
+  font-size: 18px;
+  color: #3d3d3d;
+}
+.messageItem .infoBox div {
+  overflow: hidden;
+  position: relative;
+  padding: 0 15px;
+}
+.messageItem .infoBox div h3 {
+  float: left;
+  font-family: 'OSS';
+  font-size: 20px;
+  color: #3d3d3d;
+}
+.messageItem .infoBox div span {
+  color: #7c7b7b;
+  font-size: 14px;
+  float: right;
+}
+.messageItem .infoBox div.messageBody {
+  font-family: 'PLR';
+  font-size: 16px;
+  color: #262626;
+  margin-top: 17px;
+}
+.messageItem .infoBox a.more {
+  display: block;
+  position: absolute;
+  top: 86px;
+  right: 15px;
+  width: 26px;
+  height: 6px;
+  font-family: 'OSS';
+  font-size: 36px;
+  color: #E31937;
+  text-decoration: none;
 }
 .tab-item {
   display: none;
@@ -1737,7 +1814,276 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
 .tab-item.active {
   display: block;
 }
-.docClick {
-  background-color: crimson;
+.termsOfServiceDialog {
+  min-width: 900px;
 }
-/*===============================todo AA ---- warning ----*/
+.termsOfServiceDialog.ui-dialog {
+  color: #262626;
+}
+.termsOfServiceDialog.ui-dialog .ui-widget-header {
+  display: none !important;
+}
+.termsOfServiceDialog.ui-dialog .panel-heading {
+  font-family: 'OSS';
+  font-size: 24px;
+  text-align: center;
+  padding: 16px 0 35px;
+}
+.termsOfServiceDialog.ui-dialog .panel-body p {
+  font-family: 'PLR';
+  font-size: 16px;
+  line-height: 20px;
+}
+.termsOfServiceDialog.ui-dialog .acceptBtn {
+  text-align: center;
+  padding: 45px 0;
+}
+.termsOfServiceDialog.ui-dialog .acceptBtn #acceptBtn {
+  display: inline-block;
+  padding: 0 47px;
+  line-height: 50px;
+  font-size: 18px;
+  font-family: 'OSE';
+  background: #878787;
+  color: #fff;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+}
+.termsOfServiceDialog.ui-dialog .acceptBtn #acceptBtn:hover {
+  background: #c3c3c3;
+}
+.profileForm {
+  overflow: hidden;
+  padding: 20px 0 0 20px;
+  border-right: 1px solid #e7e6e6;
+  width: calc(31.1% - 20px);
+}
+.profileForm > div {
+  position: relative;
+  min-height: 670px;
+}
+.profileForm > div.left {
+  float: left;
+  width: 50%;
+}
+.profileForm > div.right {
+  float: right;
+  width: 40%;
+  text-align: center;
+}
+.profileForm > div.right .avatar {
+  margin-bottom: 40px;
+}
+.profileForm > div.right .avatar #avatar {
+  border-radius: 50%;
+  border: 2px solid #c4c4c4;
+}
+.profileForm > div.right span {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+.profileForm > div div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+.profileForm > div div input[type="text"],
+.profileForm > div div input[type="password"] {
+  background: #eaeaea;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+.profileForm > div div input[type="button"] {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 10px;
+}
+.companyBlock {
+  overflow: hidden;
+  padding: 50px 40px 0 20px;
+  border-right: 1px solid #e7e6e6;
+  width: calc(31.1% - 60px);
+}
+.companyBlock ul {
+  position: relative;
+  min-height: 670px;
+}
+.companyBlock ul li a {
+  color: #adadad;
+  text-decoration: none;
+  display: block;
+  font-size: 16px;
+  line-height: 45px;
+  border-bottom: 3px solid #eaeaea;
+  outline: none !important;
+}
+.companyBlock ul li a.active {
+  color: #3d3d3d;
+  border-bottom-color: #E31937;
+}
+.tab-items {
+  display: block;
+  float: left;
+  height: calc(-83vh);
+  min-height: 610px;
+  padding: 50px 40px 0 20px;
+  width: calc(31% - 60px);
+}
+.tab-items .tab-item > div {
+  position: relative;
+  min-height: 670px;
+  width: 45%;
+}
+.tab-items .tab-item > div.left {
+  float: left;
+}
+.tab-items .tab-item > div.right {
+  float: right;
+}
+.tab-items .tab-item > div.right .companyLogo {
+  text-align: center;
+  min-height: 164px;
+  max-height: 164px;
+  padding-top: 100px;
+}
+.tab-items .tab-item > div.right .companyLogo label {
+  font-family: 'OSR';
+  margin-top: 40px;
+  font-size: 14px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+.tab-items .tab-item > div div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+.tab-items .tab-item > div div input[type="text"] {
+  background: #eaeaea;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+.tab-items .tab-item > div div input[type="button"] {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 40px;
+}
+#registrations {
+  overflow: hidden;
+  float: left;
+  min-height: 610px;
+  padding: 50px 20px 0 20px;
+  width: calc(62.1% - 40px);
+}
+#registrations h2 {
+  font-family: 'OSS';
+  font-size: 24px;
+  color: #3d3d3d;
+  padding-bottom: 15px;
+}
+#registrations .firstTableHeadline h2 {
+  float: left;
+}
+#registrations .firstTableHeadline .info {
+  float: right;
+}
+#registrations .firstTableHeadline .info span {
+  display: inline-block;
+  margin-left: 18px;
+}
+#registrations .pending {
+  margin-bottom: 40px;
+}
+#registrations span {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #fafaf7;
+  line-height: 25px;
+  padding: 0 4px;
+}
+#registrations span.confirm {
+  background: #7bdb73;
+}
+#registrations span.disable {
+  background: #E31937;
+}
+#registrations #newUserTable {
+  width: 100%;
+  border: 1px solid #d0d0d1;
+}
+#registrations #newUserTable thead {
+  background: #eaeaea;
+  font-family: 'OSS';
+  text-transform: uppercase;
+}
+#registrations #newUserTable thead th {
+  height: 44px;
+  line-height: 44px;
+}
+#registrations #newUserTable td {
+  font-family: 'OSR';
+  line-height: 36px;
+}
+#registrations #newUserTable td.rCheck input[type="checkbox"] {
+  display: none;
+}
+#registrations #newUserTable td.rCheck label {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #909090;
+  position: relative;
+  cursor: pointer;
+  margin: 10px auto 0;
+}
+#registrations #newUserTable td.rCheck input[type="checkbox"]:checked + label {
+  border: 1px solid #666666;
+}
+#registrations #newUserTable td.rCheck input[type="checkbox"]:checked + label:after {
+  content: '';
+  background: url("../images/check.png") no-repeat center;
+  height: 13px;
+  width: 17px;
+  position: absolute;
+  top: 5px;
+  left: 2px;
+}
+#registrations #newUserTable th,
+#registrations #newUserTable td {
+  border: 2px solid #d0d0d1;
+  text-align: center;
+  color: #3d3d3d;
+  font-size: 16px;
+}

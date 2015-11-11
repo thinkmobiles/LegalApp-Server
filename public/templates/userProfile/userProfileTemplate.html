@@ -1,29 +1,51 @@
-<div class="avatar">
-    <!--<div class="upload">-->
-        <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
-    <!--</div>-->
-    <canvas id="avatar" width="140" height="140"></canvas>
-    <label for="inputImg">Replace picture</label>
-</div>
 
-<div id="profileInfo">
-    <label for="profFName">First name:</label>
-    <input id="profFName" type="text" value="<%= firstName %>">
-    <label for="profLName">Last name:</label>
-    <input id="profLName" type="text" value="<%= lastName %>">
-    <label for="profPhone">Phone:</label>
-    <input id="profPhone" type="text" value="<%= phone %>">
-    <label for="company">Company:</label>
-    <input id="company" type="text" value="<%= company %>">
+<div class="addItemLeft profileForm">
+    <div class="left">
+        <div id="profileInfo">
+            <div>
+                <label for="profFName">First name:</label>
+                <input id="profFName" type="text" value="<%= firstName %>">
+            </div>
+            <div>
+                <label for="profLName">Last name:</label>
+                <input id="profLName" type="text" value="<%= lastName %>">
+            </div>
+            <div>
+                <label for="profPhone">Phone:</label>
+                <input id="profPhone" type="text" value="<%= phone %>">
+            </div>
+            <div>
+                <label for="company">Company:</label>
+                <input id="company" type="text" value="<%= company %>">
+            </div>
+        </div>
+        <div>
+            <label for="profCurPass">Current password</label>
+            <input type="password" id="profCurPass">
+        </div>
+        <div>
+            <label for="profPass">New password</label>
+            <input type="password" id="profPass">
+        </div>
+        <div>
+            <label for="profConfPass">Confirm password</label>
+            <input type="password" id="profConfPass">
+        </div>
+        <div><input type="button" id="profSaveBut" value="Save profile"></div>
+    </div>
+    <div class="right">
+        <div class="avatar">
+            <!--<div class="upload">-->
+            <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
+            <!--</div>-->
+            <canvas id="avatar" width="90" height="90"></canvas>
+            <label for="inputImg">Replace picture</label>
+        </div>
+        <div class="signature">
+            <svg viewBox="0 0 70 71" height="73" width="72" preserveAspectRatio="xMidYMid" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+                <image height="71" width="70" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABHCAMAAACNrMETAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAB2lBMVEUAAAB9fX2SkpKcnJyqqqqtra2pqamampqSkpKSkpLKysq7u7uIiIh9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX2JiYl9fX2Hh4eUlJSBgYGRkZF+fn6QkJCQkJB9fX2Ojo6Ojo6np6eNjY19fX2WlpaMjIyMjIygoKCNjY2BgYGTk5OVlZWVlZWNjY2NjY3////+/v6UlJR9fX2cnJzu+e3V8NTm9uX9/v3g9N/X8dX0+/Pe892b3Jia3JfE6sL7/vu15bKf3pzr+Oqr4qnD6sG05bK86Lql4KO35rXL7cnc89v+//6+6Ly25rTP786457bI7MbN7svJ7Mi657io4abG68Ss46rR78+757nb8tqrq6utra2NjY22trbLy8uVlZXExMS8vLy1tbX9/f2vr6/8/Pypqan6+vqlpaX39/ehoaH09PSenp7u7u6bm5sAAAAGxMIwAAAAXXRSTlMAAYbd5eTl3HKF9/O4fiP6aUbB7dvJtqSSbFpHNRD969jGtKKOfFdFMyAN6NbEsp6LeWdVQzAcCvjm1MKtm4l3ZVM+/Q9e/lr+VP37NPjv5N8E0sk86Ksjp8PE7Yex5EHUAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEgAACxIB0t1+/AAAAelJREFUWMOt1PdTkzEcx/EvUMBBaRUHoEUFFYpbhhvcgIrgAHGkPFEfV1BcjKpAEfe2Cir6x1Kl5nma9u4Z+bx/yuWS1+WSu1BefkGg0HdFxQvoXwsXMa0WlwRLU0yBnsJi/UYoTBTQZBg3DGMJFSKYpRgmhGEMDFOGYZZhmOUYZgWGWYlhyjFMEMNUYJhKDLMKw6zGMKUYJgJhqgjCrMEwazHMOgxTjWFqMMx6DLMBw4QxzEYMU4th6jBMFMPUQ5gQQZhNGGYzhtmCYbZimG0YZjuG2YFhdlrM1WvXs1eYN27ecsE0SOb2HSEG1AV37wkxeN+ZaZTMA5HqoaI8+jv52JlpksyQyHLmFTHszDRLZkSoTloRo87MLsnEnyiO+XR+4pnzFe8m66UUxxxzqzC+x8ZIZ9yuTDgrjO+1M9JJWErChcL4vgyGxSfTmz0pjO/PZOQhnntRGD+gMNLxojDeojJ2x63CeGsWYzmuFcYPZjP/nSnXCuOHcjDMfJFSJt0rjB/OxbD4y1evnba+eSt7d+Qo+f393svRh4/HSJ/5dLyN9JnP7R2kzcS+nKglbeZr8uQp0ma+fe+MkjYzPXM6YinU5Y/58bP7jE2hs9N+mF+z5yij8z2/vTPJP72kdKHv4iWvXb6iIHPSTaTUAymNCwAAAABJRU5ErkJggg==" class="trueSignState"/>
+            </svg>
+            <span>Replace Signature</span>
+        </div>
+    </div>
 </div>
-<div>
-    <label for="profCurPass">Current password</label>
-    <input type="password" id="profCurPass">
-</div>
-<div>
-    <label for="profPass">New password</label>
-    <input type="password" id="profPass">
-    <label for="profConfPass">Confirm password</label>
-    <input type="password" id="profConfPass">
-</div>
-<input type="button" id="profSaveBut" value="Save profile">

@@ -1,48 +1,111 @@
-<h2>Pending Users</h2>
-<table>
+<!--<h2>Pending Users</h2>-->
+<!--<div id="tablesContent">-->
+    <!--<table>-->
+    <!--<thead>-->
+    <!--<tr>-->
+        <!--<th class="sortableData" data-sort="name" width="12%">NAME</th>-->
+        <!--<th class="sortableData" data-sort="company" width="12%">COMPANY</th>-->
+        <!--<th class="sortableData" data-sort="role" width="10%">ROLE</th>-->
+        <!--<th width="8%">DESCRIPTION</th>-->
+        <!--<th width="25%">EMAIL</th>-->
+        <!--<th class="sortableData" data-sort="status" width="10%">Status</th>-->
+        <!--<th></th>-->
+    <!--</tr>-->
+    <!--</thead>-->
+    <!--<tbody id="listTable">-->
 
-<thead>
-<tr>
-    <th class="sortableData" data-sort="name">NAME</th>
-    <th class="sortableData" data-sort="company">COMPANY</th>
-    <th class="sortableData" data-sort="role">ROLE</th>
-    <th>DESCRIPTION</th>
-    <th class="sortableData" data-sort="status">Status</th>
-    <th></th>
-</tr>
-</thead>
-<tbody id="listTable">
+    <!--<% usrLst.forEach(function(user){%>-->
 
-<% usrLst.forEach(function(user){%>
+    <!--<tr class="userRow notActive" data-id="<%= user.id%>">-->
+        <!--<td><%= user.profile.first_name%> <%= user.profile.last_name%></td>-->
+        <!--<td><%= user.company.name%></td>-->
+        <!--<td>-->
+            <!--<%if ((user.profile.permissions === 0) || (user.profile.permissions === 1)) {%>Admin<%}%>-->
+            <!--<%if (user.profile.permissions === 2){%>Editor<%}%>-->
+            <!--<%if (user.profile.permissions === 3){%>Viewer<%}%>-->
 
-<tr class="userRow notActive" data-id="<%= user.id%>">
-    <td><%= user.profile.first_name%> <%= user.profile.last_name%></td>
-    <td><%= user.company.name%></td>
-    <td>
-        <%if ((user.profile.permissions === 0) || (user.profile.permissions === 1)) {%>Admin<%}%>
-        <%if (user.profile.permissions === 2){%>Editor<%}%>
-        <%if (user.profile.permissions === 3){%>Viewer<%}%>
+            <!--<%if (user.profile.permissions === 11){%>Client Admin<%}%>-->
+            <!--<%if (user.profile.permissions === 12){%>Client Editor<%}%>-->
+            <!--<%if (user.profile.permissions === 13){%>Client Viewer<%}%>-->
+        <!--</td>-->
+        <!--<td>-->
+            <!--<%if ((user.profile.permissions === 3) || (user.profile.permissions === 13)){%>Can view but not edit<%}%>-->
+        <!--</td>-->
+        <!--<td>-->
+            <!--<%if (user.status === -1){%>Pending<%}%>-->
+            <!--<%if (user.status === 0){%>Deleted<%}%>-->
+            <!--<%if (user.status === 1){%>Active<%}%>-->
+        <!--</td>-->
+        <!--<td>-->
+            <!--<% if (pending === true) {%>-->
+                <!--<button class="accept">Accept</button> | <button class="reject">Reject</button>-->
+            <!--<% } %>-->
+        <!--</td>-->
+    <!--</tr>-->
 
-        <%if (user.profile.permissions === 11){%>Client Admin<%}%>
-        <%if (user.profile.permissions === 12){%>Client Editor<%}%>
-        <%if (user.profile.permissions === 13){%>Client Viewer<%}%>
-    </td>
-    <td>
-        <%if ((user.profile.permissions === 3) || (user.profile.permissions === 13)){%>Can view but not edit<%}%>
-    </td>
-    <td>
-        <%if (user.status === -1){%>Pending<%}%>
-        <%if (user.status === 0){%>Deleted<%}%>
-        <%if (user.status === 1){%>Active<%}%>
-    </td>
-    <td>
-        <% if (pending === true) {%>
-            <button class="accept">Accept</button> | <button class="reject">Reject</button>
-        <% } %>
-    </td>
-</tr>
+    <!--<% }) %>-->
 
-<% }) %>
-
-</tbody>
-</table>
+    <!--</tbody>-->
+    <!--</table>-->
+<!--</div>-->
+<div>
+    <table id="newUserTable">
+        <thead>
+            <tr>
+                <th width="12%">First NAME</th>
+                <th width="12%">Last Name</th>
+                <th width="8%">Number</th>
+                <th width="12">COMPANY</th>
+                <th width="10%">ROLE</th>
+                <th width="25%">EMAIL</th>
+                <th width="10%">Status</th>
+            </tr>
+        </thead>
+        <tbody id="listTable">
+            <tr class="userRow">
+                <td>Thomas</td>
+                <td>Klempton</td>
+                <td>0000000</td>
+                <td>Test Company</td>
+                <td>Admin</td>
+                <td>company@mail.com</td>
+                <td class="rCheck">
+                    <span class="disable">Disable</span>
+                </td>
+            </tr>
+            <tr class="userRow">
+                <td>Thomas</td>
+                <td>Klempton</td>
+                <td>0000000</td>
+                <td>Test Company</td>
+                <td>Admin</td>
+                <td>company@mail.com</td>
+                <td class="rCheck">
+                    <span class="confirm">Confirm</span>
+                </td>
+            </tr>
+            <tr class="userRow">
+                <td>Thomas</td>
+                <td>Klempton</td>
+                <td>0000000</td>
+                <td>Test Company</td>
+                <td>Admin</td>
+                <td>company@mail.com</td>
+                <td class="rCheck">
+                    <input type="checkbox" id="check-2"><label for="check-2"></label>
+                </td>
+            </tr>
+            <tr class="userRow">
+                <td>Thomas</td>
+                <td>Klempton</td>
+                <td>0000000</td>
+                <td>Test Company</td>
+                <td>Admin</td>
+                <td>company@mail.com</td>
+                <td class="rCheck">
+                    <input type="checkbox" id="check-3"><label for="check-3"></label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
