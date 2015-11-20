@@ -1047,7 +1047,6 @@ a {
         margin: 10px auto 0px;
       }
       input[type="checkbox"]:checked + label{
-        border-color: #e31937;
         border: 1px solid #666666;
       }
       input[type="checkbox"]:checked + label:after {
@@ -2096,6 +2095,147 @@ div#ui-datepicker-div.ui-datepicker{
       text-align: center;
       color: #3d3d3d;
       font-size: 16px;
+    }
+  }
+}
+
+.addTemplateBlock{
+  float: left;
+  min-height: 610px;
+  padding: 20px 40px 0 20px;
+  width: ~'calc(31.1% - 60px)';
+  background: rgba(0,0,0,0.8);
+  position: absolute;
+  z-index: 1005;
+  h2{
+    .font-oss;
+    font-size: 24px;
+    color: #ffffff;
+    padding-bottom: 15px;
+  }
+  .closeCurrentView{
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #7c7b7b;
+    background: none;
+    border: none;
+  }
+  div {
+    label {
+      .font-oss;
+      font-size: 16px;
+      color: #7c7b7b;
+      margin-bottom: 8px;
+      display: block;
+    }
+    input[type="text"] {
+      background: #eaeaea;
+      height: 50px;
+      width: 92%;
+      line-height: 50px;
+      padding: 0 4%;
+      border: none;
+      margin-bottom: 14px;
+    }
+    input[type="button"] {
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      .font-ose;
+      font-size: 18px;
+      height: 48px;
+      line-height: 48px;
+      border: none;
+      background: #878787;
+      margin-top: 40px;
+    }
+    a.short_text{
+      background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
+      display: block;
+      height: 50px;
+      width: 92%;
+      outline: none;
+      line-height: 50px;
+      padding: 0 4%;
+      text-decoration: none;
+      margin-top: 14px;
+      color: #3d3d3d;
+      &:hover{
+        background-image: url('../images/edit-active-ico.png');
+      }
+    }
+  }
+}
+#addTemplateAppender{
+  .addItemRight{
+    float: left;
+    margin: 0 0 0 38%;
+    position: absolute;
+    width: ~'calc(31.1% - 60px)';
+    min-height: 610px;
+    padding: 20px 40px 0 20px;
+    background: #fff;
+    display: block;
+    z-index: 1025;
+  }
+  h2{
+    .font-oss;
+    font-size: 24px;
+    color: #7c7b7b;
+    padding-bottom: 15px;
+  }
+  .closeCurrentView{
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #7c7b7b;
+    background: none;
+    border: none;
+  }
+  div {
+    label {
+      .font-oss;
+      font-size: 16px;
+      color: #7c7b7b;
+      margin-bottom: 8px;
+      display: block;
+    }
+    input[type="text"] {
+      background: #eaeaea;
+      height: 50px;
+      width: 92%;
+      line-height: 50px;
+      padding: 0 4%;
+      border: none;
+      margin-bottom: 14px;
+    }
+    button#saveButton {
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      .font-ose;
+      font-size: 18px;
+      height: 48px;
+      line-height: 48px;
+      border: none;
+      background: #878787;
+      margin-top: 40px;
+    }
+    a.short_text{
+      background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
+      display: block;
+      height: 50px;
+      width: 92%;
+      outline: none;
+      line-height: 50px;
+      padding: 0 4%;
+      text-decoration: none;
+      margin-top: 14px;
+      color: #3d3d3d;
+      &:hover{
+        background-image: url('../images/edit-active-ico.png');
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
-
-<h2><%= edit ? 'Edit Template' : 'Add Template'%></h2>
+<div class="addTemplateBlock">
+    <h2><%= edit ? 'Edit Template' : 'Add Template'%></h2>
     <button class="closeCurrentView">X</button>
 
     <form enctype="multipart/form-data" id="addTempForm" action="">
@@ -42,7 +42,8 @@
         </div>
 
         <div>
-        <input type="button" id="tempSave" value="Save">
+            <input type="button" id="tempSave" value="Save">
         </div>
 
     </form>
+</div>
