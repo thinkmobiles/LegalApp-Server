@@ -1121,7 +1121,6 @@ a {
   margin: 10px auto 0px;
 }
 #usersTable td.rCheck input[type="checkbox"]:checked + label {
-  border-color: #e31937;
   border: 1px solid #666666;
 }
 #usersTable td.rCheck input[type="checkbox"]:checked + label:after {
@@ -2086,4 +2085,138 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   text-align: center;
   color: #3d3d3d;
   font-size: 16px;
+}
+.addTemplateBlock {
+  float: left;
+  min-height: 610px;
+  padding: 20px 40px 0 20px;
+  width: calc(31.1% - 60px);
+  background: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  z-index: 1005;
+}
+.addTemplateBlock h2 {
+  font-family: 'OSS';
+  font-size: 24px;
+  color: #ffffff;
+  padding-bottom: 15px;
+}
+.addTemplateBlock .closeCurrentView {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #7c7b7b;
+  background: none;
+  border: none;
+}
+.addTemplateBlock div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+.addTemplateBlock div input[type="text"] {
+  background: #eaeaea;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+.addTemplateBlock div input[type="button"] {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 40px;
+}
+.addTemplateBlock div a.short_text {
+  background: url('../images/edit-ico.png') no-repeat 96% 50% #eaeaea;
+  display: block;
+  height: 50px;
+  width: 92%;
+  outline: none;
+  line-height: 50px;
+  padding: 0 4%;
+  text-decoration: none;
+  margin-top: 14px;
+  color: #3d3d3d;
+}
+.addTemplateBlock div a.short_text:hover {
+  background-image: url('../images/edit-active-ico.png');
+}
+#addTemplateAppender .addItemRight {
+  float: left;
+  margin: 0 0 0 38%;
+  position: absolute;
+  width: calc(31.1% - 60px);
+  min-height: 610px;
+  padding: 20px 40px 0 20px;
+  background: #fff;
+  display: block;
+  z-index: 1025;
+}
+#addTemplateAppender h2 {
+  font-family: 'OSS';
+  font-size: 24px;
+  color: #7c7b7b;
+  padding-bottom: 15px;
+}
+#addTemplateAppender .closeCurrentView {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #7c7b7b;
+  background: none;
+  border: none;
+}
+#addTemplateAppender div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+#addTemplateAppender div input[type="text"] {
+  background: #eaeaea;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+#addTemplateAppender div button#saveButton {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 40px;
+}
+#addTemplateAppender div a.short_text {
+  background: url('../images/edit-ico.png') no-repeat 96% 50% #eaeaea;
+  display: block;
+  height: 50px;
+  width: 92%;
+  outline: none;
+  line-height: 50px;
+  padding: 0 4%;
+  text-decoration: none;
+  margin-top: 14px;
+  color: #3d3d3d;
+}
+#addTemplateAppender div a.short_text:hover {
+  background-image: url('../images/edit-active-ico.png');
 }
