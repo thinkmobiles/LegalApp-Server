@@ -17,8 +17,6 @@ define([
 
         events: {
             'click #buttonLogout'   : 'logout',
-            'click #profileTop'     : 'showPofile',
-            'click #middleTopBar'   : 'showWantForm',
             'click #leftTopBar'     : 'showContactUsForm'
         },
 
@@ -26,14 +24,6 @@ define([
             this.listenTo(App.sessionData, 'change:authorized', this.render);
             this.listenTo(App.sessionData, 'change:first_name change:last_name change:avatar', this.renderUser);
             this.listenTo(App.Badge,       'change:pendingUsers', this.updatePendingUsersBadge);
-        },
-
-        showWantForm : function(){
-            if (this.iWantView){
-                this.iWantView.undelegateEvents();
-            }
-
-            this.iWantView = new WantView();
         },
 
         showContactUsForm : function(){
@@ -79,6 +69,7 @@ define([
                 if (App.Badge.attributes.pendingUsers) {
                     this.updatePendingUsersBadge();
                 }
+                this.iWantView = new WantView();
             }
 
             return this;
