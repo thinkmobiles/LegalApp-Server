@@ -70,7 +70,7 @@ define([
         goToAddTemplate : function(){
             var currentView =  new AddTemplate({parentCont : this});
 
-            this.$el.find('#addTemplateContainer').html(currentView.el);
+            this.$el.find('#addTemplateContainer').find('#addTemplateAppender').before(currentView.el);
         },
 
         goToEditTemplate : function(event){
