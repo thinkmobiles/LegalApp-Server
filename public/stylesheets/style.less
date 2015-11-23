@@ -95,9 +95,12 @@ a {
 }
 #leftMenu {
   width: 6.8%;
-  height: ~"calc(100vh - 123px)";
+  min-height: 630px;
   float: left;
   display: none;
+  z-index: 1040;
+  position: relative;
+  background: #fff;
 }
 #topMenu {
   height: 123px;
@@ -140,7 +143,7 @@ a {
 
 #rightTopBar {
   float: left;
-  width: 31%;
+  width: 31.1%;
   height: 100%;
   background-color: #3d3d3d;
   div#profileTop{
@@ -2151,142 +2154,315 @@ div#ui-datepicker-div.ui-datepicker{
   }
 }
 
-.addTemplateBlock{
-  float: left;
-  min-height: 610px;
-  padding: 20px 40px 0 20px;
-  width: ~'calc(31.1% - 60px)';
-  background: rgba(0,0,0,0.8);
+#addTemplateContainer{
+  width: 100%;
   position: absolute;
   z-index: 1005;
-  h2{
-    .font-oss;
-    font-size: 24px;
-    color: #ffffff;
-    padding-bottom: 15px;
-  }
-  .closeCurrentView{
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    color: #7c7b7b;
-    background: none;
-    border: none;
-  }
-  div {
-    label {
+  background: rgba(0,0,0,0.76);
+  .addItemLeft{
+    float: left;
+    min-height: 610px;
+    padding: 20px 40px 0;
+    width: ~'calc(31.1% - 80px)';
+    margin-left: 6.8%;
+    position: relative;
+    h2{
       .font-oss;
-      font-size: 16px;
+      font-size: 24px;
+      color: #ffffff;
+      padding-bottom: 15px;
+    }
+    .closeCurrentView{
+      position: absolute;
+      top: 12px;
+      right: 12px;
       color: #7c7b7b;
-      margin-bottom: 8px;
-      display: block;
-    }
-    input[type="text"] {
-      background: #eaeaea;
-      height: 50px;
-      width: 92%;
-      line-height: 50px;
-      padding: 0 4%;
+      background: none;
       border: none;
-      margin-bottom: 14px;
     }
-    input[type="button"] {
+    div {
+      &.uploadFile{
+        overflow: hidden;
+        input{
+          width: 52% !important;
+          float: left;
+        }
+        label.browse{
+          width: 37%;
+          float: right;
+          color: #fff;
+          background: #878787;
+          height: 50px;
+          line-height: 50px;
+          text-align: center;
+        }
+      }
+      label {
+        .font-oss;
+        font-size: 16px;
+        color: #7c7b7b;
+        margin-bottom: 8px;
+        display: block;
+      }
+      input[type="text"] {
+        background: #eaeaea;
+        height: 50px;
+        width: 92%;
+        line-height: 50px;
+        padding: 0 4%;
+        border: none;
+        margin-bottom: 14px;
+      }
+      input[type="button"] {
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        .font-ose;
+        font-size: 18px;
+        height: 48px;
+        line-height: 48px;
+        border: none;
+        background: #878787;
+        margin-top: 40px;
+      }
+      #addNewLink{
+        position: relative;
+        &:after{
+          content: '+';
+          position: absolute;
+          background: #eaeaea;
+          border-radius: 50%;
+          bottom: 11px;
+          color: #e31937;
+          height: 25px;
+          line-height: 22px;
+          right: 10px;
+          text-align: center;
+          width: 25px;
+          font-size: 23px;
+        }
+      }
+      a.short_text{
+        background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
+        display: block;
+        height: 50px;
+        width: 92%;
+        outline: none;
+        line-height: 50px;
+        padding: 0 4%;
+        text-decoration: none;
+        margin-top: 14px;
+        color: #3d3d3d;
+        &:hover{
+          background-image: url('../images/edit-active-ico.png');
+        }
+      }
+    }
+  }
+  .addItemRight{
+      float: left;
+      width: ~'calc(31% - 80px)';
+      min-height: 610px;
+      padding: 20px 40px 0;
+      background: #fff;
+      position: relative;
+    h2{
+      .font-oss;
+      font-size: 24px;
+      color: #7c7b7b;
+      padding-bottom: 15px;
+    }
+    .closeCurrentView{
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      color: #7c7b7b;
+      background: none;
+      border: none;
+    }
+    div {
+      position: relative;
+      label {
+        .font-oss;
+        font-size: 16px;
+        color: #7c7b7b;
+        margin-bottom: 8px;
+        display: block;
+      }
+      input[type="text"] {
+        background: #eaeaea;
+        height: 50px;
+        width: 92%;
+        line-height: 50px;
+        padding: 0 4%;
+        border: none;
+        margin-bottom: 14px;
+      }
+      textarea {
+        background: #eaeaea;
+        height: 412px;
+        width: 92%;
+        padding: 0 4%;
+        border: none;
+        margin-bottom: 14px;
+      }
+      button#saveButton,
+      input#descriptBtn{
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        .font-ose;
+        font-size: 18px;
+        height: 48px;
+        line-height: 48px;
+        border: none;
+        background: #878787;
+        margin-top: 40px;
+      }
+      a.short_text{
+        background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
+        display: block;
+        height: 50px;
+        width: 92%;
+        outline: none;
+        line-height: 50px;
+        padding: 0 4%;
+        text-decoration: none;
+        margin-top: 14px;
+        color: #3d3d3d;
+        &:hover{
+          background-image: url('../images/edit-active-ico.png');
+        }
+      }
+      #addingBut{
+        position: absolute;
+        background: #eaeaea;
+        border-radius: 50%;
+        bottom: 11px;
+        color: #e31937;
+        height: 25px;
+        line-height: 22px;
+        right: -33px;
+        text-align: center;
+        width: 25px;
+        font-size: 23px;
+        border: none;
+      }
+    }
+    #linksTable {
       width: 100%;
-      text-align: center;
-      color: #fff;
-      .font-ose;
-      font-size: 18px;
-      height: 48px;
-      line-height: 48px;
-      border: none;
-      background: #878787;
-      margin-top: 40px;
-    }
-    a.short_text{
-      background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
-      display: block;
-      height: 50px;
-      width: 92%;
-      outline: none;
-      line-height: 50px;
-      padding: 0 4%;
-      text-decoration: none;
-      margin-top: 14px;
-      color: #3d3d3d;
-      &:hover{
-        background-image: url('../images/edit-active-ico.png');
+      border: 1px solid #d0d0d1;
+      margin-top: 20px;
+      thead {
+        background: #eaeaea;
+        .font-oss;
+        text-transform: uppercase;
+        th {
+          height: 44px;
+          line-height: 44px;
+        }
+      }
+      th,
+      td{
+        border: 2px solid #d0d0d1;
+        color: #3d3d3d;
+        font-size: 16px;
+        text-align: center;
+      }
+      td {
+        .font-osr;
+        line-height: 36px;
       }
     }
   }
 }
-#addTemplateAppender{
-  .addItemRight{
+#addTemplateContainer {
+  width: 100%;
+  position: absolute;
+  z-index: 1005;
+  background: rgba(0, 0, 0, 0.76);
+  .addItemLeft {
     float: left;
-    margin: 0 0 0 38%;
-    position: absolute;
-    width: ~'calc(31.1% - 60px)';
     min-height: 610px;
-    padding: 20px 40px 0 20px;
-    background: #fff;
-    display: block;
-    z-index: 1025;
-  }
-  h2{
-    .font-oss;
-    font-size: 24px;
-    color: #7c7b7b;
-    padding-bottom: 15px;
-  }
-  .closeCurrentView{
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    color: #7c7b7b;
-    background: none;
-    border: none;
-  }
-  div {
-    label {
+    padding: 20px 40px 0;
+    width: ~'calc(31.1% - 80px)';
+    margin-left: 6.8%;
+    position: relative;
+    h2 {
       .font-oss;
-      font-size: 16px;
+      font-size: 24px;
+      color: #ffffff;
+      padding-bottom: 15px;
+    }
+    .closeCurrentView {
+      position: absolute;
+      top: 12px;
+      right: 12px;
       color: #7c7b7b;
-      margin-bottom: 8px;
-      display: block;
-    }
-    input[type="text"] {
-      background: #eaeaea;
-      height: 50px;
-      width: 92%;
-      line-height: 50px;
-      padding: 0 4%;
+      background: none;
       border: none;
-      margin-bottom: 14px;
     }
-    button#saveButton {
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      .font-ose;
-      font-size: 18px;
-      height: 48px;
-      line-height: 48px;
-      border: none;
-      background: #878787;
-      margin-top: 40px;
-    }
-    a.short_text{
-      background: url('../images/edit-ico.png') no-repeat 96% 50%  #eaeaea;
-      display: block;
-      height: 50px;
-      width: 92%;
-      outline: none;
-      line-height: 50px;
-      padding: 0 4%;
-      text-decoration: none;
-      margin-top: 14px;
-      color: #3d3d3d;
-      &:hover{
-        background-image: url('../images/edit-active-ico.png');
+    div {
+      &.uploadFile {
+        overflow: hidden;
+        input {
+          width: 52% !important;
+          float: left;
+        }
+        label.browse {
+          width: 37%;
+          float: right;
+          color: #fff;
+          background: #878787;
+          height: 50px;
+          line-height: 50px;
+          text-align: center;
+        }
+      }
+      label {
+        .font-oss;
+        font-size: 16px;
+        color: #7c7b7b;
+        margin-bottom: 8px;
+        display: block;
+      }
+      input[type="text"] {
+        background: #eaeaea;
+        height: 50px;
+        width: 92%;
+        line-height: 50px;
+        padding: 0 4%;
+        border: none;
+        margin-bottom: 14px;
+      }
+      input[type="button"] {
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        .font-ose;
+        font-size: 18px;
+        height: 48px;
+        line-height: 48px;
+        border: none;
+        background: #878787;
+        margin-top: 40px;
+      }
+      #addNewLink {
+        position: relative;
+        &:after {
+          content: '+';
+          position: absolute;
+          background: #eaeaea;
+          border-radius: 50%;
+          bottom: 11px;
+          color: #e31937;
+          height: 25px;
+          line-height: 22px;
+          right: 10px;
+          text-align: center;
+          width: 25px;
+          font-size: 23px;
+        }
       }
     }
   }

@@ -1,11 +1,15 @@
 <div id="addItemRight" class="addItemRight">
     <% if (descrip === 'description'){%>
         <h2>Edit description</h2>
-    <button class="closeCurrentView">X</button>
-        <span>Summary about the document:</span>
     <%} else {%>
         <h2>Edit marketing info</h2>
     <%}%>
-    <textarea id="descriptBtnArea"><%= text ? text : ''%></textarea>
-    <input type="button" id="descriptBtn" data-id="<%= descrip%>" value="Save">
+    <button class="closeCurrentView">X</button>
+    <div>
+        <label for="descriptBtnArea">Summary about the document:</label>
+        <textarea id="descriptBtnArea"><%= text ? text : ''%></textarea>
+    </div>
+    <div>
+        <input type="button" id="descriptBtn" data-id="<%= descrip%>" value="Save">
+    </div>
 </div>

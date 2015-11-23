@@ -9,10 +9,10 @@
             <input type="text" id="tempName" name="name" value="<%= edit && tempModel.name ? tempModel.name : ''%>" placeholder="ie: Agreement">
         </div>
 
-        <div>
+        <div class="uploadFile">
             <label for="tempFile">Upload file</label>
             <input type="file" id="tempFile" name="templateFile" style="display: none">
-            <input type="text" id="fakeTempFile" value="<%= edit && tempModel.templateFile.url ? _.last(tempModel.templateFile.url.split('/')) : ''%>" disabled><label for="tempFile">Browse</label>
+            <input type="text" id="fakeTempFile" value="<%= edit && tempModel.templateFile.url ? _.last(tempModel.templateFile.url.split('/')) : ''%>" disabled><label class="browse" for="tempFile">Browse</label>
         </div>
 
         <div>

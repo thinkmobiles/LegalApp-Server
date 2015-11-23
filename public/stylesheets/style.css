@@ -221,9 +221,12 @@ a {
 }
 #leftMenu {
   width: 6.8%;
-  height: calc(100vh - 123px);
+  min-height: 630px;
   float: left;
   display: none;
+  z-index: 1040;
+  position: relative;
+  background: #fff;
 }
 #topMenu {
   height: 123px;
@@ -263,7 +266,7 @@ a {
 }
 #rightTopBar {
   float: left;
-  width: 31%;
+  width: 31.1%;
   height: 100%;
   background-color: #3d3d3d;
 }
@@ -2136,22 +2139,27 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   color: #3d3d3d;
   font-size: 16px;
 }
-.addTemplateBlock {
-  float: left;
-  min-height: 610px;
-  padding: 20px 40px 0 20px;
-  width: calc(31.1% - 60px);
-  background: rgba(0, 0, 0, 0.8);
+#addTemplateContainer {
+  width: 100%;
   position: absolute;
   z-index: 1005;
+  background: rgba(0, 0, 0, 0.76);
 }
-.addTemplateBlock h2 {
+#addTemplateContainer .addItemLeft {
+  float: left;
+  min-height: 610px;
+  padding: 20px 40px 0;
+  width: calc(31.1% - 80px);
+  margin-left: 6.8%;
+  position: relative;
+}
+#addTemplateContainer .addItemLeft h2 {
   font-family: 'OSS';
   font-size: 24px;
   color: #ffffff;
   padding-bottom: 15px;
 }
-.addTemplateBlock .closeCurrentView {
+#addTemplateContainer .addItemLeft .closeCurrentView {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -2159,14 +2167,30 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: none;
   border: none;
 }
-.addTemplateBlock div label {
+#addTemplateContainer .addItemLeft div.uploadFile {
+  overflow: hidden;
+}
+#addTemplateContainer .addItemLeft div.uploadFile input {
+  width: 52% !important;
+  float: left;
+}
+#addTemplateContainer .addItemLeft div.uploadFile label.browse {
+  width: 37%;
+  float: right;
+  color: #fff;
+  background: #878787;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+#addTemplateContainer .addItemLeft div label {
   font-family: 'OSS';
   font-size: 16px;
   color: #7c7b7b;
   margin-bottom: 8px;
   display: block;
 }
-.addTemplateBlock div input[type="text"] {
+#addTemplateContainer .addItemLeft div input[type="text"] {
   background: #eaeaea;
   height: 50px;
   width: 92%;
@@ -2175,7 +2199,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   border: none;
   margin-bottom: 14px;
 }
-.addTemplateBlock div input[type="button"] {
+#addTemplateContainer .addItemLeft div input[type="button"] {
   width: 100%;
   text-align: center;
   color: #fff;
@@ -2187,7 +2211,24 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: #878787;
   margin-top: 40px;
 }
-.addTemplateBlock div a.short_text {
+#addTemplateContainer .addItemLeft div #addNewLink {
+  position: relative;
+}
+#addTemplateContainer .addItemLeft div #addNewLink:after {
+  content: '+';
+  position: absolute;
+  background: #eaeaea;
+  border-radius: 50%;
+  bottom: 11px;
+  color: #e31937;
+  height: 25px;
+  line-height: 22px;
+  right: 10px;
+  text-align: center;
+  width: 25px;
+  font-size: 23px;
+}
+#addTemplateContainer .addItemLeft div a.short_text {
   background: url('../images/edit-ico.png') no-repeat 96% 50% #eaeaea;
   display: block;
   height: 50px;
@@ -2199,27 +2240,24 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   margin-top: 14px;
   color: #3d3d3d;
 }
-.addTemplateBlock div a.short_text:hover {
+#addTemplateContainer .addItemLeft div a.short_text:hover {
   background-image: url('../images/edit-active-ico.png');
 }
-#addTemplateAppender .addItemRight {
+#addTemplateContainer .addItemRight {
   float: left;
-  margin: 0 0 0 38%;
-  position: absolute;
-  width: calc(31.1% - 60px);
+  width: calc(31% - 80px);
   min-height: 610px;
-  padding: 20px 40px 0 20px;
+  padding: 20px 40px 0;
   background: #fff;
-  display: block;
-  z-index: 1025;
+  position: relative;
 }
-#addTemplateAppender h2 {
+#addTemplateContainer .addItemRight h2 {
   font-family: 'OSS';
   font-size: 24px;
   color: #7c7b7b;
   padding-bottom: 15px;
 }
-#addTemplateAppender .closeCurrentView {
+#addTemplateContainer .addItemRight .closeCurrentView {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -2227,14 +2265,17 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: none;
   border: none;
 }
-#addTemplateAppender div label {
+#addTemplateContainer .addItemRight div {
+  position: relative;
+}
+#addTemplateContainer .addItemRight div label {
   font-family: 'OSS';
   font-size: 16px;
   color: #7c7b7b;
   margin-bottom: 8px;
   display: block;
 }
-#addTemplateAppender div input[type="text"] {
+#addTemplateContainer .addItemRight div input[type="text"] {
   background: #eaeaea;
   height: 50px;
   width: 92%;
@@ -2243,7 +2284,16 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   border: none;
   margin-bottom: 14px;
 }
-#addTemplateAppender div button#saveButton {
+#addTemplateContainer .addItemRight div textarea {
+  background: #eaeaea;
+  height: 412px;
+  width: 92%;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+#addTemplateContainer .addItemRight div button#saveButton,
+#addTemplateContainer .addItemRight div input#descriptBtn {
   width: 100%;
   text-align: center;
   color: #fff;
@@ -2255,7 +2305,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: #878787;
   margin-top: 40px;
 }
-#addTemplateAppender div a.short_text {
+#addTemplateContainer .addItemRight div a.short_text {
   background: url('../images/edit-ico.png') no-repeat 96% 50% #eaeaea;
   display: block;
   height: 50px;
@@ -2267,6 +2317,134 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   margin-top: 14px;
   color: #3d3d3d;
 }
-#addTemplateAppender div a.short_text:hover {
+#addTemplateContainer .addItemRight div a.short_text:hover {
   background-image: url('../images/edit-active-ico.png');
+}
+#addTemplateContainer .addItemRight div #addingBut {
+  position: absolute;
+  background: #eaeaea;
+  border-radius: 50%;
+  bottom: 11px;
+  color: #e31937;
+  height: 25px;
+  line-height: 22px;
+  right: -33px;
+  text-align: center;
+  width: 25px;
+  font-size: 23px;
+  border: none;
+}
+#addTemplateContainer .addItemRight #linksTable {
+  width: 100%;
+  border: 1px solid #d0d0d1;
+  margin-top: 20px;
+}
+#addTemplateContainer .addItemRight #linksTable thead {
+  background: #eaeaea;
+  font-family: 'OSS';
+  text-transform: uppercase;
+}
+#addTemplateContainer .addItemRight #linksTable thead th {
+  height: 44px;
+  line-height: 44px;
+}
+#addTemplateContainer .addItemRight #linksTable th,
+#addTemplateContainer .addItemRight #linksTable td {
+  border: 2px solid #d0d0d1;
+  color: #3d3d3d;
+  font-size: 16px;
+  text-align: center;
+}
+#addTemplateContainer .addItemRight #linksTable td {
+  font-family: 'OSR';
+  line-height: 36px;
+}
+#addTemplateContainer {
+  width: 100%;
+  position: absolute;
+  z-index: 1005;
+  background: rgba(0, 0, 0, 0.76);
+}
+#addTemplateContainer .addItemLeft {
+  float: left;
+  min-height: 610px;
+  padding: 20px 40px 0;
+  width: calc(31.1% - 80px);
+  margin-left: 6.8%;
+  position: relative;
+}
+#addTemplateContainer .addItemLeft h2 {
+  font-family: 'OSS';
+  font-size: 24px;
+  color: #ffffff;
+  padding-bottom: 15px;
+}
+#addTemplateContainer .addItemLeft .closeCurrentView {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #7c7b7b;
+  background: none;
+  border: none;
+}
+#addTemplateContainer .addItemLeft div.uploadFile {
+  overflow: hidden;
+}
+#addTemplateContainer .addItemLeft div.uploadFile input {
+  width: 52% !important;
+  float: left;
+}
+#addTemplateContainer .addItemLeft div.uploadFile label.browse {
+  width: 37%;
+  float: right;
+  color: #fff;
+  background: #878787;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+#addTemplateContainer .addItemLeft div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+#addTemplateContainer .addItemLeft div input[type="text"] {
+  background: #eaeaea;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+#addTemplateContainer .addItemLeft div input[type="button"] {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 40px;
+}
+#addTemplateContainer .addItemLeft div #addNewLink {
+  position: relative;
+}
+#addTemplateContainer .addItemLeft div #addNewLink:after {
+  content: '+';
+  position: absolute;
+  background: #eaeaea;
+  border-radius: 50%;
+  bottom: 11px;
+  color: #e31937;
+  height: 25px;
+  line-height: 22px;
+  right: 10px;
+  text-align: center;
+  width: 25px;
+  font-size: 23px;
 }
