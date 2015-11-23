@@ -24,15 +24,9 @@
                     <label for="addEmail">Email Address*</label>
                     <input type="email" id="addEmail" placeholder="ie : johnsmith@mail.com">
                 </div>
-                <div>
-                    <label for="addPhone">Phone</label>
-                    <input type="text" id="addPhone" placeholder="ie: +380000000000">
-                </div>
-
-
-                    <div class="oneRow">
+                <div class="oneRow">
                     <div>
-                        <label for="addPhone">Phone</label>
+                        <label for="addPhone">Matter Number</label>
                         <input type="text" id="addPhone" placeholder="ie: +380000000000">
                     </div>
                     <div>
@@ -40,7 +34,7 @@
                         <input type="text" id="matterNumber" placeholder="ie: 0000000">
                     </div>
                 </div>
-                <div class="neRow addSelects">
+                <div class="oneRow addSelects">
                     <div id="hideCompany" class="sel_container hide">
                         <label for="selectedCompany">Company</label>
                         <a href="javascript:;" id="selectedCompany" class="sel_result" data-id="0">Select Company</a>
@@ -65,7 +59,11 @@
     </div>
     <div id="tableDiv">
         <div id="searchBox">
-            <button class="searchIcn"></button>
+            <button class="searchIcn">
+                <svg viewBox="0 0 24 24" height="24" width="24">
+                    <path class="cls-1" d="M23.839,23.839 C23.633,24.046 23.298,24.046 23.091,23.839 L18.415,19.163 C18.676,18.925 18.925,18.676 19.163,18.415 L23.839,23.091 C24.046,23.298 24.046,23.633 23.839,23.839 ZM10.579,21.157 C4.736,21.157 -0.000,16.421 -0.000,10.579 C-0.000,4.736 4.736,-0.000 10.579,-0.000 C16.421,-0.000 21.157,4.736 21.157,10.579 C21.157,16.421 16.421,21.157 10.579,21.157 ZM10.579,1.058 C5.320,1.058 1.058,5.320 1.058,10.579 C1.058,15.837 5.320,20.099 10.579,20.099 C15.837,20.099 20.099,15.837 20.099,10.579 C20.099,5.320 15.837,1.058 10.579,1.058 Z"/>
+                </svg>
+            </button>
             <input id="search" type="text" placeholder="ie: John"/>
         </div>
         <div id="tablesContent">

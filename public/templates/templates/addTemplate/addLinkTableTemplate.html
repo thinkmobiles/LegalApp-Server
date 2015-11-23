@@ -16,12 +16,15 @@
     </div>
     <div>
         <label for="addingBase">Type</label>
-        <input type="text" class="selOnInput" value="String" data-val="STRING" id="addingBase" disabled>
+        <div class="sel_container">
+            <a href="javascript:;" id="addingBase" class="sel_result" data-val="STRING" data-id="0">String</a>
+            <ul id="baseLink" class="sel_list">
+                <!--container-->
+            </ul>
+        </div>
     </div>
-    <!--<ul id="baseLink">-->
-        <!--&lt;!&ndash;container&ndash;&gt;-->
-    <!--</ul>-->
-    <!--<input type="button" value="Add" id="addingBut">-->
+
+    <input type="button" value="Add" id="addingBut">
 </div>
 
 <table id="linksTable" border="1">

@@ -1,5 +1,5 @@
 <%var permiss = usrMdl.profile.permissions%>
-<td colspan="<%= usrMdl.currentState ? 4 : 5%>">
+<td colspan="<%= usrMdl.currentState ? 5 : 6%>">
     <div>
 
         <!--left-->
@@ -48,9 +48,9 @@
             </div>
 
             <!-- Status -->
-            <div class="check">
-                <input type="checkbox" id="editStatus" value="<%= usrMdl.status === 1 ? 0 : 1%>">
-                <label for="editStatus"><span><%= usrMdl.status === 1 ? 'Delete User' : 'Activate User'%></span></label>
+            <div class="userStatus">
+                <span class="active">Active</span><br>
+                <span class="disable">Disable</span>
             </div>
 
             <!-- Save -->
