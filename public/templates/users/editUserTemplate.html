@@ -1,14 +1,40 @@
 <%var permiss = usrMdl.profile.permissions%>
 <td colspan="<%= usrMdl.currentState ? 4 : 5%>">
     <div>
-        <div class="editUser-left">
-            <label for="editFName">First name</label>
-            <input type="text" id="editFName" class="first" value="<%= usrMdl.profile.first_name%>">
 
-            <label for="editLName">Last name</label>
-            <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
+        <!--left-->
+        <div class="editUser-left">
+            <!--first name -->
+            <div>
+                <label for="editFName">First name</label>
+                <input type="text" id="editFName" class="first" value="<%= usrMdl.profile.first_name%>">
+            </div>
+
+            <!-- Matter Number -->
+            <div>
+                <label for="editLName">Matter Number</label>
+                <input type="text" id="matterNumber" value="<%= usrMdl.id%>">
+            </div>
         </div>
+
+        <!-- center -->
         <div class="editUser-centerLeft">
+            <!-- last name -->
+            <div>
+                <label for="editLName">Last name</label>
+                <input type="text" id="editLName" value="<%= usrMdl.profile.last_name%>">
+            </div>
+
+            <!-- Signing Authorization -->
+            <div class="check">
+                <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
+                <label for="editSign"><span>Authorization to signing</span></label>
+            </div>
+        </div>
+
+        <!-- right -->
+        <div class="editUser-right">
+            <!-- Role -->
             <div class="sel_container">
                 <label for="role">Role</label>
                 <a href="javascript:;" id="role" class="addRole sel_result" data-id="<%= permiss%>"><%= permiss % 10 === 3 ? 'Viewer' : (permiss % 10 === 2 ? 'Editor' : 'Admin')%></a>
@@ -20,39 +46,16 @@
                     <%}%>
                 </ul>
             </div>
+
+            <!-- Status -->
             <div class="check">
                 <input type="checkbox" id="editStatus" value="<%= usrMdl.status === 1 ? 0 : 1%>">
                 <label for="editStatus"><span><%= usrMdl.status === 1 ? 'Delete User' : 'Activate User'%></span></label>
             </div>
-        </div>
-        <div class="editUser-centerRight">
-            <div class="check">
-                <input type="checkbox" id="editSign" <%= usrMdl.profile.sign_authority ? 'checked' : ''%>>
-                <label for="editSign"><span>Authorization to signing</span></label>
-            </div>
 
-            <input type="button" id="editBtn" value="Save Changes">
-        </div>
-        <div id="signInfoBox" class="editUser-right">
-            <div id="signInfo">
-                <%if (usrMdl.profile.has_sign_image){%>
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" width="70" height="71" viewBox="0 0 70 71">
-                        <image class="trueSignState" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABHCAMAAACNrMETAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAB2lBMVEUAAAB9fX2SkpKcnJyqqqqtra2pqamampqSkpKSkpLKysq7u7uIiIh9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX2JiYl9fX2Hh4eUlJSBgYGRkZF+fn6QkJCQkJB9fX2Ojo6Ojo6np6eNjY19fX2WlpaMjIyMjIygoKCNjY2BgYGTk5OVlZWVlZWNjY2NjY3////+/v6UlJR9fX2cnJzu+e3V8NTm9uX9/v3g9N/X8dX0+/Pe892b3Jia3JfE6sL7/vu15bKf3pzr+Oqr4qnD6sG05bK86Lql4KO35rXL7cnc89v+//6+6Ly25rTP786457bI7MbN7svJ7Mi657io4abG68Ss46rR78+757nb8tqrq6utra2NjY22trbLy8uVlZXExMS8vLy1tbX9/f2vr6/8/Pypqan6+vqlpaX39/ehoaH09PSenp7u7u6bm5sAAAAGxMIwAAAAXXRSTlMAAYbd5eTl3HKF9/O4fiP6aUbB7dvJtqSSbFpHNRD969jGtKKOfFdFMyAN6NbEsp6LeWdVQzAcCvjm1MKtm4l3ZVM+/Q9e/lr+VP37NPjv5N8E0sk86Ksjp8PE7Yex5EHUAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEgAACxIB0t1+/AAAAelJREFUWMOt1PdTkzEcx/EvUMBBaRUHoEUFFYpbhhvcgIrgAHGkPFEfV1BcjKpAEfe2Cir6x1Kl5nma9u4Z+bx/yuWS1+WSu1BefkGg0HdFxQvoXwsXMa0WlwRLU0yBnsJi/UYoTBTQZBg3DGMJFSKYpRgmhGEMDFOGYZZhmOUYZgWGWYlhyjFMEMNUYJhKDLMKw6zGMKUYJgJhqgjCrMEwazHMOgxTjWFqMMx6DLMBw4QxzEYMU4th6jBMFMPUQ5gQQZhNGGYzhtmCYbZimG0YZjuG2YFhdlrM1WvXs1eYN27ecsE0SOb2HSEG1AV37wkxeN+ZaZTMA5HqoaI8+jv52JlpksyQyHLmFTHszDRLZkSoTloRo87MLsnEnyiO+XR+4pnzFe8m66UUxxxzqzC+x8ZIZ9yuTDgrjO+1M9JJWErChcL4vgyGxSfTmz0pjO/PZOQhnntRGD+gMNLxojDeojJ2x63CeGsWYzmuFcYPZjP/nSnXCuOHcjDMfJFSJt0rjB/OxbD4y1evnba+eSt7d+Qo+f393svRh4/HSJ/5dLyN9JnP7R2kzcS+nKglbeZr8uQp0ma+fe+MkjYzPXM6YinU5Y/58bP7jE2hs9N+mF+z5yij8z2/vTPJP72kdKHv4iWvXb6iIHPSTaTUAymNCwAAAABJRU5ErkJggg==" width="70" height="71"/>
-                    </svg>
-                    <label for="inputImg">Replace signature</label>
-                <%} else {%>
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" width="72" height="73" viewBox="0 0 72 73">
-                        <image class="falseSignState" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABJCAMAAACpb5DQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAACIlBMVEUAAACSkpKYmJilpaWlpaWjo6OVlZWOjo7AwMClpaWBgYF9fX19fX2YmJh9fX19fX2oqKh9fX19fX2tra19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX2NjY2MjIx9fX2Kiop9fX2IiIh9fX2IiIh9fX2Hh4eHh4eHh4ejo6OTk5OGhoaVlZWSkpKCgoKFhYWbm5uRkZGAgICSkpKTk5OVlZWQkJCMjIx9fX3////7+/v39/ePj499fX2VlZX//v7+1tv+4uX//f3+1dr+5Of+7O74NEv2AB36ZXf//Pz+4+b4L0f6cID6b3/5Wm33Izz9v8b4Q1j7k5/6fYz+4OT9zNL/9vf4QVf2DCj7iJb/9fb4OlD6f47+8PL4Nk36d4b4Mkn+6uz3KUL6aHn4LET3GTP6bX76dYX6coL9xcz6dob9xsz/8vP5SF32BCH4QFb2BiL7hJLW1taQkJD+6Ov/9PXn5+evr6/Pz8+Ojo7Gxsb09PSfn5/x8fGcnJzt7e2ampro6OiYmJjj4+OXl5fe3t7Y2NiUlJTS0tLKysoAAAC1mefOAAAAZHRSTlMAd97m6ObWS/Ttp20U3PJS5foz5LT13cu5p5WDb1xKOCYB7dvJt6WSfmxaSDYjEP3r2caijnxqV0UgDfvo1sSynot5Z1VDMBrn7gnqCOQK2AbEqIXk/l/O/T4v5volnMTEz+kXEkObMAAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAIUSURBVFjDrdT5W0xRGAfwt6jQIklCYmTJXonSipCSLRHZSqdxb2g5tIqQZcqQkLKXJO22P7CpM3Punfml59z5fn8573Ofcz/Pfd/znEsUELhgoR8JCg6huQQsYv6lavGS0DAXFO6nw5j9hhaxlCjSb4jpmrYsipZDIC0aBa1AQRoKikBBMShoJQqKRUGrUNBqFLQGBcWhoLUoKB4FrUNB61FQGAqygaANBIISUNBGFLQJBW1GQVtQUCIK2oqCtqGg7ShoBwraiYJ2gaDdBIKSUFAyCkpBQdEoaA8KSkVBe1HQPhSUZkDVN295nt+uqVWF0iVUV8/5nbtzZUMj502KUJSEmrkrLbNSQ+tseU8N2i+hNu6WhMPvq0EZEnrAhdQuHP5QCcokCT16LIAOsTxRm1GWAbGnz7iR50oO07NNEHN0SqdLzWF6jhlijhcWHabnekHOl27oVbUqdMAMObtla6qSftAEmRxlST9kQA6381osPWpQngG9EcBbz8TfKUGHyeeKuFpyt6h2RY4YUK8cjZDeK0FHDaivn3/oEiN2fuSfPs/3rv2LKV/zvY6/T+76NjDvRwx+l8zQj2NEln+1g8Oe6udIQSEC+jV6vIgA0Nj4iZMEgCYmT50mADQ1fcZGAOi3XkwEgP78PWtyqMQq9O/cebNDpXZr0P8LF70cKrs0YQXSL18hn+RfvVaunIrrlT7MDNFkm8I97FQ3AAAAAElFTkSuQmCC" width="72" height="73"/>
-                    </svg>
-                    <label for="inputImg">Upload signature</label>
-                <%}%>
-            </div>
-            <div id="signBox">
-                <!--<a href="#" id="closeIco">
-                    &#10006;
-                </a>-->
-            </div>
-            <input style="display: none" type="file" value="Edit" id="inputImg" accept="image/*">
+            <!-- Save -->
+            <input type="button" id="editBtn" value="Save">
+
         </div>
     </div>
 </td>
