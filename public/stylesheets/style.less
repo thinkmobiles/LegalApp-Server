@@ -131,13 +131,53 @@ a {
   height: 100%;
   background-color: #7c7b7b;
   span {
-    margin: 80px 0 0 24px;
+    margin: 80px 0 0;
     .font-oss;
     color: #aeaeae;
     font-size: 18px;
     background: url("../images/arr-down.png") no-repeat right center;
-    padding-right: 25px;
+    padding: 0 25px;
     display: inline-block;
+    -webkit-transition: all 0.6s ease-in-out;
+    -moz-transition: all 0.6s ease-in-out;
+    -o-transition: all 0.6s ease-in-out;
+    -ms-transition: all 0.6s ease-in-out;
+    transition: all 0.6s ease-in-out;
+    cursor: pointer;
+    &.opened{
+      display: block;
+      background: url("../images/select-arr-down.png") no-repeat 95% center;
+      -webkit-transform: rotate(180deg);
+      -moz-transform: rotate(180deg);
+      -o-transform: rotate(180deg);
+      -ms-transform: rotate(180deg);
+      transform: rotate(180deg);
+    }
+  }
+  .closed+#iWantTemplates{
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+  }
+  .opened+#iWantTemplates{
+    background: #c1c1c1;
+    padding: 7px;
+    margin-top: 18px;
+    position: relative;
+    z-index: 1050;
+    opacity: 1;
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    ul{
+      background: #fff;
+      width: 100%;
+    }
   }
 }
 
@@ -1529,25 +1569,11 @@ a {
   border: 2px solid black;
 }
 
-#iWantContainer {
-}
-
-#iWantTo {
-  background-color: white;
-  border: 1px solid;
-  position: absolute;
-}
-
 #leftPreview {
   width: 57%;
   height: 600px;
   display: block;
   float: left;
-}
-
-#rightPreview {
-  width: 35%;
-  height: 600px;
 }
 
 #linksTable{
@@ -2376,18 +2402,42 @@ div#ui-datepicker-div.ui-datepicker{
     }
   }
 }
-#addTemplateContainer {
-  width: 100%;
-  position: absolute;
-  z-index: 1005;
-  background: rgba(0, 0, 0, 0.76);
-  .addItemLeft {
+#div_main{
+  .addItemLeft{
     float: left;
     min-height: 610px;
     padding: 20px 40px 0;
     width: ~'calc(31.1% - 80px)';
-    margin-left: 6.8%;
     position: relative;
+    background: #3d3d3d;
+    h2 {
+      .font-oss;
+      font-size: 24px;
+      color: #ffffff;
+      padding-bottom: 15px;
+    }
+    input[type="button"] {
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      .font-ose;
+      font-size: 18px;
+      height: 48px;
+      line-height: 48px;
+      border: none;
+      background: #878787;
+      margin-top: 40px;
+    }
+  }
+}
+#createDocContainer {
+  >div {
+    float: left;
+    min-height: 610px;
+    padding: 20px 40px 0;
+    width: ~'calc(31.1% - 80px)';
+    position: relative;
+    background: #3d3d3d;
     h2 {
       .font-oss;
       font-size: 24px;
@@ -2403,22 +2453,6 @@ div#ui-datepicker-div.ui-datepicker{
       border: none;
     }
     div {
-      &.uploadFile {
-        overflow: hidden;
-        input {
-          width: 52% !important;
-          float: left;
-        }
-        label.browse {
-          width: 37%;
-          float: right;
-          color: #fff;
-          background: #878787;
-          height: 50px;
-          line-height: 50px;
-          text-align: center;
-        }
-      }
       label {
         .font-oss;
         font-size: 16px;
@@ -2436,7 +2470,7 @@ div#ui-datepicker-div.ui-datepicker{
         margin-bottom: 14px;
       }
       input[type="button"] {
-        width: 100%;
+        width: 48%;
         text-align: center;
         color: #fff;
         .font-ose;
@@ -2446,22 +2480,9 @@ div#ui-datepicker-div.ui-datepicker{
         border: none;
         background: #878787;
         margin-top: 40px;
-      }
-      #addNewLink {
-        position: relative;
-        &:after {
-          content: '+';
-          position: absolute;
-          background: #eaeaea;
-          border-radius: 50%;
-          bottom: 11px;
-          color: #e31937;
-          height: 25px;
-          line-height: 22px;
-          right: 10px;
-          text-align: center;
-          width: 25px;
-          font-size: 23px;
+        float: left;
+        &#createBtnNext{
+          float: right;
         }
       }
     }

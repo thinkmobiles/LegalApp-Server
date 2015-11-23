@@ -256,13 +256,53 @@ a {
   background-color: #7c7b7b;
 }
 #middleTopBar span {
-  margin: 80px 0 0 24px;
+  margin: 80px 0 0;
   font-family: 'OSS';
   color: #aeaeae;
   font-size: 18px;
   background: url("../images/arr-down.png") no-repeat right center;
-  padding-right: 25px;
+  padding: 0 25px;
   display: inline-block;
+  -webkit-transition: all 0.6s ease-in-out;
+  -moz-transition: all 0.6s ease-in-out;
+  -o-transition: all 0.6s ease-in-out;
+  -ms-transition: all 0.6s ease-in-out;
+  transition: all 0.6s ease-in-out;
+  cursor: pointer;
+}
+#middleTopBar span.opened {
+  display: block;
+  background: url("../images/select-arr-down.png") no-repeat 95% center;
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+#middleTopBar .closed + #iWantTemplates {
+  -webkit-transition: opacity 0.3s ease-in-out;
+  -moz-transition: opacity 0.3s ease-in-out;
+  -o-transition: opacity 0.3s ease-in-out;
+  -ms-transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+}
+#middleTopBar .opened + #iWantTemplates {
+  background: #c1c1c1;
+  padding: 7px;
+  margin-top: 18px;
+  position: relative;
+  z-index: 1050;
+  opacity: 1;
+  -webkit-transition: opacity 0.3s ease-in-out;
+  -moz-transition: opacity 0.3s ease-in-out;
+  -o-transition: opacity 0.3s ease-in-out;
+  -ms-transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
+}
+#middleTopBar .opened + #iWantTemplates ul {
+  background: #fff;
+  width: 100%;
 }
 #rightTopBar {
   float: left;
@@ -1588,20 +1628,11 @@ a {
 .canvasDialog canvas {
   border: 2px solid black;
 }
-#iWantTo {
-  background-color: white;
-  border: 1px solid;
-  position: absolute;
-}
 #leftPreview {
   width: 57%;
   height: 600px;
   display: block;
   float: left;
-}
-#rightPreview {
-  width: 35%;
-  height: 600px;
 }
 #linksTable {
   position: relative;
@@ -2359,67 +2390,21 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   font-family: 'OSR';
   line-height: 36px;
 }
-#addTemplateContainer {
-  width: 100%;
-  position: absolute;
-  z-index: 1005;
-  background: rgba(0, 0, 0, 0.76);
-}
-#addTemplateContainer .addItemLeft {
+#div_main .addItemLeft {
   float: left;
   min-height: 610px;
   padding: 20px 40px 0;
   width: calc(31.1% - 80px);
-  margin-left: 6.8%;
   position: relative;
+  background: #3d3d3d;
 }
-#addTemplateContainer .addItemLeft h2 {
+#div_main .addItemLeft h2 {
   font-family: 'OSS';
   font-size: 24px;
   color: #ffffff;
   padding-bottom: 15px;
 }
-#addTemplateContainer .addItemLeft .closeCurrentView {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: #7c7b7b;
-  background: none;
-  border: none;
-}
-#addTemplateContainer .addItemLeft div.uploadFile {
-  overflow: hidden;
-}
-#addTemplateContainer .addItemLeft div.uploadFile input {
-  width: 52% !important;
-  float: left;
-}
-#addTemplateContainer .addItemLeft div.uploadFile label.browse {
-  width: 37%;
-  float: right;
-  color: #fff;
-  background: #878787;
-  height: 50px;
-  line-height: 50px;
-  text-align: center;
-}
-#addTemplateContainer .addItemLeft div label {
-  font-family: 'OSS';
-  font-size: 16px;
-  color: #7c7b7b;
-  margin-bottom: 8px;
-  display: block;
-}
-#addTemplateContainer .addItemLeft div input[type="text"] {
-  background: #eaeaea;
-  height: 50px;
-  width: 92%;
-  line-height: 50px;
-  padding: 0 4%;
-  border: none;
-  margin-bottom: 14px;
-}
-#addTemplateContainer .addItemLeft div input[type="button"] {
+#div_main .addItemLeft input[type="button"] {
   width: 100%;
   text-align: center;
   color: #fff;
@@ -2431,20 +2416,57 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: #878787;
   margin-top: 40px;
 }
-#addTemplateContainer .addItemLeft div #addNewLink {
+#createDocContainer > div {
+  float: left;
+  min-height: 610px;
+  padding: 20px 40px 0;
+  width: calc(31.1% - 80px);
   position: relative;
+  background: #3d3d3d;
 }
-#addTemplateContainer .addItemLeft div #addNewLink:after {
-  content: '+';
+#createDocContainer > div h2 {
+  font-family: 'OSS';
+  font-size: 24px;
+  color: #ffffff;
+  padding-bottom: 15px;
+}
+#createDocContainer > div .closeCurrentView {
   position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #7c7b7b;
+  background: none;
+  border: none;
+}
+#createDocContainer > div div label {
+  font-family: 'OSS';
+  font-size: 16px;
+  color: #7c7b7b;
+  margin-bottom: 8px;
+  display: block;
+}
+#createDocContainer > div div input[type="text"] {
   background: #eaeaea;
-  border-radius: 50%;
-  bottom: 11px;
-  color: #e31937;
-  height: 25px;
-  line-height: 22px;
-  right: 10px;
+  height: 50px;
+  width: 92%;
+  line-height: 50px;
+  padding: 0 4%;
+  border: none;
+  margin-bottom: 14px;
+}
+#createDocContainer > div div input[type="button"] {
+  width: 48%;
   text-align: center;
-  width: 25px;
-  font-size: 23px;
+  color: #fff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  border: none;
+  background: #878787;
+  margin-top: 40px;
+  float: left;
+}
+#createDocContainer > div div input[type="button"]#createBtnNext {
+  float: right;
 }

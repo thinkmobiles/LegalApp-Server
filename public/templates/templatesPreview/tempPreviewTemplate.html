@@ -17,6 +17,11 @@
             <span>Linked template: </span><span class="showLinked" data-val="link"><%= linkedModel.name%></span>
         </div>
         <%}%>
+        <div id="rightPreview">
+            <div>
+                <input type="button" id="createDoc" value="Create">
+            </div>
+        </div>
     </div>
     <%if (tempModel.has_linked_template){%>
     <div class="addItemLeft linked_type">
@@ -35,11 +40,5 @@
     <div id="div_with_a4">
         <div id="previewContainer" class="a4_template main_type" contenteditable="false"></div>
         <div id="linkedPreviewContainer" class="a4_template linked_type" contenteditable="false"></div>
-    </div>
-</div>
-
-<div id="rightPreview">
-    <div>
-        <input type="button" id="createDoc" value="Create">
     </div>
 </div>
