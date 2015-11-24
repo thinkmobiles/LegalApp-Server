@@ -11,14 +11,13 @@ define([
     'views/templatesPre/docPreView',
     'views/custom/signatureBoxView'
 
-], function (
-    CreateTemplate,
-    ReasignTemp,
-    DocModel,
-    LinkModel,
-    CONST,
-    DocPreView,
-    SignView) {
+], function (CreateTemplate,
+             ReasignTemp,
+             DocModel,
+             LinkModel,
+             CONST,
+             DocPreView,
+             SignView) {
 
     var View;
     View = Backbone.View.extend({
@@ -27,27 +26,28 @@ define([
             this.tempInfo = options.model;
             this.fillFields = false;
 
-            if (options.modelDoc){
+            if (options.modelDoc) {
                 this.docModel = options.modelDoc;
                 this.fillFields = true;
             }
 
-            this.linkModel = new LinkModel({id : this.tempInfo.link_id});
+            this.linkModel = new LinkModel({id: this.tempInfo.link_id});
             this.linkModel.on('sync', this.render, this);
 
             this.linkModel.fetch();
         },
 
-        mainTemplate  : _.template(CreateTemplate),
+        mainTemplate: _.template(CreateTemplate),
 
-        events : {
-            "click #createBtnNext" : "goToPreview",
-            "click #createBtnSave" : "saveDoc",
-            "click #createNewBtn"  : "addContrAgent"
+        events: {
+            "click #createBtnNext"   : "goToPreview",
+            "click #createBtnSave"   : "saveDoc",
+            "click #addRecipient"    : "showRecipientForm",
+            //"click #createNewBtn"    : "addContrAgent"
 
         },
 
-        inviteDataToFields: function(contentObject){
+        inviteDataToFields: function (contentObject) {
             var this_el = this.$el;
             var myFields = this_el.find('.field_base');
             var employeeInput = this_el.find('#createEmployee');
@@ -55,10 +55,10 @@ define([
             var myId;
             var myTarget;
 
-            employeeInput.attr('data-sig',contentObject.id);
+            employeeInput.attr('data-sig', contentObject.id);
 
-            if (length){
-                for (var i=0; i<length; i+=1){
+            if (length) {
+                for (var i = 0; i < length; i += 1) {
                     myTarget = $(myFields[i]);
                     myId = myTarget.attr('data-id');
                     myTarget.val(contentObject[CONST[myId]]);
@@ -66,62 +66,61 @@ define([
             }
         },
 
-        collectValues : function(){
+        collectValues: function () {
             var links = this.linkModel.toJSON();
             var values = {};
             var this_el = this.$el;
 
-
-            links.linkFields.forEach(function(field){
-                values[field.name] = this_el.find('#create_'+field.id).val().trim();
+            links.linkFields.forEach(function (field) {
+                values[field.name] = this_el.find('#create_' + field.id).val().trim();
             });
 
             return values;
         },
 
-        addContrAgent: function() {
+        addContrAgent: function (form) {
             var self = this;
-            var this_el = self.$el;
+            var this_el = form;
             var firstName = this_el.find('#createNewFN').val().trim();
             var lastName = this_el.find('#createNewLN').val().trim();
             var email = this_el.find('#createNewEM').val().trim();
             var employeeInput; //.attr('data-sig',contentObject.id);
             var inviteData;
 
-            if (!firstName || !lastName || !email){
+            if (!firstName || !lastName || !email) {
                 return alert('Fill, please, all fields');
             }
 
             employeeInput = this_el.find('#createEmployee');
 
             inviteData = {
-                email      : email,
-                first_name : firstName,
-                last_name  : lastName
+                email     : email,
+                first_name: firstName,
+                last_name : lastName
             };
 
             $.ajax({
-                url  : "/employees",
-                type : "POST",
-                data : inviteData,
-                success: function(res) {
+                url    : "/employees",
+                type   : "POST",
+                data   : inviteData,
+                success: function (res) {
                     var model = res.model;
 
                     employeeInput.attr('data-sig', model.id);
-                    employeeInput.val(firstName+' '+lastName);
+                    employeeInput.val(firstName + ' ' + lastName);
                     self.inviteDataToFields(model);
                 },
-                error: function(err) {
+                error  : function (err) {
                     self.errorNotification(err)
                 }
             });
         },
 
-        chooseThisSigner: function(context){
+        chooseThisSigner: function (context) {
             var container = $('.reSignDialog');
             var signersId = container.find('input:checked').closest('li').data('id');
 
-            if (signersId){
+            if (signersId) {
                 context.signMyDoc(signersId, false);
                 container.remove();
             } else {
@@ -129,19 +128,19 @@ define([
             }
         },
 
-        goToPreview: function(){
+        goToPreview: function () {
             var values = this.collectValues();
 
             this.dialogView = new DocPreView({
-                modelId     : this.tempInfo.id,
-                modelValues : values
+                modelId    : this.tempInfo.id,
+                modelValues: values
             });
 
             this.dialogView.on('saveInParent', this.saveDoc, this);
             this.dialogView.on('sendInParent', this.beginToSendMyDoc, this);
         },
 
-        saveDoc: function(){
+        saveDoc: function () {
             var self = this;
             var myModel = self.fillFields ? self.docModel : new DocModel();
             var data;
@@ -149,41 +148,41 @@ define([
             var values = self.collectValues();
 
             data = {
-                template_id : self.tempInfo.id,
-                values      : values
+                template_id: self.tempInfo.id,
+                values     : values
             };
 
-            if (!self.fillFields){
+            if (!self.fillFields) {
                 userId = self.$el.find('#createEmployee').attr('data-sig');
                 data.employee_id = +userId;
             }
 
-            myModel.save(data,{
-                success: function(){
+            myModel.save(data, {
+                success: function () {
                     alert('Document was saved successfully');
-                    Backbone.history.navigate('documents/list', {trigger : true});
+                    Backbone.history.navigate('documents/list', {trigger: true});
                 },
-                error: function(response, xhr){
+                error  : function (response, xhr) {
                     self.errorNotification(xhr)
                 }
             });
         },
 
-        beginToSendMyDoc : function(){
+        beginToSendMyDoc: function () {
             var self = this;
             var sesData = App.sessionData.toJSON();
             var signatureView;
 
-            if (sesData.sign_authority){
-                if (sesData.companyId === 1){
-                    if (sesData.has_sign_image){
+            if (sesData.sign_authority) {
+                if (sesData.companyId === 1) {
+                    if (sesData.has_sign_image) {
                         this.signMyDoc(false, false)
                     } else {
                         alert('Your signature is not uploaded. Contact, please, with your administrator! ')
                     }
                 } else {
                     signatureView = new SignView();
-                    signatureView.on('iAccept', function(response){
+                    signatureView.on('iAccept', function (response) {
                         self.signMyDoc(false, response)
                     }, this);
                 }
@@ -192,7 +191,7 @@ define([
             }
         },
 
-        signMyDoc: function(assignedUser, signatureImage){
+        signMyDoc: function (assignedUser, signatureImage) {
             var self = this;
             var data;
             var values = self.collectValues();
@@ -200,16 +199,16 @@ define([
             var docId;
             var userId;
 
-            data = {values : values};
-            if (assignedUser){
+            data = {values: values};
+            if (assignedUser) {
                 data.assigned_id = assignedUser;
             }
 
-            if (signatureImage){
+            if (signatureImage) {
                 data.signature = signatureImage;
             }
 
-            if (self.fillFields){
+            if (self.fillFields) {
                 docId = self.docModel.get('id');
                 url = '/documents/' + docId + '/signAndSend';
             } else {
@@ -220,30 +219,30 @@ define([
             }
 
             $.ajax({
-                url         : url,
-                type        : 'POST',
-                contentType : "application/json; charset=utf-8",
-                dataType    : "json",
-                data        : JSON.stringify(data),
-                success : function(){
+                url        : url,
+                type       : 'POST',
+                contentType: "application/json; charset=utf-8",
+                dataType   : "json",
+                data       : JSON.stringify(data),
+                success    : function () {
                     alert('A document was sent successfully');
-                    Backbone.history.navigate('/documents/list', {trigger : true});
+                    Backbone.history.navigate('/documents/list', {trigger: true});
                 },
-                error : function(err){
+                error      : function (err) {
                     self.errorNotification(err)
                 }
             });
         },
 
-        showResignWindow: function(){
+        showResignWindow: function () {
             var self = this;
             var container = self.$el.find('#reAsignContainer');
 
             $.ajax({
-                url  : '/users/search',
-                data : {'signAuthority' : true},
-                success : function(result) {
-                    container.html(_.template(ReasignTemp)({signUsers : result})).dialog({
+                url    : '/users/search',
+                data   : {'signAuthority': true},
+                success: function (result) {
+                    container.html(_.template(ReasignTemp)({signUsers: result})).dialog({
                         autoOpen     : true,
                         dialogClass  : "reSignDialog",
                         modal        : true,
@@ -251,8 +250,8 @@ define([
                         closeOnEscape: true,
                         buttons      : [
                             {
-                                text: "Select and send",
-                                click: function(){
+                                text : "Select and send",
+                                click: function () {
                                     self.chooseThisSigner(self);
                                     $(this).dialog('close');
                                 }
@@ -260,13 +259,13 @@ define([
                         ]
                     });
                 },
-                error : function(err) {
+                error  : function (err) {
                     self.errorNotification(err)
                 }
             });
         },
 
-        createOurPage: function(){
+        createOurPage: function () {
             var thisEl = this.$el;
             var model = this.linkModel.toJSON();
             var self = this;
@@ -274,22 +273,22 @@ define([
             var filledValues = {};
             var headName = this.tempInfo.name;
 
-            if (this.fillFields){
+            if (this.fillFields) {
                 filledValues = this.docModel.get('values');
                 headName = this.docModel.get('name');
             }
 
-            var for_template = _.map(model.linkFields, function(item){
+            var for_template = _.map(model.linkFields, function (item) {
                 var result = {};
                 var type = item.type;
-                result.id_ = 'create_'+item.id;
+                result.id_ = 'create_' + item.id;
                 result.name_ = item.name;
                 result.value_ = filledValues[item.name] ? filledValues[item.name] : '';
                 if (type === 'DATE') {
                     result.class_ = 'field_date';
                     return result;
                 }
-                if (type === 'STRING' || type === 'NUMBER'){
+                if (type === 'STRING' || type === 'NUMBER') {
                     result.class_ = 'field_text';
                     return result;
                 }
@@ -300,38 +299,38 @@ define([
             });
 
             thisEl.html(this.mainTemplate({
-                links : for_template,
-                tName : headName
+                links: for_template,
+                tName: headName
             }));
 
             thisEl.find('.field_date').datepicker({
-                dateFormat  : "d M, yy",
-                changeMonth : true,
-                changeYear  : true
+                dateFormat : "d M, yy",
+                changeMonth: true,
+                changeYear : true
             });
 
             employeeField = self.$el.find('#createEmployee');
             employeeField.autocomplete({
-                source: function(req, res){
+                source   : function (req, res) {
                     var myTerm = req.term;
 
                     $.ajax({
-                        url      : "/employees/search",
-                        data     : {value : myTerm},
-                        success : function(response){
+                        url    : "/employees/search",
+                        data   : {value: myTerm},
+                        success: function (response) {
                             res(response);
                         },
-                        error : function (err){
+                        error  : function (err) {
                             self.errorNotification(err)
                         }
                     });
                 },
-                autoFocus : true,
-                select: function(e, ui){
+                autoFocus: true,
+                select   : function (e, ui) {
                     self.inviteDataToFields(ui.item);
                 },
-                minLength : 0
-                });
+                minLength: 0
+            });
         },
 
         render: function () {
@@ -341,8 +340,20 @@ define([
             this.delegateEvents();
 
             return this;
-        }
+        },
 
+        showRecipientForm: function (e) {
+            var form = $('.addRecipientForm');
+
+            if (form.hasClass('closed')) {
+                form.addClass('opened');
+                form.removeClass('closed');
+            } else {
+                form.removeClass('opened');
+                form.addClass('closed');
+            }
+
+        }
     });
 
     return View;

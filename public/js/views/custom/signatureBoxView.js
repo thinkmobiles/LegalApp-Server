@@ -89,6 +89,7 @@ define([
                 closeOnEscape: false,
                 autoOpen: true,
                 dialogClass: "canvasDialog",
+                title: 'Signing',
                 modal: true,
                 width: "600px",
                 close : function(){

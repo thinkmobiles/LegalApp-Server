@@ -1,0 +1,28 @@
+<style>
+    .addRecipientForm.opened {
+        display: block;
+    }
+    .addRecipientForm.closed {
+        display: none;
+    }
+</style>
+
+<div class="addRecipientForm closed">
+    <button class="closeCurrentView">X</button>
+    <h2>New Recipient</h2>
+
+    <!-- first name -->
+    <label for="createNewFN">First Name</label>
+    <input id="createNewFN" type="text" placeholder="ie: John">
+
+    <!-- last name -->
+    <label for="createNewLN">Last Name</label>
+    <input id="createNewLN" type="text" placeholder="ie: Smith">
+
+    <!-- email -->
+    <label for="createNewEM">Email</label>
+    <input id="createNewEM" type="text" placeholder="ie: john.simth@mail.com">
+
+    <!-- button -->
+    <input id="createNewBtn" type="button" value="Save">
+</div>
