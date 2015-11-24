@@ -122,7 +122,7 @@ define([
             }
 
             if (signatureInput) {
-                signatureSRC = this_el.find('.upload')[0].toDataURL('image/jpeg');
+                signatureSRC = this_el.find('.signImage').attr('src');
                 saveData.sign_image = signatureSRC;
             }
 
