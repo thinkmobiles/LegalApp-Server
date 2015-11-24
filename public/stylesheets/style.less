@@ -135,23 +135,42 @@ a {
     .font-oss;
     color: #aeaeae;
     font-size: 18px;
-    background: url("../images/arr-down.png") no-repeat right center;
     padding: 0 25px;
     display: inline-block;
-    -webkit-transition: all 0.6s ease-in-out;
-    -moz-transition: all 0.6s ease-in-out;
-    -o-transition: all 0.6s ease-in-out;
-    -ms-transition: all 0.6s ease-in-out;
-    transition: all 0.6s ease-in-out;
     cursor: pointer;
-    &.opened{
+    position: relative;
+    &:after{
       display: block;
-      background: url("../images/select-arr-down.png") no-repeat 95% center;
-      -webkit-transform: rotate(180deg);
-      -moz-transform: rotate(180deg);
-      -o-transform: rotate(180deg);
-      -ms-transform: rotate(180deg);
-      transform: rotate(180deg);
+      content: '';
+      width: 13px;
+      height: 6px;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      margin-top: -3px;
+      -webkit-transition: all 0.3s ease;
+      -moz-transition: all 0.3s ease;
+      -o-transition: all 0.3s ease;
+      -ms-transition: all 0.3s ease;
+      transition: all 0.3s ease;
+    }
+    &:after{
+      background: url("../images/arr-down.png") no-repeat center center;
+      -webkit-transform: scale(1) rotate(0deg);
+      -moz-transform: scale(1) rotate(0deg);
+      -o-transform: scale(1) rotate(0deg);
+      -ms-transform: scale(1) rotate(0deg);
+      transform: scale(1) rotate(0deg);
+    }
+    &.opened{
+      &:after{
+        background: url("../images/select-arr-down.png") no-repeat center center;
+        -webkit-transform: scale(1) rotate(180deg);
+        -moz-transform: scale(1) rotate(180deg);
+        -o-transform: scale(1) rotate(180deg);
+        -ms-transform: scale(1) rotate(180deg);
+        transform: scale(1) rotate(180deg);
+      }
     }
   }
   .closed+#iWantTemplates{
@@ -177,6 +196,19 @@ a {
     ul{
       background: #fff;
       width: 100%;
+      li{
+        a{
+          display: block;
+          line-height: 36px;
+          padding-left: 10px;
+          color: #3d3d3d;
+          font-size: 16px;
+          text-decoration: none;
+          &:hover{
+            background: #eaeaea;
+          }
+        }
+      }
     }
   }
 }
@@ -2484,6 +2516,76 @@ div#ui-datepicker-div.ui-datepicker{
         &#createBtnNext{
           float: right;
         }
+      }
+    }
+  }
+}
+#acceptBtn{
+  width: auto;
+  text-align: center;
+  color: rgb(255, 255, 255);
+  .font-ose;
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  padding: 0 45px;
+  border: none;
+  margin: 22px auto 0;
+  background: #e31937;
+  display: block;
+  &:hover{
+    background: #878787;
+  }
+}
+.canvasDialog{
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  width: 450px !important;
+  .ui-dialog-titlebar{
+    background: #e31937;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    height: 60px;
+    .ui-button{
+      padding: 0 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: none !important;
+      margin-right: 15px;
+      outline: none !important;
+      .ui-icon{
+        background: url("../images/close-ico.png") no-repeat center center;
+      }
+    }
+  }
+  #ui-id-1{
+    padding: 0 0 22px;
+    border: 1px solid #d0d0d0;
+    canvas{
+      cursor: pointer;
+      margin: 33px 60px 33px 67px;
+      border-radius: 10px;
+      width: 305px;
+      border-color: #d0d0d1;
+    }
+    button{
+      width: 161px;
+      text-align: center;
+      color: rgb(255, 255, 255);
+      .font-ose;
+      font-size: 18px;
+      height: 48px;
+      line-height: 48px;
+      margin-left: 40px;
+      border: none;
+      background: #878787;
+      display: block;
+      float: left;
+      outline: none !important;
+      &:hover{
+        background: #e31937;
       }
     }
   }
