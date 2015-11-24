@@ -11,20 +11,19 @@ define([
     'models/templateModel',
     'collections/linksCollection'
 
-], function (
-    TempTemplate,
-    DescriptionText,
-    LinkNamTemp,
-    TempNames,
-    AddLinkView,
-    TempModel,
-    LinksCollection) {
+], function (TempTemplate,
+             DescriptionText,
+             LinkNamTemp,
+             TempNames,
+             AddLinkView,
+             TempModel,
+             LinksCollection) {
 
     var View;
     View = Backbone.View.extend({
 
-        className       : "addItemLeft",
-        editableView    : false,
+        className   : "addItemLeft",
+        editableView: false,
 
         initialize: function (options) {
             var self = this;
@@ -34,9 +33,9 @@ define([
 
             if (options.tempId) {
                 this.editableView = true;
-                this.tempModel = new TempModel({id : options.tempId});
+                this.tempModel = new TempModel({id: options.tempId});
                 this.tempModel.fetch({
-                    success : function(){
+                    success: function () {
                         self.render();
                     }
                 })
@@ -46,69 +45,69 @@ define([
             }
         },
 
-        mainTemplate       : _.template(TempTemplate),
-        linksNamesTemplate : _.template(LinkNamTemp),
-        tempNamesTemplate  : _.template(TempNames),
-        descriptionField   : _.template(DescriptionText),
+        mainTemplate      : _.template(TempTemplate),
+        linksNamesTemplate: _.template(LinkNamTemp),
+        tempNamesTemplate : _.template(TempNames),
+        descriptionField  : _.template(DescriptionText),
 
-        events : {
-            "click #addNewLink"       : "showLinksTable",
-            "click #tempSave"         : "saveTemplate",
-            "click .closeCurrentView" : "closeCurrentView",
-            "click .short_text"       : "showDescriptionField",
-            "click #descriptBtn"      : "insertDescriptionText"
+        events: {
+            "click #addNewLink"      : "showLinksTable",
+            "click #tempSave"        : "saveTemplate",
+            "click .closeCurrentView": "closeCurrentView",
+            "click .short_text"      : "showDescriptionField",
+            "click #descriptBtn"     : "insertDescriptionText",
         },
 
-        appendLinksNames : function(){
+        appendLinksNames: function () {
             var linkColl;
             var linksContainer = this.$el.find('#linkContainer');
             var self = this;
 
             this.linksCollection.fetch({
-                reset : true,
-                success : function(collection){
+                reset  : true,
+                success: function (collection) {
                     linkColl = collection.toJSON();
-                    linksContainer.html(self.linksNamesTemplate({lnkColl : linkColl}));
+                    linksContainer.html(self.linksNamesTemplate({lnkColl: linkColl}));
                 }
             });
         },
 
-        appendTempNames : function(){
+        appendTempNames: function () {
             var tempContainer = this.$el.find('#tempNames');
             var tempColl = this.parentContext.tempCollection.toJSON();
 
-            tempContainer.html(this.tempNamesTemplate({tempNames : tempColl}));
+            tempContainer.html(this.tempNamesTemplate({tempNames: tempColl}));
         },
 
-        showDescriptionField : function(event){
+        showDescriptionField: function (event) {
             var self = this;
             var container = $('#addTemplateAppender');
             var targetId = $(event.target).attr('id');
             var textType;
-            if (targetId === 'tempDescription'){
+            if (targetId === 'tempDescription') {
                 textType = 'description'
             } else {
                 textType = 'description'
             }
 
             container.html(this.descriptionField({
-                text    : self.tempModel.get(textType),
-                descrip : textType
+                text   : self.tempModel.get(textType),
+                descrip: textType
             }));
-            container.find('#descriptBtn').click(function(event){
+            container.find('#descriptBtn').click(function (event) {
                 var textType = $(event.target).attr('data-id');
                 self.insertDescriptionText(self, textType)
             });
         },
 
-        insertDescriptionText: function(self, textType){
+        insertDescriptionText: function (self, textType) {
             var container = $('#addTemplateAppender');
             var textForSave = container.find('#descriptBtnArea').val();
             var textForButton;
             var resultButton;
 
-            if (textForSave !== ''){
-                textForButton = textForSave.slice(0,15)+'...';
+            if (textForSave !== '') {
+                textForButton = textForSave.slice(0, 15) + '...';
                 if (textType === 'description') {
                     resultButton = self.$el.find('#tempDescription');
                     resultButton.text(textForButton);
@@ -125,9 +124,9 @@ define([
             container.html('');
         },
 
-        showLinksTable: function(){
+        showLinksTable: function () {
 
-            if (this.addDialogView){
+            if (this.addDialogView) {
                 this.addDialogView.remove()
             }
 
@@ -136,7 +135,7 @@ define([
             $('#addTemplateAppender').html(this.addDialogView.el);
         },
 
-        saveTemplate: function(){
+        saveTemplate: function () {
             var self = this;
             var this_el = self.$el;
             var linkedTemplateId;
@@ -152,19 +151,19 @@ define([
 
             file = this_el.find('#tempFile')[0].files[0];
 
-            if (file){
+            if (file) {
                 inputData.append('templateFile', file);
             }
 
             linkedTemplateId = +this_el.find('#tempLinkedTemp').attr('data-id');
-            if (linkedTemplateId === 0){
+            if (linkedTemplateId === 0) {
                 inputData.append('linked_templates', '');
             } else {
                 inputData.append('linked_templates', [linkedTemplateId]);
             }
 
             linkTableId = +this_el.find('#tempLinkTable').attr('data-id');
-            if (linkTableId){
+            if (linkTableId) {
                 inputData.append('link_id', linkTableId);
             }
 
@@ -178,24 +177,24 @@ define([
             //data.append('data', JSON.stringify(inputData));
 
             /*linkedTemplateId = +this_el.find('#tempLinkedTemp').data('id');
-            if (linkedTemplateId){
-                formData.append('linked_templates', [linkedTemplateId])
-            }
+             if (linkedTemplateId){
+             formData.append('linked_templates', [linkedTemplateId])
+             }
 
-            linkTableId = +this_el.find('#tempLinkTable').data('id');
-            if (linkTableId){
-                formData.append('link_id', linkTableId)
-            }
+             linkTableId = +this_el.find('#tempLinkTable').data('id');
+             if (linkTableId){
+             formData.append('link_id', linkTableId)
+             }
 
-            if (this.editableView){
-                requestType = 'PUT';
-                url += '/'+this.tempModel.get('id');
-            }
+             if (this.editableView){
+             requestType = 'PUT';
+             url += '/'+this.tempModel.get('id');
+             }
 
-            descriptionText = this.tempModel.get('description');
-            if (descriptionText) {
-                formData.append('description', descriptionText)
-            }*/
+             descriptionText = this.tempModel.get('description');
+             if (descriptionText) {
+             formData.append('description', descriptionText)
+             }*/
 
             //$.ajax({
             //    url : url,
@@ -213,19 +212,18 @@ define([
             //    }
             //});
 
-
             //****************************************************
             //var testModel = new TempModel();
-            this.tempModel.save(null,{
+            this.tempModel.save(null, {
                 data       : inputData,
                 processData: false,
                 contentType: false,
-                success: function(response){
+                success    : function (response) {
                     alert('Template was added successfully');
                     var model = response.get('model');
                     self.parentContext.tempCollection.add(model);
                 },
-                error: function(response, xhr){
+                error      : function (response, xhr) {
                     self.errorNotification(xhr)
                 }
             });
@@ -234,11 +232,11 @@ define([
 
         /*addTemplate: function(){
 
-        },
+         },
 
-        editTemplate : function (){
+         editTemplate : function (){
 
-        },*/
+         },*/
 
         //linkSelect: function(event){
         //    var thisEl = this.$el;
@@ -252,11 +250,11 @@ define([
         //    fakeInput.val(linkID);
         //},
 
-        closeCurrentView: function(){
+        closeCurrentView: function () {
             this.remove();
         },
 
-        docXupload : function(){
+        docXupload: function () {
             var self = this;
             var this_el = self.$el;
             var inputFile = this_el.find('#tempFile');
@@ -285,15 +283,15 @@ define([
 
         render: function () {
             this.undelegateEvents();
-            if (this.editableView){
+            if (this.editableView) {
                 this.$el.html(this.mainTemplate({
-                        edit     : true,
-                        tempModel: this.tempModel.toJSON()
-                    }));
+                    edit     : true,
+                    tempModel: this.tempModel.toJSON()
+                }));
             } else {
                 this.$el.html(this.mainTemplate({
-                        edit : false
-                    }))
+                    edit: false
+                }))
             }
             this.delegateEvents();
 

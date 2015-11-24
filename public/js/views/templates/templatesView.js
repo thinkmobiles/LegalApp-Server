@@ -41,7 +41,8 @@ define([
             "click .btnViewType"   : "changeViewType",
             "click .hovEditT"      : "goToEditTemplate",
             "click .sel_item"      : "selectSomething",
-            "click .sel_container" : "showHideSelect"
+            "click .sel_container" : "showHideSelect",
+            "click #addItemRight .closeCurrentView" : "closeRightView",
         },
 
         selectSomething: function(event){
@@ -113,6 +114,12 @@ define([
 
             navContainer.find('.active').removeClass('active');
             navContainer.find('#nav_template').addClass('active')
+        },
+
+        closeRightView: function (e) {
+            console.log('closeRightView >>>');
+
+            this.$el.find('#addTemplateAppender').empty();
         }
 
     });
