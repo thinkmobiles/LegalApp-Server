@@ -2635,3 +2635,41 @@ div#ui-datepicker-div.ui-datepicker{
     }
   }
 }
+
+.modalDocPreview {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #eaeaea;
+  min-width: 800px !important;
+  .ui-dialog-titlebar{
+    display: none !important;
+  }
+  button{
+    text-align: center;
+    color: rgb(255, 255, 255);
+    .font-ose;
+    font-size: 18px;
+    height: 48px;
+    line-height: 48px;
+    margin: 20px 0 20px;
+    border: none;
+    background: #878787;
+    display: block;
+    float: left;
+    padding: 0 30px;
+    outline: none !important;
+    &#modalSave{
+
+      float: right;
+    }
+    &#modalSend{
+      padding: 0 80px;
+      float: right;
+      margin-left: 20px;
+    }
+    &:hover{
+      background: #e31937;
+    }
+  }
+}

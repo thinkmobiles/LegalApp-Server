@@ -2613,3 +2613,39 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
 .canvasDialog .ui-dialog-content button:hover {
   background: #e31937;
 }
+.modalDocPreview {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #eaeaea;
+  min-width: 800px !important;
+}
+.modalDocPreview .ui-dialog-titlebar {
+  display: none !important;
+}
+.modalDocPreview button {
+  text-align: center;
+  color: #ffffff;
+  font-family: 'OSE';
+  font-size: 18px;
+  height: 48px;
+  line-height: 48px;
+  margin: 20px 0 20px;
+  border: none;
+  background: #878787;
+  display: block;
+  float: left;
+  padding: 0 30px;
+  outline: none !important;
+}
+.modalDocPreview button#modalSave {
+  float: right;
+}
+.modalDocPreview button#modalSend {
+  padding: 0 80px;
+  float: right;
+  margin-left: 20px;
+}
+.modalDocPreview button:hover {
+  background: #e31937;
+}
