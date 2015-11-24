@@ -2433,7 +2433,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   padding-bottom: 15px;
 }
 #div_main .addItemLeft input[type="button"] {
-  width: 100%;
+  width: calc(100% - 80px);
   text-align: center;
   color: #fff;
   font-family: 'OSE';
@@ -2443,8 +2443,16 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   border: none;
   background: #878787;
   margin-top: 40px;
+  position: absolute;
+  bottom: 30px;
 }
-#createDocContainer > div {
+#createDocContainer .addRecipientForm.opened {
+  display: block;
+}
+#createDocContainer .addRecipientForm.closed {
+  display: none;
+}
+#createDocContainer > div > div {
   float: left;
   min-height: 610px;
   padding: 20px 40px 0;
@@ -2452,13 +2460,13 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   position: relative;
   background: #3d3d3d;
 }
-#createDocContainer > div h2 {
+#createDocContainer > div > div h2 {
   font-family: 'OSS';
   font-size: 24px;
   color: #ffffff;
   padding-bottom: 15px;
 }
-#createDocContainer > div .closeCurrentView {
+#createDocContainer > div > div .closeCurrentView {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -2466,14 +2474,14 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: none;
   border: none;
 }
-#createDocContainer > div div label {
+#createDocContainer > div > div div label {
   font-family: 'OSS';
   font-size: 16px;
   color: #7c7b7b;
   margin-bottom: 8px;
   display: block;
 }
-#createDocContainer > div div input[type="text"] {
+#createDocContainer > div > div div input[type="text"] {
   background: #eaeaea;
   height: 50px;
   width: 92%;
@@ -2482,7 +2490,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   border: none;
   margin-bottom: 14px;
 }
-#createDocContainer > div div input[type="button"] {
+#createDocContainer > div > div div input[type="button"] {
   width: 48%;
   text-align: center;
   color: #fff;
@@ -2495,8 +2503,37 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   margin-top: 40px;
   float: left;
 }
-#createDocContainer > div div input[type="button"]#createBtnNext {
+#createDocContainer > div > div div input[type="button"]#createBtnNext {
   float: right;
+}
+#createDocContainer > div > div div button#addRecipient {
+  position: absolute;
+  background: #eaeaea;
+  border-radius: 50%;
+  top: 43%;
+  color: #e31937;
+  height: 25px;
+  line-height: 22px;
+  right: -30px;
+  outline: none !important;
+  text-align: center;
+  width: 25px;
+  font-size: 23px;
+}
+#createDocContainer > div > div div.withPlus {
+  position: relative;
+}
+#createDocContainer > div > div.addRecipientForm {
+  background: #ffffff;
+}
+#createDocContainer > div > div.addRecipientForm h2 {
+  color: #7c7b7b;
+}
+#createDocContainer > div > div.addRecipientForm #createNewBtn {
+  float: none;
+  width: calc(100% - 80px);
+  position: absolute;
+  bottom: 40px;
 }
 #acceptBtn {
   width: auto;
@@ -2527,6 +2564,14 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   border-radius: 0 !important;
   border: none !important;
   height: 60px;
+  cursor: default !important;
+}
+.canvasDialog .ui-dialog-titlebar .ui-dialog-title {
+  font-size: 24px;
+  color: #fff;
+  line-height: 55px;
+  padding-left: 15px;
+  font-family: 'OSR';
 }
 .canvasDialog .ui-dialog-titlebar .ui-button {
   padding: 0 !important;
@@ -2539,18 +2584,18 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
 .canvasDialog .ui-dialog-titlebar .ui-button .ui-icon {
   background: url("../images/close-ico.png") no-repeat center center;
 }
-.canvasDialog #ui-id-1 {
+.canvasDialog .ui-dialog-content {
   padding: 0 0 22px;
   border: 1px solid #d0d0d0;
 }
-.canvasDialog #ui-id-1 canvas {
+.canvasDialog .ui-dialog-content canvas {
   cursor: pointer;
   margin: 33px 60px 33px 67px;
   border-radius: 10px;
   width: 305px;
   border-color: #d0d0d1;
 }
-.canvasDialog #ui-id-1 button {
+.canvasDialog .ui-dialog-content button {
   width: 161px;
   text-align: center;
   color: #ffffff;
@@ -2565,6 +2610,6 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   float: left;
   outline: none !important;
 }
-.canvasDialog #ui-id-1 button:hover {
+.canvasDialog .ui-dialog-content button:hover {
   background: #e31937;
 }

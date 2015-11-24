@@ -2449,7 +2449,7 @@ div#ui-datepicker-div.ui-datepicker{
       padding-bottom: 15px;
     }
     input[type="button"] {
-      width: 100%;
+      width: ~'calc(100% - 80px)';
       text-align: center;
       color: #fff;
       .font-ose;
@@ -2459,11 +2459,19 @@ div#ui-datepicker-div.ui-datepicker{
       border: none;
       background: #878787;
       margin-top: 40px;
+      position: absolute;
+      bottom: 30px;
     }
   }
 }
 #createDocContainer {
-  >div {
+  .addRecipientForm.opened {
+    display: block;
+  }
+  .addRecipientForm.closed {
+    display: none;
+  }
+  >div>div {
     float: left;
     min-height: 610px;
     padding: 20px 40px 0;
@@ -2517,6 +2525,35 @@ div#ui-datepicker-div.ui-datepicker{
           float: right;
         }
       }
+      button#addRecipient{
+        position: absolute;
+        background: #eaeaea;
+        border-radius: 50%;
+        top: 43%;
+        color: #e31937;
+        height: 25px;
+        line-height: 22px;
+        right: -30px;
+        outline: none !important;
+        text-align: center;
+        width: 25px;
+        font-size: 23px;
+      }
+      &.withPlus{
+        position: relative;
+      }
+    }
+    &.addRecipientForm{
+      background: #ffffff;
+      h2{
+        color: #7c7b7b;
+      }
+      #createNewBtn{
+        float: none;
+        width: ~'calc(100% - 80px)';
+        position: absolute;
+        bottom: 40px;
+      }
     }
   }
 }
@@ -2548,6 +2585,14 @@ div#ui-datepicker-div.ui-datepicker{
     border-radius: 0 !important;
     border: none !important;
     height: 60px;
+    cursor: default !important;
+    .ui-dialog-title{
+      font-size: 24px;
+      color: #fff;
+      line-height: 55px;
+      padding-left: 15px;
+      .font-osr;
+    }
     .ui-button{
       padding: 0 !important;
       border-radius: 0 !important;
@@ -2560,7 +2605,7 @@ div#ui-datepicker-div.ui-datepicker{
       }
     }
   }
-  #ui-id-1{
+  .ui-dialog-content{
     padding: 0 0 22px;
     border: 1px solid #d0d0d0;
     canvas{
