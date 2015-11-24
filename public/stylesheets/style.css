@@ -2585,7 +2585,7 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   background: url("../images/close-ico.png") no-repeat center center;
 }
 .canvasDialog .ui-dialog-content {
-  padding: 0 0 22px;
+  padding: 0 0 22px !important;
   border: 1px solid #d0d0d0;
 }
 .canvasDialog .ui-dialog-content canvas {
