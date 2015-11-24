@@ -842,8 +842,16 @@ var UsersHandler = function (PostGre) {
         var userId = req.session.userId;
         var options = req.body;
         var imageSrc = options.imageSrc;
+        var signImage = options.sign_image;
         var avatar = {};
         var permissions;
+
+        if (signImage !== undefined) {
+
+            if ((signImage !== null) && (!CONSTANTS.BASE64_REGEXP.test(signImage))) {
+                return next(badRequests.InvalidValue({message: 'Invalid value of sign_image'}));
+            }
+        }
 
         if (options.profile) {
 
