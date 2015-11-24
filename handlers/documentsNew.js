@@ -2415,18 +2415,24 @@ var DocumentsHandler = function (PostGre) {
                 };
 
                 attachmentsHandler.saveAttachment(data, function (err, attachmentModel) {
+                    var file;
+
                     if (err) {
                         return cb(err);
                     }
+
+                    file = documentModel.related('File');
+                    file.set(attachmentModel.toJSON());
+
                     cb(null, documentModel);
                 });
             }
 
-        ], function (err, savedDocumentModel) {
+        ], function (err, savedDocumentModel, attachmentModel) {
             if (err) {
                 return next(err);
             }
-            res.status(201).send({success: 'Document was signed'});
+            res.status(201).send({success: 'Document was signed', document: savedDocumentModel});
         });
 
     };

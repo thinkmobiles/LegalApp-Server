@@ -1,9 +1,3 @@
-/**
- * Created by root on 23.09.15.
- */
-/**
- * Created by root on 20.08.15.
- */
 
 define([
     'text!templates/signature/signatureUserTemplate.html',
@@ -54,20 +48,54 @@ define([
                 url:  '/documents/signature/user/'+this.token,
                 type : 'POST',
                 data : {signature : signatureImg},
-                success : function(){
-                    alert('Document was accepted successfully.');
+                success : function (res) {
+                    self.onSuccessAccept(res);
                 },
                 error: function(err){
                     self.errorNotification(err)
                 }
             });
+        },
 
+        onSuccessAccept: function (res) {
+            var document = res.document;
+            var documentId = document.id;
+            var downloadUrl = document.File.url;
+            var container = this.$el.find('#forDocSigning');
+            var self = this;
+            var html = '';
+
+            alert('Document was accepted successfully.');
+
+            html += '<div class="signedDocument">';
+            html += '  <div class="download"><a href="' + downloadUrl + '" target="_blank">Download</a></div>';
+            html += '  <div class="preview"></div>';
+            html += '</div>';
+
+            this.$el.find('#acceptBtn').hide();
+            container.html(html);
+
+            $.ajax({
+                url:  '/documents/' + documentId + '/preview',
+                type : 'GET',
+                success : function (res) {
+                    self.renderTheSignedDocument(res);
+                },
+                error: function(err){
+                    self.errorNotification(err)
+                }
+            });
         },
 
         render: function () {
             this.$el.html(_.template(SignatureTemp));
             this.getOurPreview();
+
             return this;
+        },
+
+        renderTheSignedDocument: function (previewHtml) {
+            this.$el.find('.preview').html(previewHtml);
         }
 
     });
