@@ -2682,3 +2682,87 @@ div#ui-datepicker-div.ui-datepicker{
     }
   }
 }
+
+.reSignDialog{
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: #eaeaea;
+  min-width: 800px !important;
+  border: 2px solid #d0d0d0 !important;
+  top: 50% !important;
+  -ms-transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  .ui-dialog-titlebar{
+    display: none !important;
+  }
+  #reAsignContainer{
+    padding: 40px;
+    #topInfo{
+      padding-bottom: 20px;
+    }
+    input[type="radio"]{
+      display: none;
+    }
+    .signItem{
+      margin: 2px 0 2px;
+      overflow: hidden;
+      width: 54%;
+      float: left;
+      label {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border: 1px solid #3d3d3d;
+        position: relative;
+        float: left;
+        cursor: pointer;
+        margin-right: 6px;
+      }
+      input[type="radio"]:checked + label:after {
+        content: '';
+        height: 10px;
+        width: 10px;
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: #3d3d3d;
+        border-radius: 5px;
+      }
+      span{
+        display: block;
+        .font-oss;
+        font-size: 14px;
+        line-height: 24px;
+        color: #3d3d3d;
+        margin-left: 32px;
+        width: 150px;
+      }
+    }
+  }
+  .ui-dialog-buttonpane{
+    border: none !important;
+  }
+  .ui-dialog-buttonset{
+    float: none !important;
+    text-align: center;
+  }
+  button{
+    text-align: center;
+    color: rgb(255, 255, 255) !important;
+    .font-ose !important;
+    font-size: 18px;
+    height: 48px;
+    line-height: 48px;
+    margin: 20px auto !important;
+    background: #878787 !important;
+    display: inline-block;
+    padding: 0 30px;
+    outline: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    &:hover{
+      background: #e31937 !important;
+    }
+  }
+}

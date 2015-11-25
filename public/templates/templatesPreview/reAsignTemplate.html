@@ -6,7 +6,7 @@
         <%signUsers.forEach(function(signer){%>
         <li class="signItem" data-id="<%= signer.id%>">
             <input id="rad_<%= signer.id%>" type="radio" name="signItem">
-            <label for="rad_<%= signer.id%>"><%= signer.value%></label>
+            <label for="rad_<%= signer.id%>"><span><%= signer.value%></span></label>
         </li>
         <%})%>
     </ul>
