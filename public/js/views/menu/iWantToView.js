@@ -96,7 +96,7 @@ define([
                 data : {
                     orderBy : 'count',
                     page    : 1,
-                    count   : 5
+                    count   : 12
                 },
                 success: function (response) {
                     self.renderItems(response);
