@@ -110,7 +110,7 @@ define([
             var activeType = thisEl.find('#addingBase');
             var name = activeName.val().trim();
             var code = activeCode.val().trim();
-            var theType = activeType.val().trim();
+            var theType = activeType.html().trim();
             var theType_id = activeType.attr('data-val');
             var newRow;
             var indikator = thisEl.find('#editableRow').length;
@@ -125,7 +125,7 @@ define([
 
                 activeName.val('');
                 activeCode.val('');
-                activeType.val('String');
+                activeType.html('String');
                 activeType.attr('data-val','STRING')
             } else {
                 alert('Please, fill empty fields');
@@ -138,7 +138,7 @@ define([
             var currentConst = target.attr('data-val');
             var cont = this.$el.find('#addingBase');
 
-            cont.val(currentValue);
+            cont.html(currentValue);
             cont.attr('data-val', currentConst);
         },
 
