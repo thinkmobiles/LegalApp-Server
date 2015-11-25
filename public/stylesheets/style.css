@@ -2613,12 +2613,22 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
 .canvasDialog .ui-dialog-content button:hover {
   background: #e31937;
 }
+#forDocSigning {
+  margin: 20px 50px;
+  padding: 40px;
+  overflow: hidden;
+  background: #fff;
+}
 .modalDocPreview {
   padding: 0 !important;
   border-radius: 0 !important;
-  border: none !important;
   background: #eaeaea;
   min-width: 800px !important;
+  border: 2px solid #d0d0d0 !important;
+  top: 50% !important;
+  -ms-transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 .modalDocPreview .ui-dialog-titlebar {
   display: none !important;
