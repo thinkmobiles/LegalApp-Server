@@ -2671,7 +2671,30 @@ div#ui-datepicker-div.ui-datepicker .ui-widget-header .ui-datepicker-title selec
   transform: translateY(-50%);
 }
 .reSignDialog .ui-dialog-titlebar {
-  display: none !important;
+  background: #e31937;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  height: 60px;
+  cursor: default !important;
+}
+.reSignDialog .ui-dialog-titlebar .ui-dialog-title {
+  font-size: 24px;
+  color: #fff;
+  line-height: 55px;
+  padding-left: 15px;
+  font-family: 'OSR';
+}
+.reSignDialog .ui-dialog-titlebar .ui-button {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: none !important;
+  margin-right: 15px;
+  outline: none !important;
+}
+.reSignDialog .ui-dialog-titlebar .ui-button .ui-icon {
+  background: url("../images/close-ico.png") no-repeat center center;
 }
 .reSignDialog #reAsignContainer {
   padding: 40px;
